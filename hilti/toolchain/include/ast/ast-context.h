@@ -349,12 +349,20 @@ public:
     ID uniqueCanononicalID(const ID& id) { return _canon_id_uniquer.get(id, false); }
 
     /**
-     * Dumps the current total AST of all modules to a debug stream.
+     * Dumps the current, complete AST of all modules to a debug stream.
      *
      * @param stream debug stream to write to
      * @param prefix prefix line to start output with
      */
-    void dump(const hilti::logging::DebugStream& stream, const std::string& prefix);
+    void dump(const hilti::logging::DebugStream& stream, const std::string& prefix) const;
+
+    /**
+     * Dumps the current, complete AST of all modules to an output stream.
+     *
+     * @param out output stream to write to
+     * @param include_state if true, also dumps the context's accumulated state
+     */
+    void dump(std::ostream& out, bool include_state) const;
 
     /**
      * Factory function creating a new node of type T. This allocates the new
@@ -408,11 +416,55 @@ public:
         return t;
     }
 
-    /** Clears up an AST nodes that are not currently retained by anybody. */
+    /**
+     * Clears out any error state recorded in the AST.
+     *
+     * @param node if given, only clears errors for subtree rooted at `node`; otherwise
+     * clears errors for the whole AST
+     */
+    void clearErrors(Node* node = nullptr);
+
+    /**
+     * Clears out scopes recorded in the AST.
+     *
+     * @param node if given, only clears scopes for subtree rooted at `node`; otherwise
+     * clears scopes for the whole AST
+     */
+    void clearScopes(Node* node = nullptr);
+
+    /**
+     * Reports any error recorded in the AST to the user.
+     *
+     * @return success if there are no errors (and hence nothing reported either)
+     */
+    Result<Nothing> collectErrors();
+
+#ifndef NDEBUG
+    /**
+     * Performs internal consistency checks on the AST.
+     *
+     * Available in debug builds only as it can affect performance.
+     *
+     * @param finished if true, indicates that AST processing has finished; it
+     * then runs some checks that might not hold while the AST is still being
+     * processed.
+     */
+    void checkAST(bool finished = true) const;
+#endif
+
+    /** Clears up any AST nodes that are not currently retained by anybody. */
     void garbageCollect();
 
     /** Release all state. */
     void clear();
+
+    /**
+     * Maximum number of rounds to perform during AST processing before
+     * assuming we are in an infinite loop without further progress being made.
+     * Once exceeded, processing aborts with an internal error as such as loop
+     * would indicate a bug in the compiler.
+     */
+    static constexpr unsigned int MaxASTIterationRounds = 100;
 
 private:
     // The following methods implement the corresponding phases of AST processing.
@@ -422,13 +474,11 @@ private:
                                                   std::optional<hilti::rt::filesystem::path> process_extension = {});
     Result<Nothing> _init(Builder* builder, const Plugin& plugin);
     Result<Nothing> _buildScopes(Builder* builder, const Plugin& plugin);
-    Result<Nothing> _clearState(Builder* builder, const Plugin& plugin);
     Result<Nothing> _resolve(Builder* builder, const Plugin& plugin);
     Result<Nothing> _resolveUnresolvedNodes(bool* modified, Builder* builder, const Plugin& plugin);
     Result<Nothing> _resolveRoot(bool* modified, Builder* builder, const Plugin& plugin);
     Result<Nothing> _validate(Builder* builder, const Plugin& plugin, bool pre_resolver);
     Result<Nothing> _transform(Builder* builder, const Plugin& plugin);
-    Result<Nothing> _collectErrors();
     Result<Nothing> _optimize(Builder* builder);
     Result<Nothing> _computeDependencies();
 
@@ -436,25 +486,25 @@ private:
     // (including the current one).
     declaration::module::UID _addModuleToAST(declaration::Module* module);
 
-    // Performs internal consistency checks on the AST. Meant to execute only
-    // in debug builds as it may affect performance.
-    void _checkAST(bool finished) const;
-
     // Dumps the AST to disk during AST processing, for debugging..
-    void _saveIterationAST(const Plugin& plugin, const std::string& prefix, int round = 0);
+    void _saveIterationAST(const Plugin& plugin, const std::string& prefix, unsigned int round = 0);
 
     // Dumps the AST to disk during AST processing, for debugging..
     void _saveIterationAST(const Plugin& plugin, const std::string& prefix, const std::string& tag);
 
     // Dumps the AST to a debugging stream.
     void _dumpAST(const hilti::logging::DebugStream& stream, const Plugin& plugin, const std::string& prefix,
-                  int round);
+                  std::optional<unsigned int> round);
 
     // Dumps the AST to a debugging stream.
-    void _dumpAST(std::ostream& stream, const Plugin& plugin, const std::string& prefix, int round);
+    void _dumpAST(std::ostream& stream, const Plugin& plugin, const std::string& prefix,
+                  std::optional<unsigned int> round);
 
     // Dumps the accumulated state tables of the context to a debugging stream.
-    void _dumpState(const logging::DebugStream& stream);
+    void _dumpState(const logging::DebugStream& stream) const;
+
+    // Dumps the accumulated state tables of the context to an output stream.
+    void _dumpState(std::ostream& out) const;
 
     // Dump statistics about the AST to a debugging stream.
     void _dumpStats(const logging::DebugStream& stream, std::string_view tag);
@@ -471,7 +521,7 @@ private:
     util::Uniquer<ID> _canon_id_uniquer;        // Produces unique canonified IDs
     std::unique_ptr<ast::detail::DependencyTracker> _dependency_tracker; // records dependencies between declarations
 
-    uint64_t _total_rounds = 0; // total number of rounds of AST processing
+    unsigned int _total_rounds = 0; // total number of rounds of AST processing
 
     std::unordered_map<declaration::module::UID, node::RetainedPtr<declaration::Module>>
         _modules_by_uid; // all known modules indexed by UID

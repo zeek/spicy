@@ -23,7 +23,9 @@ public:
     auto attributes() const { return child<AttributeSet>(1); }
     auto inlineFunction() const { return child<hilti::Function>(2); }
 
-    /** Returns an operator corresponding to a call to the member function that the declaration corresponds to, if any.
+    /**
+     * Returns an operator corresponding to a call to the member function that
+     * the declaration corresponds to, if any.
      */
     auto operator_() const { return _operator; }
 
@@ -56,6 +58,23 @@ public:
     auto isOptional() const { return attributes()->find(hilti::attribute::kind::Optional) != nullptr; }
     auto isStatic() const { return attributes()->find(hilti::attribute::kind::Static) != nullptr; }
     auto isNoEmit() const { return attributes()->find(hilti::attribute::kind::NoEmit) != nullptr; }
+
+    /**
+     * Returns the type that has been semantically linked to this field. The
+     * resolver sets the linked type to the field's parent type.
+     *
+     * This is a short-cut to manually querying the context for the type with
+     * the index returned by `linkedTypeIndex()`.
+     *
+     * @param ctx AST context to use for the lookup
+     * @return linked type, or nullptr if none
+     */
+    UnqualifiedType* linkedType(ASTContext* ctx) const {
+        if ( _linked_type_index )
+            return ctx->lookup(_linked_type_index);
+        else
+            return nullptr;
+    }
 
     auto linkedTypeIndex() const { return _linked_type_index; }
 

@@ -577,7 +577,9 @@ void CodeGen::_updateDeclarations(visitor::MutatingPostOrder* v, hilti::declarat
         module->add(builder()->context(), n);
 
     _new_decls.clear();
-    v->recordChange("new declarations added");
+
+    HILTI_DEBUG(logging::debug::CodeGen, "new declarations added");
+    v->setModified();
 }
 
 bool CodeGen::compileAST(hilti::ASTRoot* root) {
@@ -627,8 +629,9 @@ bool CodeGen::compileAST(hilti::ASTRoot* root) {
 
 hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const ID& id, type::unit::item::Field* field,
                                                    declaration::hook::Type type, bool debug,
-                                                   hilti::type::function::Parameters params, Statement* body,
-                                                   Expression* priority, const hilti::Meta& meta) {
+                                                   hilti::type::function::Parameters params,
+                                                   hilti::statement::Block* body, Expression* priority,
+                                                   const hilti::Meta& meta) {
     if ( debug && ! options().debug )
         return {};
 

@@ -1,3 +1,102 @@
+1.15.0-dev.141 | 2025-12-05 12:54:14 +0100
+
+  * Refactor optimizer. (Robin Sommer, Corelight)
+
+    This is a large change refactoring, streamlining, and speeding up of
+    the optimizer and its individual passes.
+
+    Conceptually, the core change is that we now have a well-defined
+    contract between optimizer and optimization passes: before running a
+    pass, the optimizer ensures that the AST is in a consistent,
+    fully-resolved state; and when a pass finishes, the pass tells the
+    optimizer what needs to be done to get the new AST back into that
+    state. See `optimizer::PassInfo` for the details.
+
+    We also substantially simplify the optimizer loop: it's no longer
+    nested across multiple phases & levels, and just runs all passes in
+    order until the AST stabilizes. Optionally, a individual pass maybe
+    itself repeated until stabilization, too, but that's the only nesting.
+
+    The passes themselves gain a new structure/API that clearly separates
+    between collection and mutation. We provide base visitor classes for
+    both kinds to derive from. The new structure no longer joins the
+    collection/mutation into a single visitor, which was hard to follow.
+
+    This new API enables the optimizer to track what parts of the AST were
+    changed by a pass, so that it can then re-resolve only the
+    corresponding subparts of the AST after each pass. We track changes
+    at the function-level so that we just need to recompute state for any
+    functions that have changed. The exception is global code/types, where
+    we re-resolve the whole module.
+
+    The optimizer's CFG state is centralized so all passes can share the
+    same, cached CFGs when possible, rather than each computing their own.
+    We use the function-tracking mentioned above to decide which CFGs need
+    re-computation.
+
+    The previous type/member/function passes got merged into single
+    dead-code-static pass, with joint collection and mutation visitors.
+
+    The constant-folder pass now re-uses the AST resolver's corresponding
+    functionality. No more two implementations of constant folding.
+
+    In debug builds, we do extensive checks that after a pass has
+    finished, and the AST state updated as prescribed, the AST is indeed
+    fully resolved again. We do this by recomputing all AST state from
+    scratch and comparing it against the current one. If there's a
+    difference, that's hard internal error and the compiler will abort.
+    This check is expensive and disabled in release builds. It can also be
+    disabled even in debug builds by setting a new CMake variable
+    HILTI_SKIP_EXPENSIVE_DEBUG_CHECKS.
+
+    This removes `HILTI_OPTIMIZER_PASSES` and
+    `HILTI_OPTIMIZER_ENABLE_CFG`. Neither seems that useful anymore, and
+    removing them simplifies the main optimizer loop. If we do still need
+    one of them, we can re-add later.
+
+  * Speed up the graph data structure. (Robin Sommer, Corelight)
+
+    We now maintain more pre-computed state about edges and neighbors,
+    making it slightly more expensive to build the graph, but much faster
+    to retrieve the information.
+
+  * Extend resolver APIs. (Robin Sommer, Corelight)
+
+    This primarily extends the resolver APIs for more flexibility for
+    external callers. There's no functionality change here, it's all at
+    the API level.
+
+    This commit:
+
+        - Enables the various resolver operators to operate on sub-trees
+          instead of the whole AST. There's no functionality change beyond
+          the APIs here, the resolver logic was already operating
+          independently of which node is started from. However, there's
+          one larger internal change inside the Resolver: we move all
+          coercion logic into its own visitor pass, so that we will be
+          able to call that individually later
+          (`detail::resolver::coerce()`). This change is the source of the
+          one baseline update I believe.
+
+        - Extends the constant folder with some options. These will later
+          be used by the optimizer, which has slightly different
+          requirements on what's to be folded.
+
+        - Adds a couple new APIs to validate that resolver properties are
+          satisfied by the current AST.
+
+        - Extends a couple of debugging APIs for dumping out ASTs.
+
+        - Makes some formerly private AST context methods public for
+          external use.
+
+        - Extends some AST node APIs slightly.
+
+  * Consistently type function bodies as `statement::Block`. (Robin Sommer, Corelight)
+
+    We were already storing them as such in all places, but still needed
+    to cast on access to turn them back into a block type.
+
 1.15.0-dev.136 | 2025-12-03 14:34:08 +0100
 
   * Bump freebsd-14 image in CI. (Benjamin Bannier, Corelight)

@@ -88,6 +88,16 @@ bool QualifiedType::isAuto() const { return type()->isA<type::Auto>(); }
 
 type::Name* QualifiedType::alias() const { return _type()->tryAs<type::Name>(); }
 
+QualifiedType* QualifiedType::innermostType() {
+    if ( type()->isReferenceType() )
+        return type()->dereferencedType()->innermostType();
+
+    if ( type()->iteratorType() )
+        return type()->elementType()->innermostType();
+
+    return this;
+}
+
 hilti::node::Properties QualifiedType::properties() const {
     const auto* side = (_side == Side::LHS ? "lhs" : "rhs");
     const auto* constness = (_constness == Constness::Const ? "true" : "false");

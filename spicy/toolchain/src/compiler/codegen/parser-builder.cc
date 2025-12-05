@@ -1388,8 +1388,8 @@ struct ProductionVisitor : public production::Visitor {
 
     // Adds a method, and its implementation, to the current parsing struct
     // type that has the standard signature for parse methods.
-    void addParseMethod(bool add_decl, const ID& id, Statement* body, hilti::type::function::Parameter* addl_param = {},
-                        const Meta& m = {}) {
+    void addParseMethod(bool add_decl, const ID& id, hilti::statement::Block* body,
+                        hilti::type::function::Parameter* addl_param = {}, const Meta& m = {}) {
         auto qualified_id = pb->state().unit_id + id;
         auto* ftype = pb->parseMethodFunctionType(addl_param, m);
         auto* func = builder()->function(qualified_id, ftype, body, {}, m);

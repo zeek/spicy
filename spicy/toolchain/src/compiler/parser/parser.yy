@@ -285,7 +285,8 @@ static std::vector<hilti::DocString> _docs;
 %type <hilti::type::function::CallingConvention>  opt_func_cc
 %type <hilti::declaration::Linkage>         opt_linkage
 %type <hilti::declaration::Parameters>      func_params opt_func_params opt_unit_params opt_unit_hook_params
-%type <hilti::Statement*>                 stmt stmt_decl stmt_expr block braced_block opt_else_block
+%type <hilti::Statement*>                 stmt stmt_decl stmt_expr opt_else_block
+%type <hilti::statement::Block*>          block braced_block
 %type <hilti::Statements>                   stmts opt_stmts
 %type <hilti::Attribute*>                 attribute unit_hook_attribute
 %type <hilti::AttributeSet*>              opt_attributes opt_unit_hook_attributes
@@ -540,10 +541,11 @@ opt_init_expression : '=' expr                   { $$ = std::move($2); }
 
 /* Statements */
 
-block         : stmt                             { if ( ! $1->isA<hilti::statement::Block>() )
-                                                     $$ = builder->statementBlock({std::move($1)}, __loc__);
+block         : stmt                             {
+                                                   if ( auto* block = $1->tryAs<hilti::statement::Block>() )
+                                                       $$ = std::move(block);
                                                    else
-                                                     $$ = std::move($1);
+                                                       $$ = builder->statementBlock({std::move($1)}, __loc__);
                                                  }
               ;
 

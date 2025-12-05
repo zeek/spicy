@@ -108,12 +108,11 @@ struct VisitorPass1 : visitor::MutatingPostOrder {
     }
 };
 
-// Pass 2 is the main pass implementing most of the resolver's functionality.
+// Pass 2 is the main pass implementing most of the resolver's functionality:
+// Type inference, name/operator resolution, ID assignment (but not coercion yet).
 struct VisitorPass2 : visitor::MutatingPostOrder {
-    explicit VisitorPass2(Builder* builder, Node* root)
-        : visitor::MutatingPostOrder(builder, logging::debug::Resolver), root(root) {}
+    explicit VisitorPass2(Builder* builder) : visitor::MutatingPostOrder(builder, logging::debug::Resolver) {}
 
-    Node* root = nullptr;
     std::map<ID, QualifiedType*> auto_params; // mapping of `auto` parameters inferred, indexed by canonical ID
 
     // Sets a declaration fully qualified ID
@@ -214,6 +213,814 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
         util::cannotBeReached();
     }
+
+    // Records the actual type of an `auto` parameter as inferred from a
+    // concrete argument value passed to it.
+    void recordAutoParameters(const type::Function& ftype, Expression* args) {
+        auto arg = args->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value().begin();
+        std::vector<type::function::Parameter> params;
+        for ( auto& rp : ftype.parameters() ) {
+            auto* p = rp->as<declaration::Parameter>();
+            if ( ! p->type()->isAuto() )
+                continue;
+
+            auto* t = (*arg)->type();
+            if ( ! t->isResolved() )
+                continue;
+
+            assert(p->canonicalID());
+            const auto& i = auto_params.find(p->canonicalID());
+            if ( i == auto_params.end() ) {
+                auto_params.emplace(p->canonicalID(), t);
+                HILTI_DEBUG(logging::debug::Resolver,
+                            util::fmt("recording auto parameter %s as of type %s", p->canonicalID(), *t));
+            }
+            else {
+                if ( i->second != t )
+                    rp->addError("mismatch for auto parameter");
+            }
+
+            ++arg;
+        }
+    }
+
+    // Matches an unresolved operator against a set of operator candidates,
+    // returning instantiations of all matches.
+    Expressions matchOperators(expression::UnresolvedOperator* u, const std::vector<const Operator*>& candidates,
+                               bool disallow_type_changes = false) {
+        const std::array<bitmask<CoercionStyle>, 7> styles = {
+            CoercionStyle::TryExactMatch,
+            CoercionStyle::TryDeref,
+            CoercionStyle::TryCoercionWithinSameType,
+            CoercionStyle::TryCoercion,
+            CoercionStyle::TryConstPromotion,
+            CoercionStyle::TryConstPromotion | CoercionStyle::TryDeref,
+            CoercionStyle::TryConstPromotion | CoercionStyle::TryCoercion,
+        };
+
+        auto coerce_operands = [&](const Operator* candidate, const auto& operands, const auto& expressions,
+                                   bitmask<CoercionStyle> style) {
+            // First, match the operands against the operator's general signature.
+            auto result = coerceOperands(builder(), candidate->kind(), operands, expressions, style);
+            if ( ! result )
+                return result;
+
+            // Then, if the operator provides more specific operands through filtering, match against those as well.
+            if ( auto filtered = candidate->filter(builder(), result->second) ) {
+                assert(filtered->size() == candidate->operands().size());
+                result = coerceOperands(builder(), candidate->kind(), operands, *filtered, style);
+            }
+
+            return result;
+        };
+
+        auto try_candidate = [&](const Operator* candidate, const node::Range<Expression>& operands, auto style,
+                                 const Meta& meta, const auto& dbg_msg) -> Expression* {
+            auto noperands = coerce_operands(candidate, operands, candidate->operands(), style);
+            if ( ! noperands ) {
+                HILTI_DEBUG(logging::debug::Operator, util::fmt("-> cannot coerce operands: %s", noperands.error()));
+                return {};
+            }
+
+            auto r = candidate->instantiate(builder(), noperands->second, meta);
+            if ( ! r ) {
+                u->addError(r.error());
+                return {};
+            }
+
+            // Some operators may not be able to determine their type before the
+            // resolver had a chance to provide the information needed. They will
+            // return "auto" in that case (specifically, that's the case for Spicy
+            // unit member access). Note we can't check if ->isResolved() here
+            // because operators may legitimately return other unresolved types
+            // (e.g., IDs that still need to be looked up).
+            if ( (*r)->type()->isAuto() )
+                return {};
+
+            Expression* resolved = *r;
+
+            // Fold any constants right here in case downstream resolving depends
+            // on finding a constant (like for coercion).
+            if ( auto ctor = detail::constant_folder::foldExpression(builder(), resolved); ctor && *ctor ) {
+                HILTI_DEBUG(logging::debug::Operator,
+                            util::fmt("folded %s -> constant %s (%s)", *resolved, **ctor, resolved->location()));
+                resolved = builder()->expressionCtor(*ctor, resolved->meta());
+            }
+
+            HILTI_DEBUG(logging::debug::Operator, util::fmt("-> %s, resolves to %s", dbg_msg, *resolved))
+            return resolved;
+        };
+
+        auto try_all_candidates = [&](Expressions* resolved, std::set<operator_::Kind>* kinds_resolved,
+                                      operator_::Priority priority) {
+            for ( auto style : styles ) {
+                if ( disallow_type_changes )
+                    style |= CoercionStyle::DisallowTypeChanges;
+
+                HILTI_DEBUG(logging::debug::Operator, util::fmt("style: %s", to_string(style)));
+                logging::DebugPushIndent _(logging::debug::Operator);
+
+                for ( const auto& c : candidates ) {
+                    if ( priority != c->signature().priority )
+                        // Not looking at operators of this priority right now.
+                        continue;
+
+                    if ( priority == operator_::Priority::Low && kinds_resolved->contains(c->kind()) )
+                        // Already have a higher priority match for this operator kind.
+                        continue;
+
+                    HILTI_DEBUG(logging::debug::Operator, util::fmt("candidate: %s (%s)", c->name(), c->print()));
+                    logging::DebugPushIndent _(logging::debug::Operator);
+
+                    if ( auto* r = try_candidate(c, u->operands(), style, u->meta(), "candidate matches") ) {
+                        if ( c->signature().priority == operator_::Priority::Normal )
+                            kinds_resolved->insert(c->kind());
+
+                        resolved->push_back(r);
+                    }
+                    else {
+                        auto operands = u->operands();
+                        // Try to swap the operators for commutative operators.
+                        if ( operator_::isCommutative(c->kind()) && operands.size() == 2 ) {
+                            Nodes new_operands = {operands[1], operands[0]};
+                            if ( auto* r =
+                                     try_candidate(c,
+                                                   hilti::node::Range<Expression>(new_operands.begin(),
+                                                                                  new_operands.end()),
+                                                   style, u->meta(), "candidate matches with operands swapped") ) {
+                                if ( c->signature().priority == operator_::Priority::Normal )
+                                    kinds_resolved->insert(c->kind());
+
+                                resolved->emplace_back(r);
+                            }
+                        }
+                    }
+                }
+
+                if ( resolved->size() )
+                    return;
+            }
+        };
+
+        HILTI_DEBUG(logging::debug::Operator,
+                    util::fmt("trying to resolve: %s (%s)", u->printSignature(), u->location()));
+        logging::DebugPushIndent _(logging::debug::Operator);
+
+        std::set<operator_::Kind> kinds_resolved;
+        Expressions resolved;
+
+        try_all_candidates(&resolved, &kinds_resolved, operator_::Priority::Normal);
+        if ( resolved.size() )
+            return resolved;
+
+        try_all_candidates(&resolved, &kinds_resolved, operator_::Priority::Low);
+        return resolved;
+    }
+
+    void operator()(Attribute* n) final {
+        if ( n->kind() == hilti::attribute::kind::Cxxname && n->hasValue() ) {
+            // Normalize values passed as `&cxxname` so they always are interpreted as FQNs by enforcing leading
+            // `::`.
+            if ( const auto& value = n->valueAsString(); value && ! util::startsWith(*value, "::") ) {
+                auto* a = builder()->attribute(hilti::attribute::kind::Cxxname,
+                                               builder()->stringLiteral(util::fmt("::%s", *value)));
+                replaceNode(n, a);
+            }
+        }
+    }
+
+    void operator()(ctor::List* n) final {
+        if ( ! expression::areResolved(n->value()) )
+            return; // cannot do anything yet
+
+        if ( ! n->type()->isResolved() ) {
+            if ( auto* ntype = typeForExpressions(n, n->value(), n->type()->type()->elementType()) ) {
+                recordChange(n, ntype, "type");
+                n->setType(context(), builder()->qualifiedType(builder()->typeList(ntype), Constness::Mutable));
+            }
+        }
+
+        if ( n->elementType()->type()->isA<type::Unknown>() ) {
+            // If we use a list to initialize another list/set/vector, and
+            // coercion has figured out how to type the list for that coercion
+            // even though the list's type on its own isn't known, then
+            // transfer the container's element type over.
+            if ( auto* parent = n->parent()->tryAs<ctor::Coerced>(); parent && parent->type()->isResolved() ) {
+                QualifiedType* etype = nullptr;
+
+                if ( auto* l = parent->type()->type()->tryAs<type::List>() )
+                    etype = l->elementType();
+                else if ( auto* s = parent->type()->type()->tryAs<type::Set>() )
+                    etype = s->elementType();
+                else if ( auto* v = parent->type()->type()->tryAs<type::Vector>() )
+                    etype = v->elementType();
+
+                if ( etype && ! etype->type()->isA<type::Unknown>() ) {
+                    recordChange(n, util::fmt("set type inferred from container to %s", *etype));
+                    n->setType(context(), builder()->qualifiedType(builder()->typeList(etype), Constness::Const));
+                }
+            }
+        }
+    }
+
+    void operator()(ctor::Map* n) final {
+        for ( const auto& e : n->value() ) {
+            if ( ! (e->key()->isResolved() && e->value()->isResolved()) )
+                return; // cannot do anything yet
+        }
+
+        if ( ! n->type()->isResolved() ) {
+            QualifiedType* key = nullptr;
+            QualifiedType* value = nullptr;
+
+            for ( const auto& e : n->value() ) {
+                if ( ! key )
+                    key = e->key()->type();
+                else if ( ! type::same(e->key()->type(), key) ) {
+                    n->addError("inconsistent key types in map");
+                    return;
+                }
+
+                if ( ! value )
+                    value = e->value()->type();
+                else if ( ! type::same(e->value()->type(), value) ) {
+                    n->addError("inconsistent value types in map");
+                    return;
+                }
+            }
+
+            if ( ! (key && value) ) {
+                // empty map
+                key = builder()->qualifiedType(builder()->typeUnknown(), Constness::Const);
+                value = builder()->qualifiedType(builder()->typeUnknown(), Constness::Const);
+            }
+
+            auto* ntype = builder()->qualifiedType(builder()->typeMap(key, value, n->meta()), Constness::Mutable);
+            if ( ! type::same(ntype, n->type()) ) {
+                recordChange(n, ntype, "type");
+                n->setType(context(), ntype);
+            }
+        }
+    }
+
+    void operator()(ctor::Optional* n) final {
+        if ( ! n->type()->isResolved() && n->value() && n->value()->isResolved() ) {
+            recordChange(n, n->value()->type(), "type");
+            n->setType(context(),
+                       builder()->qualifiedType(builder()->typeOptional(n->value()->type()), Constness::Mutable));
+        }
+    }
+
+    void operator()(ctor::Result* n) final {
+        if ( ! n->type()->isResolved() && n->value()->isResolved() ) {
+            recordChange(n, n->value()->type(), "type");
+            n->setType(context(),
+                       builder()->qualifiedType(builder()->typeResult(n->value()->type()), Constness::Const));
+        }
+    }
+
+    void operator()(ctor::Set* n) final {
+        if ( ! expression::areResolved(n->value()) )
+            return; // cannot do anything yet
+
+        if ( ! n->type()->isResolved() ) {
+            if ( auto* ntype = typeForExpressions(n, n->value(), n->type()->type()->elementType()) ) {
+                recordChange(n, ntype, "type");
+                n->setType(context(), builder()->qualifiedType(builder()->typeSet(ntype), Constness::Mutable));
+            }
+        }
+    }
+
+    void operator()(ctor::Struct* n) final {
+        for ( const auto& f : n->fields() ) {
+            if ( ! f->expression()->isResolved() )
+                return; // cannot do anything yet
+        }
+
+        if ( ! n->type()->isResolved() ) {
+            Declarations fields;
+            for ( const auto& f : n->fields() )
+                fields.emplace_back(builder()->declarationField(f->id(), f->expression()->type(),
+                                                                builder()->attributeSet({}), f->meta()));
+
+            auto* ntype =
+                builder()->qualifiedType(builder()->typeStruct(type::Struct::AnonymousStruct(), fields, n->meta()),
+                                         Constness::Mutable);
+            recordChange(n, ntype, "type");
+            n->setType(context(), ntype);
+        }
+    }
+
+    void operator()(ctor::Tuple* n) final {
+        if ( ! n->type()->isResolved() && expression::areResolved(n->value()) ) {
+            auto elems = n->value() | std::views::transform([](const auto& e) { return e->type(); });
+            auto* t =
+                builder()->qualifiedType(builder()->typeTuple(util::toVector(elems), n->meta()), Constness::Const);
+            recordChange(n, t, "type");
+            n->setType(context(), t);
+        }
+    }
+
+    void operator()(ctor::ValueReference* n) final {
+        if ( ! n->type()->isResolved() && n->expression()->isResolved() ) {
+            auto* t = builder()->typeValueReference(n->expression()->type()->recreateAsNonConst(context()));
+            recordChange(n, t, "type");
+            n->setType(context(), builder()->qualifiedType(t, Constness::Const));
+        }
+    }
+
+    void operator()(ctor::Vector* n) final {
+        if ( ! expression::areResolved(n->value()) )
+            return; // cannot do anything yet
+
+        if ( ! n->type()->isResolved() ) {
+            if ( auto* ntype = typeForExpressions(n, n->value(), n->type()->type()->elementType()) ) {
+                recordChange(n, ntype, "type");
+                n->setType(context(), builder()->qualifiedType(builder()->typeVector(ntype), Constness::Mutable));
+            }
+        }
+    }
+
+    void operator()(Declaration* n) final {
+        if ( ! n->canonicalID() ) {
+            if ( auto* module = n->parent<declaration::Module>() ) {
+                assert(module);
+                auto id = module->uid().unique + n->id();
+                n->setCanonicalID(context()->uniqueCanononicalID(id));
+                recordChange(n, util::fmt("set declaration's canonical ID to %s", n->canonicalID()));
+            }
+        }
+    }
+
+    void operator()(declaration::Constant* n) final {
+        if ( ! n->fullyQualifiedID() ) {
+            if ( n->type()->type()->isNameType() ) {
+                if ( auto tid = n->type()->type()->typeID() )
+                    setFqID(n, tid + n->id());
+            }
+            else if ( n->parent<Function>() )
+                setFqID(n, n->id()); // local scope
+            else if ( auto* m = n->parent<declaration::Module>() )
+                setFqID(n, m->scopeID() + n->id()); // global scope
+        }
+    }
+
+    void operator()(declaration::Expression* n) final {
+        if ( ! n->fullyQualifiedID() ) {
+            if ( n->id() == ID("self") || n->id() == ID("__dd") )
+                setFqID(n, n->id()); // local scope
+            else if ( n->parent<Function>() )
+                setFqID(n, n->id()); // local scope
+            else if ( auto* m = n->parent<declaration::Module>() )
+                setFqID(n, m->scopeID() + n->id()); // global scope
+        }
+    }
+
+    void operator()(declaration::Field* n) final {
+        if ( ! n->fullyQualifiedID() ) {
+            if ( auto* ctor = n->parent(3)->tryAs<ctor::Struct>() )
+                // special-case anonymous structs
+                setFqID(n, ctor->uniqueID() + n->id());
+            else if ( auto* ctor = n->parent(3)->tryAs<ctor::Bitfield>() )
+                // special-case anonymous bitfields
+                setFqID(n, ctor->btype()->uniqueID() + n->id());
+            else if ( auto* stype = n->parent()->tryAs<type::Struct>(); stype && stype->typeID() )
+                setFqID(n, stype->typeID() + n->id());
+            else if ( auto* utype = n->parent()->tryAs<type::Union>(); utype && utype->typeID() )
+                setFqID(n, utype->typeID() + n->id());
+        }
+
+        if ( ! n->linkedTypeIndex() ) {
+            auto* t = n->parent()->as<UnqualifiedType>();
+            auto index = context()->register_(t);
+            n->setLinkedTypeIndex(index);
+            recordChange(n, util::fmt("set linked type to %s", index));
+        }
+
+        if ( n->type()->type()->isA<type::Function>() && ! n->operator_() && n->parent(3)->isA<declaration::Type>() &&
+             n->type()->type()->isResolved() ) {
+            if ( auto idx = n->linkedTypeIndex(); idx && context()->lookup(idx)->typeID() ) {
+                // We register operators here so that we have the type ID for
+                // the struct available.
+                recordChange(n, "creating member call operator");
+                std::unique_ptr<struct_::MemberCall> op(new struct_::MemberCall(n));
+                n->setOperator(op.get());
+                operator_::registry().register_(std::move(op));
+            }
+        }
+    }
+
+    void operator()(declaration::Function* n) final {
+        if ( ! n->fullyQualifiedID() ) {
+            if ( auto* m = n->parent<declaration::Module>() ) {
+                if ( m->scopeID() == n->id().sub(0) )
+                    setFqID(n, n->id());
+                else
+                    setFqID(n, m->scopeID() + n->id()); // global scope
+            }
+        }
+
+        if ( auto ns = n->id().namespace_() ) {
+            // Link namespaced function to its base type and/or prototype.
+            declaration::Type* linked_type = nullptr;
+            Declaration* linked_prototype = nullptr;
+
+            if ( auto resolved = scope::lookupID<declaration::Type>(std::move(ns), n, "struct type") ) {
+                linked_type = resolved->first;
+
+                for ( const auto& field : linked_type->type()->type()->as<type::Struct>()->fields(n->id().local()) ) {
+                    auto* method_type = field->type()->type()->tryAs<type::Function>();
+                    if ( ! method_type ) {
+                        n->addError(util::fmt("'%s' is not a method of type '%s'", n->id().local(), linked_type->id()));
+                        return;
+                    }
+
+                    if ( areEquivalent(n->function()->ftype(), method_type) )
+                        linked_prototype = field;
+                }
+
+                if ( ! linked_prototype ) {
+                    n->addError(
+                        util::fmt("struct type '%s' has no matching method '%s'", linked_type->id(), n->id().local()));
+                    return;
+                }
+            }
+
+            else {
+                for ( const auto& x : context()->root()->scope()->lookupAll(n->id()) ) {
+                    if ( auto* f = x.node->tryAs<declaration::Function>() ) {
+                        if ( areEquivalent(n->function()->ftype(), f->function()->ftype()) ) {
+                            if ( ! linked_prototype ||
+                                 ! f->function()->body() ) // prefer declarations wo/ implementation
+                                linked_prototype = f;
+                        }
+                    }
+                }
+            }
+
+            if ( linked_type ) {
+                if ( ! n->linkedDeclarationIndex() ) {
+                    auto index = context()->register_(linked_type);
+                    n->setLinkedDeclarationIndex(index);
+                    recordChange(n, util::fmt("set linked declaration to %s", index));
+
+                    n->setLinkage(declaration::Linkage::Struct);
+                    recordChange(n, util::fmt("set linkage to struct"));
+                }
+                else {
+                    assert(linked_type->declarationIndex() ==
+                           n->linkedDeclarationIndex()); // shouldn't changed once bound
+                    assert(n->linkage() == declaration::Linkage::Struct);
+                }
+            }
+
+            if ( linked_prototype ) {
+                if ( ! n->linkedPrototypeIndex() ) {
+                    auto index = context()->register_(linked_prototype);
+                    n->setLinkedPrototypeIndex(index);
+                    recordChange(n, util::fmt("set linked prototype to %s", index));
+                }
+                else
+                    assert(linked_prototype->canonicalID() ==
+                           context()->lookup(n->linkedPrototypeIndex())->canonicalID()); // shouldn't changed once bound
+            }
+        }
+
+        if ( n->linkage() != declaration::Linkage::Struct && ! n->operator_() && n->function()->type()->isResolved() ) {
+            recordChange(n, "creating function call operator");
+            std::unique_ptr<function::Call> op(new function::Call(n));
+            n->setOperator(op.get());
+            operator_::registry().register_(std::move(op));
+        }
+    }
+
+    void operator()(declaration::GlobalVariable* n) final {
+        if ( ! n->fullyQualifiedID() ) {
+            if ( auto* m = n->parent<declaration::Module>() )
+                setFqID(n, m->scopeID() + n->id()); // global scope
+        }
+
+        if ( n->type()->isAuto() ) {
+            if ( auto* init = n->init(); init && init->isResolved() ) {
+                recordChange(n, init->type(), "type");
+                n->setType(context(), init->type());
+            }
+        }
+    }
+
+    void operator()(declaration::ImportedModule* n) final {
+        if ( ! n->fullyQualifiedID() ) {
+            if ( auto* m = n->parent<declaration::Module>() )
+                setFqID(n, m->scopeID() + n->id());
+        }
+
+        if ( ! n->uid() ) {
+            auto* current_module = n->parent<declaration::Module>();
+            assert(current_module);
+
+            auto uid = context()->importModule(builder(), n->id(), n->scope(), n->parseExtension(),
+                                               current_module->uid().process_extension, n->searchDirectories());
+
+            if ( ! uid ) {
+                logger().error(util::fmt("cannot import module '%s': %s", n->id(), uid.error()), n->meta().location());
+                return;
+            }
+
+            recordChange(n, util::fmt("imported module %s", *uid));
+            n->setUID(*uid);
+            current_module->addDependency(*uid);
+
+            if ( ! context()->driver()->driverOptions().skip_dependencies )
+                context()->driver()->registerUnit(Unit::fromExistingUID(context()->driver()->context(), *uid));
+        }
+    }
+
+    void operator()(declaration::LocalVariable* n) final {
+        if ( ! n->fullyQualifiedID() )
+            setFqID(n, n->id()); // local scope
+
+        if ( n->type()->isAuto() ) {
+            if ( auto* init = n->init(); init && init->isResolved() ) {
+                recordChange(n, init->type(), "type");
+                n->setType(context(), init->type());
+            }
+        }
+    }
+
+    void operator()(declaration::Module* n) final {
+        if ( ! n->fullyQualifiedID() )
+            setFqID(n, n->scopeID());
+
+        if ( ! n->canonicalID() ) {
+            n->setCanonicalID(n->uid().unique);
+            recordChange(n, util::fmt("set module's canonical ID to %s", n->canonicalID()));
+        }
+
+        if ( n->moduleProperty("%skip-implementation") )
+            n->setSkipImplementation(true);
+
+        if ( ! n->declarationIndex() ) {
+            auto index = context()->register_(n);
+            recordChange(n, util::fmt("set module's declaration index to %s", index));
+        }
+    }
+
+    void operator()(declaration::Parameter* n) final {
+        if ( ! n->fullyQualifiedID() )
+            setFqID(n, n->id());
+    }
+
+    void operator()(declaration::Property* n) final {
+        if ( ! n->fullyQualifiedID() ) {
+            if ( n->parent<Function>() )
+                setFqID(n, n->id()); // local scope
+            else if ( auto* m = n->parent<declaration::Module>() )
+                setFqID(n, m->scopeID() + n->id()); // global scope
+        }
+    }
+
+    void operator()(declaration::Type* n) final {
+        if ( ! n->fullyQualifiedID() ) {
+            if ( n->parent<Function>() )
+                setFqID(n, n->id()); // local scope
+            else if ( auto* m = n->parent<declaration::Module>() )
+                setFqID(n, m->scopeID() + n->id()); // global scope
+        }
+
+        if ( ! n->declarationIndex() && ! n->type()->alias() ) {
+            auto index = context()->register_(n);
+            recordChange(n->type()->type(), util::fmt("set type's declaration to %s", index));
+        }
+
+        if ( auto* x = n->type()->type()->tryAs<type::Library>();
+             x && ! n->attributes()->find(hilti::attribute::kind::Cxxname) )
+            // Transfer the C++ name into an attribute.
+            n->attributes()->add(context(), builder()->attribute(hilti::attribute::kind::Cxxname,
+                                                                 builder()->stringLiteral(x->cxxName())));
+    }
+
+    void operator()(Expression* n) final {
+        if ( n->isResolved() && ! n->isA<expression::Ctor>() ) {
+            auto ctor = detail::constant_folder::foldExpression(builder(), n);
+            if ( ! ctor ) {
+                n->addError(ctor.error());
+                return;
+            }
+
+            if ( *ctor ) {
+                auto* nexpr = builder()->expressionCtor(*ctor, (*ctor)->meta());
+                replaceNode(n, nexpr);
+            }
+        }
+    }
+
+    void operator()(expression::Keyword* n) final {
+        if ( n->kind() == expression::keyword::Kind::Scope && ! n->type()->isResolved() ) {
+            auto* ntype = builder()->qualifiedType(builder()->typeUnsignedInteger(64), Constness::Const);
+            recordChange(n, ntype);
+            n->setType(context(), ntype);
+        }
+    }
+
+    void operator()(expression::ListComprehension* n) final {
+        if ( ! n->type()->isResolved() && n->output()->isResolved() ) {
+            auto* ntype = builder()->qualifiedType(builder()->typeList(n->output()->type()), Constness::Mutable);
+            recordChange(n, ntype);
+            n->setType(context(), ntype);
+        }
+
+        if ( ! n->local()->type()->isResolved() && n->input()->isResolved() ) {
+            auto* container = n->input()->type();
+            if ( ! container->type()->iteratorType() ) {
+                n->addError("right-hand side of list comprehension is not iterable");
+                return;
+            }
+
+            const auto& et = container->type()->elementType();
+            recordChange(n->local(), et);
+            n->local()->setType(context(), et);
+        }
+    }
+
+
+    void operator()(expression::Name* n) final {
+        if ( ! n->resolvedDeclarationIndex() ) {
+            // If the expression has received a fully qualified ID, we look
+            // that up directly at the root if it's scoped, otherwise the
+            // original ID at the current location.
+            Node* scope_node = n;
+            auto id = n->fullyQualifiedID();
+            if ( id && id.namespace_() )
+                scope_node = builder()->context()->root();
+            else
+                id = n->id();
+
+            auto resolved = scope::lookupID<Declaration>(std::move(id), scope_node, "declaration");
+            if ( resolved ) {
+                auto index = context()->register_(resolved->first);
+                n->setResolvedDeclarationIndex(context(), index);
+                recordChange(n, util::fmt("set resolved declaration to %s", index));
+            }
+            else {
+                // If we are inside a call expression, the name may map to multiple
+                // function declarations (overloads and hooks). We leave it to operator
+                // resolving to figure that out and don't report an error here.
+                auto* op = n->parent()->tryAs<expression::UnresolvedOperator>();
+                if ( ! op || op->kind() != operator_::Kind::Call ) {
+                    if ( n->id() == ID("__dd") )
+                        // Provide better error message
+                        n->addError("$$ is not available in this context", node::ErrorPriority::High);
+                    else if ( n->id() == ID("self") )
+                        n->addError(resolved.error(), node::ErrorPriority::Normal); // let other errors take precedence
+                                                                                    // explaining why we didn't set self
+                    else
+                        n->addError(resolved.error(), node::ErrorPriority::High);
+                }
+            }
+        }
+    }
+
+
+    void operator()(expression::UnresolvedOperator* n) final {
+        if ( n->kind() == operator_::Kind::Cast && n->areOperandsUnified() ) {
+            // We hardcode that a cast<> operator can always perform any
+            // legal coercion. This helps in cases where we need to force a
+            // specific coercion to take place.
+            static const auto* casted_coercion = operator_::get("generic::CastedCoercion");
+            if ( hilti::coerceExpression(builder(), n->operands()[0],
+                                         n->op1()->type()->type()->as<type::Type_>()->typeValue(),
+                                         CoercionStyle::TryAllForMatching | CoercionStyle::ContextualConversion) ) {
+                replaceNode(n, *casted_coercion->instantiate(builder(), n->operands(), n->meta()));
+                return;
+            }
+        }
+
+        // Try to resolve operator.
+
+        std::vector<const Operator*> candidates;
+
+        if ( n->kind() == operator_::Kind::Call ) {
+            if ( ! n->op1()->isResolved() )
+                return;
+
+            auto [valid, functions] = operator_::registry().functionCallCandidates(n);
+            if ( ! valid )
+                return;
+
+            candidates = *functions;
+        }
+
+        else if ( n->areOperandsUnified() ) {
+            if ( n->kind() == operator_::Kind::MemberCall )
+                candidates = operator_::registry().byMethodID(n->op1()->as<expression::Member>()->id());
+            else
+                candidates = operator_::registry().byKind(n->kind());
+        }
+
+        if ( candidates.empty() )
+            return;
+
+        auto matches = matchOperators(n, candidates, n->kind() == operator_::Kind::Cast);
+        if ( matches.empty() )
+            return;
+
+        if ( matches.size() > 1 ) {
+            std::vector<std::string> context = {"candidates:"};
+            for ( const auto& op : matches ) {
+                auto* resolved = op->as<hilti::expression::ResolvedOperator>();
+                context.emplace_back(util::fmt("- %s [%s]", resolved->printSignature(), resolved->operator_().name()));
+            }
+
+            n->addError(util::fmt("operator usage is ambiguous: %s", n->printSignature()), std::move(context));
+            return;
+        }
+
+        if ( auto* match = matches[0]->tryAs<expression::ResolvedOperator>() ) {
+            if ( n->kind() == operator_::Kind::Call ) {
+                if ( auto* ftype = match->op0()->type()->type()->tryAs<type::Function>() )
+                    recordAutoParameters(*ftype, match->op1());
+            }
+
+            if ( n->kind() == operator_::Kind::MemberCall ) {
+                if ( auto* stype = match->op0()->type()->type()->tryAs<type::Struct>() ) {
+                    const auto& id = match->op1()->as<expression::Member>()->id();
+                    if ( auto* field = stype->field(id) ) {
+                        auto* ftype = field->type()->type()->as<type::Function>();
+                        recordAutoParameters(*ftype, match->op2());
+                    }
+                }
+            }
+        }
+
+        replaceNode(n, matches[0]);
+    }
+
+    void operator()(Function* n) final {
+        if ( n->ftype()->result()->isAuto() ) {
+            // Look for a `return` to infer the return type.
+            auto v = visitor::PreOrder();
+            for ( auto* const i : visitor::range(v, n, {}) ) {
+                if ( auto* x = i->tryAs<statement::Return>(); x && x->expression() && x->expression()->isResolved() ) {
+                    const auto& rt = x->expression()->type();
+                    recordChange(n, rt, "auto return");
+                    n->ftype()->setResultType(context(), rt);
+                    break;
+                }
+            }
+        }
+    }
+
+    void operator()(statement::If* n) final {
+        if ( n->init() && ! n->condition() ) {
+            auto* cond = builder()->expressionName(n->init()->id());
+            n->setCondition(context(), cond);
+            recordChange(n, cond);
+        }
+    }
+
+    void operator()(statement::For* n) final {
+        if ( ! n->local()->type()->isResolved() && n->sequence()->isResolved() ) {
+            const auto& t = n->sequence()->type();
+            if ( ! t->type()->iteratorType() ) {
+                n->addError("expression is not iterable");
+                return;
+            }
+
+            const auto& et = t->type()->iteratorType()->type()->dereferencedType();
+            recordChange(n, et);
+            n->local()->setType(context(), et);
+        }
+    }
+
+
+    void operator()(statement::Switch* n) final { n->preprocessCases(context()); }
+
+
+    void operator()(type::bitfield::BitRange* n) final {
+        if ( ! n->fullyQualifiedID() )
+            setFqID(n, n->id()); // local scope
+
+        if ( ! type::isResolved(n->itemType()) ) {
+            auto* t = n->ddType();
+
+            if ( auto* a = n->attributes()->find(hilti::attribute::kind::Convert) )
+                t = (*a->valueAsExpression())->type();
+
+            if ( t->isResolved() ) {
+                recordChange(n, t, "set item type");
+                n->setItemTypeWithOptional(context(),
+                                           builder()->qualifiedType(builder()->typeOptional(t), Constness::Const));
+            }
+        }
+    }
+};
+
+// Pass 3 performs all coercions for expressions, constructors, and statements.
+// It assumes that pass 2 has completed type inference and name/operator
+// resolution, and these uses the resolved types from the AST to apply
+// appropriate coercions.
+struct VisitorPass3 : visitor::MutatingPostOrder {
+    explicit VisitorPass3(Builder* builder) : visitor::MutatingPostOrder(builder, logging::debug::Resolver) {}
 
     // Coerces an expression to a given type, returning the new value if it's
     // changed from the old one. Records an error with the node if coercion is
@@ -328,730 +1135,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         return {nullptr};
     }
 
-    // Records the actual type of an `auto` parameter as inferred from a
-    // concrete argument value passed to it.
-    void recordAutoParameters(const type::Function& ftype, Expression* args) {
-        auto arg = args->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value().begin();
-        std::vector<type::function::Parameter> params;
-        for ( auto& rp : ftype.parameters() ) {
-            auto* p = rp->as<declaration::Parameter>();
-            if ( ! p->type()->isAuto() )
-                continue;
-
-            auto* t = (*arg)->type();
-            if ( ! t->isResolved() )
-                continue;
-
-            assert(p->canonicalID());
-            const auto& i = auto_params.find(p->canonicalID());
-            if ( i == auto_params.end() ) {
-                auto_params.emplace(p->canonicalID(), t);
-                HILTI_DEBUG(logging::debug::Resolver,
-                            util::fmt("recording auto parameter %s as of type %s", p->canonicalID(), *t));
-            }
-            else {
-                if ( i->second != t )
-                    rp->addError("mismatch for auto parameter");
-            }
-
-            ++arg;
-        }
-    }
-
-    // Matches an unresolved operator against a set of operator candidates,
-    // returning instantiations of all matches.
-    Expressions matchOperators(expression::UnresolvedOperator* u, const std::vector<const Operator*>& candidates,
-                               bool disallow_type_changes = false) {
-        const std::array<bitmask<CoercionStyle>, 7> styles = {
-            CoercionStyle::TryExactMatch,
-            CoercionStyle::TryDeref,
-            CoercionStyle::TryCoercionWithinSameType,
-            CoercionStyle::TryCoercion,
-            CoercionStyle::TryConstPromotion,
-            CoercionStyle::TryConstPromotion | CoercionStyle::TryDeref,
-            CoercionStyle::TryConstPromotion | CoercionStyle::TryCoercion,
-        };
-
-        auto coerce_operands = [&](const Operator* candidate, const auto& operands, const auto& expressions,
-                                   bitmask<CoercionStyle> style) {
-            // First, match the operands against the operator's general signature.
-            auto result = coerceOperands(builder(), candidate->kind(), operands, expressions, style);
-            if ( ! result )
-                return result;
-
-            // Then, if the operator provides more specific operands through filtering, match against those as well.
-            if ( auto filtered = candidate->filter(builder(), result->second) ) {
-                assert(filtered->size() == candidate->operands().size());
-                result = coerceOperands(builder(), candidate->kind(), operands, *filtered, style);
-            }
-
-            return result;
-        };
-
-        auto try_candidate = [&](const Operator* candidate, const node::Range<Expression>& operands, auto style,
-                                 const Meta& meta, const auto& dbg_msg) -> Expression* {
-            auto noperands = coerce_operands(candidate, operands, candidate->operands(), style);
-            if ( ! noperands ) {
-                HILTI_DEBUG(logging::debug::Operator, util::fmt("-> cannot coerce operands: %s", noperands.error()));
-                return {};
-            }
-
-            auto r = candidate->instantiate(builder(), noperands->second, meta);
-            if ( ! r ) {
-                u->addError(r.error());
-                return {};
-            }
-
-            // Some operators may not be able to determine their type before the
-            // resolver had a chance to provide the information needed. They will
-            // return "auto" in that case (specifically, that's the case for Spicy
-            // unit member access). Note we can't check if ->isResolved() here
-            // because operators may legitimately return other unresolved types
-            // (e.g., IDs that still need to be looked up).
-            if ( (*r)->type()->isAuto() )
-                return {};
-
-            Expression* resolved = *r;
-
-            // Fold any constants right here in case downstream resolving depends
-            // on finding a constant (like for coercion).
-            if ( auto ctor = detail::constant_folder::fold(builder(), resolved); ctor && *ctor ) {
-                HILTI_DEBUG(logging::debug::Operator,
-                            util::fmt("folded %s -> constant %s (%s)", *resolved, **ctor, resolved->location()));
-                resolved = builder()->expressionCtor(*ctor, resolved->meta());
-            }
-
-            HILTI_DEBUG(logging::debug::Operator, util::fmt("-> %s, resolves to %s", dbg_msg, *resolved))
-            return resolved;
-        };
-
-        auto try_all_candidates = [&](Expressions* resolved, std::set<operator_::Kind>* kinds_resolved,
-                                      operator_::Priority priority) {
-            for ( auto style : styles ) {
-                if ( disallow_type_changes )
-                    style |= CoercionStyle::DisallowTypeChanges;
-
-                HILTI_DEBUG(logging::debug::Operator, util::fmt("style: %s", to_string(style)));
-                logging::DebugPushIndent _(logging::debug::Operator);
-
-                for ( const auto& c : candidates ) {
-                    if ( priority != c->signature().priority )
-                        // Not looking at operators of this priority right now.
-                        continue;
-
-                    if ( priority == operator_::Priority::Low && kinds_resolved->contains(c->kind()) )
-                        // Already have a higher priority match for this operator kind.
-                        continue;
-
-                    HILTI_DEBUG(logging::debug::Operator, util::fmt("candidate: %s (%s)", c->name(), c->print()));
-                    logging::DebugPushIndent _(logging::debug::Operator);
-
-                    if ( auto* r = try_candidate(c, u->operands(), style, u->meta(), "candidate matches") ) {
-                        if ( c->signature().priority == operator_::Priority::Normal )
-                            kinds_resolved->insert(c->kind());
-
-                        resolved->push_back(r);
-                    }
-                    else {
-                        auto operands = u->operands();
-                        // Try to swap the operators for commutative operators.
-                        if ( operator_::isCommutative(c->kind()) && operands.size() == 2 ) {
-                            Nodes new_operands = {operands[1], operands[0]};
-                            if ( auto* r =
-                                     try_candidate(c,
-                                                   hilti::node::Range<Expression>(new_operands.begin(),
-                                                                                  new_operands.end()),
-                                                   style, u->meta(), "candidate matches with operands swapped") ) {
-                                if ( c->signature().priority == operator_::Priority::Normal )
-                                    kinds_resolved->insert(c->kind());
-
-                                resolved->emplace_back(r);
-                            }
-                        }
-                    }
-                }
-
-                if ( resolved->size() )
-                    return;
-            }
-        };
-
-        HILTI_DEBUG(logging::debug::Operator,
-                    util::fmt("trying to resolve: %s (%s)", u->printSignature(), u->location()));
-        logging::DebugPushIndent _(logging::debug::Operator);
-
-        std::set<operator_::Kind> kinds_resolved;
-        Expressions resolved;
-
-        try_all_candidates(&resolved, &kinds_resolved, operator_::Priority::Normal);
-        if ( resolved.size() )
-            return resolved;
-
-        try_all_candidates(&resolved, &kinds_resolved, operator_::Priority::Low);
-        return resolved;
-    }
-
-    void operator()(Attribute* n) final {
-        if ( n->kind() == hilti::attribute::kind::Cxxname && n->hasValue() ) {
-            // Normalize values passed as `&cxxname` so they always are interpreted as FQNs by enforcing leading
-            // `::`.
-            if ( const auto& value = n->valueAsString(); value && ! util::startsWith(*value, "::") ) {
-                auto* a = builder()->attribute(hilti::attribute::kind::Cxxname,
-                                               builder()->stringLiteral(util::fmt("::%s", *value)));
-                replaceNode(n, a);
-            }
-        }
-    }
-
-    void operator()(ctor::Default* n) final {
-        if ( auto* t = skipReferenceType(n->type()); t->isResolved() ) {
-            if ( ! t->type()->parameters().empty() ) {
-                if ( auto x = n->typeArguments(); x.size() ) {
-                    if ( auto coerced = coerceCallArguments(x, t->type()->parameters()); coerced && *coerced ) {
-                        recordChange(n, builder()->ctorTuple(**coerced), "call arguments");
-                        n->setTypeArguments(context(), **coerced);
-                    }
-                }
-            }
-        }
-    }
-
-    void operator()(ctor::List* n) final {
-        if ( ! expression::areResolved(n->value()) )
-            return; // cannot do anything yet
-
-        if ( ! n->type()->isResolved() ) {
-            if ( auto* ntype = typeForExpressions(n, n->value(), n->type()->type()->elementType()) ) {
-                recordChange(n, ntype, "type");
-                n->setType(context(), builder()->qualifiedType(builder()->typeList(ntype), Constness::Mutable));
-            }
-        }
-
-        if ( n->elementType()->type()->isA<type::Unknown>() ) {
-            // If we use a list to initialize another list/set/vector, and
-            // coercion has figured out how to type the list for that coercion
-            // even though the list's type on its own isn't known, then
-            // transfer the container's element type over.
-            if ( auto* parent = n->parent()->tryAs<ctor::Coerced>(); parent && parent->type()->isResolved() ) {
-                QualifiedType* etype = nullptr;
-
-                if ( auto* l = parent->type()->type()->tryAs<type::List>() )
-                    etype = l->elementType();
-                else if ( auto* s = parent->type()->type()->tryAs<type::Set>() )
-                    etype = s->elementType();
-                else if ( auto* v = parent->type()->type()->tryAs<type::Vector>() )
-                    etype = v->elementType();
-
-                if ( etype && ! etype->type()->isA<type::Unknown>() ) {
-                    recordChange(n, util::fmt("set type inferred from container to %s", *etype));
-                    n->setType(context(), builder()->qualifiedType(builder()->typeList(etype), Constness::Const));
-                }
-            }
-        }
-
-        if ( auto coerced = coerceExpressions(n->value(), n->elementType()); coerced && *coerced ) {
-            recordChange(n, builder()->ctorTuple(**coerced), "elements");
-            n->setValue(context(), **coerced);
-        }
-    }
-
-    void operator()(ctor::Map* n) final {
-        for ( const auto& e : n->value() ) {
-            if ( ! (e->key()->isResolved() && e->value()->isResolved()) )
-                return; // cannot do anything yet
-        }
-
-        if ( ! n->type()->isResolved() ) {
-            QualifiedType* key = nullptr;
-            QualifiedType* value = nullptr;
-
-            for ( const auto& e : n->value() ) {
-                if ( ! key )
-                    key = e->key()->type();
-                else if ( ! type::same(e->key()->type(), key) ) {
-                    n->addError("inconsistent key types in map");
-                    return;
-                }
-
-                if ( ! value )
-                    value = e->value()->type();
-                else if ( ! type::same(e->value()->type(), value) ) {
-                    n->addError("inconsistent value types in map");
-                    return;
-                }
-            }
-
-            if ( ! (key && value) ) {
-                // empty map
-                key = builder()->qualifiedType(builder()->typeUnknown(), Constness::Const);
-                value = builder()->qualifiedType(builder()->typeUnknown(), Constness::Const);
-            }
-
-            auto* ntype = builder()->qualifiedType(builder()->typeMap(key, value, n->meta()), Constness::Mutable);
-            if ( ! type::same(ntype, n->type()) ) {
-                recordChange(n, ntype, "type");
-                n->setType(context(), ntype);
-            }
-        }
-
-        bool changed = false;
-        ctor::map::Elements nelems;
-        for ( const auto& e : n->value() ) {
-            auto k = coerceExpression(builder(), e->key(), n->keyType());
-            auto v = coerceExpression(builder(), e->value(), n->valueType());
-            if ( ! (k && v) ) {
-                changed = false;
-                break;
-            }
-
-            if ( k.nexpr || v.nexpr ) {
-                nelems.emplace_back(builder()->ctorMapElement(*k.coerced, *v.coerced));
-                changed = true;
-            }
-            else
-                nelems.push_back(e);
-        }
-
-        if ( changed ) {
-            recordChange(n, builder()->ctorMap(nelems), "value");
-            n->setValue(context(), nelems);
-        }
-    }
-
-    void operator()(ctor::Optional* n) final {
-        if ( ! n->type()->isResolved() && n->value() && n->value()->isResolved() ) {
-            recordChange(n, n->value()->type(), "type");
-            n->setType(context(),
-                       builder()->qualifiedType(builder()->typeOptional(n->value()->type()), Constness::Mutable));
-        }
-    }
-
-    void operator()(ctor::Result* n) final {
-        if ( ! n->type()->isResolved() && n->value()->isResolved() ) {
-            recordChange(n, n->value()->type(), "type");
-            n->setType(context(),
-                       builder()->qualifiedType(builder()->typeResult(n->value()->type()), Constness::Const));
-        }
-    }
-
-    void operator()(ctor::Set* n) final {
-        if ( ! expression::areResolved(n->value()) )
-            return; // cannot do anything yet
-
-        if ( ! n->type()->isResolved() ) {
-            if ( auto* ntype = typeForExpressions(n, n->value(), n->type()->type()->elementType()) ) {
-                recordChange(n, ntype, "type");
-                n->setType(context(), builder()->qualifiedType(builder()->typeSet(ntype), Constness::Mutable));
-            }
-        }
-
-        if ( auto coerced = coerceExpressions(n->value(), n->elementType()); coerced && *coerced ) {
-            recordChange(n, builder()->ctorTuple(**coerced), "elements");
-            n->setValue(context(), **coerced);
-        }
-    }
-
-    void operator()(ctor::Struct* n) final {
-        for ( const auto& f : n->fields() ) {
-            if ( ! f->expression()->isResolved() )
-                return; // cannot do anything yet
-        }
-
-        if ( ! n->type()->isResolved() ) {
-            Declarations fields;
-            for ( const auto& f : n->fields() )
-                fields.emplace_back(builder()->declarationField(f->id(), f->expression()->type(),
-                                                                builder()->attributeSet({}), f->meta()));
-
-            auto* ntype =
-                builder()->qualifiedType(builder()->typeStruct(type::Struct::AnonymousStruct(), fields, n->meta()),
-                                         Constness::Mutable);
-            recordChange(n, ntype, "type");
-            n->setType(context(), ntype);
-        }
-    }
-
-    void operator()(ctor::Tuple* n) final {
-        if ( ! n->type()->isResolved() && expression::areResolved(n->value()) ) {
-            auto elems = n->value() | std::views::transform([](const auto& e) { return e->type(); });
-            auto* t =
-                builder()->qualifiedType(builder()->typeTuple(util::toVector(elems), n->meta()), Constness::Const);
-            recordChange(n, t, "type");
-            n->setType(context(), t);
-        }
-    }
-
-    void operator()(ctor::ValueReference* n) final {
-        if ( ! n->type()->isResolved() && n->expression()->isResolved() ) {
-            auto* t = builder()->typeValueReference(n->expression()->type()->recreateAsNonConst(context()));
-            recordChange(n, t, "type");
-            n->setType(context(), builder()->qualifiedType(t, Constness::Const));
-        }
-    }
-
-    void operator()(ctor::Vector* n) final {
-        if ( ! expression::areResolved(n->value()) )
-            return; // cannot do anything yet
-
-        if ( ! n->type()->isResolved() ) {
-            if ( auto* ntype = typeForExpressions(n, n->value(), n->type()->type()->elementType()) ) {
-                recordChange(n, ntype, "type");
-                n->setType(context(), builder()->qualifiedType(builder()->typeVector(ntype), Constness::Mutable));
-            }
-        }
-
-        if ( auto coerced = coerceExpressions(n->value(), n->elementType()); coerced && *coerced ) {
-            recordChange(n, builder()->ctorTuple(**coerced), "elements");
-            n->setValue(context(), **coerced);
-        }
-    }
-
-    void operator()(Declaration* n) final {
-        if ( ! n->canonicalID() ) {
-            if ( auto* module = n->parent<declaration::Module>() ) {
-                assert(module);
-                auto id = module->uid().unique + n->id();
-                n->setCanonicalID(context()->uniqueCanononicalID(id));
-                recordChange(n, util::fmt("set declaration's canonical ID to %s", n->canonicalID()));
-            }
-        }
-    }
-
-    void operator()(declaration::Constant* n) final {
-        if ( ! n->fullyQualifiedID() ) {
-            if ( n->type()->type()->isNameType() ) {
-                if ( auto tid = n->type()->type()->typeID() )
-                    setFqID(n, tid + n->id());
-            }
-            else if ( n->parent<Function>() )
-                setFqID(n, n->id()); // local scope
-            else if ( auto* m = n->parent<declaration::Module>() )
-                setFqID(n, m->scopeID() + n->id()); // global scope
-        }
-
-        if ( auto* x = coerceTo(n, n->value(), n->type()->recreateAsLhs(context()), false, true) ) {
-            recordChange(n, x, "value");
-            n->setValue(context(), x);
-        }
-    }
-
-    void operator()(declaration::Expression* n) final {
-        if ( ! n->fullyQualifiedID() ) {
-            if ( n->id() == ID("self") || n->id() == ID("__dd") )
-                setFqID(n, n->id()); // local scope
-            else if ( n->parent<Function>() )
-                setFqID(n, n->id()); // local scope
-            else if ( auto* m = n->parent<declaration::Module>() )
-                setFqID(n, m->scopeID() + n->id()); // global scope
-        }
-    }
-
-    void operator()(declaration::Field* n) final {
-        if ( ! n->fullyQualifiedID() ) {
-            if ( auto* ctor = n->parent(3)->tryAs<ctor::Struct>() )
-                // special-case anonymous structs
-                setFqID(n, ctor->uniqueID() + n->id());
-            else if ( auto* ctor = n->parent(3)->tryAs<ctor::Bitfield>() )
-                // special-case anonymous bitfields
-                setFqID(n, ctor->btype()->uniqueID() + n->id());
-            else if ( auto* stype = n->parent()->tryAs<type::Struct>(); stype && stype->typeID() )
-                setFqID(n, stype->typeID() + n->id());
-            else if ( auto* utype = n->parent()->tryAs<type::Union>(); utype && utype->typeID() )
-                setFqID(n, utype->typeID() + n->id());
-        }
-
-        if ( ! n->linkedTypeIndex() ) {
-            auto* t = n->parent()->as<UnqualifiedType>();
-            auto index = context()->register_(t);
-            n->setLinkedTypeIndex(index);
-            recordChange(n, util::fmt("set linked type to %s", index));
-        }
-
-        if ( auto* a = n->attributes()->find(hilti::attribute::kind::Default) ) {
-            auto val = a->valueAsExpression();
-            if ( auto* x = coerceTo(n, *val, n->type(), false, true) ) {
-                recordChange(*val, x, "attribute");
-                n->attributes()->remove(hilti::attribute::kind::Default);
-                n->attributes()->add(context(), builder()->attribute(hilti::attribute::kind::Default, x));
-            }
-        }
-
-        if ( n->type()->type()->isA<type::Function>() && ! n->operator_() && n->parent(3)->isA<declaration::Type>() &&
-             n->type()->type()->isResolved() ) {
-            if ( auto idx = n->linkedTypeIndex(); idx && context()->lookup(idx)->typeID() ) {
-                // We register operators here so that we have the type ID for
-                // the struct available.
-                recordChange(n, "creating member call operator");
-                std::unique_ptr<struct_::MemberCall> op(new struct_::MemberCall(n));
-                n->setOperator(op.get());
-                operator_::registry().register_(std::move(op));
-            }
-        }
-    }
-
-    void operator()(declaration::Function* n) final {
-        if ( ! n->fullyQualifiedID() ) {
-            if ( auto* m = n->parent<declaration::Module>() ) {
-                if ( m->scopeID() == n->id().sub(0) )
-                    setFqID(n, n->id());
-                else
-                    setFqID(n, m->scopeID() + n->id()); // global scope
-            }
-        }
-
-        if ( auto ns = n->id().namespace_() ) {
-            // Link namespaced function to its base type and/or prototype.
-            declaration::Type* linked_type = nullptr;
-            Declaration* linked_prototype = nullptr;
-
-            if ( auto resolved = scope::lookupID<declaration::Type>(std::move(ns), n, "struct type") ) {
-                linked_type = resolved->first;
-
-                for ( const auto& field : linked_type->type()->type()->as<type::Struct>()->fields(n->id().local()) ) {
-                    auto* method_type = field->type()->type()->tryAs<type::Function>();
-                    if ( ! method_type ) {
-                        n->addError(util::fmt("'%s' is not a method of type '%s'", n->id().local(), linked_type->id()));
-                        return;
-                    }
-
-                    if ( areEquivalent(n->function()->ftype(), method_type) )
-                        linked_prototype = field;
-                }
-
-                if ( ! linked_prototype ) {
-                    n->addError(
-                        util::fmt("struct type '%s' has no matching method '%s'", linked_type->id(), n->id().local()));
-                    return;
-                }
-            }
-
-            else {
-                for ( const auto& x : context()->root()->scope()->lookupAll(n->id()) ) {
-                    if ( auto* f = x.node->tryAs<declaration::Function>() ) {
-                        if ( areEquivalent(n->function()->ftype(), f->function()->ftype()) ) {
-                            if ( ! linked_prototype ||
-                                 ! f->function()->body() ) // prefer declarations wo/ implementation
-                                linked_prototype = f;
-                        }
-                    }
-                }
-            }
-
-            if ( linked_type ) {
-                if ( ! n->linkedDeclarationIndex() ) {
-                    auto index = context()->register_(linked_type);
-                    n->setLinkedDeclarationIndex(index);
-                    recordChange(n, util::fmt("set linked declaration to %s", index));
-
-                    n->setLinkage(declaration::Linkage::Struct);
-                    recordChange(n, util::fmt("set linkage to struct"));
-                }
-                else {
-                    assert(linked_type->declarationIndex() ==
-                           n->linkedDeclarationIndex()); // shouldn't changed once bound
-                    assert(n->linkage() == declaration::Linkage::Struct);
-                }
-            }
-
-            if ( linked_prototype ) {
-                if ( ! n->linkedPrototypeIndex() ) {
-                    auto index = context()->register_(linked_prototype);
-                    n->setLinkedPrototypeIndex(index);
-                    recordChange(n, util::fmt("set linked prototype to %s", index));
-                }
-                else
-                    assert(linked_prototype->canonicalID() ==
-                           context()->lookup(n->linkedPrototypeIndex())->canonicalID()); // shouldn't changed once bound
-            }
-        }
-
-        if ( n->linkage() != declaration::Linkage::Struct && ! n->operator_() && n->function()->type()->isResolved() ) {
-            recordChange(n, "creating function call operator");
-            std::unique_ptr<function::Call> op(new function::Call(n));
-            n->setOperator(op.get());
-            operator_::registry().register_(std::move(op));
-        }
-    }
-
-    void operator()(declaration::GlobalVariable* n) final {
-        if ( ! n->fullyQualifiedID() ) {
-            if ( auto* m = n->parent<declaration::Module>() )
-                setFqID(n, m->scopeID() + n->id()); // global scope
-        }
-
-        Expression* init = nullptr;
-        std::optional<Expressions> args;
-
-        if ( auto* e = n->init(); e && ! type::sameExceptForConstness(n->type(), e->type()) ) {
-            if ( auto* x = coerceTo(n, e, n->type(), false, true) )
-                init = x;
-        }
-
-        if ( n->type()->isResolved() && (! n->type()->type()->parameters().empty()) && n->typeArguments().size() ) {
-            auto coerced = coerceCallArguments(n->typeArguments(), n->type()->type()->parameters());
-            if ( coerced && *coerced )
-                args = std::move(*coerced);
-        }
-
-        if ( init || args ) {
-            if ( init ) {
-                recordChange(n, init, "init expression");
-                n->setInit(context(), init);
-            }
-
-            if ( args ) {
-                recordChange(n, builder()->ctorTuple(*args), "type arguments");
-                n->setTypeArguments(context(), std::move(*args));
-            }
-        }
-
-        if ( n->type()->isAuto() ) {
-            if ( auto* init = n->init(); init && init->isResolved() ) {
-                recordChange(n, init->type(), "type");
-                n->setType(context(), init->type());
-            }
-        }
-    }
-
-    void operator()(declaration::ImportedModule* n) final {
-        if ( ! n->fullyQualifiedID() ) {
-            if ( auto* m = n->parent<declaration::Module>() )
-                setFqID(n, m->scopeID() + n->id());
-        }
-
-        if ( ! n->uid() ) {
-            auto* current_module = n->parent<declaration::Module>();
-            assert(current_module);
-
-            auto uid = context()->importModule(builder(), n->id(), n->scope(), n->parseExtension(),
-                                               current_module->uid().process_extension, n->searchDirectories());
-
-            if ( ! uid ) {
-                logger().error(util::fmt("cannot import module '%s': %s", n->id(), uid.error()), n->meta().location());
-                return;
-            }
-
-            recordChange(n, util::fmt("imported module %s", *uid));
-            n->setUID(*uid);
-            current_module->addDependency(*uid);
-
-            if ( ! context()->driver()->driverOptions().skip_dependencies )
-                context()->driver()->registerUnit(Unit::fromExistingUID(context()->driver()->context(), *uid));
-        }
-    }
-
-    void operator()(declaration::LocalVariable* n) final {
-        if ( ! n->fullyQualifiedID() )
-            setFqID(n, n->id()); // local scope
-
-        Expression* init = nullptr;
-        std::optional<Expressions> args;
-
-        if ( auto* e = n->init(); e && ! e->isA<expression::Void>() ) {
-            if ( auto* x = coerceTo(n, e, n->type(), false, true) )
-                init = x;
-        }
-
-        if ( (! n->type()->type()->parameters().empty()) && n->typeArguments().size() ) {
-            auto coerced = coerceCallArguments(n->typeArguments(), n->type()->type()->parameters());
-            if ( coerced && *coerced )
-                args = std::move(*coerced);
-        }
-
-        if ( init || args ) {
-            if ( init ) {
-                recordChange(n, init, "init expression");
-                n->setInit(context(), init);
-            }
-
-            if ( args ) {
-                recordChange(n, builder()->ctorTuple(*args), "type arguments");
-                n->setTypeArguments(context(), std::move(*args));
-            }
-        }
-
-        if ( n->type()->isAuto() ) {
-            if ( auto* init = n->init(); init && init->isResolved() ) {
-                recordChange(n, init->type(), "type");
-                n->setType(context(), init->type());
-            }
-        }
-    }
-
-    void operator()(declaration::Module* n) final {
-        if ( ! n->fullyQualifiedID() )
-            setFqID(n, n->scopeID());
-
-        if ( ! n->canonicalID() ) {
-            n->setCanonicalID(n->uid().unique);
-            recordChange(n, util::fmt("set module's canonical ID to %s", n->canonicalID()));
-        }
-
-        if ( n->moduleProperty("%skip-implementation") )
-            n->setSkipImplementation(true);
-
-        if ( ! n->declarationIndex() ) {
-            auto index = context()->register_(n);
-            recordChange(n, util::fmt("set module's declaration index to %s", index));
-        }
-    }
-
-    void operator()(declaration::Parameter* n) final {
-        if ( ! n->fullyQualifiedID() )
-            setFqID(n, n->id());
-
-        if ( auto* def = n->default_() ) {
-            if ( auto* x = coerceTo(n, def, n->type(), false, true) ) {
-                recordChange(n, x, "default value");
-                n->setDefault(context(), x);
-            }
-        }
-    }
-
-    void operator()(declaration::Property* n) final {
-        if ( ! n->fullyQualifiedID() ) {
-            if ( n->parent<Function>() )
-                setFqID(n, n->id()); // local scope
-            else if ( auto* m = n->parent<declaration::Module>() )
-                setFqID(n, m->scopeID() + n->id()); // global scope
-        }
-    }
-
-    void operator()(declaration::Type* n) final {
-        if ( ! n->fullyQualifiedID() ) {
-            if ( n->parent<Function>() )
-                setFqID(n, n->id()); // local scope
-            else if ( auto* m = n->parent<declaration::Module>() )
-                setFqID(n, m->scopeID() + n->id()); // global scope
-        }
-
-        if ( ! n->declarationIndex() && ! n->type()->alias() ) {
-            auto index = context()->register_(n);
-            recordChange(n->type()->type(), util::fmt("set type's declaration to %s", index));
-        }
-
-        if ( auto* x = n->type()->type()->tryAs<type::Library>();
-             x && ! n->attributes()->find(hilti::attribute::kind::Cxxname) )
-            // Transfer the C++ name into an attribute.
-            n->attributes()->add(context(), builder()->attribute(hilti::attribute::kind::Cxxname,
-                                                                 builder()->stringLiteral(x->cxxName())));
-    }
-
-    void operator()(Expression* n) final {
-        if ( n->isResolved() && ! n->isA<expression::Ctor>() ) {
-            auto ctor = detail::constant_folder::fold(builder(), n);
-            if ( ! ctor ) {
-                n->addError(ctor.error());
-                return;
-            }
-
-            if ( *ctor ) {
-                auto* nexpr = builder()->expressionCtor(*ctor, (*ctor)->meta());
-                replaceNode(n, nexpr);
-            }
-        }
-    }
-
     void operator()(expression::Assign* n) final {
         // Rewrite assignments to map elements to use the `index_assign` operator.
         if ( auto* index_non_const = n->target()->tryAs<operator_::map::IndexNonConst>() ) {
@@ -1104,34 +1187,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
     }
 
-    void operator()(expression::Keyword* n) final {
-        if ( n->kind() == expression::keyword::Kind::Scope && ! n->type()->isResolved() ) {
-            auto* ntype = builder()->qualifiedType(builder()->typeUnsignedInteger(64), Constness::Const);
-            recordChange(n, ntype);
-            n->setType(context(), ntype);
-        }
-    }
-
-    void operator()(expression::ListComprehension* n) final {
-        if ( ! n->type()->isResolved() && n->output()->isResolved() ) {
-            auto* ntype = builder()->qualifiedType(builder()->typeList(n->output()->type()), Constness::Mutable);
-            recordChange(n, ntype);
-            n->setType(context(), ntype);
-        }
-
-        if ( ! n->local()->type()->isResolved() && n->input()->isResolved() ) {
-            auto* container = n->input()->type();
-            if ( ! container->type()->iteratorType() ) {
-                n->addError("right-hand side of list comprehension is not iterable");
-                return;
-            }
-
-            const auto& et = container->type()->elementType();
-            recordChange(n->local(), et);
-            n->local()->setType(context(), et);
-        }
-    }
-
     void operator()(expression::LogicalAnd* n) final {
         if ( auto* x = coerceTo(n, n->op0(), n->type(), true, false) ) {
             recordChange(n, x, "op0");
@@ -1160,43 +1215,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         if ( auto* x = coerceTo(n, n->op1(), n->type(), true, false) ) {
             recordChange(n, x, "op1");
             n->setOp1(context(), x);
-        }
-    }
-
-    void operator()(expression::Name* n) final {
-        if ( ! n->resolvedDeclarationIndex() ) {
-            // If the expression has received a fully qualified ID, we look
-            // that up directly at the root if it's scoped, otherwise the
-            // original ID at the current location.
-            Node* scope_node = n;
-            auto id = n->fullyQualifiedID();
-            if ( id && id.namespace_() )
-                scope_node = builder()->context()->root();
-            else
-                id = n->id();
-
-            auto resolved = scope::lookupID<Declaration>(std::move(id), scope_node, "declaration");
-            if ( resolved ) {
-                auto index = context()->register_(resolved->first);
-                n->setResolvedDeclarationIndex(context(), index);
-                recordChange(n, util::fmt("set resolved declaration to %s", index));
-            }
-            else {
-                // If we are inside a call expression, the name may map to multiple
-                // function declarations (overloads and hooks). We leave it to operator
-                // resolving to figure that out and don't report an error here.
-                auto* op = n->parent()->tryAs<expression::UnresolvedOperator>();
-                if ( ! op || op->kind() != operator_::Kind::Call ) {
-                    if ( n->id() == ID("__dd") )
-                        // Provide better error message
-                        n->addError("$$ is not available in this context", node::ErrorPriority::High);
-                    else if ( n->id() == ID("self") )
-                        n->addError(resolved.error(), node::ErrorPriority::Normal); // let other errors take precedence
-                                                                                    // explaining why we didn't set self
-                    else
-                        n->addError(resolved.error(), node::ErrorPriority::High);
-                }
-            }
         }
     }
 
@@ -1238,95 +1256,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                  coerced && coerced.nexpr ) {
                 recordChange(n, coerced.nexpr, "ternary");
                 n->setFalse(context(), coerced.nexpr);
-            }
-        }
-    }
-
-    void operator()(expression::UnresolvedOperator* n) final {
-        if ( n->kind() == operator_::Kind::Cast && n->areOperandsUnified() ) {
-            // We hardcode that a cast<> operator can always perform any
-            // legal coercion. This helps in cases where we need to force a
-            // specific coercion to take place.
-            static const auto* casted_coercion = operator_::get("generic::CastedCoercion");
-            if ( hilti::coerceExpression(builder(), n->operands()[0],
-                                         n->op1()->type()->type()->as<type::Type_>()->typeValue(),
-                                         CoercionStyle::TryAllForMatching | CoercionStyle::ContextualConversion) ) {
-                replaceNode(n, *casted_coercion->instantiate(builder(), n->operands(), n->meta()));
-                return;
-            }
-        }
-
-        // Try to resolve operator.
-
-        std::vector<const Operator*> candidates;
-
-        if ( n->kind() == operator_::Kind::Call ) {
-            if ( ! n->op1()->isResolved() )
-                return;
-
-            auto [valid, functions] = operator_::registry().functionCallCandidates(n);
-            if ( ! valid )
-                return;
-
-            candidates = *functions;
-        }
-
-        else if ( n->areOperandsUnified() ) {
-            if ( n->kind() == operator_::Kind::MemberCall )
-                candidates = operator_::registry().byMethodID(n->op1()->as<expression::Member>()->id());
-            else
-                candidates = operator_::registry().byKind(n->kind());
-        }
-
-        if ( candidates.empty() )
-            return;
-
-        auto matches = matchOperators(n, candidates, n->kind() == operator_::Kind::Cast);
-        if ( matches.empty() )
-            return;
-
-        if ( matches.size() > 1 ) {
-            std::vector<std::string> context = {"candidates:"};
-            for ( const auto& op : matches ) {
-                auto* resolved = op->as<hilti::expression::ResolvedOperator>();
-                context.emplace_back(util::fmt("- %s [%s]", resolved->printSignature(), resolved->operator_().name()));
-            }
-
-            n->addError(util::fmt("operator usage is ambiguous: %s", n->printSignature()), std::move(context));
-            return;
-        }
-
-        if ( auto* match = matches[0]->tryAs<expression::ResolvedOperator>() ) {
-            if ( n->kind() == operator_::Kind::Call ) {
-                if ( auto* ftype = match->op0()->type()->type()->tryAs<type::Function>() )
-                    recordAutoParameters(*ftype, match->op1());
-            }
-
-            if ( n->kind() == operator_::Kind::MemberCall ) {
-                if ( auto* stype = match->op0()->type()->type()->tryAs<type::Struct>() ) {
-                    const auto& id = match->op1()->as<expression::Member>()->id();
-                    if ( auto* field = stype->field(id) ) {
-                        auto* ftype = field->type()->type()->as<type::Function>();
-                        recordAutoParameters(*ftype, match->op2());
-                    }
-                }
-            }
-        }
-
-        replaceNode(n, matches[0]);
-    }
-
-    void operator()(Function* n) final {
-        if ( n->ftype()->result()->isAuto() ) {
-            // Look for a `return` to infer the return type.
-            auto v = visitor::PreOrder();
-            for ( auto* const i : visitor::range(v, n, {}) ) {
-                if ( auto* x = i->tryAs<statement::Return>(); x && x->expression() && x->expression()->isResolved() ) {
-                    const auto& rt = x->expression()->type();
-                    recordChange(n, rt, "auto return");
-                    n->ftype()->setResultType(context(), rt);
-                    break;
-                }
             }
         }
     }
@@ -1493,20 +1422,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
     }
 
-    void operator()(statement::For* n) final {
-        if ( ! n->local()->type()->isResolved() && n->sequence()->isResolved() ) {
-            const auto& t = n->sequence()->type();
-            if ( ! t->type()->iteratorType() ) {
-                n->addError("expression is not iterable");
-                return;
-            }
-
-            const auto& et = t->type()->iteratorType()->type()->dereferencedType();
-            recordChange(n, et);
-            n->local()->setType(context(), et);
-        }
-    }
-
     void operator()(statement::Return* n) final {
         auto* func = n->parent<Function>();
         if ( ! func ) {
@@ -1524,8 +1439,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
     }
 
-    void operator()(statement::Switch* n) final { n->preprocessCases(context()); }
-
     void operator()(statement::While* n) final {
         if ( auto* cond = n->condition() ) {
             if ( auto* x = coerceTo(n, cond, builder()->qualifiedType(builder()->typeBool(), Constness::Const), true,
@@ -1536,23 +1449,157 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
     }
 
-    void operator()(type::bitfield::BitRange* n) final {
-        if ( ! n->fullyQualifiedID() )
-            setFqID(n, n->id()); // local scope
+    void operator()(ctor::Default* n) final {
+        // If a type is a reference type, dereference it; otherwise return the type itself.
+        auto skip_ref = [](QualifiedType* t) -> QualifiedType* {
+            if ( t && t->type()->isReferenceType() )
+                return t->type()->dereferencedType();
+            else
+                return t;
+        };
 
-        if ( ! type::isResolved(n->itemType()) ) {
-            auto* t = n->ddType();
-
-            if ( auto* a = n->attributes()->find(hilti::attribute::kind::Convert) )
-                t = (*a->valueAsExpression())->type();
-
-            if ( t->isResolved() ) {
-                recordChange(n, t, "set item type");
-                n->setItemTypeWithOptional(context(),
-                                           builder()->qualifiedType(builder()->typeOptional(t), Constness::Const));
+        if ( auto* t = skip_ref(n->type()); t->isResolved() ) {
+            if ( ! t->type()->parameters().empty() ) {
+                if ( auto x = n->typeArguments(); x.size() ) {
+                    if ( auto coerced = coerceCallArguments(x, t->type()->parameters()); coerced && *coerced ) {
+                        recordChange(n, builder()->ctorTuple(**coerced), "call arguments");
+                        n->setTypeArguments(context(), **coerced);
+                    }
+                }
             }
         }
+    }
 
+    void operator()(ctor::List* n) final {
+        if ( auto coerced = coerceExpressions(n->value(), n->elementType()); coerced && *coerced ) {
+            recordChange(n, builder()->ctorTuple(**coerced), "elements");
+            n->setValue(context(), **coerced);
+        }
+    }
+
+    void operator()(ctor::Map* n) final {
+        bool changed = false;
+        ctor::map::Elements nelems;
+        for ( const auto& e : n->value() ) {
+            auto k = coerceExpression(builder(), e->key(), n->keyType());
+            auto v = coerceExpression(builder(), e->value(), n->valueType());
+            if ( ! (k && v) ) {
+                changed = false;
+                break;
+            }
+
+            if ( k.nexpr || v.nexpr ) {
+                nelems.emplace_back(builder()->ctorMapElement(*k.coerced, *v.coerced));
+                changed = true;
+            }
+            else
+                nelems.push_back(e);
+        }
+
+        if ( changed ) {
+            recordChange(n, builder()->ctorMap(nelems), "value");
+            n->setValue(context(), nelems);
+        }
+    }
+
+    void operator()(ctor::Set* n) final {
+        if ( auto coerced = coerceExpressions(n->value(), n->elementType()); coerced && *coerced ) {
+            recordChange(n, builder()->ctorTuple(**coerced), "elements");
+            n->setValue(context(), **coerced);
+        }
+    }
+
+    void operator()(ctor::Vector* n) final {
+        if ( auto coerced = coerceExpressions(n->value(), n->elementType()); coerced && *coerced ) {
+            recordChange(n, builder()->ctorTuple(**coerced), "elements");
+            n->setValue(context(), **coerced);
+        }
+    }
+
+    void operator()(declaration::Constant* n) final {
+        if ( auto* x = coerceTo(n, n->value(), n->type()->recreateAsLhs(context()), false, true) ) {
+            recordChange(n, x, "value");
+            n->setValue(context(), x);
+        }
+    }
+
+    void operator()(declaration::Field* n) final {
+        if ( auto* a = n->attributes()->find(hilti::attribute::kind::Default) ) {
+            auto val = a->valueAsExpression();
+            if ( auto* x = coerceTo(n, *val, n->type(), false, true) ) {
+                recordChange(*val, x, "attribute");
+                n->attributes()->remove(hilti::attribute::kind::Default);
+                n->attributes()->add(context(), builder()->attribute(hilti::attribute::kind::Default, x));
+            }
+        }
+    }
+
+    void operator()(declaration::GlobalVariable* n) final {
+        Expression* init = nullptr;
+        std::optional<Expressions> args;
+
+        if ( auto* e = n->init(); e && ! type::sameExceptForConstness(n->type(), e->type()) ) {
+            if ( auto* x = coerceTo(n, e, n->type(), false, true) )
+                init = x;
+        }
+
+        if ( n->type()->isResolved() && (! n->type()->type()->parameters().empty()) && n->typeArguments().size() ) {
+            auto coerced = coerceCallArguments(n->typeArguments(), n->type()->type()->parameters());
+            if ( coerced && *coerced )
+                args = std::move(*coerced);
+        }
+
+        if ( init || args ) {
+            if ( init ) {
+                recordChange(n, init, "init expression");
+                n->setInit(context(), init);
+            }
+
+            if ( args ) {
+                recordChange(n, builder()->ctorTuple(*args), "type arguments");
+                n->setTypeArguments(context(), std::move(*args));
+            }
+        }
+    }
+
+    void operator()(declaration::LocalVariable* n) final {
+        Expression* init = nullptr;
+        std::optional<Expressions> args;
+
+        if ( auto* e = n->init(); e && ! e->isA<expression::Void>() ) {
+            if ( auto* x = coerceTo(n, e, n->type(), false, true) )
+                init = x;
+        }
+
+        if ( (! n->type()->type()->parameters().empty()) && n->typeArguments().size() ) {
+            auto coerced = coerceCallArguments(n->typeArguments(), n->type()->type()->parameters());
+            if ( coerced && *coerced )
+                args = std::move(*coerced);
+        }
+
+        if ( init || args ) {
+            if ( init ) {
+                recordChange(n, init, "init expression");
+                n->setInit(context(), init);
+            }
+
+            if ( args ) {
+                recordChange(n, builder()->ctorTuple(*args), "type arguments");
+                n->setTypeArguments(context(), std::move(*args));
+            }
+        }
+    }
+
+    void operator()(declaration::Parameter* n) final {
+        if ( auto* def = n->default_() ) {
+            if ( auto* x = coerceTo(n, def, n->type(), false, true) ) {
+                recordChange(n, x, "default value");
+                n->setDefault(context(), x);
+            }
+        }
+    }
+
+    void operator()(type::bitfield::BitRange* n) final {
         if ( n->ctorValue() ) {
             if ( auto* x = coerceTo(n, n->ctorValue(), n->itemType(), false, true) ) {
                 recordChange(n, x, "bits value");
@@ -1562,9 +1609,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 };
 
-// Pass 3 resolves any auto parameters that we inferred during the previous resolver pass.
-struct VisitorPass3 : visitor::MutatingPostOrder {
-    VisitorPass3(Builder* builder, const ::VisitorPass2& v)
+// Pass 4 resolves any auto parameters that we inferred during the previous resolver pass.
+struct VisitorPass4 : visitor::MutatingPostOrder {
+    VisitorPass4(Builder* builder, const ::VisitorPass2& v)
         : visitor::MutatingPostOrder(builder, logging::debug::Resolver), resolver(v) {}
 
     const ::VisitorPass2& resolver;
@@ -1607,17 +1654,37 @@ struct VisitorPass3 : visitor::MutatingPostOrder {
 
 } // anonymous namespace
 
-bool detail::resolver::resolve(Builder* builder, Node* root) {
+bool detail::resolver::resolve(Builder* builder, Node* node) {
     util::timing::Collector _("hilti/compiler/ast/resolver");
 
     auto v1 = VisitorPass1(builder);
-    hilti::visitor::visit(v1, root);
+    hilti::visitor::visit(v1, node);
 
-    auto v2 = VisitorPass2(builder, root);
-    hilti::visitor::visit(v2, root);
+    auto v2 = VisitorPass2(builder);
+    hilti::visitor::visit(v2, node);
 
-    auto v3 = VisitorPass3(builder, v2);
-    hilti::visitor::visit(v3, root);
+    auto v3 = VisitorPass3(builder);
+    hilti::visitor::visit(v3, node);
 
-    return v1.isModified() || v2.isModified() || v3.isModified();
+    auto v4 = VisitorPass4(builder, v2);
+    hilti::visitor::visit(v4, node);
+
+    return v1.isModified() || v2.isModified() || v3.isModified() || v4.isModified();
+}
+
+bool detail::resolver::coerce(Builder* builder, Node* node) {
+    util::timing::Collector _("hilti/compiler/ast/resolver");
+
+    bool ever_modified = false;
+
+    while ( true ) {
+        // Pass 3 is in charge of coercion.
+        auto v3 = VisitorPass3(builder);
+        hilti::visitor::visit(v3, node);
+
+        if ( v3.isModified() )
+            ever_modified = true;
+        else
+            return ever_modified;
+    }
 }

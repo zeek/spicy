@@ -23,12 +23,52 @@ public:
     auto operator_() const { return _operator; }
 
     /**
+     * Returns the type declaration that's semantically linked to this
+     * function. For non-inline methods and hooks, the resolver sets the linked
+     * declaration to the declaration of the struct type the method belongs to.
+     *
+     * This is a short-cut to manually querying the context for the declaration
+     * with the index returned by `linkedDeclarationIndex()`.
+     *
+     * @param ctx AST context to use for the lookup
+     * @return linked type, or nullptr if none
+     */
+    declaration::Type* linkedDeclaration(ASTContext* ctx) const {
+        if ( _linked_declaration_index ) {
+            auto* decl = ctx->lookup(_linked_declaration_index);
+            return decl->as<declaration::Type>();
+        }
+        else
+            return nullptr;
+    }
+
+    /**
      * Returns the declaration index of a type declaration that's semantically
-     * linked to this function declaration. That could for example be the
-     * struct type for methods or hooks. Note that this is different from the
-     * function's own declaration.
+     * linked to this function declaration. For non-inline methods and hooks,
+     * the resolver sets the linked declaration to the declaration of the
+     * struct type the method belongs to.
      */
     auto linkedDeclarationIndex() const { return _linked_declaration_index; }
+
+    /**
+     * Returns the function declaration that's linked to this function as its
+     * prototype. This is set by the resolver when a function's prototype is
+     * separate from its implementation.
+     *
+     * This is a short-cut to manually querying the context for the declaration
+     * with the index returned by `linkedPrototypeIndex()`.
+     *
+     * @param ctx AST context to use for the lookup
+     * @return linked function, or nullptr if none
+     */
+    declaration::Function* linkedPrototype(ASTContext* ctx) const {
+        if ( _linked_prototype_index ) {
+            auto* decl = ctx->lookup(_linked_prototype_index);
+            return decl->as<declaration::Function>();
+        }
+        else
+            return nullptr;
+    }
 
     /**
      * Returns the index of a function declaration that's prototyping this
@@ -52,7 +92,7 @@ public:
      * Returns the ID for the function declaration, regardless of the module which
      * it was implemented in. Only valid once the AST has been resolved.
      */
-    ID functionID(ASTContext* ctx);
+    ID functionID(ASTContext* ctx) const;
 
     std::string_view displayName() const final { return "function"; }
 

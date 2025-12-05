@@ -5,14 +5,12 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
+#include <deque>
 #include <functional>
 #include <iterator>
-#include <map>
 #include <optional>
 #include <ranges>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -68,6 +66,7 @@
 #include <hilti/ast/types/reference.h>
 #include <hilti/ast/types/struct.h>
 #include <hilti/ast/visitor.h>
+#include <hilti/base/timing.h>
 #include <hilti/base/util.h>
 #include <hilti/hilti/ast/types/bytes.h>
 #include <hilti/hilti/ast/types/list.h>
@@ -76,7 +75,9 @@
 #include <hilti/hilti/ast/types/stream.h>
 #include <hilti/hilti/ast/types/vector.h>
 
-namespace hilti::detail::cfg {
+using namespace hilti;
+using namespace hilti::detail;
+using namespace hilti::detail::cfg;
 
 std::deque<GraphNode> CFG::postorder() const {
     std::deque<GraphNode> sorted;
@@ -118,6 +119,8 @@ static bool contains(const Node& outer, const Node& inner) {
 
 CFG::CFG(const Node* root)
     : _begin(_getOrAddNode(_createMetaNode<Start>())), _end(_getOrAddNode(_createMetaNode<End>(root))) {
+    util::timing::Collector _1("hilti/compiler/cfg");
+
     assert(root && root->isA<statement::Block>() && "only building from blocks currently supported");
 
     _begin = _addGlobals(_begin, *root);
@@ -135,7 +138,7 @@ CFG::CFG(const Node* root)
         std::set<uintptr_t> dead_ends;
 
         for ( const auto& [id, n] : _graph.nodes() ) {
-            if ( n->isA<End>() && _graph.neighborsUpstream(id).empty() )
+            if ( n.value->isA<End>() && n.neighbors_upstream.empty() )
                 dead_ends.insert(id);
         }
 
@@ -309,7 +312,7 @@ GraphNode CFG::_addBlock(GraphNode predecessor, const Nodes& stmts, const Node* 
 
             // We might have added a dead edge to a `ScopeEnd` with
             // `add_block`, clean it up again.
-            if ( x.value() && x->isA<End>() )
+            if ( x.get() && x->isA<End>() )
                 _graph.removeNode(x->identity());
 
             predecessor = cc;
@@ -496,7 +499,7 @@ GraphNode CFG::_getOrAddNode(GraphNode n) {
 }
 
 void CFG::_addEdge(const GraphNode& from, const GraphNode& to) {
-    if ( ! from.value() || ! to.value() )
+    if ( ! from.get() || ! to.get() )
         return;
 
     // The end node does not have outgoing edges.
@@ -512,7 +515,7 @@ void CFG::_addEdge(const GraphNode& from, const GraphNode& to) {
     }
 }
 
-void detail::cfg::CFG::removeNode(Node* node) {
+void CFG::removeNode(Node* node) {
     auto id = node->identity();
 
     const auto& out = _graph.neighborsDownstream(id);
@@ -536,9 +539,9 @@ std::string CFG::dot(bool omit_dataflow) const {
 
     std::vector<GraphNode> sorted_nodes;
     std::transform(_graph.nodes().begin(), _graph.nodes().end(), std::back_inserter(sorted_nodes),
-                   [](const auto& p) { return p.second; });
+                   [](const auto& p) { return p.second.value; });
     std::ranges::sort(sorted_nodes, [](const GraphNode& a, const GraphNode& b) {
-        return a.value() && b.value() && a->identity() < b->identity();
+        return a.get() && b.get() && a->identity() < b->identity();
     });
 
     auto escape = [](std::string_view s) { return rt::escapeUTF8(s, rt::render_style::UTF8::EscapeQuotes); };
@@ -722,7 +725,7 @@ struct DataflowVisitor : visitor::PreOrder {
 
     void operator()(Expression* expression) override {
         // If the top-level CFG node is an expression we are looking at an expression for control flow -- keep it.
-        if ( expression == root.value() )
+        if ( expression == root.get() )
             transfer.keep = true;
     }
 
@@ -736,7 +739,7 @@ struct DataflowVisitor : visitor::PreOrder {
              decl->isA<declaration::Type>() )
             return;
 
-        auto* node = root.value();
+        auto* node = root.get();
         // If the statement was a simple `Expression` unwrap it to get the more specific node.
         if ( auto* expr = node->tryAs<statement::Expression>() )
             node = expr->expression();
@@ -769,7 +772,7 @@ struct DataflowVisitor : visitor::PreOrder {
                         transfer.read.insert(decl);
                 }
                 node = node->parent();
-            } while ( node && node != root.value() );
+            } while ( node && node != root.get() );
         }
 
         if ( node->isA<expression::Assign>() ) {
@@ -825,7 +828,7 @@ struct DataflowVisitor : visitor::PreOrder {
             if ( ! name )
                 return nullptr;
 
-            auto lookup = scope::lookupID<Declaration>(name->id(), root.value(), "declaration");
+            auto lookup = scope::lookupID<Declaration>(name->id(), root.get(), "declaration");
             if ( ! lookup )
                 return nullptr;
 
@@ -913,15 +916,15 @@ void CFG::_populateDataflow() {
             return {};
 
         auto v = DataflowVisitor(n);
-        visitor::visit(v, n.value());
+        visitor::visit(v, n.get());
 
         return std::move(v.transfer);
     };
 
     // Populate uses and the gen sets.
     for ( const auto& [id, n] : _graph.nodes() ) {
-        if ( n.value() )
-            _dataflow[n] = visit_node(n);
+        if ( n.value.get() )
+            _dataflow[n.value] = visit_node(n.value);
     }
 
     { // Encode aliasing information.
@@ -932,7 +935,7 @@ void CFG::_populateDataflow() {
         for ( const auto& [n, transfer] : _dataflow ) {
             for ( const auto& alias : transfer.maybe_alias ) {
                 const auto* stmt = _graph.getNode(alias->identity());
-                if ( ! stmt || ! stmt->value() || ! _dataflow.contains(*stmt) )
+                if ( ! stmt || ! stmt->get() || ! _dataflow.contains(*stmt) )
                     util::detail::internalError(
                         util::fmt("could not find CFG node for '%s' aliased in '%s'", alias->print(), n->print()));
 
@@ -954,7 +957,7 @@ void CFG::_populateDataflow() {
         for ( auto& [n, transfer] : _dataflow ) {
             for ( const auto* r : transfer.read ) {
                 const auto* stmt = _graph.getNode(r->identity());
-                if ( ! stmt || ! stmt->value() || ! _dataflow.contains(*stmt) )
+                if ( ! stmt || ! stmt->get() || ! _dataflow.contains(*stmt) )
                     continue;
 
                 for ( auto* alias : _dataflow.at(*stmt).maybe_alias )
@@ -963,7 +966,7 @@ void CFG::_populateDataflow() {
 
             for ( const auto* w : transfer.write ) {
                 const auto* stmt = _graph.getNode(w->identity());
-                if ( ! stmt || ! stmt->value() || ! _dataflow.contains(*stmt) )
+                if ( ! stmt || ! stmt->get() || ! _dataflow.contains(*stmt) )
                     continue;
 
                 for ( auto* alias : _dataflow.at(*stmt).maybe_alias )
@@ -983,7 +986,7 @@ void CFG::_populateDataflow() {
 
             // Populate the in set.
             std::map<Declaration*, std::set<GraphNode>> new_in;
-            for ( auto& pid : _graph.neighborsUpstream(*id) ) {
+            for ( const auto& pid : _graph.neighborsUpstream(*id) ) {
                 const auto* p = _graph.getNode(pid);
                 if ( ! p )
                     util::detail::internalError(util::fmt(R"(CFG node "%s" is unknown)", pid));
@@ -1067,7 +1070,7 @@ void CFG::_populateDataflow() {
 
 // Helper function to output control flow graphs for statements.
 static std::string dataflowDot(const hilti::Statement& stmt) {
-    auto cfg = hilti::detail::cfg::CFG(&stmt);
+    auto cfg = CFG(&stmt);
 
     auto omit_dataflow = false;
     if ( const auto& env = rt::getenv("HILTI_OPTIMIZER_OMIT_CFG_DATAFLOW") )
@@ -1094,9 +1097,7 @@ public:
     }
 };
 
-void dump(logging::DebugStream stream, ASTRoot* root) {
+void cfg::dump(logging::DebugStream stream, ASTRoot* root) {
     auto v = PrintCfgVisitor(std::move(stream));
     visitor::visit(v, root);
 }
-
-} // namespace hilti::detail::cfg

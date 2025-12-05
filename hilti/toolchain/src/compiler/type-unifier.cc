@@ -173,9 +173,13 @@ public:
 // Unifies all types in an AST.
 class VisitorTypeUnifier : public visitor::MutatingPostOrder {
 public:
-    explicit VisitorTypeUnifier(ASTContext* ctx) : visitor::MutatingPostOrder(ctx, logging::debug::TypeUnifier) {}
+    explicit VisitorTypeUnifier(ASTContext* ctx, bool validate_only)
+        : visitor::MutatingPostOrder(ctx, logging::debug::TypeUnifier), validate_only(validate_only) {}
 
     type_unifier::Unifier unifier;
+    bool validate_only;
+
+    bool validation_result = true;
 
     void operator()(UnqualifiedType* n) final {
         if ( n->unification() )
@@ -193,8 +197,19 @@ public:
             logger().internalError("empty type _serialization for unification, type not implemented?");
         }
 
-        n->setUnification(type::Unification(serial));
-        recordChange(n, util::fmt("unified type: %s", n->unification().str()));
+        if ( validate_only ) {
+            if ( type::Unification(serial) != n->unification() ) {
+                HILTI_DEBUG(logging::debug::TypeUnifier,
+                            util::fmt("validation: type unification out of date for type %s: have %s, need %s",
+                                      n->typename_(), n->unification().str(), serial));
+
+                validation_result = false;
+            }
+        }
+        else {
+            n->setUnification(type::Unification(serial));
+            recordChange(n, util::fmt("unified type: %s", n->unification().str()));
+        }
     }
 };
 
@@ -259,11 +274,18 @@ void type_unifier::Unifier::add(QualifiedType* t) {
 void type_unifier::Unifier::add(const std::string& s) { _serial += s; }
 
 // Public entry function going through all plugins.
-bool type_unifier::unify(Builder* builder, ASTRoot* root) {
+bool type_unifier::unify(Builder* builder, Node* node) {
     util::timing::Collector _("hilti/compiler/ast/type-unifier");
 
-    return hilti::visitor::visit(VisitorTypeUnifier(builder->context()), root, {},
+    return hilti::visitor::visit(VisitorTypeUnifier(builder->context(), false), node, {},
                                  [](const auto& v) { return v.isModified(); });
+}
+
+bool type_unifier::check(Builder* builder, ASTRoot* root) {
+    util::timing::Collector _("hilti/compiler/ast/type-unifier");
+
+    return hilti::visitor::visit(VisitorTypeUnifier(builder->context(), true), root, {},
+                                 [](const auto& v) { return v.validation_result; });
 }
 
 // Public entry function going through all plugins.
@@ -271,7 +293,7 @@ bool type_unifier::unify(ASTContext* ctx, UnqualifiedType* type) {
     util::timing::Collector _("hilti/compiler/ast/type-unifier");
 
     if ( ! type->unification() )
-        hilti::visitor::visit(VisitorTypeUnifier(ctx), type);
+        hilti::visitor::visit(VisitorTypeUnifier(ctx, false), type);
 
     return type->unification();
 }

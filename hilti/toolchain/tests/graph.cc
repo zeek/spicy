@@ -19,10 +19,16 @@ TEST_CASE("DirectedGraph") {
 
     auto n1 = g.addNode(11, g.nodes().size() + 1);
     auto n2 = g.addNode(22, g.nodes().size() + 1);
-    auto e = g.addEdge(n1, n2);
 
     CHECK_EQ(g.nodes().size(), 2);
-    CHECK_EQ(g.nodes(), std::unordered_map<G::NodeId, int>{{n1, 11}, {n2, 22}});
+    CHECK_EQ(g.nodes().at(n1).value, 11);
+    CHECK_EQ(g.nodes().at(n2).value, 22);
+    CHECK(g.nodes().at(n1).neighbors_upstream.empty());
+    CHECK(g.nodes().at(n1).neighbors_downstream.empty());
+    CHECK(g.nodes().at(n2).neighbors_upstream.empty());
+    CHECK(g.nodes().at(n2).neighbors_downstream.empty());
+
+    auto e = g.addEdge(n1, n2);
 
     auto n1_ = g.addNode(11, g.nodes().size() + 1);
     CHECK_EQ(n1, n1_);
@@ -34,6 +40,9 @@ TEST_CASE("DirectedGraph") {
     const auto* i2 = g.getNode(n2);
     REQUIRE(i2);
     CHECK_EQ(*i2, 22);
+
+    CHECK_EQ(g.getNodeId(11), n1);
+    CHECK_EQ(g.getNodeId(22), n2);
 
     auto ee = g.getEdge(e);
     REQUIRE(ee);

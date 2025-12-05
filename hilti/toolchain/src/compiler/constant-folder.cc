@@ -1,7 +1,5 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-#include <optional>
-
 #include <hilti/rt/safe-math.h>
 
 #include <hilti/ast/builder/builder.h>
@@ -16,17 +14,23 @@
 #include <hilti/base/result.h>
 #include <hilti/base/util.h>
 #include <hilti/compiler/detail/constant-folder.h>
+#include <hilti/compiler/detail/optimizer/optimizer.h>
 
 using namespace hilti;
+using namespace hilti::detail::constant_folder;
+
+namespace hilti::logging::debug {
+inline const hilti::logging::DebugStream Resolver("resolver");
+} // namespace hilti::logging::debug
 
 namespace {
 
 // Internal version of _foldConstant() that passes exceptions through to caller.
-static Result<Ctor*> foldConstant(Builder* builder, Expression* expr);
+static Result<Ctor*> foldConstant(Builder* builder, Expression* expr, bitmask<Style> style);
 
 template<typename Ctor>
-Result<Ctor*> foldConstant(Builder* builder, Expression* expr) {
-    auto ctor = foldConstant(builder, expr);
+Result<Ctor*> foldConstant(Builder* builder, Expression* expr, bitmask<Style> style) {
+    auto ctor = foldConstant(builder, expr, style);
     if ( ! ctor )
         return ctor.error();
 
@@ -41,16 +45,18 @@ Result<Ctor*> foldConstant(Builder* builder, Expression* expr) {
 // need to turn type constructor expressions coming with a single argument into
 // ctor expressions.
 struct VisitorConstantFolder : public visitor::PreOrder {
-    VisitorConstantFolder(Builder* builder) : builder(builder) {}
+    VisitorConstantFolder(Builder* builder, bitmask<Style> style) : builder(builder), style(style) {}
 
     Builder* builder;
+    bitmask<Style> style;
+
     Ctor* result = nullptr;
 
     // Helper to replace an type constructor expression that receives a
     // constant argument with a corresponding ctor expression.
     template<typename Ctor, typename OperatorPtr, typename Fn>
     hilti::Ctor* tryReplaceCtorExpression(const OperatorPtr& op, Fn cb) {
-        if ( auto ctor = foldConstant<Ctor>(builder, callArgument(op, 0)) ) {
+        if ( auto ctor = foldConstant<Ctor>(builder, callArgument(op, 0), style) ) {
             auto x = cb(*ctor);
             x->setMeta(op->meta());
             return x;
@@ -94,31 +100,31 @@ struct VisitorConstantFolder : public visitor::PreOrder {
     }
 
     void operator()(operator_::signed_integer::SignNeg* n) final {
-        if ( auto op = foldConstant<ctor::SignedInteger>(builder, n->op0()) )
+        if ( auto op = foldConstant<ctor::SignedInteger>(builder, n->op0(), style) )
             result = builder->ctorSignedInteger(-(*op)->value(), (*op)->width(), n->meta());
     }
 
     void operator()(expression::Grouping* n) final {
-        if ( auto x = foldConstant(builder, n->expression()) )
+        if ( auto x = foldConstant(builder, n->expression(), style) )
             result = *x;
     }
 
     void operator()(expression::LogicalOr* n) final {
-        auto op0 = foldConstant<ctor::Bool>(builder, n->op0());
-        auto op1 = foldConstant<ctor::Bool>(builder, n->op1());
+        auto op0 = foldConstant<ctor::Bool>(builder, n->op0(), style);
+        auto op1 = foldConstant<ctor::Bool>(builder, n->op1(), style);
         if ( op0 && op1 )
             result = builder->ctorBool((*op0)->value() || (*op1)->value(), n->meta());
     }
 
     void operator()(expression::LogicalAnd* n) final {
-        auto op0 = foldConstant<ctor::Bool>(builder, n->op0());
-        auto op1 = foldConstant<ctor::Bool>(builder, n->op1());
+        auto op0 = foldConstant<ctor::Bool>(builder, n->op0(), style);
+        auto op1 = foldConstant<ctor::Bool>(builder, n->op1(), style);
         if ( op0 && op1 )
             result = builder->ctorBool((*op0)->value() && (*op1)->value(), n->meta());
     }
 
     void operator()(expression::LogicalNot* n) final {
-        if ( auto op = foldConstant<ctor::Bool>(builder, n->expression()) )
+        if ( auto op = foldConstant<ctor::Bool>(builder, n->expression(), style) )
             result = builder->ctorBool(! (*op)->value(), n->meta());
     }
 
@@ -126,12 +132,7 @@ struct VisitorConstantFolder : public visitor::PreOrder {
         if ( ! n->resolvedDeclarationIndex() )
             return;
 
-        // We cannot fold the optimizer's feature constants currently because
-        // that would mess up its state tracking. We continue to let the
-        // optimizer handle expressions involving these.
-        //
-        // TODO(robin): Can we unify this?
-        if ( util::startsWith(n->id().local(), "__feat") )
+        if ( hilti::detail::Optimizer::isFeatureFlag(n->id()) && ! (style & Style::InlineFeatureConstants) )
             return;
 
         auto* decl = n->resolvedDeclaration();
@@ -139,22 +140,34 @@ struct VisitorConstantFolder : public visitor::PreOrder {
         if ( ! const_ )
             return;
 
-        auto x = foldConstant(builder, const_->value());
+        auto x = foldConstant(builder, const_->value(), style);
         if ( ! x )
             return;
 
         result = *x;
     }
 
+    void operator()(expression::Ternary* n) final {
+        if ( ! (style & Style::FoldTernaryOperator) )
+            return;
+
+        if ( auto bool_ = foldConstant<ctor::Bool>(builder, n->condition(), style) ) {
+            auto* true_ = n->true_()->tryAs<expression::Ctor>();
+            auto* false_ = n->false_()->tryAs<expression::Ctor>();
+            if ( true_ && false_ )
+                result = ((*bool_)->value() ? true_->ctor() : false_->ctor());
+        }
+    }
+
     void operator()(operator_::unsigned_integer::SignNeg* n) final {
-        auto op = foldConstant<ctor::UnsignedInteger>(builder, n->op0());
+        auto op = foldConstant<ctor::UnsignedInteger>(builder, n->op0(), style);
         if ( op )
             result =
                 builder->ctorSignedInteger(hilti::rt::integer::safe_negate((*op)->value()), (*op)->width(), n->meta());
     }
 
     void operator()(operator_::real::SignNeg* n) final {
-        if ( auto op = foldConstant<ctor::Real>(builder, n->op0()) )
+        if ( auto op = foldConstant<ctor::Real>(builder, n->op0(), style) )
             result = builder->ctorReal(-(*op)->value(), n->meta());
     }
 
@@ -332,9 +345,9 @@ struct VisitorConstantFolder : public visitor::PreOrder {
     }
 };
 
-Result<Ctor*> foldConstant(Builder* builder, Expression* expr) {
-    if ( auto* result =
-             hilti::visitor::dispatch(VisitorConstantFolder(builder), expr, [](const auto& v) { return v.result; }) )
+Result<Ctor*> foldConstant(Builder* builder, Expression* expr, bitmask<Style> style) {
+    if ( auto* result = hilti::visitor::dispatch(VisitorConstantFolder(builder, style), expr,
+                                                 [](const auto& v) { return v.result; }) )
         return result;
     else
         return result::Error("not a foldable constant expression");
@@ -342,19 +355,58 @@ Result<Ctor*> foldConstant(Builder* builder, Expression* expr) {
 
 } // anonymous namespace
 
-Result<Ctor*> detail::constant_folder::fold(Builder* builder, Expression* expr) {
-    // Don't fold away direct, top-level references to constant IDs. It's
+Result<Ctor*> detail::constant_folder::foldExpression(Builder* builder, Expression* expr, bitmask<Style> style) {
+    // By default, we don't fold away direct, top-level references to constant IDs. It's
     // likely as least as efficient to leave them as is, and potentially more.
-    if ( expr->isA<expression::Name>() )
+    // For boolean, this can still be enabled through a style flag, which the
+    // optimizer uses.
+    if ( const auto* n = expr->tryAs<expression::Name>();
+         n && (! (style & Style::InlineBooleanConstants) || ! n->type()->type()->isA<type::Bool>()) )
         return {nullptr};
 
     try {
-        if ( auto* result = hilti::visitor::dispatch(VisitorConstantFolder(builder), expr,
+        if ( auto* result = hilti::visitor::dispatch(VisitorConstantFolder(builder, style), expr,
                                                      [](const auto& v) { return v.result; }) )
             return result;
         else
             return {nullptr};
     } catch ( const hilti::rt::RuntimeError& e ) {
         return result::Error(e.what());
+    }
+}
+
+struct VisitorConstantFolderAST : visitor::MutatingPostOrder {
+    explicit VisitorConstantFolderAST(Builder* builder, Node* root, bitmask<Style> style)
+        : visitor::MutatingPostOrder(builder, logging::debug::Resolver), style(style) {}
+
+    bitmask<Style> style;
+
+    void operator()(Expression* n) final {
+        if ( n->isResolved() && ! n->isA<expression::Ctor>() ) {
+            auto ctor = detail::constant_folder::foldExpression(builder(), n, style);
+            if ( ! ctor ) {
+                n->addError(ctor.error());
+                return;
+            }
+
+            if ( *ctor ) {
+                auto* nexpr = builder()->expressionCtor(*ctor, (*ctor)->meta());
+                replaceNode(n, nexpr);
+            }
+        }
+    }
+};
+
+bool detail::constant_folder::fold(Builder* builder, Node* node, bitmask<Style> style) {
+    bool modified = false;
+
+    while ( true ) {
+        auto v = VisitorConstantFolderAST(builder, node, style);
+        hilti::visitor::visit(v, node);
+
+        if ( v.isModified() )
+            modified = true;
+        else
+            return modified;
     }
 }
