@@ -90,7 +90,6 @@ class Type;
 
 namespace expression {
 class Assign;
-class BuiltInFunction;
 class Coerced;
 class Ctor;
 class Grouping;

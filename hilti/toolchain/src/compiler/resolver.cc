@@ -1180,13 +1180,6 @@ struct VisitorPass3 : visitor::MutatingPostOrder {
         }
     }
 
-    void operator()(expression::BuiltInFunction* n) final {
-        if ( auto coerced = coerceCallArguments(n->arguments(), n->parameters()); coerced && *coerced ) {
-            recordChange(n, builder()->ctorTuple(**coerced), "call arguments");
-            n->setArguments(context(), **coerced);
-        }
-    }
-
     void operator()(expression::LogicalAnd* n) final {
         if ( auto* x = coerceTo(n, n->op0(), n->type(), true, false) ) {
             recordChange(n, x, "op0");
