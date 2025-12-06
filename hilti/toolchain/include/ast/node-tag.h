@@ -123,27 +123,26 @@ constexpr Tag Type = 310;
 
 namespace expression {
 constexpr Tag Assign = 400;
-constexpr Tag BuiltInFunction = 401;
-constexpr Tag Coerced = 402;
-constexpr Tag ConditionTest = 403;
-constexpr Tag Ctor = 404;
-constexpr Tag Grouping = 405;
-constexpr Tag Keyword = 406;
-constexpr Tag ListComprehension = 407;
-constexpr Tag LogicalAnd = 408;
-constexpr Tag LogicalNot = 409;
-constexpr Tag LogicalOr = 410;
-constexpr Tag Member = 411;
-constexpr Tag Move = 412;
-constexpr Tag Name = 413;
-constexpr Tag PendingCoerced = 414;
-constexpr Tag Ternary = 415;
-constexpr Tag TypeInfo = 416;
-constexpr Tag TypeWrapped = 417;
-constexpr Tag Type_ = 418;
-constexpr Tag ResolvedOperator = 419;
-constexpr Tag UnresolvedOperator = 420;
-constexpr Tag Void = 421;
+constexpr Tag Coerced = 401;
+constexpr Tag ConditionTest = 402;
+constexpr Tag Ctor = 403;
+constexpr Tag Grouping = 404;
+constexpr Tag Keyword = 405;
+constexpr Tag ListComprehension = 406;
+constexpr Tag LogicalAnd = 407;
+constexpr Tag LogicalNot = 408;
+constexpr Tag LogicalOr = 409;
+constexpr Tag Member = 410;
+constexpr Tag Move = 411;
+constexpr Tag Name = 412;
+constexpr Tag PendingCoerced = 413;
+constexpr Tag Ternary = 414;
+constexpr Tag TypeInfo = 415;
+constexpr Tag TypeWrapped = 416;
+constexpr Tag Type_ = 417;
+constexpr Tag ResolvedOperator = 418;
+constexpr Tag UnresolvedOperator = 419;
+constexpr Tag Void = 420;
 } // namespace expression
 
 namespace operator_ {

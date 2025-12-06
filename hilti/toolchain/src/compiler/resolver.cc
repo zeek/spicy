@@ -1097,13 +1097,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
     }
 
-    void operator()(expression::BuiltInFunction* n) final {
-        if ( auto coerced = coerceCallArguments(n->arguments(), n->parameters()); coerced && *coerced ) {
-            recordChange(n, builder()->ctorTuple(**coerced), "call arguments");
-            n->setArguments(context(), **coerced);
-        }
-    }
-
     void operator()(expression::Keyword* n) final {
         if ( n->kind() == expression::keyword::Kind::Scope && ! n->type()->isResolved() ) {
             auto* ntype = builder()->qualifiedType(builder()->typeUnsignedInteger(64), Constness::Const);
