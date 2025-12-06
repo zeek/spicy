@@ -21,6 +21,10 @@ function void f() {
 
     local tup = ret_tup();
     assert glob == 2;
+
+    local z = ((x, y) = ret_tup());
+    assert glob == 3;
+    assert z == (3,3);
 }
 
 f();
