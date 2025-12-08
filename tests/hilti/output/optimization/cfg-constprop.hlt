@@ -77,11 +77,23 @@ function uint<64> switch_controlflow(uint<64> in_num) {
     return num;
 }
 
+# Edge case that propagates a temporary then return straight into the
+# return, even if it's a call.
+function uint<64> ret_uint() { return 1; }
+
+# CHECK: function uint<64> propagate_return
+function uint<64> propagate_return() {
+    local uint<64> res;
+    res = ret_uint();
+    # CHECK: return ret_uint();
+    return res;
+}
 
 simple();
 global uint<64> x = 10;
 param(x);
 branching(True);
 switch_controlflow(2);
+propagate_return();
 
 }
