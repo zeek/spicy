@@ -13,6 +13,8 @@ class Block : public Statement {
 public:
     auto statements() const { return childrenOfType<Statement>(); }
 
+    void removeStatements() { clearChildren(); }
+
     void add(ASTContext* ctx, Statement* s) { addChild(ctx, s); }
 
     /** Internal method for use by builder API only. */
