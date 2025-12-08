@@ -50,6 +50,12 @@
 [debug/optimizer]       - deleting function state: foo::Priv5::_t_parse_foo__Priv5_stage2
 [debug/optimizer]       - deleting function state: foo::Priv5::_t_parse_foo__Priv5_stage2
 [debug/optimizer]       - deleting function state: foo::Priv5::_t_parse_foo__Priv5_stage2
+[debug/optimizer]       - deleting function state: foo::Priv5::_t_parse_foo__Priv5_stage2
+[debug/optimizer]       - deleting function state: foo::Priv5::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::Priv5::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::Priv5::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::Priv5::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::Priv5::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv5::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv5::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv5::_t_parse_stage1
@@ -63,6 +69,12 @@
 [debug/optimizer]       - deleting function state: foo::Priv6::_t_parse_foo__Priv6_stage2
 [debug/optimizer]       - deleting function state: foo::Priv6::_t_parse_foo__Priv6_stage2
 [debug/optimizer]       - deleting function state: foo::Priv6::_t_parse_foo__Priv6_stage2
+[debug/optimizer]       - deleting function state: foo::Priv6::_t_parse_foo__Priv6_stage2
+[debug/optimizer]       - deleting function state: foo::Priv6::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::Priv6::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::Priv6::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::Priv6::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::Priv6::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv6::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv6::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv6::_t_parse_stage1
@@ -88,12 +100,15 @@
 [debug/optimizer]       - deleting function state: foo::Pub3::_t_parse_foo__Pub3_stage2
 [debug/optimizer]       - deleting function state: foo::Pub3::_t_parse_foo__Pub3_stage2
 [debug/optimizer]       - deleting function state: foo::Pub3::_t_parse_foo__Pub3_stage2
+[debug/optimizer]       - deleting function state: foo::Pub3::_t_parse_foo__Pub3_stage2
+[debug/optimizer]       - deleting function state: foo::Pub3::_t_parse_foo__Pub3_stage2
 [debug/optimizer]       - deleting function state: foo::Pub3::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Pub3::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Pub3::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Pub3::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Pub3::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Pub3::_t_parse_stage1
+[debug/optimizer]       - deleting module state: foo
 [debug/optimizer]       - deleting module state: foo
 [debug/optimizer]       - deleting module state: foo
 [debug/optimizer]       - deleting module state: foo
@@ -158,6 +173,9 @@
 [debug/optimizer]       - updating function: foo::Pub3::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Pub3::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Pub3::_t_parse_stage1
+[debug/optimizer]       - updating module: foo
+[debug/optimizer]       - updating module: foo
+[debug/optimizer]       - updating module: foo
 [debug/optimizer]       - updating module: foo
 [debug/optimizer]       - updating module: foo
 [debug/optimizer]       - updating module: foo
@@ -171,6 +189,11 @@
 [debug/optimizer]       - updating module: foo
 [debug/optimizer]       - updating module: foo
 [debug/optimizer]       - updating module: spicy_rt
+[debug/optimizer]     * computed CFGs
+[debug/optimizer]     * computed CFGs
+[debug/optimizer]     * computed CFGs
+[debug/optimizer]     * computed CFGs
+[debug/optimizer]     * computed CFGs
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]     * computed CFGs
@@ -210,6 +233,8 @@
 [debug/optimizer]     * function changed: foo::Priv10::_t_parse_foo__Priv10_stage2
 [debug/optimizer]     * function changed: foo::Priv10::_t_parse_foo__Priv10_stage2
 [debug/optimizer]     * function changed: foo::Priv10::_t_parse_foo__Priv10_stage2
+[debug/optimizer]     * function changed: foo::Priv10::_t_parse_foo__Priv10_stage2
+[debug/optimizer]     * function changed: foo::Priv10::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::Priv10::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::Priv10::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::Priv10::_t_parse_stage1
@@ -222,7 +247,10 @@
 [debug/optimizer]     * function changed: foo::Priv10::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::Priv10::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::Priv10::parse1
+[debug/optimizer]     * function changed: foo::Priv10::parse1
 [debug/optimizer]     * function changed: foo::Priv10::parse2
+[debug/optimizer]     * function changed: foo::Priv10::parse2
+[debug/optimizer]     * function changed: foo::Priv10::parse3
 [debug/optimizer]     * function changed: foo::Priv10::parse3
 [debug/optimizer]     * function changed: foo::Priv1::_t_parse_foo__Priv1_stage2
 [debug/optimizer]     * function changed: foo::Priv1::_t_parse_foo__Priv1_stage2
@@ -309,6 +337,14 @@
 [debug/optimizer]     * function changed: foo::Priv5::_t_parse_foo__Priv5_stage2
 [debug/optimizer]     * function changed: foo::Priv5::_t_parse_foo__Priv5_stage2
 [debug/optimizer]     * function changed: foo::Priv5::_t_parse_foo__Priv5_stage2
+[debug/optimizer]     * function changed: foo::Priv5::_t_parse_foo__Priv5_stage2
+[debug/optimizer]     * function changed: foo::Priv5::_t_parse_foo__Priv5_stage2
+[debug/optimizer]     * function changed: foo::Priv5::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::Priv5::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::Priv5::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::Priv5::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::Priv5::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::Priv5::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::Priv5::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::Priv5::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::Priv5::_t_parse_stage1
@@ -333,6 +369,14 @@
 [debug/optimizer]     * function changed: foo::Priv6::_t_parse_foo__Priv6_stage2
 [debug/optimizer]     * function changed: foo::Priv6::_t_parse_foo__Priv6_stage2
 [debug/optimizer]     * function changed: foo::Priv6::_t_parse_foo__Priv6_stage2
+[debug/optimizer]     * function changed: foo::Priv6::_t_parse_foo__Priv6_stage2
+[debug/optimizer]     * function changed: foo::Priv6::_t_parse_foo__Priv6_stage2
+[debug/optimizer]     * function changed: foo::Priv6::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::Priv6::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::Priv6::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::Priv6::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::Priv6::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::Priv6::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::Priv6::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::Priv6::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::Priv6::_t_parse_stage1
@@ -356,6 +400,8 @@
 [debug/optimizer]     * function changed: foo::Pub2::_t_parse_foo__Pub2_stage2
 [debug/optimizer]     * function changed: foo::Pub2::_t_parse_foo__Pub2_stage2
 [debug/optimizer]     * function changed: foo::Pub2::_t_parse_foo__Pub2_stage2
+[debug/optimizer]     * function changed: foo::Pub2::_t_parse_foo__Pub2_stage2
+[debug/optimizer]     * function changed: foo::Pub2::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::Pub2::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::Pub2::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::Pub2::_t_parse_stage1
@@ -368,7 +414,10 @@
 [debug/optimizer]     * function changed: foo::Pub2::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::Pub2::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::Pub2::parse1
+[debug/optimizer]     * function changed: foo::Pub2::parse1
 [debug/optimizer]     * function changed: foo::Pub2::parse2
+[debug/optimizer]     * function changed: foo::Pub2::parse2
+[debug/optimizer]     * function changed: foo::Pub2::parse3
 [debug/optimizer]     * function changed: foo::Pub2::parse3
 [debug/optimizer]     * function changed: foo::Pub3::_t_parse_foo__Pub3_stage2
 [debug/optimizer]     * function changed: foo::Pub3::_t_parse_foo__Pub3_stage2
@@ -381,6 +430,11 @@
 [debug/optimizer]     * function changed: foo::Pub3::_t_parse_foo__Pub3_stage2
 [debug/optimizer]     * function changed: foo::Pub3::_t_parse_foo__Pub3_stage2
 [debug/optimizer]     * function changed: foo::Pub3::_t_parse_foo__Pub3_stage2
+[debug/optimizer]     * function changed: foo::Pub3::_t_parse_foo__Pub3_stage2
+[debug/optimizer]     * function changed: foo::Pub3::_t_parse_foo__Pub3_stage2
+[debug/optimizer]     * function changed: foo::Pub3::_t_parse_foo__Pub3_stage2
+[debug/optimizer]     * function changed: foo::Pub3::_t_parse_foo__Pub3_stage2
+[debug/optimizer]     * function changed: foo::Pub3::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::Pub3::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::Pub3::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::Pub3::_t_parse_stage1
@@ -393,8 +447,14 @@
 [debug/optimizer]     * function changed: foo::Pub3::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::Pub3::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::Pub3::parse1
+[debug/optimizer]     * function changed: foo::Pub3::parse1
+[debug/optimizer]     * function changed: foo::Pub3::parse2
 [debug/optimizer]     * function changed: foo::Pub3::parse2
 [debug/optimizer]     * function changed: foo::Pub3::parse3
+[debug/optimizer]     * function changed: foo::Pub3::parse3
+[debug/optimizer]     * module changed: foo
+[debug/optimizer]     * module changed: foo
+[debug/optimizer]     * module changed: foo
 [debug/optimizer]     * module changed: foo
 [debug/optimizer]     * module changed: foo
 [debug/optimizer]     * module changed: foo
@@ -422,6 +482,9 @@
 [debug/optimizer]     * resolver
 [debug/optimizer]     * resolver
 [debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
 [debug/optimizer]     -> modified
 [debug/optimizer]     -> modified
 [debug/optimizer]     -> modified
@@ -442,6 +505,37 @@
 [debug/optimizer]     -> modified
 [debug/optimizer]     -> modified
 [debug/optimizer]     -> modified
+[debug/optimizer]     -> modified
+[debug/optimizer]     -> modified
+[debug/optimizer]     -> modified
+[debug/optimizer]     -> modified
+[debug/optimizer]     -> modified
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating new return type to corresponding field)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating new return type to corresponding field)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating new return type to corresponding field)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating new return type to corresponding field)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating new return type to corresponding field)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating new return type)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating new return type)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating new return type)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating new return type)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating new return type)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating new return type)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating new return type)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating new return type)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating new return type)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating new return type)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating return type to use)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating return type to use)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating return type to use)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating return type to use)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating return type to use)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating return type to use)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating return type to use)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating return type to use)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating return type to use)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating return type to use)
+[debug/optimizer]   [<no location>] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating return type to use)
 [debug/optimizer]   [<no location>] declaration::Field "iterator<stream> _t_begin &internal &needed-by-feature="uses_random_access";" -> null (removing unused member)
 [debug/optimizer]   [<no location>] declaration::Field "iterator<stream> _t_begin &internal &needed-by-feature="uses_random_access";" -> null (removing unused member)
 [debug/optimizer]   [<no location>] declaration::Field "iterator<stream> _t_begin &internal &needed-by-feature="uses_random_access";" -> null (removing unused member)
@@ -560,6 +654,17 @@
 [debug/optimizer]   [<no location>] expression::Coerced "filtered" -> expression::Ctor "Null" (propagating constant value)
 [debug/optimizer]   [<no location>] expression::Coerced "filtered" -> expression::Ctor "Null" (propagating constant value)
 [debug/optimizer]   [<no location>] expression::Coerced "filtered" -> expression::Ctor "Null" (propagating constant value)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_cur, _t_error)" -> expression::Ctor "(_t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_cur, _t_error)" -> expression::Ctor "(_t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" -> expression::Ctor "(_t_cur, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" -> expression::Ctor "(_t_cur, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" -> expression::Ctor "(_t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" -> expression::Ctor "(_t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" -> expression::Name "_t_error" (propagating return to single element)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" -> expression::Name "_t_error" (propagating return to single element)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" -> expression::Name "_t_error" (propagating return to single element)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" -> expression::Name "_t_error" (propagating return to single element)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" -> expression::Name "_t_error" (propagating return to single element)
 [debug/optimizer]   [<no location>] expression::Ctor "(_t_data, _t_begin, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error)" -> expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" (removing unused arguments from method call)
 [debug/optimizer]   [<no location>] expression::Ctor "(_t_data, _t_begin, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error)" -> expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" (removing unused arguments from method call)
 [debug/optimizer]   [<no location>] expression::Ctor "(_t_data, _t_begin, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error)" -> expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" (removing unused arguments from method call)
@@ -576,6 +681,17 @@
 [debug/optimizer]   [<no location>] expression::Name "_t_begin" -> renaming reference "_t_begin" -> "_t_begin_"
 [debug/optimizer]   [<no location>] expression::Name "_t_begin" -> renaming reference "_t_begin" -> "_t_begin_"
 [debug/optimizer]   [<no location>] expression::Name "_t_begin" -> renaming reference "_t_begin" -> "_t_begin_"
+[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_cur, _t_lah, _t_lahe, _t_error) = (*self).x._t_parse_stage1(_t_cur, _t_lah, _t_lahe, _t_error)" -> expression::Assign "_t_error = (*self).x._t_parse_stage1(_t_cur, _t_lah, _t_lahe, _t_error)" (removing tuple from propagated return)
+[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_cur, _t_lah, _t_lahe, _t_error) = _t_transient__anon_2._t_parse_stage1(_t_cur, _t_lah, _t_lahe, _t_error)" -> expression::Assign "_t_error = _t_transient__anon_2._t_parse_stage1(_t_cur, _t_lah, _t_lahe, _t_error)" (removing tuple from propagated return)
+[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Assign "_t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing tuple from propagated return)
+[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Assign "_t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing tuple from propagated return)
+[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Assign "_t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing tuple from propagated return)
+[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Assign "_t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing tuple from propagated return)
+[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Assign "_t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing tuple from propagated return)
+[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Assign "_t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing tuple from propagated return)
+[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Assign "_t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing tuple from propagated return)
+[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Assign "_t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing tuple from propagated return)
+[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Assign "_t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing tuple from propagated return)
 [debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-types.spicy:13:14-13:20" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); hilti::debugDedent("spicy"); _t_result = (_t_cur, _t_lah, _t_lahe, _t_error); return (_t_cur, _t_lah, _t_lahe, _t_error); }" -> constant propagation
 [debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-types.spicy:13:14-13:20" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); try { hilti::debugIndent("spicy"); local iterator<stream> _t_begin = begin(_t_cur); local strong_ref<stream> filtered = Null; if ( ! Null ) _t_result = (*self)._t_parse_foo__Priv1_stage2(_t_data, _t_begin, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error); } catch ( hilti::SystemException _t_except ) throw; return _t_result; }" -> constant propagation
 [debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-types.spicy:16:20-16:26" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); hilti::debugDedent("spicy"); _t_result = (_t_cur, _t_lah, _t_lahe, _t_error); return (_t_cur, _t_lah, _t_lahe, _t_error); }" -> constant propagation
@@ -626,6 +742,8 @@
 [debug/optimizer]   [<no location>] statement::Block "{ hilti::debugIndent("spicy"); local iterator<stream> _t_begin_ = begin(_t_cur); local stream& filtered = Null; _t_result = (*self)._t_parse_foo__Priv6_stage2(_t_cur, _t_lah, _t_lahe, _t_error); }" -> inlining block
 [debug/optimizer]   [<no location>] statement::Block "{ hilti::debugIndent("spicy"); local iterator<stream> _t_begin_ = begin(_t_cur); local stream& filtered = Null; _t_result = (*self)._t_parse_foo__Pub2_stage2(_t_data, _t_begin_, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error); }" -> inlining block
 [debug/optimizer]   [<no location>] statement::Block "{ hilti::debugIndent("spicy"); local iterator<stream> _t_begin_ = begin(_t_cur); local stream& filtered = Null; _t_result = (*self)._t_parse_foo__Pub3_stage2(_t_data, _t_begin_, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error); }" -> inlining block
+[debug/optimizer]   [<no location>] statement::Declaration "local iterator<stream> _t_begin_ = begin(_t_cur);" -> statement::Expression "begin(_t_cur);" (statement result unused)
+[debug/optimizer]   [<no location>] statement::Declaration "local iterator<stream> _t_begin_ = begin(_t_cur);" -> statement::Expression "begin(_t_cur);" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Declaration "local strong_ref<stream> filtered = Null;" -> statement::Expression "Null;" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Declaration "local strong_ref<stream> filtered = Null;" -> statement::Expression "Null;" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Declaration "local strong_ref<stream> filtered = Null;" -> statement::Expression "Null;" (statement result unused)
@@ -729,6 +847,8 @@
 [debug/optimizer]   [<no location>] statement::Expression "_t_result = (_t_cur, _t_lah, _t_lahe, _t_error);" -> statement::Expression "(_t_cur, _t_lah, _t_lahe, _t_error);" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "_t_result = (_t_cur, _t_lah, _t_lahe, _t_error);" -> statement::Expression "(_t_cur, _t_lah, _t_lahe, _t_error);" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "_t_result = (_t_cur, _t_lah, _t_lahe, _t_error);" -> statement::Expression "(_t_cur, _t_lah, _t_lahe, _t_error);" (statement result unused)
+[debug/optimizer]   [<no location>] statement::Expression "begin(_t_cur);" -> null (statement result unused)
+[debug/optimizer]   [<no location>] statement::Expression "begin(_t_cur);" -> null (statement result unused)
 [debug/optimizer]   [<no location>] statement::If "if ( False ) { (*_t_unit)._t_begin = begin(_t_ncur); }" -> null (removing if statement with always-false condition)
 [debug/optimizer]   [<no location>] statement::If "if ( False ) { (*_t_unit)._t_begin = begin(_t_ncur); }" -> null (removing if statement with always-false condition)
 [debug/optimizer]   [<no location>] statement::If "if ( False ) { (*_t_unit)._t_begin = begin(_t_ncur); }" -> null (removing if statement with always-false condition)
@@ -1112,6 +1232,8 @@
 [debug/optimizer]   [unused-types.spicy:13:14-13:20] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [unused-types.spicy:13:14-13:20] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [unused-types.spicy:13:14-13:20] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-types.spicy:16:20-16:26] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating new return type to corresponding field)
+[debug/optimizer]   [unused-types.spicy:16:20-16:26] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating return type to use)
 [debug/optimizer]   [unused-types.spicy:16:20-16:26] declaration::Field "hook optional<string> _t_hook_to_string();" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-types.spicy:16:20-16:26] declaration::Field "hook void _t_on_0x25_confirmed() &needed-by-feature="synchronization";" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-types.spicy:16:20-16:26] declaration::Field "hook void _t_on_0x25_done();" -> null (removing declaration for unused method)
@@ -1267,6 +1389,8 @@
 [debug/optimizer]   [unused-types.spicy:23:5-23:13] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [unused-types.spicy:23:5-23:13] type::Function "function hook void (foo::Priv3 _t_dd)" -> removing unused function parameters
 [debug/optimizer]   [unused-types.spicy:23:5-23:13] type::Function "function hook void (string _t_except)" -> removing unused function parameters
+[debug/optimizer]   [unused-types.spicy:27:14-27:20] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating new return type to corresponding field)
+[debug/optimizer]   [unused-types.spicy:27:14-27:20] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating return type to use)
 [debug/optimizer]   [unused-types.spicy:27:14-27:20] declaration::Field "hook optional<string> _t_hook_to_string();" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-types.spicy:27:14-27:20] declaration::Field "hook void _t_on_0x25_confirmed() &needed-by-feature="synchronization";" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-types.spicy:27:14-27:20] declaration::Field "hook void _t_on_0x25_done();" -> null (removing declaration for unused method)
@@ -1297,12 +1421,20 @@
 [debug/optimizer]   [unused-types.spicy:27:14-27:20] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [unused-types.spicy:27:14-27:20] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [unused-types.spicy:27:14-27:20] type::Function "function hook void (string _t_except)" -> removing unused function parameters
+[debug/optimizer]   [unused-types.spicy:27:14-27:20] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-types.spicy:27:14-27:20] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-types.spicy:27:14-27:20] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-types.spicy:27:14-27:20] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-types.spicy:27:14-27:20] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-types.spicy:27:14-27:20] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [unused-types.spicy:27:14-27:20] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [unused-types.spicy:27:14-27:20] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [unused-types.spicy:27:14-27:20] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [unused-types.spicy:27:14-27:20] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [unused-types.spicy:27:14-27:20] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [unused-types.spicy:27:14-27:20] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-types.spicy:28:14-28:20] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating new return type to corresponding field)
+[debug/optimizer]   [unused-types.spicy:28:14-28:20] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating return type to use)
 [debug/optimizer]   [unused-types.spicy:28:14-28:20] declaration::Field "hook optional<string> _t_hook_to_string();" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-types.spicy:28:14-28:20] declaration::Field "hook void _t_on_0x25_confirmed() &needed-by-feature="synchronization";" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-types.spicy:28:14-28:20] declaration::Field "hook void _t_on_0x25_done();" -> null (removing declaration for unused method)
@@ -1333,12 +1465,20 @@
 [debug/optimizer]   [unused-types.spicy:28:14-28:20] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [unused-types.spicy:28:14-28:20] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [unused-types.spicy:28:14-28:20] type::Function "function hook void (string _t_except)" -> removing unused function parameters
+[debug/optimizer]   [unused-types.spicy:28:14-28:20] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-types.spicy:28:14-28:20] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-types.spicy:28:14-28:20] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-types.spicy:28:14-28:20] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-types.spicy:28:14-28:20] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-types.spicy:28:14-28:20] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [unused-types.spicy:28:14-28:20] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [unused-types.spicy:28:14-28:20] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [unused-types.spicy:28:14-28:20] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [unused-types.spicy:28:14-28:20] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [unused-types.spicy:28:14-28:20] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [unused-types.spicy:28:14-28:20] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-types.spicy:29:20-32:1] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating new return type to corresponding field)
+[debug/optimizer]   [unused-types.spicy:29:20-32:1] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating return type to use)
 [debug/optimizer]   [unused-types.spicy:29:20-32:1] declaration::Field "hook optional<string> _t_hook_to_string();" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-types.spicy:29:20-32:1] declaration::Field "hook void _t_on_0x25_confirmed() &needed-by-feature="synchronization";" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-types.spicy:29:20-32:1] declaration::Field "hook void _t_on_0x25_done();" -> null (removing declaration for unused method)
@@ -1372,6 +1512,8 @@
 [debug/optimizer]   [unused-types.spicy:31:5-31:13] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [unused-types.spicy:31:5-31:13] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [unused-types.spicy:35:1-35:30] declaration::Type "type Priv7 = enum { A = 0, B = 1, C = 2 };" -> null (removing unused type)
+[debug/optimizer]   [unused-types.spicy:43:22-46:1] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating new return type to corresponding field)
+[debug/optimizer]   [unused-types.spicy:43:22-46:1] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating return type to use)
 [debug/optimizer]   [unused-types.spicy:43:22-46:1] declaration::Field "hook optional<string> _t_hook_to_string();" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-types.spicy:43:22-46:1] declaration::Field "hook void _t_on_0x25_confirmed() &needed-by-feature="synchronization";" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-types.spicy:43:22-46:1] declaration::Field "hook void _t_on_0x25_done();" -> null (removing declaration for unused method)
@@ -1418,11 +1560,21 @@
 [debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
@@ -1476,6 +1628,13 @@
 [debug/optimizer] pass: peephole (round 5, pass iteration 1)
 [debug/optimizer] pass: peephole (round 6, pass iteration 1)
 [debug/optimizer] pass: peephole (round 7, pass iteration 1)
+[debug/optimizer] pass: propagate-function-returns (round 1, pass iteration 1)
+[debug/optimizer] pass: propagate-function-returns (round 2, pass iteration 1)
+[debug/optimizer] pass: propagate-function-returns (round 3, pass iteration 1)
+[debug/optimizer] pass: propagate-function-returns (round 4, pass iteration 1)
+[debug/optimizer] pass: propagate-function-returns (round 5, pass iteration 1)
+[debug/optimizer] pass: propagate-function-returns (round 6, pass iteration 1)
+[debug/optimizer] pass: propagate-function-returns (round 7, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 1, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 2, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 3, pass iteration 1)
