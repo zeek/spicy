@@ -1,0 +1,14 @@
+# @TEST-EXEC: ${HILTIC} -j %INPUT
+#
+# @TEST-DOC: Ensures a void return can return void expressions.
+
+module foo {
+
+function void ret_void() {}
+
+function void fn() {
+    # This should be okay, since it is a void function returning void.
+    return ret_void();
+}
+
+}
