@@ -593,7 +593,9 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         }
 
         if ( func->ftype()->result()->type()->isA<type::Void>() ) {
-            if ( n->expression() )
+            // TODO: This change is because changing a return to void made passthroughs
+            // break. This may not be wanted, but I kind of think it's fine.
+            if ( n->expression() && ! n->expression()->type()->type()->isA<type::Void>() )
                 error("void function cannot return a value", n);
         }
         else {
