@@ -20,6 +20,7 @@ enum PassID {
     DeadCodeCFG,
     ConstantPropagation,
     RemoveUnusedParameters,
+    PropagateFunctionReturns,
 };
 
 namespace detail {
@@ -31,6 +32,7 @@ constexpr util::enum_::Value<PassID> PassIDs[] = {
     {.value = PassID::ConstantPropagation, .name = "constant-propagation"},
     {.value = PassID::RemoveUnusedParameters, .name = "remove-unused-parameters"},
     {.value = PassID::FlattenBlocks, .name = "flatten-blocks"},
+    {.value = PassID::PropagateFunctionReturns, .name = "propagate-function-returns"},
 };
 }
 
