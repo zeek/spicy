@@ -11,6 +11,9 @@
 [debug/optimizer]       - deleting function state: foo::B::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::B::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::B::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::B::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::B::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::B::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::C::_t_parse_foo__C_stage2
 [debug/optimizer]       - deleting function state: foo::C::_t_parse_foo__C_stage2
 [debug/optimizer]       - deleting function state: foo::C::_t_parse_foo__C_stage2
@@ -21,12 +24,18 @@
 [debug/optimizer]       - deleting function state: foo::C::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::C::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::C::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::C::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::C::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::C::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::D::_t_parse_foo__D_stage2
 [debug/optimizer]       - deleting function state: foo::D::_t_parse_foo__D_stage2
 [debug/optimizer]       - deleting function state: foo::D::_t_parse_foo__D_stage2
 [debug/optimizer]       - deleting function state: foo::D::_t_parse_foo__D_stage2
 [debug/optimizer]       - deleting function state: foo::D::_t_parse_foo__D_stage2
 [debug/optimizer]       - deleting function state: foo::D::_t_parse_foo__D_stage2
+[debug/optimizer]       - deleting function state: foo::D::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::D::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::D::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::D::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::D::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::D::_t_parse_stage1
@@ -47,13 +56,19 @@
 [debug/optimizer]       - updating function: foo::B::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::B::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::B::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::B::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::B::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::C::_t_parse_foo__C_stage2
 [debug/optimizer]       - updating function: foo::C::_t_parse_foo__C_stage2
 [debug/optimizer]       - updating function: foo::C::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::C::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::C::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::C::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::C::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::D::_t_parse_foo__D_stage2
 [debug/optimizer]       - updating function: foo::D::_t_parse_foo__D_stage2
+[debug/optimizer]       - updating function: foo::D::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::D::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::D::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::D::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::D::_t_parse_stage1
@@ -85,6 +100,8 @@
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]     * computed CFGs
+[debug/optimizer]     * computed CFGs
+[debug/optimizer]     * constant-folder
 [debug/optimizer]     * constant-folder
 [debug/optimizer]     * constant-folder
 [debug/optimizer]     * function changed: _t_register_foo_A
@@ -121,6 +138,9 @@
 [debug/optimizer]     * function changed: foo::B::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::B::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::B::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::B::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::B::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::B::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::B::parse1
 [debug/optimizer]     * function changed: foo::B::parse2
 [debug/optimizer]     * function changed: foo::B::parse3
@@ -132,6 +152,9 @@
 [debug/optimizer]     * function changed: foo::C::_t_parse_foo__C_stage2
 [debug/optimizer]     * function changed: foo::C::_t_parse_foo__C_stage2
 [debug/optimizer]     * function changed: foo::C::_t_parse_foo__C_stage2
+[debug/optimizer]     * function changed: foo::C::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::C::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::C::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::C::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::C::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::C::_t_parse_stage1
@@ -154,6 +177,9 @@
 [debug/optimizer]     * function changed: foo::D::_t_parse_foo__D_stage2
 [debug/optimizer]     * function changed: foo::D::_t_parse_foo__D_stage2
 [debug/optimizer]     * function changed: foo::D::_t_parse_foo__D_stage2
+[debug/optimizer]     * function changed: foo::D::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::D::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::D::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::D::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::D::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::D::_t_parse_stage1
@@ -197,6 +223,8 @@
 [debug/optimizer]     * resolver
 [debug/optimizer]     * resolver
 [debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     -> modified
 [debug/optimizer]     -> modified
 [debug/optimizer]     -> modified
 [debug/optimizer]     -> modified
@@ -267,6 +295,9 @@
 [debug/optimizer]   [<no location>] expression::Coerced "_t_result" -> expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" (propagating constant value)
 [debug/optimizer]   [<no location>] expression::Coerced "_t_result" -> expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" (propagating constant value)
 [debug/optimizer]   [<no location>] expression::Coerced "_t_result" -> expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" (propagating constant value)
+[debug/optimizer]   [<no location>] expression::Coerced "_t_result" -> operator_::struct_::MemberCall "(*self)._t_parse_foo__B_stage2(_t_data, _t_begin_, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error)"
+[debug/optimizer]   [<no location>] expression::Coerced "_t_result" -> operator_::struct_::MemberCall "(*self)._t_parse_foo__C_stage2(_t_cur, _t_lah, _t_lahe, _t_error)"
+[debug/optimizer]   [<no location>] expression::Coerced "_t_result" -> operator_::struct_::MemberCall "(*self)._t_parse_foo__D_stage2(_t_data, _t_begin_, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error)"
 [debug/optimizer]   [<no location>] expression::Coerced "filtered" -> expression::Ctor "Null" (propagating constant value)
 [debug/optimizer]   [<no location>] expression::Coerced "filtered" -> expression::Ctor "Null" (propagating constant value)
 [debug/optimizer]   [<no location>] expression::Coerced "filtered" -> expression::Ctor "Null" (propagating constant value)
@@ -307,6 +338,9 @@
 [debug/optimizer]   [<no location>] statement::Declaration "local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result();" -> statement::Expression "<void expression>;" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Declaration "local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result();" -> statement::Expression "<void expression>;" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Declaration "local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result();" -> statement::Expression "<void expression>;" (statement result unused)
+[debug/optimizer]   [<no location>] statement::Declaration "local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result();" -> statement::Expression "<void expression>;" (statement result unused)
+[debug/optimizer]   [<no location>] statement::Declaration "local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result();" -> statement::Expression "<void expression>;" (statement result unused)
+[debug/optimizer]   [<no location>] statement::Declaration "local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result();" -> statement::Expression "<void expression>;" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "(*self)._t_error = _t_error;" -> removing unneeded error push/pop statements
 [debug/optimizer]   [<no location>] statement::Expression "(*self)._t_error = _t_error;" -> removing unneeded error push/pop statements
 [debug/optimizer]   [<no location>] statement::Expression "(*self)._t_error = _t_error;" -> removing unneeded error push/pop statements
@@ -335,9 +369,15 @@
 [debug/optimizer]   [<no location>] statement::Expression "<void expression>;" -> null (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "<void expression>;" -> null (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "<void expression>;" -> null (statement result unused)
+[debug/optimizer]   [<no location>] statement::Expression "<void expression>;" -> null (statement result unused)
+[debug/optimizer]   [<no location>] statement::Expression "<void expression>;" -> null (statement result unused)
+[debug/optimizer]   [<no location>] statement::Expression "<void expression>;" -> null (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (removing unused expression result)
 [debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (removing unused expression result)
 [debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "_t_result = (*self)._t_parse_foo__B_stage2(_t_data, _t_begin_, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error);" -> null (Removing variable propagated to return)
+[debug/optimizer]   [<no location>] statement::Expression "_t_result = (*self)._t_parse_foo__C_stage2(_t_cur, _t_lah, _t_lahe, _t_error);" -> null (Removing variable propagated to return)
+[debug/optimizer]   [<no location>] statement::Expression "_t_result = (*self)._t_parse_foo__D_stage2(_t_data, _t_begin_, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error);" -> null (Removing variable propagated to return)
 [debug/optimizer]   [<no location>] statement::Expression "_t_result = (_t_cur, _t_lah, _t_lahe, _t_error);" -> statement::Expression "(_t_cur, _t_lah, _t_lahe, _t_error);" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "_t_result = (_t_cur, _t_lah, _t_lahe, _t_error);" -> statement::Expression "(_t_cur, _t_lah, _t_lahe, _t_error);" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "_t_result = (_t_cur, _t_lah, _t_lahe, _t_error);" -> statement::Expression "(_t_cur, _t_lah, _t_lahe, _t_error);" (statement result unused)
@@ -713,6 +753,7 @@
 [debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
@@ -727,10 +768,12 @@
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <none>
+[debug/optimizer]   re-resolving AST assuming guarantees <none>
 [debug/optimizer]   re-resolving AST assuming guarantees <resolved>
 [debug/optimizer] pass: constant-propagation (round 1, pass iteration 1)
 [debug/optimizer] pass: constant-propagation (round 1, pass iteration 2)
 [debug/optimizer] pass: constant-propagation (round 2, pass iteration 1)
+[debug/optimizer] pass: constant-propagation (round 2, pass iteration 2)
 [debug/optimizer] pass: constant-propagation (round 3, pass iteration 1)
 [debug/optimizer] pass: constant-propagation (round 4, pass iteration 1)
 [debug/optimizer] pass: constant-propagation (round 5, pass iteration 1)

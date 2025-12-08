@@ -267,6 +267,51 @@ struct Mutator : public optimizer::visitor::Mutator {
                               num_processed));
     }
 
+    void propagateFunctionReturn(const CFG* cfg, statement::Block* block) {
+        // Get the last statement, this should be a return.
+        auto stmts = block->statements();
+        auto it = stmts.rbegin();
+        if ( it == stmts.rend() || ! (*it)->isA<statement::Return>() )
+            return;
+        auto* ret = (*it)->as<statement::Return>();
+        if ( ! ret->expression() )
+            return;
+
+        // Skip coercions
+        auto* maybe_coerced = ret->expression();
+        while ( maybe_coerced->isA<expression::Coerced>() )
+            maybe_coerced = maybe_coerced->as<expression::Coerced>()->expression();
+
+        // Only apply if it's return <name>;
+        auto* name = maybe_coerced->tryAs<expression::Name>();
+        if ( ! name )
+            return;
+
+        auto upstream = cfg->graph().neighborsUpstream(ret->identity());
+        if ( upstream.size() != 1 )
+            return;
+        const auto* prev_node = cfg->graph().getNode(upstream[0]);
+        assert(prev_node);
+
+        auto* stmt = prev_node->get()->tryAs<statement::Expression>();
+        if ( ! stmt || ! stmt->expression()->isA<expression::Assign>() )
+            return;
+        auto* name_decl = name->resolvedDeclaration();
+
+        if ( ! cfg->dataflow().contains(*prev_node) )
+            return;
+
+        // The previous node must overwrite the decl and it's not an alias.
+        auto dataflow_facts = cfg->dataflow().at(*prev_node);
+        if ( ! dataflow_facts.gen.contains(name_decl) || ! dataflow_facts.kill.contains(name_decl) ||
+             dataflow_facts.maybe_alias.contains(name_decl) )
+            return;
+
+        auto* assign = stmt->expression()->as<expression::Assign>();
+        replaceNode(ret->expression(), node::deepcopy(context(), assign->source()));
+        removeNode(prev_node->get(), "Removing variable propagated to return");
+    }
+
     void applyPropagation(const declaration::Function* function, const AnalysisResult& result) {
         auto* body = function->function()->body();
         const auto* cfg = state()->cfgCache()->get(body);
@@ -274,6 +319,9 @@ struct Mutator : public optimizer::visitor::Mutator {
 
         Replacer replacer(optimizer(), cfg, result);
         replacer.run(body);
+
+        // Special case: propagate x = <something>; return <something>;
+        propagateFunctionReturn(cfg, body);
 
         if ( replacer.isModified() )
             recordChange(body, "constant propagation");
