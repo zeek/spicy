@@ -220,7 +220,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     # "<...>/unused-types.spicy:27:14-27:20"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result();
     hilti::debugIndent("spicy");
-    local iterator<stream> _begin = begin(_cur);
+    local iterator<stream> _begin_ = begin(_cur);
     _result = (*self)._parse_foo__Priv5_stage2(_cur, _lah, _lahe, _error);
     return _result;
 }
@@ -238,7 +238,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     # "<...>/unused-types.spicy:28:14-28:20"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result();
     hilti::debugIndent("spicy");
-    local iterator<stream> _begin = begin(_cur);
+    local iterator<stream> _begin_ = begin(_cur);
     _result = (*self)._parse_foo__Priv6_stage2(_cur, _lah, _lahe, _error);
     return _result;
 }

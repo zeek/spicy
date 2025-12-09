@@ -27,6 +27,7 @@
 [debug/ast-final]     - declaration::Module <canonical-id="Foo" declaration="D2" dependencies="" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/basic-module.hlt" scope="" skip-implementation="false"> [parent @a:XXX] (basic-module.hlt:6:1-12:1) [@d:XXX]
 [debug/ast-final]         | Foo -> declaration::Module <canonical-id="Foo" declaration="D2" dependencies="" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/basic-module.hlt" scope="" skip-implementation="false"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | X -> declaration::Type <canonical-id="Foo::X" declaration="D1" fqid="Foo::X" id="X" linkage="private"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | foo -> declaration::Function <canonical-id="Foo::foo" declaration="-" fqid="Foo::foo" id="foo" linkage="private" linked-declaration="-" linked-prototype="-" operator="<set>"> [no parent] [@d:XXX] ([@d:XXX])
 [debug/ast-final]       - statement::Block [parent @d:XXX] (basic-module.hlt:6:1-12:1) [@s:XXX]
 [debug/ast-final]       - declaration::Type <canonical-id="Foo::X" declaration="D1" fqid="Foo::X" id="X" linkage="private"> [parent @d:XXX] (basic-module.hlt:8:1-8:14) [@d:XXX]
 [debug/ast-final]         - QualifiedType <const="false" extern="false" side="rhs"> [parent @d:XXX] (basic-module.hlt:8:10-8:13) [@q:XXX]

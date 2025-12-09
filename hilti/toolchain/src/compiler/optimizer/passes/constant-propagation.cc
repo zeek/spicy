@@ -296,10 +296,7 @@ struct Mutator : public optimizer::visitor::Mutator {
 
 bool run(Optimizer* optimizer) { return Mutator(optimizer).run(); }
 
-optimizer::RegisterPass constant_propagation({.id = PassID::ConstantPropagation,
-                                              .iterate = true,
-                                              .guarantees = Guarantees::ResolvedExceptCoercions |
-                                                            Guarantees::ScopesBuilt | Guarantees::TypesUnified,
-                                              .run = run});
+optimizer::RegisterPass constant_propagation(
+    {.id = PassID::ConstantPropagation, .iterate = true, .guarantees = Guarantees::None, .run = run});
 
 } // namespace

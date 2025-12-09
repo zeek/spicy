@@ -160,7 +160,7 @@ struct Mutator : optimizer::visitor::Mutator {
 };
 
 optimizer::RegisterPass flatten_blocks(PassInfo{.id = PassID::FlattenBlocks,
-                                                .guarantees = Guarantees::TypesUnified | Guarantees::ConstantsFolded,
+                                                .guarantees = Guarantees::ConstantsFolded,
                                                 .run = [](auto* optimizer) { return Mutator(optimizer).run(); }});
 
 } // namespace

@@ -39,48 +39,23 @@
 [debug/optimizer]       - deleting module state: foo
 [debug/optimizer]       - updating function: foo::A::_parse_foo__A_stage2
 [debug/optimizer]       - updating function: foo::A::_parse_foo__A_stage2
-[debug/optimizer]       - updating function: foo::A::_parse_foo__A_stage2
-[debug/optimizer]       - updating function: foo::A::_parse_foo__A_stage2
 [debug/optimizer]       - updating function: foo::A::_parse_stage1
 [debug/optimizer]       - updating function: foo::A::_parse_stage1
 [debug/optimizer]       - updating function: foo::B::_parse_foo__B_stage2
 [debug/optimizer]       - updating function: foo::B::_parse_foo__B_stage2
-[debug/optimizer]       - updating function: foo::B::_parse_foo__B_stage2
-[debug/optimizer]       - updating function: foo::B::_parse_foo__B_stage2
-[debug/optimizer]       - updating function: foo::B::_parse_foo__B_stage2
-[debug/optimizer]       - updating function: foo::B::_parse_foo__B_stage2
-[debug/optimizer]       - updating function: foo::B::_parse_stage1
-[debug/optimizer]       - updating function: foo::B::_parse_stage1
-[debug/optimizer]       - updating function: foo::B::_parse_stage1
 [debug/optimizer]       - updating function: foo::B::_parse_stage1
 [debug/optimizer]       - updating function: foo::B::_parse_stage1
 [debug/optimizer]       - updating function: foo::B::_parse_stage1
 [debug/optimizer]       - updating function: foo::C::_parse_foo__C_stage2
 [debug/optimizer]       - updating function: foo::C::_parse_foo__C_stage2
-[debug/optimizer]       - updating function: foo::C::_parse_foo__C_stage2
-[debug/optimizer]       - updating function: foo::C::_parse_foo__C_stage2
-[debug/optimizer]       - updating function: foo::C::_parse_foo__C_stage2
-[debug/optimizer]       - updating function: foo::C::_parse_foo__C_stage2
-[debug/optimizer]       - updating function: foo::C::_parse_stage1
-[debug/optimizer]       - updating function: foo::C::_parse_stage1
-[debug/optimizer]       - updating function: foo::C::_parse_stage1
 [debug/optimizer]       - updating function: foo::C::_parse_stage1
 [debug/optimizer]       - updating function: foo::C::_parse_stage1
 [debug/optimizer]       - updating function: foo::C::_parse_stage1
 [debug/optimizer]       - updating function: foo::D::_parse_foo__D_stage2
 [debug/optimizer]       - updating function: foo::D::_parse_foo__D_stage2
-[debug/optimizer]       - updating function: foo::D::_parse_foo__D_stage2
-[debug/optimizer]       - updating function: foo::D::_parse_foo__D_stage2
-[debug/optimizer]       - updating function: foo::D::_parse_foo__D_stage2
-[debug/optimizer]       - updating function: foo::D::_parse_foo__D_stage2
 [debug/optimizer]       - updating function: foo::D::_parse_stage1
 [debug/optimizer]       - updating function: foo::D::_parse_stage1
 [debug/optimizer]       - updating function: foo::D::_parse_stage1
-[debug/optimizer]       - updating function: foo::D::_parse_stage1
-[debug/optimizer]       - updating function: foo::D::_parse_stage1
-[debug/optimizer]       - updating function: foo::D::_parse_stage1
-[debug/optimizer]       - updating function: foo::F::_parse_foo__F_stage2
-[debug/optimizer]       - updating function: foo::F::_parse_foo__F_stage2
 [debug/optimizer]       - updating function: foo::F::_parse_foo__F_stage2
 [debug/optimizer]       - updating function: foo::F::_parse_foo__F_stage2
 [debug/optimizer]       - updating function: foo::F::_parse_stage1
@@ -93,28 +68,7 @@
 [debug/optimizer]       - updating module: foo
 [debug/optimizer]       - updating module: foo
 [debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
 [debug/optimizer]       - updating module: spicy_rt
-[debug/optimizer]       - updating module: spicy_rt
-[debug/optimizer]       - updating module: spicy_rt
-[debug/optimizer]     * coercer
-[debug/optimizer]     * coercer
-[debug/optimizer]     * coercer
-[debug/optimizer]     * coercer
-[debug/optimizer]     * coercer
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]     * computed CFGs
@@ -130,10 +84,6 @@
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]     * constant-folder
 [debug/optimizer]     * constant-folder
-[debug/optimizer]     * full-resolver
-[debug/optimizer]     * full-resolver
-[debug/optimizer]     * full-resolver
-[debug/optimizer]     * full-resolver
 [debug/optimizer]     * function changed: _register_foo_A
 [debug/optimizer]     * function changed: _register_foo_B
 [debug/optimizer]     * function changed: _register_foo_C
@@ -224,25 +174,15 @@
 [debug/optimizer]     * module changed: foo
 [debug/optimizer]     * module changed: foo
 [debug/optimizer]     * module changed: spicy_rt
-[debug/optimizer]     * scope-builder
-[debug/optimizer]     * scope-builder
-[debug/optimizer]     * scope-builder
-[debug/optimizer]     * scope-builder
-[debug/optimizer]     * scope-builder
-[debug/optimizer]     * scope-builder
-[debug/optimizer]     * scope-builder
-[debug/optimizer]     * scope-builder
-[debug/optimizer]     * scope-builder
-[debug/optimizer]     * scope-builder
-[debug/optimizer]     * type-unifier
-[debug/optimizer]     * type-unifier
-[debug/optimizer]     * type-unifier
-[debug/optimizer]     * type-unifier
-[debug/optimizer]     * type-unifier
-[debug/optimizer]     * type-unifier
-[debug/optimizer]     * type-unifier
-[debug/optimizer]     * type-unifier
-[debug/optimizer]     * type-unifier
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
 [debug/optimizer]     - skipping function foo::A::_parse_stage1 as its no longer part of the AST
 [debug/optimizer]     - skipping function foo::A::parse1 as its no longer part of the AST
 [debug/optimizer]     - skipping function foo::A::parse2 as its no longer part of the AST
@@ -317,6 +257,7 @@
 [debug/optimizer]   [<no location>] declaration::Field "weak_ref<spicy_rt::Forward> _forward &internal &needed-by-feature="is_filter";" -> null (removing unused member)
 [debug/optimizer]   [<no location>] declaration::LocalVariable "local iterator<stream> _begin = begin(_cur)" -> renaming declaration "_begin" -> "_begin_"
 [debug/optimizer]   [<no location>] declaration::LocalVariable "local iterator<stream> _begin = begin(_cur)" -> renaming declaration "_begin" -> "_begin_"
+[debug/optimizer]   [<no location>] declaration::LocalVariable "local iterator<stream> _begin = begin(_cur)" -> renaming declaration "_begin" -> "_begin_"
 [debug/optimizer]   [<no location>] expression::Coerced "_result" -> expression::Ctor "(_cur, _lah, _lahe, _error)" (propagating constant value)
 [debug/optimizer]   [<no location>] expression::Coerced "_result" -> expression::Ctor "(_cur, _lah, _lahe, _error)" (propagating constant value)
 [debug/optimizer]   [<no location>] expression::Coerced "_result" -> expression::Ctor "(_cur, _lah, _lahe, _error)" (propagating constant value)
@@ -341,9 +282,9 @@
 [debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:21:17-21:23" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result(); try { hilti::debugIndent("spicy"); local iterator<stream> _begin = begin(_cur); local strong_ref<stream> filtered = Null; if ( ! Null ) _result = (*self)._parse_foo__B_stage2(_data, _begin, _cur, _trim, _lah, _lahe, _error); } catch ( hilti::SystemException _except ) throw; return _result; }" -> constant propagation
 [debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:21:17-21:23" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result(); { hilti::debugIndent("spicy"); local iterator<stream> _begin_ = begin(_cur); local strong_ref<stream> filtered = Null; _result = (*self)._parse_foo__B_stage2(_data, _begin_, _cur, _trim, _lah, _lahe, _error); } return _result; }" -> inlining child block
 [debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:24:10-24:16" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result(); hilti::debugDedent("spicy"); _result = (_cur, _lah, _lahe, _error); return (_cur, _lah, _lahe, _error); }" -> constant propagation
-[debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:24:10-24:16" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result(); hilti::debugIndent("spicy"); local iterator<stream> _begin = begin(_cur); local strong_ref<stream> filtered = Null; _result = (*self)._parse_foo__C_stage2(_cur, _lah, _lahe, _error); return _result; }" -> inlining child block
+[debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:24:10-24:16" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result(); hilti::debugIndent("spicy"); local iterator<stream> _begin_ = begin(_cur); local strong_ref<stream> filtered = Null; _result = (*self)._parse_foo__C_stage2(_cur, _lah, _lahe, _error); return _result; }" -> inlining child block
 [debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:24:10-24:16" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result(); try { hilti::debugIndent("spicy"); local iterator<stream> _begin = begin(_cur); local strong_ref<stream> filtered = Null; if ( ! Null ) _result = (*self)._parse_foo__C_stage2(_data, _begin, _cur, _trim, _lah, _lahe, _error); } catch ( hilti::SystemException _except ) throw; return _result; }" -> constant propagation
-[debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:24:10-24:16" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result(); { hilti::debugIndent("spicy"); local iterator<stream> _begin = begin(_cur); local strong_ref<stream> filtered = Null; _result = (*self)._parse_foo__C_stage2(_cur, _lah, _lahe, _error); } return _result; }" -> inlining child block
+[debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:24:10-24:16" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result(); { hilti::debugIndent("spicy"); local iterator<stream> _begin_ = begin(_cur); local strong_ref<stream> filtered = Null; _result = (*self)._parse_foo__C_stage2(_cur, _lah, _lahe, _error); } return _result; }" -> inlining child block
 [debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:25:17-27:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result(); hilti::debugIndent("spicy"); local iterator<stream> _begin_ = begin(_cur); local strong_ref<stream> filtered = Null; _result = (*self)._parse_foo__D_stage2(_data, _begin_, _cur, _trim, _lah, _lahe, _error); return _result; }" -> inlining child block
 [debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:25:17-27:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result(); local value_ref<C> _transient__anon; # "<...>/unused-functions.spicy:24:10-24:16" # Begin parsing production: Unit: foo__C_2 -> _transient__anon = default<foo::C>(); (_cur, _lah, _lahe, _error) = (*_transient__anon)._parse_stage1(_data, _begin, _cur, _trim, _lah, _lahe, _error); # End parsing production: Unit: foo__C_2 -> hilti::debugDedent("spicy"); _result = (_cur, _lah, _lahe, _error); return (_cur, _lah, _lahe, _error); }" -> constant propagation
 [debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:25:17-27:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result(); try { hilti::debugIndent("spicy"); local iterator<stream> _begin = begin(_cur); local strong_ref<stream> filtered = Null; if ( ! Null ) _result = (*self)._parse_foo__D_stage2(_data, _begin, _cur, _trim, _lah, _lahe, _error); } catch ( hilti::SystemException _except ) throw; return _result; }" -> constant propagation
@@ -353,8 +294,8 @@
 [debug/optimizer]   [<no location>] statement::Block "{ _result = (*self)._parse_foo__B_stage2(_data, _begin_, _cur, _trim, _lah, _lahe, _error); }" -> inlining block
 [debug/optimizer]   [<no location>] statement::Block "{ _result = (*self)._parse_foo__C_stage2(_cur, _lah, _lahe, _error); }" -> inlining block
 [debug/optimizer]   [<no location>] statement::Block "{ _result = (*self)._parse_foo__D_stage2(_data, _begin_, _cur, _trim, _lah, _lahe, _error); }" -> inlining block
-[debug/optimizer]   [<no location>] statement::Block "{ hilti::debugIndent("spicy"); local iterator<stream> _begin = begin(_cur); local stream& filtered = Null; _result = (*self)._parse_foo__C_stage2(_cur, _lah, _lahe, _error); }" -> inlining block
 [debug/optimizer]   [<no location>] statement::Block "{ hilti::debugIndent("spicy"); local iterator<stream> _begin_ = begin(_cur); local stream& filtered = Null; _result = (*self)._parse_foo__B_stage2(_data, _begin_, _cur, _trim, _lah, _lahe, _error); }" -> inlining block
+[debug/optimizer]   [<no location>] statement::Block "{ hilti::debugIndent("spicy"); local iterator<stream> _begin_ = begin(_cur); local stream& filtered = Null; _result = (*self)._parse_foo__C_stage2(_cur, _lah, _lahe, _error); }" -> inlining block
 [debug/optimizer]   [<no location>] statement::Block "{ hilti::debugIndent("spicy"); local iterator<stream> _begin_ = begin(_cur); local stream& filtered = Null; _result = (*self)._parse_foo__D_stage2(_data, _begin_, _cur, _trim, _lah, _lahe, _error); }" -> inlining block
 [debug/optimizer]   [<no location>] statement::Declaration "local strong_ref<stream> filtered = Null;" -> null (statement result unused)
 [debug/optimizer]   [<no location>] statement::Declaration "local strong_ref<stream> filtered = Null;" -> null (statement result unused)
@@ -756,20 +697,20 @@
 [debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]   re-processing AST, round 1
-[debug/optimizer]   re-resolving AST assuming guarantees <cfg-unchanged,fully-resolved,scopes-built,types-unified>
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,fully-resolved,scopes-built,types-unified>
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,fully-resolved,scopes-built,types-unified>
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,fully-resolved>
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,fully-resolved>
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,types-unified>
+[debug/optimizer]   re-resolving AST assuming guarantees <cfg-unchanged,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
-[debug/optimizer]   re-resolving AST assuming guarantees <resolved-except-coercions,constants-folded>
-[debug/optimizer]   re-resolving AST assuming guarantees <resolved-except-coercions,constants-folded>
-[debug/optimizer]   re-resolving AST assuming guarantees <resolved-except-coercions,constants-folded>
-[debug/optimizer]   re-resolving AST assuming guarantees <resolved-except-coercions,constants-folded>
-[debug/optimizer]   re-resolving AST assuming guarantees <resolved-except-coercions,scopes-built,types-unified>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-resolving AST assuming guarantees <none>
 [debug/optimizer] pass: constant-propagation (round 1, pass iteration 1)
 [debug/optimizer] pass: constant-propagation (round 1, pass iteration 2)
 [debug/optimizer] pass: constant-propagation (round 2, pass iteration 1)

@@ -157,7 +157,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     # "<...>/unused-functions.spicy:24:10-24:16"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result();
     hilti::debugIndent("spicy");
-    local iterator<stream> _begin = begin(_cur);
+    local iterator<stream> _begin_ = begin(_cur);
     _result = (*self)._parse_foo__C_stage2(_cur, _lah, _lahe, _error);
     return _result;
 }

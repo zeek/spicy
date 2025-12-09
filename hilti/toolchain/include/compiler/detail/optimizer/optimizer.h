@@ -145,6 +145,9 @@ private:
     // for upcoming use by `updateAST()`.
     void _normalizeModificationState();
 
+    // Re-resolves the AST after modifications made by a pass.
+    bool _resolve(Node* node);
+
     ASTContext* _context = nullptr;
     Builder* _builder = nullptr;
     const PassInfo* _pinfo = nullptr;
@@ -167,11 +170,7 @@ private:
 enum class Guarantees : uint16_t {
     CFGUnchanged = (1U << 1U),    /**< control flow graphs remain unchanged even for modified functions */
     ConstantsFolded = (1U << 2U), /**< all constant expressions remain fully folded */
-    FullyResolved = (1U << 3U),   /**< AST remains fully resolved with regards to anything the AST resolver does */
-    ResolvedExceptCoercions = (1U << 4U), /**< AST remains fully resolved with regards to anything the AST resolver
-                                             does, except that coercions might not be fully executed */
-    ScopesBuilt = (1U << 5U),             /**< the scopes of all nodes remain valid */
-    TypesUnified = (1U << 6U),            /**< all types remain fully unified */
+    Resolved = (1U << 3U),        /**< AST remains fully resolved with regards to anything the AST resolver does */
 
     None = 0U,               /**< no guarantees provided, recompute everything */
     All = ((1U << 16U) - 1U) /**< AST still fully up to date in all regards, nothing to recompute */

@@ -311,8 +311,7 @@ bool run(Optimizer* optimizer) {
 optimizer::RegisterPass feature_requirements({.id = PassID::FeatureRequirements,
                                               .one_time = true,
                                               .iterate = false,
-                                              .guarantees = Guarantees::FullyResolved | Guarantees::ScopesBuilt |
-                                                            Guarantees::CFGUnchanged | Guarantees::TypesUnified,
+                                              .guarantees = Guarantees::Resolved | Guarantees::CFGUnchanged,
                                               .run = run});
 
 } // namespace

@@ -9,11 +9,9 @@
 [debug/optimizer]   [dead-write-shadowed.hlt:10:19-18:1] statement::Block "{ local uint<64> x = 1; { x = 5; local uint<64> x_ = 10; x_ = 2; } hilti::print(x, True); }" -> inlining child block
 [debug/optimizer]   [dead-write-shadowed.hlt:12:5-16:5] statement::Block "{ x = 5; local uint<64> x_ = 10; x_ = 2; }" -> inlining block
 [debug/optimizer]     -> modified
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,types-unified>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-processing AST, round 1
-[debug/optimizer]     * scope-builder
-[debug/optimizer]       - updating function: f
-[debug/optimizer]     * full-resolver
+[debug/optimizer]     * resolver
 [debug/optimizer]       - updating function: f
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]       - deleting function state: f
@@ -21,12 +19,8 @@
 [debug/optimizer]     * function changed: f
 [debug/optimizer]   [dead-write-shadowed.hlt:15:9-15:13] statement::Expression "x_ = 2;" -> null (statement result unused)
 [debug/optimizer]     -> modified
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,fully-resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-processing AST, round 1
-[debug/optimizer]     * scope-builder
-[debug/optimizer]       - updating function: f
-[debug/optimizer]     * type-unifier
-[debug/optimizer]       - updating function: f
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]       - deleting function state: f
 [debug/optimizer] pass: constant-propagation (round 1, pass iteration 1)
@@ -38,12 +32,8 @@
 [debug/optimizer]     * function changed: f
 [debug/optimizer]   [dead-write-shadowed.hlt:14:9-14:30] statement::Declaration "local uint<64> x_ = 10;" -> null (statement result unused)
 [debug/optimizer]     -> modified
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,fully-resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-processing AST, round 1
-[debug/optimizer]     * scope-builder
-[debug/optimizer]       - updating function: f
-[debug/optimizer]     * type-unifier
-[debug/optimizer]       - updating function: f
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]       - deleting function state: f
 [debug/optimizer] pass: constant-propagation (round 2, pass iteration 1)
