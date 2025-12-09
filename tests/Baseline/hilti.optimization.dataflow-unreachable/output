@@ -2,6 +2,7 @@
 [debug/optimizer] pass: feature-requirements (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 1, pass iteration 1)
 [debug/optimizer] pass: peephole (round 1, pass iteration 1)
+[debug/optimizer] pass: flatten-blocks (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 1, pass iteration 1)
 [debug/optimizer]     * function changed: fn
 [debug/optimizer]   [dataflow-unreachable.hlt:14:5-14:25] statement::Declaration "local uint<64> c = a;" -> null (statement result unused)
@@ -33,6 +34,7 @@
 [debug/optimizer] pass: remove-unused-parameters (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 2, pass iteration 1)
 [debug/optimizer] pass: peephole (round 2, pass iteration 1)
+[debug/optimizer] pass: flatten-blocks (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 2, pass iteration 1)
 [debug/optimizer]     * function changed: fn
 [debug/optimizer]   [dataflow-unreachable.hlt:10:5-10:9] statement::Expression "a = 1;" -> null (statement result unused)
@@ -50,6 +52,7 @@
 [debug/optimizer] pass: remove-unused-parameters (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 3, pass iteration 1)
 [debug/optimizer] pass: peephole (round 3, pass iteration 1)
+[debug/optimizer] pass: flatten-blocks (round 3, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 3, pass iteration 1)
 [debug/optimizer]     * function changed: fn
 [debug/optimizer]   [dataflow-unreachable.hlt:11:5-11:25] statement::Declaration "local uint<64> b = 1;" -> null (statement result unused)
@@ -66,6 +69,7 @@
 [debug/optimizer] pass: remove-unused-parameters (round 3, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 4, pass iteration 1)
 [debug/optimizer] pass: peephole (round 4, pass iteration 1)
+[debug/optimizer] pass: flatten-blocks (round 4, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 4, pass iteration 1)
 [debug/optimizer] pass: constant-propagation (round 4, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 4, pass iteration 1)

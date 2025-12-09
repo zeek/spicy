@@ -58,14 +58,9 @@ init function void _register_foo_P0() {
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::P1::_parse_stage1(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) {
     # "<...>/default-parser-functions.spicy:14:18-14:24"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result();
-    {
-        hilti::debugIndent("spicy");
-        local iterator<stream> _begin = begin(_cur);
-        
-            _result = (*self)._parse_foo__P1_stage2(_data, _begin, _cur, _trim, _lah, _lahe, _error);
-
-    }
-
+    hilti::debugIndent("spicy");
+    local iterator<stream> _begin_ = begin(_cur);
+    _result = (*self)._parse_foo__P1_stage2(_data, _begin_, _cur, _trim, _lah, _lahe, _error);
     return _result;
 }
 
@@ -149,9 +144,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     try {
         hilti::debugIndent("spicy");
         local iterator<stream> _begin = begin(_cur);
-        
-            _result = (*self)._parse_foo__P2_stage2(_data, _begin, _cur, _trim, _lah, _lahe, _error);
-
+        _result = (*self)._parse_foo__P2_stage2(_data, _begin, _cur, _trim, _lah, _lahe, _error);
     }
     catch ( hilti::SystemException _except ) {
         (*self)._on_0x25_error(hilti::exception_what(_except));
@@ -163,36 +156,31 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::P2::_parse_foo__P2_stage2(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) {
     # "<...>/default-parser-functions.spicy:16:18-21:1"
-    {
-        # "<...>/default-parser-functions.spicy:17:8-17:12"
+    # "<...>/default-parser-functions.spicy:17:8-17:12"
 
-        # Begin parsing production: Variable: x   -> uint<8>
-        spicy_rt::waitForInput(_data, _cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:17:8-17:12", Null);
-        ((*self).x, _cur) = (*unpack<uint<8>>((_cur, hilti::ByteOrder::Network)));
+    # Begin parsing production: Variable: x   -> uint<8>
+    spicy_rt::waitForInput(_data, _cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:17:8-17:12", Null);
+    ((*self).x, _cur) = (*unpack<uint<8>>((_cur, hilti::ByteOrder::Network)));
 
-        if ( _trim ) 
-            (*_data).trim(begin(_cur));
+    if ( _trim ) 
+        (*_data).trim(begin(_cur));
 
-        # End parsing production: Variable: x   -> uint<8>
-    }
+    # End parsing production: Variable: x   -> uint<8>
 
-    {
-        # "<...>/default-parser-functions.spicy:18:8-18:12"
+    # "<...>/default-parser-functions.spicy:18:8-18:12"
 
-        # Begin parsing production: Variable: y   -> uint<8>
-        spicy_rt::waitForInput(_data, _cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:18:8-18:12", Null);
-        ((*self).y, _cur) = (*unpack<uint<8>>((_cur, hilti::ByteOrder::Network)));
+    # Begin parsing production: Variable: y   -> uint<8>
+    spicy_rt::waitForInput(_data, _cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:18:8-18:12", Null);
+    ((*self).y, _cur) = (*unpack<uint<8>>((_cur, hilti::ByteOrder::Network)));
 
-        if ( _trim ) 
-            (*_data).trim(begin(_cur));
+    if ( _trim ) 
+        (*_data).trim(begin(_cur));
 
-        # End parsing production: Variable: y   -> uint<8>
+    # End parsing production: Variable: y   -> uint<8>
 
-        (*self)._error = _error;
-        (*self)._on_y((*self).y);
-        _error = (*self)._error;
-    }
-
+    (*self)._error = _error;
+    (*self)._on_y((*self).y);
+    _error = (*self)._error;
     hilti::debugDedent("spicy");
     return (_cur, _lah, _lahe, _error);
 }

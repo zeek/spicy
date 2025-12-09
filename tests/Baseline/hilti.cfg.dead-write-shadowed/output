@@ -2,9 +2,24 @@
 [debug/optimizer] pass: feature-requirements (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 1, pass iteration 1)
 [debug/optimizer] pass: peephole (round 1, pass iteration 1)
+[debug/optimizer] pass: flatten-blocks (round 1, pass iteration 1)
+[debug/optimizer]     * function changed: f
+[debug/optimizer]   [dead-write-shadowed.hlt:14:9-14:30] declaration::LocalVariable "local uint<64> x = 10" -> renaming declaration "x" -> "x_"
+[debug/optimizer]   [dead-write-shadowed.hlt:15:9-15:9] expression::Name "x" -> renaming reference "x" -> "x_"
+[debug/optimizer]   [dead-write-shadowed.hlt:10:19-18:1] statement::Block "{ local uint<64> x = 1; { x = 5; local uint<64> x_ = 10; x_ = 2; } hilti::print(x, True); }" -> inlining child block
+[debug/optimizer]   [dead-write-shadowed.hlt:12:5-16:5] statement::Block "{ x = 5; local uint<64> x_ = 10; x_ = 2; }" -> inlining block
+[debug/optimizer]     -> modified
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,types-unified>
+[debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]     * scope-builder
+[debug/optimizer]       - updating function: f
+[debug/optimizer]     * full-resolver
+[debug/optimizer]       - updating function: f
+[debug/optimizer]     * computed CFGs
+[debug/optimizer]       - deleting function state: f
 [debug/optimizer] pass: dead-code-cfg (round 1, pass iteration 1)
 [debug/optimizer]     * function changed: f
-[debug/optimizer]   [dead-write-shadowed.hlt:15:9-15:13] statement::Expression "x = 2;" -> null (statement result unused)
+[debug/optimizer]   [dead-write-shadowed.hlt:15:9-15:13] statement::Expression "x_ = 2;" -> null (statement result unused)
 [debug/optimizer]     -> modified
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,fully-resolved>
 [debug/optimizer]   re-processing AST, round 1
@@ -18,9 +33,10 @@
 [debug/optimizer] pass: remove-unused-parameters (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 2, pass iteration 1)
 [debug/optimizer] pass: peephole (round 2, pass iteration 1)
+[debug/optimizer] pass: flatten-blocks (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 2, pass iteration 1)
 [debug/optimizer]     * function changed: f
-[debug/optimizer]   [dead-write-shadowed.hlt:14:9-14:30] statement::Declaration "local uint<64> x = 10;" -> null (statement result unused)
+[debug/optimizer]   [dead-write-shadowed.hlt:14:9-14:30] statement::Declaration "local uint<64> x_ = 10;" -> null (statement result unused)
 [debug/optimizer]     -> modified
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,fully-resolved>
 [debug/optimizer]   re-processing AST, round 1
@@ -34,6 +50,7 @@
 [debug/optimizer] pass: remove-unused-parameters (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 3, pass iteration 1)
 [debug/optimizer] pass: peephole (round 3, pass iteration 1)
+[debug/optimizer] pass: flatten-blocks (round 3, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 3, pass iteration 1)
 [debug/optimizer] pass: constant-propagation (round 3, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 3, pass iteration 1)
@@ -55,13 +72,11 @@ digraph {
     3 [label=start shape=Mdiamond xlabel="in: [] out: []"];
     4 [label="end <...>/dead-write-shadowed.hlt:10:19-18:1" shape=triangle xlabel="in: [] out: []"];
     5 [label="end <...>/dead-write-shadowed.hlt:10:19-18:1" shape=triangle xlabel="kill: [x: x = 5;] in: [x: x = 5;] out: []"];
-    6 [label="end <...>/dead-write-shadowed.hlt:12:5-16:5" shape=triangle xlabel="in: [x: x = 5;] out: [x: x = 5;]"];
     3 -> 0 [label="0"];
     0 -> 1 [label="1"];
-    1 -> 6 [label="2"];
-    6 -> 2 [label="3"];
-    2 -> 5 [label="4"];
-    5 -> 4 [label="5"];
+    1 -> 2 [label="2"];
+    2 -> 5 [label="3"];
+    5 -> 4 [label="4"];
 }
 [debug/cfg-final] Module 'hilti'
 digraph {

@@ -5,9 +5,7 @@ import hilti;
 
 function void f() {
     local uint<64> x = 1;
-    
-        x = 5;
-
+    x = 5;
     hilti::print(x, True);
 }
 

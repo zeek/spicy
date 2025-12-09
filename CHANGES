@@ -1,3 +1,23 @@
+1.15.0-dev.146 | 2025-12-09 18:25:47 +0100
+
+  * GH-1425: Add pass which performs block flattening. (Benjamin Bannier, Corelight)
+
+    A number of other rewrites currently depend on a simpler flow without
+    additional scopes. This patch implements such a pass which removes
+    nested scopes. This involves first renaming any identifiers which would
+    clash when lifted to the parent scope, and then merging the scope's
+    contents into its parent.
+
+    We also perform extra handling where an value aliased a value from the
+    removed scope. The previous behavior was that the alias would have
+    become dangling after the scope. Since this is something we explicitly
+    allow and diagnose at runtime we preserve that behavior by now pointing
+    it to fresh data.
+
+    Closes #1425.
+
+  * Add `Block::removeStatements`. (Benjamin Bannier, Corelight)
+
 1.15.0-dev.143 | 2025-12-09 17:25:36 +0100
 
   * GH-2205: Uglify internal identifiers. (Benjamin Bannier, Corelight)

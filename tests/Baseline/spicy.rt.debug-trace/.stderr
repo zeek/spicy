@@ -18,12 +18,12 @@
 [hilti-trace] : local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result();
 [hilti-trace] : hilti::debug("spicy", "Mini::Test");
 [hilti-trace] : hilti::debugIndent("spicy");
-[hilti-trace] : local iterator<stream> _begin = begin(_cur);
+[hilti-trace] : local iterator<stream> _begin_ = begin(_cur);
 [hilti-trace] : (*self)._error = _error;
 [hilti-trace] debug-trace.spicy:8:20-13:1: : (*self)._on_0x25_init();
 [hilti-trace] debug-trace.spicy:9:18-9:28: : hilti::print(self, True);
 [hilti-trace] : _error = (*self)._error;
-[hilti-trace] : _result = (*self)._parse_Mini__Test_stage2(_data, _begin, _cur, _trim, _lah, _lahe, _error);
+[hilti-trace] : _result = (*self)._parse_Mini__Test_stage2(_data, _begin_, _cur, _trim, _lah, _lahe, _error);
 [hilti-trace] : # "<...>/debug-trace.spicy:8:20-13:1"
 [hilti-trace] : # "<...>/debug-trace.spicy:10:9-10:14"
 [hilti-trace] : # Begin parsing production: Variable: f1 -> uint<32>

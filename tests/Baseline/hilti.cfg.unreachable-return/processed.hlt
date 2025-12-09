@@ -4,11 +4,8 @@ module Test {
 import hilti;
 
 function void f() {
-    {
-        hilti::print("hey", True);
-        return;
-    }
-
+    hilti::print("hey", True);
+    return;
 }
 
 f();
