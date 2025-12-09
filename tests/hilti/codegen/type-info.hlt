@@ -180,22 +180,22 @@ public function tuple<strong_ref<TestOptionals>, TypeInfo> makeTestOptionals() {
 
 using namespace hilti::rt;
 
-namespace __hlt::Test {
+namespace hlt_internal::Test {
 // Prototypes extracted from the output of "hiltic -P '' type-info.hlt"
 struct TestTypes;
 struct TestOptionals;
 
 extern auto makeTestTypes()
-    -> Tuple<hilti::rt::StrongReference<__hlt::Test::TestTypes>,
-                  hilti::rt::StrongReference<__hlt::Test::TestTypes>, const ::hilti::rt::TypeInfo*>;
+    -> Tuple<hilti::rt::StrongReference<hlt_internal::Test::TestTypes>,
+                  hilti::rt::StrongReference<hlt_internal::Test::TestTypes>, const ::hilti::rt::TypeInfo*>;
 
 extern auto makeTestOptionals()
-    -> Tuple<hilti::rt::StrongReference<__hlt::Test::TestOptionals>, const ::hilti::rt::TypeInfo*>;
+    -> Tuple<hilti::rt::StrongReference<hlt_internal::Test::TestOptionals>, const ::hilti::rt::TypeInfo*>;
 
 extern auto getThreeTypeInfos()
     -> Tuple<const ::hilti::rt::TypeInfo*, const ::hilti::rt::TypeInfo*, const ::hilti::rt::TypeInfo*>;
 
-} // namespace __hlt::Test
+} // namespace hlt_internal::Test
 
 // Global counters for errors. Test will fail if this is non-zero at
 // termination.
@@ -663,14 +663,14 @@ int main(int argc, char** argv) {
     hilti::rt::init();
 
     // Check that retrieving typeinfo works.
-    auto ti = __hlt::Test::getThreeTypeInfos();
+    auto ti = hlt_internal::Test::getThreeTypeInfos();
     CHECK_EQ(std::string(tuple::get<0>(ti)->display), std::string("bytes"));
     CHECK_EQ(std::string(tuple::get<1>(ti)->display), std::string("Test::Struct"));
     CHECK_EQ(std::string(tuple::get<2>(ti)->display), std::string("Test::Struct"));
 
     // Call HILTI code to create & initialize struct instances.
-    auto [x_init, x_default, ti_types] = __hlt::Test::makeTestTypes();
-    auto [x_optionals, ti_optionals] = __hlt::Test::makeTestOptionals();
+    auto [x_init, x_default, ti_types] = hlt_internal::Test::makeTestTypes();
+    auto [x_optionals, ti_optionals] = hlt_internal::Test::makeTestOptionals();
 
     // Test instance of TestTypes that has been initialized with known values.
     CHECK(ti_types->id);

@@ -352,17 +352,17 @@ TEST_CASE("stack-size-check" * doctest::skip(isMacosAsan())) {
 TEST_CASE("locations") {
     hilti::rt::init();
 
-    __location__("global");
+    hilti::rt::location("global");
 
     auto f1 = [&](hilti::rt::resumable::Handle* r) {
-        __location__("f1");
+        hilti::rt::location("f1");
         r->yield();
         CHECK(strcmp(hilti::rt::debug::location(), "f1") == 0);
         return hilti::rt::Nothing();
     };
 
     auto f2 = [&](hilti::rt::resumable::Handle* r) {
-        __location__("f2");
+        hilti::rt::location("f2");
         r->yield();
         CHECK(strcmp(hilti::rt::debug::location(), "f2") == 0);
         return hilti::rt::Nothing();

@@ -60,13 +60,13 @@ void Unit::_addModuleInitFunction() {
     };
 
     if ( _init_globals )
-        add_init_function(context().get(), _init_globals, "__init_globals");
+        add_init_function(context().get(), _init_globals, HILTI_INTERNAL_ID("init_globals"));
 
     if ( _init_module )
-        add_init_function(context().get(), _init_module, "__init_module");
+        add_init_function(context().get(), _init_module, HILTI_INTERNAL_ID("init_module"));
 
     if ( _preinit_module )
-        add_init_function(context().get(), _preinit_module, "__preinit_module");
+        add_init_function(context().get(), _preinit_module, HILTI_INTERNAL_ID("preinit_module"));
 
     if ( cxxModuleID() != cxx::ID("__linker__") ) {
         auto scope = fmt("%s_hlto_scope", context()->options().cxx_namespace_intern);
@@ -75,16 +75,20 @@ void Unit::_addModuleInitFunction() {
 
         cxx::Block register_;
         register_.addStatement(fmt("::hilti::rt::Library::setScope(&%s)", scope));
-        register_.addStatement(
-            fmt("::hilti::rt::detail::registerModule({ \"%s\", %s, %s, %s, %s, %s})", cxxModuleID(), scope,
-                _init_module ? "&__init_module" : "nullptr", _uses_globals ? "&__init_globals" : "nullptr",
-                _uses_globals && ! context()->options().cxx_enable_dynamic_globals ? "&__destroy_globals" : "nullptr",
-                _uses_globals && context()->options().cxx_enable_dynamic_globals ? "&__globals_index" : "nullptr"));
+        register_.addStatement(fmt("::hilti::rt::detail::registerModule({ \"%s\", %s, %s, %s, %s, %s})", cxxModuleID(),
+                                   scope, _init_module ? "&" HILTI_INTERNAL_ID("init_module") : "nullptr",
+                                   _uses_globals ? "&" HILTI_INTERNAL_ID("init_globals") : "nullptr",
+                                   _uses_globals && ! context()->options().cxx_enable_dynamic_globals ?
+                                       "&" HILTI_INTERNAL_ID("destroy_globals") :
+                                       "nullptr",
+                                   _uses_globals && context()->options().cxx_enable_dynamic_globals ?
+                                       "&" HILTI_INTERNAL_ID("globals_index") :
+                                       "nullptr"));
 
         if ( _preinit_module )
-            register_.addStatement(fmt("__preinit_module()"));
+            register_.addStatement(HILTI_INTERNAL_ID("preinit_module()"));
 
-        auto id = add_init_function(context().get(), std::move(register_), "__register_module");
+        auto id = add_init_function(context().get(), std::move(register_), HILTI_INTERNAL_ID("register_module"));
         add(fmt("HILTI_PRE_INIT(%s)", id));
     }
 }

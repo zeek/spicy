@@ -533,7 +533,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
         if ( auto* decl = n->resolvedDeclaration() ) {
             if ( auto* parent = n->parent<Declaration>();
-                 decl == parent && ! decl->isA<declaration::Function>() && n->id() != ID("__dd") ) {
+                 decl == parent && ! decl->isA<declaration::Function>() && n->id() != ID(HILTI_INTERNAL_ID("dd")) ) {
                 error(fmt("ID '%s' cannot be used inside its own declaration", n->id()), n);
                 return;
             }

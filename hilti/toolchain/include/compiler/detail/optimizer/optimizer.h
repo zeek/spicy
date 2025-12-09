@@ -277,7 +277,8 @@ public:
      *
      * @param id the ID to check
      */
-    static bool isFeatureFlag(const ID& id) { return util::startsWith(id.local(), "__feat%"); }
+    // FIXME(bbannier): drop `%`?
+    static bool isFeatureFlag(const ID& id) { return util::startsWith(id.local(), HILTI_INTERNAL_ID("feat%")); }
 
     /**
      * Extracts tuple `(id, feature)` from a feature constant ID.

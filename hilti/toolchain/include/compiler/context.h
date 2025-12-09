@@ -43,7 +43,8 @@ struct Options {
     std::vector<hilti::rt::filesystem::path> library_paths; /**< additional directories to search for imported files */
     std::string cxx_namespace_extern =
         "hlt"; /**< CXX namespace for generated C++ code accessible to the host application */
-    std::string cxx_namespace_intern = "__hlt"; /**< CXX namespace for generated internal C++ code */
+    // NOTE: This should be consistent with identifiers generated with `HILTI_INTERNAL_GLOBAL_ID`.
+    std::string cxx_namespace_intern = HILTI_INTERNAL_NS_ID; /**< CXX namespace for generated internal C++ code */
     std::vector<hilti::rt::filesystem::path>
         cxx_include_paths;             /**< additional C++ directories to search for #include files */
     bool keep_tmps = false;            /**< if true, do not remove generated files on exit */

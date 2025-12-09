@@ -33,7 +33,9 @@ template<typename>
 constexpr std::false_type has_hook_to_string_helper(long);
 
 template<typename T>
-constexpr auto has_hook_to_string_helper(int) -> decltype(std::declval<T>().__hook_to_string(), std::true_type{});
+// NOLINTNEXTLINE(readability/casting)
+constexpr auto has_hook_to_string_helper(int)
+    -> decltype(std::declval<T>().HILTI_INTERNAL(hook_to_string)(), std::true_type{});
 
 template<typename T>
 using has_hook_to_string = decltype(has_hook_to_string_helper<T>(0));
@@ -43,7 +45,7 @@ inline std::string to_string(const T& x, adl::tag /*unused*/)
     requires(std::is_base_of_v<trait::isStruct, T>)
 {
     if constexpr ( has_hook_to_string<T>() ) {
-        if ( auto s = T(x).__hook_to_string() ) // copy because we need a non-const T
+        if ( auto s = T(x).HILTI_INTERNAL(hook_to_string)() ) // copy because we need a non-const T
             return *s;
     }
 

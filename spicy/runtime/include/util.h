@@ -38,14 +38,14 @@ get_offsets_for_unit(const hilti::rt::type_info::Struct& struct_, const hilti::r
 template<typename U>
 inline void confirm(U& p, const hilti::rt::TypeInfo* /* ti */) {
     // If we are not in trial mode `confirm` is a no-op.
-    if ( p.__error ) {
-        p.__error.reset();
+    if ( p.HILTI_INTERNAL(error) ) {
+        p.HILTI_INTERNAL(error).reset();
 
         // TODO(bbannier): For consistence we would ideally bracket the hook
         // invocation with calls to `ParserBuilder::beforeHook` and
         // `afterHook`, but this is not possible since we have no direct access
         // to the parser state here.
-        p.__on_0x25_confirmed();
+        p.HILTI_INTERNAL(on_0x25_confirmed)();
     }
 }
 
@@ -53,12 +53,12 @@ inline void confirm(U& p, const hilti::rt::TypeInfo* /* ti */) {
 template<typename U>
 inline void reject(U& p, const hilti::rt::TypeInfo* /* ti */) {
     // Only invoke hook if we were actually in trial mode.
-    if ( const auto& error = p.__error ) {
+    if ( const auto& error = p.HILTI_INTERNAL(error) ) {
         // TODO(bbannier): For consistence we would ideally bracket the hook
         // invocation with calls to `ParserBuilder::beforeHook` and
         // `afterHook`, but this is not possible since we have no direct access
         // to the parser state here.
-        p.__on_0x25_rejected();
+        p.HILTI_INTERNAL(on_0x25_rejected)();
 
         throw *error;
     }

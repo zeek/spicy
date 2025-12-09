@@ -2,7 +2,7 @@
 #
 # Canonifies hiltic output for baseline diffing.
 
-
+# shellcheck disable=SC2016
 cat \
   | sed '/\/\* __HILTI_LINKER_V1__/,/\*\// {s#/\([^/ ]\{1,\}/\)\{1,\}\([^/ ]\{1,\}\)#<...>/\2#g;}' \
   | sed '/\/\/ Begin of [^ ]* (from/       {s#/\([^/ ]\{1,\}/\)\{1,\}\([^/ ]\{1,\}\)#<...>/\2#g;}' \
@@ -15,7 +15,7 @@ cat \
   | sed 's#[("]\(/[^")/\]\{1,\}\)\{1,\}\([^")/\]\{1,\}\)[")]#"<...>\1\2"#g' \
   | sed 's#libc++abi.dylib: ##g' \
   | sed 's#\(Compiled by HILTI version\) .*#\1 X.X.X#g' \
-  | sed 's#__hlt_hlto_library_version = .*#__hlt_hlto_library_version = <...>#g' \
-  | sed 's#__hlt_hlto_bind_to_version = .*#__hlt_hlto_bind_to_version = <...>#g' \
+  | sed 's#hlt_internal_hlto_library_version = .*#hlt_internal_hlto_library_version = <...>#g' \
+  | sed 's#hlt_internal_hlto_bind_to_version = .*#hlt_internal_hlto_bind_to_version = <...>#g' \
   | sed 's/\[\(@.:\)[0-9a-f]\{1,\}\]/[\1XXX]/g' \
   | sed 's/\[\(parent @.:\)[0-9a-f]\{1,\}\]/[\1XXX]/g' \

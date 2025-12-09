@@ -156,8 +156,8 @@ private:
 
     std::shared_ptr<cxx::Unit> _cxx_unit;
     hilti::declaration::Module* _hilti_module = nullptr;
-    std::vector<detail::cxx::Expression> _self = {{"__self", Side::LHS}};
-    std::vector<detail::cxx::Expression> _dd = {{"__dd", Side::LHS}};
+    std::vector<detail::cxx::Expression> _self = {{HILTI_INTERNAL_ID("self"), Side::LHS}};
+    std::vector<detail::cxx::Expression> _dd = {{HILTI_INTERNAL_ID("dd"), Side::LHS}};
     std::vector<detail::cxx::Block*> _cxx_blocks;
     std::vector<detail::cxx::declaration::Local> _tmps;
     std::map<std::string, int> _tmp_counters;

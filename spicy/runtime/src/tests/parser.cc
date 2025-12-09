@@ -106,20 +106,21 @@ TEST_CASE("atEod") {
 }
 
 struct UnitWithSinkSupport : std::enable_shared_from_this<UnitWithSinkSupport> {
-    static Parser __parser;
-    sink::detail::State* __sink = nullptr;
-    hilti::rt::Optional<hilti::rt::RecoverableFailure> __error;
+    static Parser HILTI_INTERNAL(parser);
+    sink::detail::State* HILTI_INTERNAL(sink) = nullptr;
+    hilti::rt::Optional<hilti::rt::RecoverableFailure> HILTI_INTERNAL(error);
 
-    void (*__on_0x25_gap)(uint64_t, uint64_t) = nullptr;
-    void (*__on_0x25_skipped)(uint64_t) = nullptr;
-    void (*__on_0x25_overlap)(uint64_t, const Bytes&, const Bytes&) = nullptr;
-    void (*__on_0x25_undelivered)(uint64_t, const Bytes&) = nullptr;
+    void (*HILTI_INTERNAL(on_0x25_gap))(uint64_t, uint64_t) = nullptr;
+    void (*HILTI_INTERNAL(on_0x25_skipped))(uint64_t) = nullptr;
+    void (*HILTI_INTERNAL(on_0x25_overlap))(uint64_t, const Bytes&, const Bytes&) = nullptr;
+    void (*HILTI_INTERNAL(on_0x25_undelivered))(uint64_t, const Bytes&) = nullptr;
 
-    void (*__hook_gap)(hilti::rt::StrongReferenceGeneric, uint64_t, uint64_t);
-    void (*__hook_overlap)(hilti::rt::StrongReferenceGeneric, uint64_t, const hilti::rt::Bytes&,
-                           const hilti::rt::Bytes&) = nullptr;
-    void (*__hook_skipped)(hilti::rt::StrongReferenceGeneric, uint64_t) = nullptr;
-    void (*__hook_undelivered)(hilti::rt::StrongReferenceGeneric, uint64_t, const hilti::rt::Bytes&) = nullptr;
+    void (*HILTI_INTERNAL(hook_gap))(hilti::rt::StrongReferenceGeneric, uint64_t, uint64_t);
+    void (*HILTI_INTERNAL(hook_overlap))(hilti::rt::StrongReferenceGeneric, uint64_t, const hilti::rt::Bytes&,
+                                         const hilti::rt::Bytes&) = nullptr;
+    void (*HILTI_INTERNAL(hook_skipped))(hilti::rt::StrongReferenceGeneric, uint64_t) = nullptr;
+    void (*HILTI_INTERNAL(hook_undelivered))(hilti::rt::StrongReferenceGeneric, uint64_t,
+                                             const hilti::rt::Bytes&) = nullptr;
 
     // NOLINTNEXTLINE(bugprone-unhandled-self-assignment, cert-oop54-cpp)
     UnitWithSinkSupport& operator=(const UnitWithSinkSupport&) {
@@ -128,7 +129,7 @@ struct UnitWithSinkSupport : std::enable_shared_from_this<UnitWithSinkSupport> {
     }
 };
 
-Parser UnitWithSinkSupport::__parser{};
+Parser UnitWithSinkSupport::HILTI_INTERNAL(parser){};
 
 TEST_CASE("registerParser") {
     hilti::rt::test::CaptureIO _(std::cerr); // Suppress output.

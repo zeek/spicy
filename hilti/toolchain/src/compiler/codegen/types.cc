@@ -68,8 +68,9 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                 cxx::Block self_body;
                 self_body.addStatement(util::fmt("return ::hilti::rt::ValueReference<%s>::self(this)", id));
 
-                auto self = cxx::declaration::Function(cxx::declaration::Function::Free, "auto", "__self", {}, "",
-                                                       cxx::declaration::Function::Inline(), std::move(self_body));
+                auto self =
+                    cxx::declaration::Function(cxx::declaration::Function::Free, "auto", HILTI_INTERNAL_ID("self"), {},
+                                               "", cxx::declaration::Function::Inline(), std::move(self_body));
 
                 fields.emplace_back(std::move(self));
 
@@ -99,8 +100,9 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                     else
                         default_ = cg->typeDefaultValue(p->type());
 
-                    auto arg = cxx::declaration::Argument(cxx::ID(fmt("__p_%s", p->id())), std::move(type),
-                                                          std::move(default_), std::move(internal_type));
+                    auto arg =
+                        cxx::declaration::Argument(cxx::ID(fmt("%s_%s", HILTI_INTERNAL_ID("p"), p->id())),
+                                                   std::move(type), std::move(default_), std::move(internal_type));
                     args.emplace_back(std::move(arg));
                 }
 
@@ -118,7 +120,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                             auto cxx_body = cxx::Block();
 
                             if ( ! f->isStatic() ) {
-                                // Need a LHS for __self.
+                                // Need a LHS for `self`.
                                 auto tid = n->typeID();
 
                                 if ( ! tid )
@@ -131,7 +133,9 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                                     id_module = cg->hiltiModule()->uid().unique;
 
                                 auto id_type = cxx::ID(id_module, id_class);
-                                auto self = cxx::declaration::Local("__self", "auto", {}, fmt("%s::__self()", id_type));
+                                auto self =
+                                    cxx::declaration::Local(HILTI_INTERNAL_ID("self"), "auto", {},
+                                                            fmt("%s::%s()", id_type, HILTI_INTERNAL_ID("self")));
                                 cxx_body.addLocal(self);
                             }
 
@@ -158,16 +162,17 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                                 id_module = cg->hiltiModule()->uid().unique;
 
                             auto id_hook = cxx::ID(cg->options().cxx_namespace_intern, id_module,
-                                                   fmt("__hook_%s_%s", id_class, id_local));
+                                                   fmt(HILTI_INTERNAL_ID("hook_%s_%s"), id_class, id_local));
                             auto id_type = cxx::ID(id_module, id_class);
 
                             auto args = util::toVector(d.args | std::views::transform([](auto& a) { return a.id; }));
-                            args.emplace_back("__self");
+                            args.emplace_back(HILTI_INTERNAL_ID("self"));
 
                             auto method_body = cxx::Block();
 
-                            // Need a LHS for __self.
-                            auto self = cxx::declaration::Local("__self", "auto", {}, fmt("%s::__self()", id_type));
+                            // Need a LHS for `_self`.
+                            const auto* self_ = HILTI_INTERNAL_ID("self");
+                            auto self = cxx::declaration::Local(self_, "auto", {}, fmt("%s::%s()", id_type, self_));
                             method_body.addLocal(self);
                             method_body.addStatement(fmt("return %s(%s)", id_hook, util::join(args, ", ")));
 
@@ -196,7 +201,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                                 cg->builder()->qualifiedType(cg->builder()->typeValueReference(type), Constness::Const);
                             // NOLINTNEXTLINE(modernize-use-emplace)
                             hook.callee.args.push_back(
-                                cxx::declaration::Argument("__self",
+                                cxx::declaration::Argument(HILTI_INTERNAL_ID("self"),
                                                            cg->compile(vref, codegen::TypeUsage::InOutParameter)));
                             cg->unit()->add(hook);
                         }
@@ -218,7 +223,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                     cg->pushCxxBlock(&ctor);
 
                     if ( ! f->isOptional() ) {
-                        cg->pushSelf("__self()");
+                        cg->pushSelf(HILTI_INTERNAL_ID("self()"));
                         if ( auto* x = f->default_() )
                             default_ = cg->compile(x);
                         else
@@ -1146,7 +1151,8 @@ const CxxTypeInfo& CodeGen::_getOrCreateTypeInfo(QualifiedType* t) {
     // declarations into an anonymous namespace so that they won't be
     // externally visible.
     cxx::ID tid(options().cxx_namespace_intern, "type_info", "",
-                fmt("__ti_%s_%s", util::toIdentifier(display.str()), util::toIdentifier(t->type()->unification())));
+                fmt("%s_%s_%s", HILTI_INTERNAL_ID("ti"), util::toIdentifier(display.str()),
+                    util::toIdentifier(t->type()->unification())));
 
     return _cache_type_info.getOrCreate(
         tid,

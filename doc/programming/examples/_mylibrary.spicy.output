@@ -7,14 +7,14 @@
 #include <hilti/rt/libhilti.h>
 #include <spicy/rt/libspicy.h>
 
-extern const char* __hlt_mylib_hlto_scope;
+extern const char* hlt_internal_mylib_hlto_scope;
 
 namespace MyLibrary {
     extern auto rot13(const std::string& s) -> std::string;
 }
 
-namespace __hlt_mylib::MyLibrary {
-    extern void __register_module();
+namespace hlt_internal_mylib::MyLibrary {
+    extern void _register_module();
 }
 
 #endif

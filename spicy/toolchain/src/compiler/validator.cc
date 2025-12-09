@@ -320,7 +320,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     void operator()(hilti::declaration::LocalVariable* n) final { checkVariable(n); }
 
     void operator()(hilti::expression::Name* n) final {
-        if ( n->id() == ID("__dd") ) {
+        if ( n->id() == ID(HILTI_INTERNAL_ID("dd")) ) {
             if ( auto* hook = n->parent<spicy::declaration::Hook>();
                  hook && hook->hookType() == declaration::hook::Type::ForEach )
                 // $$ in "foreach" ok is ok.

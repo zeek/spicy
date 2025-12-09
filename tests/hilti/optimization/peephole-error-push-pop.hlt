@@ -2,7 +2,14 @@
 # @TEST-EXEC: hiltic -V -p %INPUT -o output.hlt
 # @TEST-EXEC: FileCheck %INPUT < output.hlt
 #
-# @TEST-DOC: Test removal of redundant __error assignments.
+# @TEST-DOC: Test removal of redundant $error assignments.
+
+# NOTE: While by default the error variable is name `$error` the optimizer pass
+# also allows `__error` so we do not have to extend the parser to support
+# constructs likely
+#
+#     global Foo foo = [$$error=0];
+#
 
 module Test {
 
@@ -14,7 +21,7 @@ type Foo = struct {
 # We expect the full body of this function to be removed:
 #
 # - error push/pop removed
-# - now unused `__error` removed
+# - now unused `$error` removed
 #
 # CHECK: function void Foo::test() {
 # CHECK-NEXT: }

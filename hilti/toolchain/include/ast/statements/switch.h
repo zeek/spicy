@@ -122,7 +122,8 @@ public:
     }
 
     static auto create(ASTContext* ctx, hilti::Expression* cond, const switch_::Cases& cases, Meta meta = {}) {
-        return create(ctx, declaration::LocalVariable::create(ctx, ID("__x"), cond), cases, std::move(meta));
+        return create(ctx, declaration::LocalVariable::create(ctx, ID(HILTI_INTERNAL_ID("x")), cond), cases,
+                      std::move(meta));
     }
 
 protected:

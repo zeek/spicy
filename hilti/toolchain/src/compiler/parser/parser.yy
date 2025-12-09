@@ -317,8 +317,16 @@ local_id      : IDENT                            { std::string name($1);
                                                    if ( ! driver->builder()->options().skip_validation ) {
                                                        if ( name.find('-') != std::string::npos )
                                                            hilti::logger().error(util::fmt("Invalid ID '%s': cannot contain '-'", name), __loc__.location());
+
                                                        if ( name.substr(0, 2) == "__" && name != "__hook_to_string" )
                                                            hilti::logger().error(util::fmt("Invalid ID '%s': cannot start with '__'", name), __loc__.location());
+
+                                                       const auto prefix_local = HILTI_INTERNAL_ID("");
+                                                       if ( name.starts_with(prefix_local) && name != HILTI_INTERNAL_ID("hook_to_string") )
+                                                           hilti::logger().error(hilti::util::fmt("Invalid ID '%s': cannot start with '%s'", name, prefix_local), __loc__.location());
+
+                                                       if ( name.starts_with(HILTI_INTERNAL_NS_ID) )
+                                                           hilti::logger().error(hilti::util::fmt("Invalid ID '%s': cannot start with '%s'", name, HILTI_INTERNAL_NS_ID), __loc__.location());
                                                    }
 
                                                    $$ = hilti::ID(std::move(name));
@@ -831,7 +839,7 @@ expr_1        : expr_1 '=' expr_1                { $$ = builder->expressionAssig
               | '[' expr FOR local_id IN expr IF expr ']'   { $$ = builder->expressionListComprehension(std::move($6), std::move($2), std::move($4), std::move($8),  __loc__); }
               | '(' expr ')'                     { $$ = builder->expressionGrouping(std::move($2)); }
               | scoped_id                        { $$ = builder->expressionName(std::move($1), __loc__); }
-              | DOLLARDOLLAR                     { $$ = builder->expressionName(std::move("__dd"), __loc__); }
+              | DOLLARDOLLAR                     { $$ = builder->expressionName(std::move(HILTI_INTERNAL_ID("dd")), __loc__); }
               | SCOPE                            { $$ = builder->expressionKeyword(hilti::expression::keyword::Kind::Scope, __loc__); }
               ;
 

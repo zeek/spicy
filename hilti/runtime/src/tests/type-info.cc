@@ -26,12 +26,12 @@ type Y = struct {
 */
 
 // Copied from output of hiltic.
-namespace __hlt::type_info {
+namespace HILTI_INTERNAL_NS::type_info {
 namespace {
 extern const hilti::rt::TypeInfo __ti_Test_X;
 extern const hilti::rt::TypeInfo __ti_Test_Y;
 } // namespace
-} // namespace __hlt::type_info
+} // namespace HILTI_INTERNAL_NS::type_info
 
 namespace Test {
 
@@ -50,7 +50,7 @@ struct X {
 } // namespace Test
 
 // Copied from output of hiltic.
-namespace __hlt::type_info {
+namespace HILTI_INTERNAL_NS::type_info {
 namespace {
 const hilti::rt::TypeInfo __ti_Test_X =
     {"Test::X", "Test::X", nullptr,
@@ -69,14 +69,14 @@ const hilti::rt::TypeInfo __ti_Test_Y =
           hilti::rt::type_info::struct_::Field{"r", &hilti::rt::type_info::real, offsetof(Test::Y, r), false, false,
                                                true}}))};
 } // namespace
-} // namespace __hlt::type_info
+} // namespace HILTI_INTERNAL_NS::type_info
 
 TEST_CASE("traverse structs") {
     // Check that we can traverse the structs and get expected values.
 
     auto sx = StrongReference<Test::X>({42, "foo", Test::Y{true, 3.14}});
     auto p = type_info::value::Parent(sx);
-    auto v = type_info::Value(&*sx, &__hlt::type_info::__ti_Test_X, p);
+    auto v = type_info::Value(&*sx, &HILTI_INTERNAL_NS::type_info::__ti_Test_X, p);
 
     auto x = type_info::value::auxType<type_info::Struct>(v)->iterate(v);
     auto xi = x.begin();
@@ -112,7 +112,7 @@ TEST_CASE("life-time") {
 
     auto x = StrongReference<Test::X>({42, "foo", y});
     auto p = type_info::value::Parent(x);
-    auto v = type_info::Value(&*x, &__hlt::type_info::__ti_Test_X, p);
+    auto v = type_info::Value(&*x, &HILTI_INTERNAL_NS::type_info::__ti_Test_X, p);
 
     // v is valid
     v.pointer();
@@ -128,7 +128,7 @@ TEST_CASE("no parent") {
 
     auto x = StrongReference<Test::X>({42, "foo", y});
     auto p = type_info::value::Parent(x);
-    auto v = type_info::Value(&*x, &__hlt::type_info::__ti_Test_X); // no parent
+    auto v = type_info::Value(&*x, &HILTI_INTERNAL_NS::type_info::__ti_Test_X); // no parent
 
     CHECK_EQ(v.pointer(), &*x); // access to the value works even without parent
 }
@@ -144,8 +144,8 @@ TEST_CASE("internal fields") {
                          new type_info::Struct(
                              {type_info::struct_::Field{"f1", &type_info::int32, offsetof(A, f1), false, false, true},
                               type_info::struct_::Field{"f2", &type_info::string, offsetof(A, f2), false, false, true},
-                              type_info::struct_::Field{"__internal", &type_info::bool_, offsetof(A, __internal), true,
-                                                        false, true}})};
+                              type_info::struct_::Field{HILTI_INTERNAL_ID("internal"), &type_info::bool_,
+                                                        offsetof(A, __internal), true, false, true}})};
 
     auto sx = StrongReference<A>({42, "foo", true});
     auto p = type_info::value::Parent(sx);

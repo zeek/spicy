@@ -17,9 +17,9 @@ Expression* Builder::addTmp(const std::string& prefix, QualifiedType* t, const E
     ID tmp;
 
     if ( ++n == 1 )
-        tmp = ID(fmt("__%s", prefix));
+        tmp = ID(fmt(HILTI_INTERNAL_ID("%s"), prefix));
     else
-        tmp = ID(fmt("__%s_%d", prefix, n));
+        tmp = ID(fmt(HILTI_INTERNAL_ID("%s_%d"), prefix, n));
 
     _tmps()[prefix] = n;
     block()->_add(context(), local(tmp, t, args));
@@ -35,9 +35,9 @@ Expression* Builder::addTmp(const std::string& prefix, Expression* init) {
     ID tmp;
 
     if ( ++n == 1 )
-        tmp = ID(fmt("__%s", prefix));
+        tmp = ID(fmt(HILTI_INTERNAL_ID("%s"), prefix));
     else
-        tmp = ID(fmt("__%s_%d", prefix, n));
+        tmp = ID(fmt(HILTI_INTERNAL_ID("%s_%d"), prefix, n));
 
     _tmps()[prefix] = n;
     block()->_add(context(), local(tmp, init));
@@ -53,9 +53,9 @@ Expression* Builder::addTmp(const std::string& prefix, QualifiedType* t, Express
     ID tmp;
 
     if ( ++n == 1 )
-        tmp = ID(fmt("__%s", prefix));
+        tmp = ID(fmt(HILTI_INTERNAL_ID("%s"), prefix));
     else
-        tmp = ID(fmt("__%s_%d", prefix, n));
+        tmp = ID(fmt(HILTI_INTERNAL_ID("%s_%d"), prefix, n));
 
     _tmps()[prefix] = n;
     block()->_add(context(), local(tmp, t, init));

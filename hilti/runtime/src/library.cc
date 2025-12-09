@@ -72,7 +72,8 @@ hilti::rt::Result<hilti::rt::library::Version> hilti::rt::Library::open() const 
         _handle = handle;
     }
 
-    auto* version_string = reinterpret_cast<const char**>(::dlsym(_handle, "__hlt_hlto_library_version"));
+    auto* version_string =
+        reinterpret_cast<const char**>(::dlsym(_handle, HILTI_INTERNAL_GLOBAL_ID("hlto_library_version")));
     if ( ! version_string )
         // This could happen if the code was compiled with a custom CXX
         // namespace prefix. But that's not expected for HLTO files; it should

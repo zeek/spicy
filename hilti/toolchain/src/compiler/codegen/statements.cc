@@ -19,7 +19,7 @@ static auto traceStatement(CodeGen* cg, cxx::Block* b, Statement* s, bool skip_l
         return;
 
     if ( cg->options().track_location && s->meta().location() && ! skip_location )
-        b->addStatement(fmt("  __location__(\"%s\")", s->meta().location()));
+        b->addStatement(fmt("  ::hilti::rt::location(\"%s\")", s->meta().location()));
 
     if ( cg->options().debug_trace ) {
         std::string location;
@@ -64,8 +64,9 @@ struct Visitor : hilti::visitor::PreOrder {
                 stmt.addStatement(fmt(R"(HILTI_RT_DEBUG("hilti-flow", "%s: assertion error"))", n->meta().location()));
 
             if ( n->expression()->type()->type()->isA<type::Result>() ) {
-                stmt.addStatement(throw_with_msg("__result.error().description()"));
-                block->addIf(fmt("auto __result = %s; ! __result", cg->compile(n->expression())),
+                const auto* result = HILTI_INTERNAL_ID("result");
+                stmt.addStatement(throw_with_msg(fmt("%s.error().description()", result)));
+                block->addIf(fmt("auto %s = %s; ! %s", result, cg->compile(n->expression()), result),
                              cxx::Block(std::move(stmt)));
             }
             else {
@@ -209,8 +210,8 @@ struct Visitor : hilti::visitor::PreOrder {
         else {
             cxx::Block b;
             b.setEnsureBracesforBlock();
-            b.addTmp(cxx::declaration::Local("__seq", "auto", {}, seq));
-            b.addForRange(true, id, fmt("::hilti::rt::range(__seq)"), body);
+            b.addTmp(cxx::declaration::Local(HILTI_INTERNAL_ID("seq"), "auto", {}, seq));
+            b.addForRange(true, id, fmt("::hilti::rt::range(%s)", HILTI_INTERNAL_ID("seq")), body);
             block->addBlock(std::move(b));
         }
     }
@@ -227,7 +228,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
     void operator()(statement::SetLocation* n) final {
         const auto& location = n->expression()->as<expression::Ctor>()->ctor()->as<ctor::String>()->value();
-        block->addStatement(fmt("__location__(\"%s\")", location));
+        block->addStatement(fmt("::hilti::rt::location(\"%s\")", location));
     }
 
     void operator()(statement::Switch* n) final {

@@ -142,7 +142,7 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
                 if ( const auto& self = field_offsets->get_optional("self") )
                     json_map["self"] = make_json_offsets_object(*self);
 
-                j["__offsets"] = std::move(json_map);
+                j[HILTI_INTERNAL_ID("offsets")] = std::move(json_map);
             }
 
             return j;

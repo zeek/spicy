@@ -61,7 +61,7 @@ const hilti::rt::Map<std::string, hilti::rt::Tuple<hilti::rt::integer::safe<uint
                                                    hilti::rt::Optional<hilti::rt::integer::safe<uint64_t>>>>*
 spicy::rt::get_offsets_for_unit(const hilti::rt::type_info::Struct& struct_, const hilti::rt::type_info::Value& value) {
     for ( const auto& [f, v] : struct_.iterate(value, /*include_internal=*/true) ) {
-        if ( f.name == "__offsets" )
+        if ( f.name == HILTI_INTERNAL_ID("offsets") )
             return static_cast<decltype(get_offsets_for_unit(struct_, value))>(v.pointer());
     }
 

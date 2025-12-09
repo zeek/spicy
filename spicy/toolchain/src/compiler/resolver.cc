@@ -150,7 +150,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             }
 
             // Implicitly create an error message from the condition itself.
-            auto msg = hilti::util::fmt("&requires failed: %s", hilti::util::replace(cond->print(), "__dd", "$$"));
+            auto msg = hilti::util::fmt("&requires failed: %s",
+                                        hilti::util::replace(cond->print(), HILTI_INTERNAL_ID("dd"), "$$"));
             auto* new_cond =
                 builder()->conditionTest(*ne.coerced, builder()->expression(builder()->ctorError(std::move(msg))),
                                          cond->meta());
@@ -192,7 +193,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 auto params = n->ftype()->parameters();
                 if ( params.size() == 0 ) {
                     recordChange(n, "adding parameter to %error");
-                    n->setParameters(context(), {builder()->parameter("__except", builder()->typeString())});
+                    n->setParameters(context(),
+                                     {builder()->parameter(HILTI_INTERNAL_ID("except"), builder()->typeString())});
                 }
             }
 
@@ -340,7 +342,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     void operator()(hilti::expression::Name* n) final {
         // Allow `$$` as an alias for `self` in unit convert attributes for symmetry with field convert attributes.
-        if ( n->id() == ID("__dd") ) {
+        if ( n->id() == ID(HILTI_INTERNAL_ID("dd")) ) {
             // The following loop searches for `&convert` attribute nodes directly under `Unit` nodes.
             for ( auto* p = n->parent(); p; p = p->parent() ) {
                 auto* attr = p->tryAs<hilti::Attribute>();

@@ -19,7 +19,7 @@ template<typename T, typename = int>
 struct is_filter : std::false_type {};
 
 template<typename T>
-struct is_filter<T, decltype((void)T::__forward, 0)> : std::true_type {};
+struct is_filter<T, decltype((void)T::HILTI_INTERNAL(forward), 0)> : std::true_type {};
 
 struct OneFilter {
     using Parse1Function = hilti::rt::Resumable (*)(const hilti::rt::StrongReferenceGeneric&,
@@ -71,13 +71,13 @@ using Forward = hilti::rt::Stream;
 template<const char* debug_type_name>
 struct State {
     /** List of connected filters. */
-    hilti::rt::StrongReference<::spicy::rt::filter::detail::Filters> __filters;
+    hilti::rt::StrongReference<::spicy::rt::filter::detail::Filters> HILTI_INTERNAL(filters);
 
     /** Destination for data being forwarded. */
-    hilti::rt::WeakReference<::spicy::rt::filter::detail::Forward> __forward;
+    hilti::rt::WeakReference<::spicy::rt::filter::detail::Forward> HILTI_INTERNAL(forward);
 
     /** Returns true if at least one filter has been connected. */
-    operator bool() const { return __filters && (*__filters).size(); }
+    operator bool() const { return HILTI_INTERNAL(filters) && (*HILTI_INTERNAL(filters)).size(); }
 
     /** Dummy struct capturing the type's name for debug purposes. */
     using _ParserDummy = struct {
@@ -85,12 +85,12 @@ struct State {
     };
 
     /** Pseudo-parser object. It just needs to have a `name`. */
-    inline static _ParserDummy __parser = _ParserDummy{.name = debug_type_name};
+    inline static _ParserDummy HILTI_INTERNAL(parser) = _ParserDummy{.name = debug_type_name};
 };
 
 template<const char* debug_type_name>
 inline std::ostream& operator<<(std::ostream& out, State<debug_type_name>& s) {
-    out << s.__parser.name;
+    out << s.HILTI_INTERNAL(parser).name;
     return out;
 }
 
@@ -104,21 +104,22 @@ inline std::ostream& operator<<(std::ostream& out, State<debug_type_name>& s) {
  */
 template<typename S>
 void disconnect(S& state, const hilti::rt::TypeInfo* /* ti */) {
-    if ( state.__filters ) {
-        for ( auto& f : *state.__filters ) {
-            SPICY_RT_DEBUG_VERBOSE(
-                hilti::rt::fmt("- disconnecting existing filter unit from unit %s [%p]", S::__parser.name, &state));
+    if ( state.HILTI_INTERNAL(filters) ) {
+        for ( auto& f : *state.HILTI_INTERNAL(filters) ) {
+            SPICY_RT_DEBUG_VERBOSE(hilti::rt::fmt("- disconnecting existing filter unit from unit %s [%p]",
+                                                  S::HILTI_INTERNAL(parser).name, &state));
             f.resumable.abort();
         }
 
-        (*state.__filters).clear(); // Will invalidate the targets' output
+        (*state.HILTI_INTERNAL(filters)).clear(); // Will invalidate the targets' output
     }
 
     if constexpr ( detail::is_filter<S>::value ) {
-        if ( state.__forward ) {
+        if ( state.HILTI_INTERNAL(forward) ) {
             SPICY_RT_DEBUG_VERBOSE(hilti::rt::fmt("- sending EOD from filter unit %s [%p] to stream %p on disconnect",
-                                                  S::__parser.name, &state, state.__forward.get()));
-            (*state.__forward).freeze();
+                                                  S::HILTI_INTERNAL(parser).name, &state,
+                                                  state.HILTI_INTERNAL(forward).get()));
+            (*state.HILTI_INTERNAL(forward)).freeze();
         }
     }
 }
@@ -133,29 +134,30 @@ namespace detail {
 // (which we don't need anyways).
 template<typename S, typename F>
 void connect(S& state, UnitRef<F> filter_unit) {
-    SPICY_RT_DEBUG_VERBOSE(hilti::rt::fmt("- connecting filter unit %s [%p] to unit %s [%p]", F::__parser.name,
-                                          &*filter_unit, S::__parser.name, &state));
+    SPICY_RT_DEBUG_VERBOSE(hilti::rt::fmt("- connecting filter unit %s [%p] to unit %s [%p]",
+                                          F::HILTI_INTERNAL(parser).name, &*filter_unit, S::HILTI_INTERNAL(parser).name,
+                                          &state));
 
-    if ( ! state.__filters )
-        state.__filters = hilti::rt::reference::make_strong<::spicy::rt::filter::detail::Filters>();
+    if ( ! state.HILTI_INTERNAL(filters) )
+        state.HILTI_INTERNAL(filters) = hilti::rt::reference::make_strong<::spicy::rt::filter::detail::Filters>();
 
     auto filter =
         detail::OneFilter{[](const hilti::rt::StrongReferenceGeneric& filter_unit,
                              hilti::rt::ValueReference<hilti::rt::Stream>& data,
                              const hilti::rt::Optional<hilti::rt::stream::View>& cur) -> hilti::rt::Resumable {
                               auto lhs_filter_unit = filter_unit.derefAsValue<F>();
-                              auto parse2 = hilti::rt::any_cast<Parse2Function<F>>(F::__parser.parse2);
+                              auto parse2 = hilti::rt::any_cast<Parse2Function<F>>(F::HILTI_INTERNAL(parser).parse2);
                               SPICY_RT_DEBUG_VERBOSE(
                                   hilti::rt::fmt("  + parsing from stream %p, forwarding to stream %p", data.get(),
-                                                 lhs_filter_unit->__forward.get()));
+                                                 lhs_filter_unit->HILTI_INTERNAL(forward).get()));
                               return (*parse2)(lhs_filter_unit, data, cur, {});
                           },
                           filter_unit,
                           hilti::rt::Stream(),
                           {}};
 
-    (*state.__filters).push_back(std::move(filter));
-    filter_unit->__forward = (*state.__filters).back().input;
+    (*state.HILTI_INTERNAL(filters)).push_back(std::move(filter));
+    filter_unit->HILTI_INTERNAL(forward) = (*state.HILTI_INTERNAL(filters)).back().input;
 }
 
 } // namespace detail
@@ -193,14 +195,14 @@ hilti::rt::StrongReference<hilti::rt::Stream> init(
     const hilti::rt::TypeInfo* /* ti */,
     hilti::rt::ValueReference<hilti::rt::Stream>& data, // NOLINT(google-runtime-references)
     const hilti::rt::stream::View& cur) {
-    if ( ! (state.__filters && (*state.__filters).size()) )
+    if ( ! (state.HILTI_INTERNAL(filters) && (*state.HILTI_INTERNAL(filters)).size()) )
         return {};
 
     detail::OneFilter* previous = nullptr;
 
-    for ( auto& f : *state.__filters ) {
+    for ( auto& f : *state.HILTI_INTERNAL(filters) ) {
         SPICY_RT_DEBUG_VERBOSE(
-            hilti::rt::fmt("- beginning to filter input for unit %s [%p]", S::__parser.name, &state));
+            hilti::rt::fmt("- beginning to filter input for unit %s [%p]", S::HILTI_INTERNAL(parser).name, &state));
 
         if ( ! previous )
             f.resumable = f.parse(f.unit, data, cur);
@@ -210,7 +212,7 @@ hilti::rt::StrongReference<hilti::rt::Stream> init(
         previous = &f;
     }
 
-    return hilti::rt::StrongReference<hilti::rt::Stream>((*state.__filters).back().input);
+    return hilti::rt::StrongReference<hilti::rt::Stream>((*state.HILTI_INTERNAL(filters)).back().input);
 }
 
 template<typename U>
@@ -230,16 +232,17 @@ hilti::rt::StrongReference<hilti::rt::Stream> init(
  */
 template<typename S>
 inline void forward(S& state, const hilti::rt::TypeInfo* /* ti */, const hilti::rt::Bytes& data) {
-    if ( ! state.__forward ) {
+    if ( ! state.HILTI_INTERNAL(forward) ) {
         SPICY_RT_DEBUG_VERBOSE(
             hilti::rt::fmt("- filter unit %s [%p] is forwarding \"%s\", but not connected to any unit",
-                           S::__parser.name, &state, data));
+                           S::HILTI_INTERNAL(parser).name, &state, data));
         return;
     }
 
-    SPICY_RT_DEBUG_VERBOSE(hilti::rt::fmt("- filter unit %s [%p] is forwarding \"%s\" to stream %p", S::__parser.name,
-                                          &state, data, state.__forward.get()));
-    state.__forward->append(data);
+    SPICY_RT_DEBUG_VERBOSE(hilti::rt::fmt("- filter unit %s [%p] is forwarding \"%s\" to stream %p",
+                                          S::HILTI_INTERNAL(parser).name, &state, data,
+                                          state.HILTI_INTERNAL(forward).get()));
+    state.HILTI_INTERNAL(forward)->append(data);
 }
 
 template<typename U>
@@ -255,15 +258,15 @@ inline void forward(UnitType<U>& unit, const hilti::rt::TypeInfo* ti, const hilt
  */
 template<typename S>
 inline void forward_eod(S& state, const hilti::rt::TypeInfo* /* ti */) {
-    if ( ! state.__forward ) {
+    if ( ! state.HILTI_INTERNAL(forward) ) {
         SPICY_RT_DEBUG_VERBOSE(hilti::rt::fmt("- filter unit %s [%p] is forwarding EOD, but not connected to any unit",
-                                              S::__parser.name, &state));
+                                              S::HILTI_INTERNAL(parser).name, &state));
         return;
     }
 
-    SPICY_RT_DEBUG_VERBOSE(hilti::rt::fmt("- filter unit %s [%p] is forwarding EOD to stream %p", S::__parser.name,
-                                          &state, state.__forward.get()));
-    state.__forward->freeze();
+    SPICY_RT_DEBUG_VERBOSE(hilti::rt::fmt("- filter unit %s [%p] is forwarding EOD to stream %p",
+                                          S::HILTI_INTERNAL(parser).name, &state, state.HILTI_INTERNAL(forward).get()));
+    state.HILTI_INTERNAL(forward)->freeze();
 }
 
 template<typename U>
@@ -289,7 +292,7 @@ inline void flush(hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>
  */
 template<typename S>
 inline void flush(S& state, const hilti::rt::TypeInfo* /* ti */) {
-    flush(state.__filters);
+    flush(state.HILTI_INTERNAL(filters));
 }
 
 template<typename U>

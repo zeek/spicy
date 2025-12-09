@@ -2,5 +2,12 @@
 # @TEST-EXEC: btest-diff output
 
 module Foo;
-
 const __private_name = 2;
+
+# @TEST-START-NEXT-FILE
+module Foo;
+const _private_name = 2;
+
+# @TEST-START-NEXT-FILE
+module Foo;
+const hlt_internal_private_name = 2;

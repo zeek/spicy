@@ -6,9 +6,9 @@
 
 #include <hilti/rt/libhilti.h>
 
-extern uint64_t __hlt_hlto_scope;
+extern uint64_t hlt_internal_hlto_scope;
 
-namespace __hlt::Foo {
+namespace hlt_internal::Foo {
     extern auto test(const std::string& x) -> std::string;
 }
 
@@ -16,8 +16,8 @@ namespace hlt::Foo {
     extern auto test(const std::string& x) -> ::hilti::rt::Resumable;
 }
 
-namespace __hlt::Foo {
-    extern void __register_module();
+namespace hlt_internal::Foo {
+    extern void _register_module();
 }
 
 #endif

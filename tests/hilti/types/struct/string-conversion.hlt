@@ -9,17 +9,17 @@ type Foo = struct {
     string x;
     string y;
 
-    hook optional<string> __hook_to_string();
+    hook optional<string> _hook_to_string();
 };
 
 type Bar = struct {
     string x;
     string y;
 
-    hook optional<string> __hook_to_string(); # not implemented
+    hook optional<string> _hook_to_string(); # not implemented
 };
 
-hook optional<string> Foo::__hook_to_string() {
+hook optional<string> Foo::_hook_to_string() {
     return self.x + "|" + self.y;
 }
 

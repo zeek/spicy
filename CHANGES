@@ -1,3 +1,17 @@
+1.15.0-dev.143 | 2025-12-09 17:25:36 +0100
+
+  * GH-2205: Uglify internal identifiers. (Benjamin Bannier, Corelight)
+
+    We prefixed the generated identifiers with double underscore so they do
+    not clash with user-defined identifiers, but identifiers with leading
+    underscores are reserved by C++. In fact, `__hlt` is already defined for
+    some ARM64 compilers where it refers to the `halt` instruction.
+
+    This patch replaces the leading `__` with a new reserved prefix
+    `hlt_internal` for identifiers in global scope, and else a `_`.
+
+    Closes #2205.
+
 1.15.0-dev.141 | 2025-12-05 12:54:14 +0100
 
   * Refactor optimizer. (Robin Sommer, Corelight)

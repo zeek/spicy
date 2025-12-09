@@ -169,12 +169,12 @@ struct Visitor : public visitor::PreOrder {
                                   tp->mode == TypesMode::Try);
 
                 if ( pb()->options().debug ) {
-                    auto have_value = builder()->addIf(builder()->hasMember(target, "__value__"));
+                    auto have_value = builder()->addIf(builder()->hasMember(target, HILTI_INTERNAL_ID("value")));
                     pushBuilder(std::move(have_value), [&]() {
                         // Print all the bit ranges individually so that we can include
                         // their IDs, which the standard tuple output wouldn't show.
                         builder()->addDebugMsg("spicy", fmt("%s = %%s", tp->meta.field()->id()),
-                                               {builder()->member(target, "__value__")});
+                                               {builder()->member(target, HILTI_INTERNAL_ID("value"))});
 
                         builder()->addDebugIndent("spicy");
                         for ( const auto& bits : n->bits() )
