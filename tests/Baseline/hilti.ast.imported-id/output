@@ -384,6 +384,7 @@
 [debug/ast-final]         | Foo -> declaration::Module <canonical-id="Foo" declaration="D2" dependencies="Bar" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/foo.hlt" scope="" skip-implementation="false"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | Foo1 -> declaration::Type <canonical-id="Foo::Foo1" declaration="D1" fqid="Foo::Foo1" id="Foo1" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | Foo2 -> declaration::Type <canonical-id="Foo::Foo2" declaration="-" fqid="Foo::Foo2" id="Foo2" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | foo -> declaration::Function <canonical-id="Foo::foo_2" declaration="-" fqid="Foo::foo" id="foo" linkage="private" linked-declaration="-" linked-prototype="-" operator="<set>"> [no parent] [@d:XXX] ([@d:XXX])
 [debug/ast-final]       - statement::Block [parent @d:XXX] (foo.hlt:2:1-11:1) [@s:XXX]
 [debug/ast-final]       - declaration::ImportedModule <canonical-id="Foo::Bar" declaration="-" dirs="" ext=".hlt" fqid="Foo::Bar" id="Bar" linkage="private" path="" scope="<n/a>" uid="Bar"> [parent @d:XXX] (foo.hlt:4:1-4:11) [@d:XXX]
 [debug/ast-final]       - declaration::Type <canonical-id="Foo::Foo1" declaration="D1" fqid="Foo::Foo1" id="Foo1" linkage="public"> [parent @d:XXX] (foo.hlt:6:1-6:24) [@d:XXX]
@@ -1301,6 +1302,7 @@
 [debug/ast-final]         | Bar1 -> declaration::Type <canonical-id="Bar::Bar1" declaration="D21" fqid="Bar::Bar1" id="Bar1" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | Bar2 -> declaration::Type <canonical-id="Bar::Bar2" declaration="-" fqid="Bar::Bar2" id="Bar2" linkage="public"> [parent @d:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]         | Foo -> declaration::Module <canonical-id="Foo" declaration="D2" dependencies="Bar" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/foo.hlt" scope="" skip-implementation="false"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
+[debug/ast-final]         | bar -> declaration::Function <canonical-id="Bar::bar_2" declaration="-" fqid="Bar::bar" id="bar" linkage="private" linked-declaration="-" linked-prototype="-" operator="<set>"> [no parent] [@d:XXX] ([@d:XXX])
 [debug/ast-final]       - statement::Block [parent @d:XXX] (bar.hlt:2:1-11:1) [@s:XXX]
 [debug/ast-final]       - declaration::ImportedModule <canonical-id="Bar::Foo" declaration="-" dirs="" ext=".hlt" fqid="Bar::Foo" id="Foo" linkage="private" path="" scope="<n/a>" uid="Foo"> [parent @d:XXX] (bar.hlt:4:1-4:11) [@d:XXX]
 [debug/ast-final]       - declaration::Type <canonical-id="Bar::Bar1" declaration="D21" fqid="Bar::Bar1" id="Bar1" linkage="public"> [parent @d:XXX] (bar.hlt:6:1-6:26) [@d:XXX]

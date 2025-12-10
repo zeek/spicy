@@ -532,8 +532,7 @@ bool run(Optimizer* optimizer) {
 }
 
 optimizer::RegisterPass constant_folder({.id = PassID::DeadCodeStatic,
-                                         .guarantees = Guarantees::ResolvedExceptCoercions |
-                                                       Guarantees::ConstantsFolded,
+                                         .guarantees = Guarantees::ConstantsFolded,
                                          .run = run});
 
 } // namespace

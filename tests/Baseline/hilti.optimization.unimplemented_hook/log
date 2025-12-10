@@ -10,13 +10,9 @@
 [debug/optimizer]   [unimplemented_hook.hlt:30:12-30:39] operator_::function::Call "global_unimplemented_int64()" -> expression::Ctor "default<optional<int<64>>>()" (replacing call to unimplemented function with default value)
 [debug/optimizer]   [unimplemented_hook.hlt:36:12-36:34] operator_::struct_::MemberCall "x.unimplemented_int64()" -> expression::Ctor "default<optional<int<64>>>()" (replacing call to unimplemented method with default value)
 [debug/optimizer]     -> modified
-[debug/optimizer]   re-resolving AST assuming guarantees <resolved-except-coercions,constants-folded>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-processing AST, round 1
-[debug/optimizer]     * scope-builder
-[debug/optimizer]       - updating module: Foo
-[debug/optimizer]     * type-unifier
-[debug/optimizer]       - updating module: Foo
-[debug/optimizer]     * coercer
+[debug/optimizer]     * resolver
 [debug/optimizer]       - updating module: Foo
 [debug/optimizer]     * computed CFGs
 [debug/optimizer] pass: peephole (round 1, pass iteration 1)
@@ -24,7 +20,7 @@
 [debug/optimizer]   [unimplemented_hook.hlt:29:1-29:27] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [unimplemented_hook.hlt:35:1-35:22] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]     -> modified
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,fully-resolved,scopes-built,types-unified>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]     * computed CFGs
 [debug/optimizer] pass: flatten-blocks (round 1, pass iteration 1)
@@ -36,13 +32,9 @@
 [debug/optimizer]   [unimplemented_hook.hlt:21:5-21:35] declaration::Field "hook void unimplemented_void();" -> null (removing declaration for unused method)
 [debug/optimizer]   [unimplemented_hook.hlt:22:5-22:49] declaration::Field "hook optional<int<64>> unimplemented_int64();" -> null (removing declaration for unused method)
 [debug/optimizer]     -> modified
-[debug/optimizer]   re-resolving AST assuming guarantees <resolved-except-coercions,constants-folded>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-processing AST, round 1
-[debug/optimizer]     * scope-builder
-[debug/optimizer]       - updating module: Foo
-[debug/optimizer]     * type-unifier
-[debug/optimizer]       - updating module: Foo
-[debug/optimizer]     * coercer
+[debug/optimizer]     * resolver
 [debug/optimizer]       - updating module: Foo
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]       - deleting module state: Foo

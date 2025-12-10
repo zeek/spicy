@@ -77,41 +77,23 @@
 [debug/optimizer]       - deleting module state: foo
 [debug/optimizer]       - deleting module state: foo
 [debug/optimizer]       - updating function: _register_foo_X4
-[debug/optimizer]       - updating function: _register_foo_X4
-[debug/optimizer]       - updating function: _register_foo_X6
 [debug/optimizer]       - updating function: _register_foo_X6
 [debug/optimizer]       - updating function: foo::X0::_parse_foo__X0_stage2
 [debug/optimizer]       - updating function: foo::X0::_parse_foo__X0_stage2
 [debug/optimizer]       - updating function: foo::X0::_parse_foo__X0_stage2
-[debug/optimizer]       - updating function: foo::X0::_parse_foo__X0_stage2
-[debug/optimizer]       - updating function: foo::X0::_parse_foo__X0_stage2
-[debug/optimizer]       - updating function: foo::X0::_parse_foo__X0_stage2
-[debug/optimizer]       - updating function: foo::X0::_parse_stage1
-[debug/optimizer]       - updating function: foo::X0::_parse_stage1
-[debug/optimizer]       - updating function: foo::X0::_parse_stage1
 [debug/optimizer]       - updating function: foo::X0::_parse_stage1
 [debug/optimizer]       - updating function: foo::X0::_parse_stage1
 [debug/optimizer]       - updating function: foo::X0::_parse_stage1
 [debug/optimizer]       - updating function: foo::X1::_parse_foo__X1_stage2
 [debug/optimizer]       - updating function: foo::X1::_parse_foo__X1_stage2
 [debug/optimizer]       - updating function: foo::X1::_parse_foo__X1_stage2
-[debug/optimizer]       - updating function: foo::X1::_parse_foo__X1_stage2
-[debug/optimizer]       - updating function: foo::X1::_parse_foo__X1_stage2
-[debug/optimizer]       - updating function: foo::X1::_parse_foo__X1_stage2
 [debug/optimizer]       - updating function: foo::X1::_parse_stage1
 [debug/optimizer]       - updating function: foo::X1::_parse_stage1
 [debug/optimizer]       - updating function: foo::X1::_parse_stage1
-[debug/optimizer]       - updating function: foo::X1::_parse_stage1
-[debug/optimizer]       - updating function: foo::X1::_parse_stage1
-[debug/optimizer]       - updating function: foo::X1::_parse_stage1
-[debug/optimizer]       - updating function: foo::X2::_parse_foo__X2_stage2
-[debug/optimizer]       - updating function: foo::X2::_parse_foo__X2_stage2
 [debug/optimizer]       - updating function: foo::X2::_parse_foo__X2_stage2
 [debug/optimizer]       - updating function: foo::X2::_parse_foo__X2_stage2
 [debug/optimizer]       - updating function: foo::X2::_parse_stage1
 [debug/optimizer]       - updating function: foo::X2::_parse_stage1
-[debug/optimizer]       - updating function: foo::X3::_parse_foo__X3_stage2
-[debug/optimizer]       - updating function: foo::X3::_parse_foo__X3_stage2
 [debug/optimizer]       - updating function: foo::X3::_parse_foo__X3_stage2
 [debug/optimizer]       - updating function: foo::X3::_parse_foo__X3_stage2
 [debug/optimizer]       - updating function: foo::X3::_parse_stage1
@@ -119,34 +101,14 @@
 [debug/optimizer]       - updating function: foo::X4::_parse_foo__X4_stage2
 [debug/optimizer]       - updating function: foo::X4::_parse_foo__X4_stage2
 [debug/optimizer]       - updating function: foo::X4::_parse_foo__X4_stage2
-[debug/optimizer]       - updating function: foo::X4::_parse_foo__X4_stage2
-[debug/optimizer]       - updating function: foo::X4::_parse_foo__X4_stage2
-[debug/optimizer]       - updating function: foo::X4::_parse_foo__X4_stage2
-[debug/optimizer]       - updating function: foo::X4::_parse_foo__X4_stage2
-[debug/optimizer]       - updating function: foo::X4::_parse_foo__X4_stage2
 [debug/optimizer]       - updating function: foo::X4::_parse_stage1
 [debug/optimizer]       - updating function: foo::X4::_parse_stage1
 [debug/optimizer]       - updating function: foo::X4::_parse_stage1
 [debug/optimizer]       - updating function: foo::X4::_parse_stage1
-[debug/optimizer]       - updating function: foo::X4::_parse_stage1
-[debug/optimizer]       - updating function: foo::X4::_parse_stage1
-[debug/optimizer]       - updating function: foo::X4::_parse_stage1
-[debug/optimizer]       - updating function: foo::X4::_parse_stage1
-[debug/optimizer]       - updating function: foo::X5::_parse_foo__X5_stage2
-[debug/optimizer]       - updating function: foo::X5::_parse_foo__X5_stage2
-[debug/optimizer]       - updating function: foo::X5::_parse_foo__X5_stage2
-[debug/optimizer]       - updating function: foo::X5::_parse_foo__X5_stage2
-[debug/optimizer]       - updating function: foo::X5::_parse_foo__X5_stage2
 [debug/optimizer]       - updating function: foo::X5::_parse_foo__X5_stage2
 [debug/optimizer]       - updating function: foo::X5::_parse_foo__X5_stage2
 [debug/optimizer]       - updating function: foo::X5::_parse_foo__X5_stage2
 [debug/optimizer]       - updating function: foo::X5::_parse_stage1
-[debug/optimizer]       - updating function: foo::X5::_parse_stage1
-[debug/optimizer]       - updating function: foo::X6::_parse_foo__X6_stage2
-[debug/optimizer]       - updating function: foo::X6::_parse_foo__X6_stage2
-[debug/optimizer]       - updating function: foo::X6::_parse_foo__X6_stage2
-[debug/optimizer]       - updating function: foo::X6::_parse_foo__X6_stage2
-[debug/optimizer]       - updating function: foo::X6::_parse_foo__X6_stage2
 [debug/optimizer]       - updating function: foo::X6::_parse_foo__X6_stage2
 [debug/optimizer]       - updating function: foo::X6::_parse_foo__X6_stage2
 [debug/optimizer]       - updating function: foo::X6::_parse_foo__X6_stage2
@@ -154,12 +116,6 @@
 [debug/optimizer]       - updating function: foo::X6::_parse_stage1
 [debug/optimizer]       - updating function: foo::X6::_parse_stage1
 [debug/optimizer]       - updating function: foo::X6::_parse_stage1
-[debug/optimizer]       - updating function: foo::X6::_parse_stage1
-[debug/optimizer]       - updating function: foo::X6::_parse_stage1
-[debug/optimizer]       - updating function: foo::X6::_parse_stage1
-[debug/optimizer]       - updating function: foo::X6::_parse_stage1
-[debug/optimizer]       - updating function: foo::X7::_parse_foo__X7_stage2
-[debug/optimizer]       - updating function: foo::X7::_parse_foo__X7_stage2
 [debug/optimizer]       - updating function: foo::X7::_parse_foo__X7_stage2
 [debug/optimizer]       - updating function: foo::X7::_parse_foo__X7_stage2
 [debug/optimizer]       - updating function: foo::X7::_parse_stage1
@@ -172,28 +128,7 @@
 [debug/optimizer]       - updating module: foo
 [debug/optimizer]       - updating module: foo
 [debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: foo
 [debug/optimizer]       - updating module: spicy_rt
-[debug/optimizer]       - updating module: spicy_rt
-[debug/optimizer]       - updating module: spicy_rt
-[debug/optimizer]     * coercer
-[debug/optimizer]     * coercer
-[debug/optimizer]     * coercer
-[debug/optimizer]     * coercer
-[debug/optimizer]     * coercer
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]     * computed CFGs
@@ -210,11 +145,6 @@
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]     * constant-folder
 [debug/optimizer]     * constant-folder
-[debug/optimizer]     * full-resolver
-[debug/optimizer]     * full-resolver
-[debug/optimizer]     * full-resolver
-[debug/optimizer]     * full-resolver
-[debug/optimizer]     * full-resolver
 [debug/optimizer]     * function changed: _register_foo_X0
 [debug/optimizer]     * function changed: _register_foo_X1
 [debug/optimizer]     * function changed: _register_foo_X2
@@ -371,28 +301,16 @@
 [debug/optimizer]     * module changed: foo
 [debug/optimizer]     * module changed: foo
 [debug/optimizer]     * module changed: spicy_rt
-[debug/optimizer]     * scope-builder
-[debug/optimizer]     * scope-builder
-[debug/optimizer]     * scope-builder
-[debug/optimizer]     * scope-builder
-[debug/optimizer]     * scope-builder
-[debug/optimizer]     * scope-builder
-[debug/optimizer]     * scope-builder
-[debug/optimizer]     * scope-builder
-[debug/optimizer]     * scope-builder
-[debug/optimizer]     * scope-builder
-[debug/optimizer]     * scope-builder
-[debug/optimizer]     * scope-builder
-[debug/optimizer]     * type-unifier
-[debug/optimizer]     * type-unifier
-[debug/optimizer]     * type-unifier
-[debug/optimizer]     * type-unifier
-[debug/optimizer]     * type-unifier
-[debug/optimizer]     * type-unifier
-[debug/optimizer]     * type-unifier
-[debug/optimizer]     * type-unifier
-[debug/optimizer]     * type-unifier
-[debug/optimizer]     * type-unifier
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
 [debug/optimizer]     - skipping function foo::X0::_parse_stage1 as its no longer part of the AST
 [debug/optimizer]     - skipping function foo::X0::parse1 as its no longer part of the AST
 [debug/optimizer]     - skipping function foo::X0::parse2 as its no longer part of the AST
@@ -1234,21 +1152,21 @@
 [debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]   re-processing AST, round 1
-[debug/optimizer]   re-resolving AST assuming guarantees <cfg-unchanged,fully-resolved,scopes-built,types-unified>
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,fully-resolved,scopes-built,types-unified>
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,fully-resolved>
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,fully-resolved>
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,fully-resolved>
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,types-unified>
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,types-unified>
+[debug/optimizer]   re-resolving AST assuming guarantees <cfg-unchanged,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
-[debug/optimizer]   re-resolving AST assuming guarantees <resolved-except-coercions,constants-folded>
-[debug/optimizer]   re-resolving AST assuming guarantees <resolved-except-coercions,constants-folded>
-[debug/optimizer]   re-resolving AST assuming guarantees <resolved-except-coercions,constants-folded>
-[debug/optimizer]   re-resolving AST assuming guarantees <resolved-except-coercions,constants-folded>
-[debug/optimizer]   re-resolving AST assuming guarantees <resolved-except-coercions,scopes-built,types-unified>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-resolving AST assuming guarantees <none>
 [debug/optimizer] pass: constant-propagation (round 1, pass iteration 1)
 [debug/optimizer] pass: constant-propagation (round 1, pass iteration 2)
 [debug/optimizer] pass: constant-propagation (round 2, pass iteration 1)

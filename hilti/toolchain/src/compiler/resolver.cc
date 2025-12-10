@@ -1655,8 +1655,6 @@ struct VisitorPass4 : visitor::MutatingPostOrder {
 } // anonymous namespace
 
 bool detail::resolver::resolve(Builder* builder, Node* node) {
-    util::timing::Collector _("hilti/compiler/ast/resolver");
-
     auto v1 = VisitorPass1(builder);
     hilti::visitor::visit(v1, node);
 
@@ -1670,21 +1668,4 @@ bool detail::resolver::resolve(Builder* builder, Node* node) {
     hilti::visitor::visit(v4, node);
 
     return v1.isModified() || v2.isModified() || v3.isModified() || v4.isModified();
-}
-
-bool detail::resolver::coerce(Builder* builder, Node* node) {
-    util::timing::Collector _("hilti/compiler/ast/resolver");
-
-    bool ever_modified = false;
-
-    while ( true ) {
-        // Pass 3 is in charge of coercion.
-        auto v3 = VisitorPass3(builder);
-        hilti::visitor::visit(v3, node);
-
-        if ( v3.isModified() )
-            ever_modified = true;
-        else
-            return ever_modified;
-    }
 }

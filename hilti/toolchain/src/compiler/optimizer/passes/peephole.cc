@@ -167,8 +167,7 @@ bool run(Optimizer* optimizer) { return Mutator(optimizer).run(); }
 
 optimizer::RegisterPass peephole({.id = PassID::Peephole,
                                   .iterate = false,
-                                  .guarantees = Guarantees::FullyResolved | Guarantees::ScopesBuilt |
-                                                Guarantees::ConstantsFolded | Guarantees::TypesUnified,
+                                  .guarantees = Guarantees::Resolved | Guarantees::ConstantsFolded,
                                   .run = run});
 
 } // namespace

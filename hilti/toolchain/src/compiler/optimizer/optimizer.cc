@@ -82,6 +82,29 @@ void ASTState::_normalizeModificationState() {
     }
 }
 
+bool ASTState::_resolve(Node* node) {
+    // This mimics ASTContext::_resolve(), reduced to just the steps the
+    // optimizer needs. In particular that means not running any plugins
+    // because we have a pure HILTI AST at this point. It
+    // also runs only on changed parts of the AST.
+    bool ever_changed = false;
+    unsigned int round = 1;
+
+    while ( true ) {
+        auto changed = scope_builder::build(_builder, node);
+        changed |= type_unifier::unify(_builder, node);
+        changed |= resolver::resolve(_builder, node);
+        ever_changed |= changed;
+
+        if ( ! changed )
+            return ever_changed;
+
+        if ( ++round >= ASTContext::MaxASTIterationRounds )
+            logger().internalError(
+                "Optimizer: ASTState::updateAST() didn't terminate during resolving, AST keeps changing");
+    }
+}
+
 void ASTState::updateAST(const PassInfo& pinfo) {
     util::timing::Collector _1("hilti/compiler/optimizer/update-state");
     util::timing::Collector _2(util::fmt("hilti/compiler/optimizer/update-state/%s", to_string(pinfo.id)));
@@ -126,32 +149,12 @@ void ASTState::updateAST(const PassInfo& pinfo) {
     unsigned int round = 1;
 
     while ( true ) {
-        // The following mimics ASTContext::_resolve(), but skips steps that
-        // the pass doesn't require. It also runs only on changed parts of the
-        // AST; it needs to run only HILTI's versions, no need to consider
-        // other compiler plugins (because everything will have been lowered to
-        // pure HILTI at this point).
         HILTI_DEBUG(logging::debug::Optimizer, util::fmt("re-processing AST, round %d", round));
 
         auto modified = false;
 
-        if ( ! (pinfo.guarantees & Guarantees::ScopesBuilt) ) {
-            run_on_changed_nodes("scope-builder", [&](auto* node) {
-                context()->clearScopes(node);
-                scope_builder::build(_builder, node);
-                return false; // no need to track modifications here
-            });
-        }
-
-        if ( ! (pinfo.guarantees & Guarantees::TypesUnified) )
-            run_on_changed_nodes("type-unifier", [&](auto* node) { return type_unifier::unify(_builder, node); });
-
-        if ( ! (pinfo.guarantees & Guarantees::FullyResolved) ) {
-            if ( pinfo.guarantees & Guarantees::ResolvedExceptCoercions )
-                run_on_changed_nodes("coercer", [&](auto* node) { return resolver::coerce(_builder, node); });
-            else
-                run_on_changed_nodes("full-resolver", [&](auto* node) { return resolver::resolve(_builder, node); });
-        }
+        if ( ! (pinfo.guarantees & Guarantees::Resolved) )
+            run_on_changed_nodes("resolver", [&](auto* node) { return _resolve(node); });
 
         if ( ! (pinfo.guarantees & Guarantees::ConstantsFolded) )
             run_on_changed_nodes("constant-folder", [&](auto* node) {
@@ -242,10 +245,6 @@ void ASTState::checkAST(PassID pass_id) {
             util::fmt("Optimizer::_checkState: AST is not fully constant folded after optimizer pass %s",
                       to_string(pass_id)));
 
-    if ( resolver::coerce(_builder, context()->root()) )
-        logger().internalError(
-            util::fmt("Optimizer::_checkState: AST is not fully coerced after optimizer pass %s", to_string(pass_id)));
-
     if ( resolver::resolve(_builder, context()->root()) )
         logger().internalError(
             util::fmt("Optimizer::_checkState: AST is not fully resolved after optimizer pass %s", to_string(pass_id)));
@@ -281,20 +280,11 @@ std::string optimizer::to_string(bitmask<Guarantees> r) {
     if ( r & Guarantees::CFGUnchanged )
         labels.emplace_back("cfg-unchanged");
 
-    if ( r & Guarantees::ResolvedExceptCoercions )
-        labels.emplace_back("resolved-except-coercions");
-
     if ( r & Guarantees::ConstantsFolded )
         labels.emplace_back("constants-folded");
 
-    if ( r & Guarantees::FullyResolved )
-        labels.emplace_back("fully-resolved");
-
-    if ( r & Guarantees::ScopesBuilt )
-        labels.emplace_back("scopes-built");
-
-    if ( r & Guarantees::TypesUnified )
-        labels.emplace_back("types-unified");
+    if ( r & Guarantees::Resolved )
+        labels.emplace_back("resolved");
 
     if ( labels.empty() )
         return "<none>";

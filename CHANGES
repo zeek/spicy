@@ -1,3 +1,38 @@
+1.15.0-dev.148 | 2025-12-10 17:29:38 +0100
+
+  * Make optimizer guarantees less granular. (Robin Sommer, Corelight)
+
+    This makes the guarantees that an optimizer pass can provide less
+    granular: it can either say the AST is fully resolved, or it's not. If
+    not, the full suite of
+    resolver/coercion/type-unification/scope-building will be run on any
+    changed parts of the AST. A pass can no longer just have some of those
+    parts run.
+
+    This is because it's too hard to understand when exactly what type of
+    guarantee if ok to give. For example, in an upcoming patch, the
+    coercer will start adding new temporaries. That then requires scope
+    building and a full resolver pass afterwards, meaning doing just
+    coercions will never be possible anymore.
+
+    More specifically, this commit includes:
+
+    - Remove `resolver::coerce()`.
+
+    - When re-resolving an AST during optimization, loop over a sequence
+      of scope-building, type unifications, and the standard resolver
+      processing.
+
+    - Remove `optimizer::Guarantees::{ResolvedExceptCoercions,
+      ScopesBuilt, TypesUnified}` and replace
+      `optimizer::Guarantees::FullyResolved` with
+      `optimizer::Guarantees::Resolved`. The latter now encompasses scope
+      building and type-unification as well.
+
+    Inside the resolver code, I'm leavings the coercion visitor (V3) split
+    out, even though strictly speaking that isn't necessary anymore. But
+    seems fine to keep that semantic distinction internally.
+
 1.15.0-dev.146 | 2025-12-09 18:25:47 +0100
 
   * GH-1425: Add pass which performs block flattening. (Benjamin Bannier, Corelight)
