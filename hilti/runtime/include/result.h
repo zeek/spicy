@@ -91,7 +91,7 @@ public:
      * @exception `std::bad_variant_access` if the result reflects an error
      * state
      */
-    const T& value() const { return std::get<T>(_value); }
+    const T& value() const& { return std::get<T>(_value); }
 
     /**
      * Returns the result's value, assuming it indicates success.
@@ -99,7 +99,15 @@ public:
      * @exception `std::bad_variant_access` if the result reflects an error
      * state
      */
-    T& value() { return std::get<T>(_value); }
+    T& value() & { return std::get<T>(_value); }
+
+    /**
+     * Returns the result's value, assuming it indicates success.
+     *
+     * @exception `std::bad_variant_access` if the result reflects an error
+     * state
+     */
+    T value() && { return std::get<T>(std::move(_value)); }
 
     /**
      * Returns the result's value if it indicates success, or throws an
@@ -109,7 +117,7 @@ public:
      * @exception exception of type `E` if the result reflects an error state
      */
     template<typename E = result::NoResult>
-    const T& valueOrThrow() const {
+    const T& valueOrThrow() const& {
         if ( ! hasValue() )
             throw E(error());
 
@@ -124,7 +132,22 @@ public:
      * @exception exception of type `E` if the result reflects an error state
      */
     template<typename E = result::NoResult>
-    T& valueOrThrow() {
+    T& valueOrThrow() & {
+        if ( ! hasValue() )
+            throw E(error());
+
+        return value();
+    }
+
+    /**
+     * Returns the result's value if it indicates success, or throws an
+     * exception if not.
+     *
+     * @tparam E type of the exception to throw
+     * @exception exception of type `E` if the result reflects an error state
+     */
+    template<typename E = result::NoResult>
+    T valueOrThrow() && {
         if ( ! hasValue() )
             throw E(error());
 
@@ -137,7 +160,16 @@ public:
      * @exception `std::bad_variant_access` if the result doe not reflect an error
      * state
      */
-    const result::Error& error() const { return std::get<result::Error>(_value); }
+    const result::Error& error() const& { return std::get<result::Error>(_value); }
+
+    /**
+     * Returns the result's error, assuming it reflect one.
+     *
+     * @exception `std::bad_variant_access` if the result doe not reflect an error
+     * state
+     */
+    result::Error error() && { return std::get<result::Error>(std::move(_value)); }
+
 
     /**
      * Returns the result's error if it indicates failure, or throws an
@@ -156,13 +188,17 @@ public:
     bool hasValue() const { return std::holds_alternative<T>(_value); }
 
     /** Returns the result's value, assuming it indicates success. */
-    const T& operator*() const { return value(); }
+    const T& operator*() const& { return value(); }
     /** Returns the result's value, assuming it indicates success. */
-    T& operator*() { return value(); }
+    T& operator*() & { return value(); }
     /** Returns the result's value, assuming it indicates success. */
-    const T* operator->() const { return std::get_if<T>(&_value); }
+    T operator*() && { return value(); }
     /** Returns the result's value, assuming it indicates success. */
-    T* operator->() { return std::get_if<T>(&_value); }
+    const T* operator->() const& { return std::get_if<T>(&_value); }
+    /** Returns the result's value, assuming it indicates success. */
+    T* operator->() & { return std::get_if<T>(&_value); }
+    /** Returns the result's value, assuming it indicates success. */
+    T* operator->() && = delete;
 
     /** Returns true if the result represents a successful return value. */
     explicit operator bool() const { return hasValue(); }

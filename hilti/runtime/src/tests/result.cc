@@ -4,6 +4,7 @@
 
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/result.h>
@@ -71,6 +72,13 @@ TEST_CASE("valueOrThrow") {
         r1.valueOrThrow() += 42;
         CHECK_EQ(r1, Result(42));
     }
+}
+
+TEST_CASE("rvalue access") {
+    static_assert(std::is_same_v<int, decltype(Result<int>().value())>);
+    static_assert(std::is_same_v<int, decltype(Result<int>().valueOrThrow())>);
+    static_assert(std::is_same_v<int, decltype(*Result<int>())>);
+    static_assert(std::is_same_v<result::Error, decltype(Result<int>(result::Error("error")).error())>);
 }
 
 TEST_CASE("to_string_for_print") {
