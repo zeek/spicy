@@ -88,7 +88,8 @@ struct Visitor : hilti::visitor::PreOrder {
         // If type arguments are provided, call the corresponding constructor.
         // If they aren't, we'll use the default constructor instead.
         if ( ! n->typeArguments().empty() ) {
-            auto exprs = cg->compileCallArguments(n->typeArguments(), n->type()->type()->parameters());
+            auto exprs = cg->compileCallArguments(n->typeArguments(), n->type()->type()->parameters(),
+                                                  hilti::detail::CodeGen::CtorKind::Parameters);
             args = util::join(exprs, ", ");
         }
 
@@ -310,10 +311,14 @@ struct Visitor : hilti::visitor::PreOrder {
             return cxx::Expression("{}");
         };
 
-        result = fmt("%s(%s)", id,
-                     util::join(n->stype()->fields() | std::views::filter(is_public_field) |
-                                    std::views::transform(convert_field),
-                                ", "));
+        auto args = util::join(n->stype()->fields() | std::views::filter(is_public_field) |
+                                   std::views::transform(convert_field),
+                               ", ");
+
+        if ( args.empty() )
+            result = fmt("%s()", id);
+        else
+            result = fmt("%s(::hilti::rt::struct_::tag::Inits(), %s)", id, args);
     }
 
     void operator()(ctor::Time* n) final {

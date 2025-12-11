@@ -20,7 +20,7 @@ HILTI_PRE_INIT(hlt_internal::Foo::_register_module)
 
 extern void hlt_internal::Foo::_destroy_globals(::hilti::rt::Context* ctx) { ::hlt_internal::Foo::X.reset();; }
 
-extern void hlt_internal::Foo::_init_globals(::hilti::rt::Context* ctx) { ::hlt_internal::Foo::X = hilti::rt::optional::make("Hello, world!"s); }
+extern void hlt_internal::Foo::_init_globals(::hilti::rt::Context* ctx) { ::hlt_internal::Foo::X = ::hilti::rt::optional::make("Hello, world!"s); }
 
 extern void hlt_internal::Foo::_init_module() {
       ::hilti::rt::location("<...>/globals.hlt:16:1-16:15");

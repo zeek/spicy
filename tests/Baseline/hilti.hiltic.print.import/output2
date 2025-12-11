@@ -27,7 +27,7 @@ HILTI_PRE_INIT(hlt_internal::Bar::_register_module)
 
 extern void hlt_internal::Bar::_destroy_globals(::hilti::rt::Context* ctx) { ::hlt_internal::Bar::bar.reset();; }
 
-extern void hlt_internal::Bar::_init_globals(::hilti::rt::Context* ctx) { ::hlt_internal::Bar::bar = hilti::rt::optional::make("Bar!"s); }
+extern void hlt_internal::Bar::_init_globals(::hilti::rt::Context* ctx) { ::hlt_internal::Bar::bar = ::hilti::rt::optional::make("Bar!"s); }
 
 extern void hlt_internal::Bar::_init_module() {
       ::hilti::rt::location("bar.hlt:10:1-10:38");
@@ -68,7 +68,7 @@ HILTI_PRE_INIT(hlt_internal::Foo::_register_module)
 
 extern void hlt_internal::Foo::_destroy_globals(::hilti::rt::Context* ctx) { ::hlt_internal::Foo::foo.reset();; }
 
-extern void hlt_internal::Foo::_init_globals(::hilti::rt::Context* ctx) { ::hlt_internal::Foo::foo = hilti::rt::optional::make("Foo!"s); }
+extern void hlt_internal::Foo::_init_globals(::hilti::rt::Context* ctx) { ::hlt_internal::Foo::foo = ::hilti::rt::optional::make("Foo!"s); }
 
 extern void hlt_internal::Foo::_init_module() {
       ::hilti::rt::location("foo.hlt:10:1-10:38");

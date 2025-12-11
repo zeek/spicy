@@ -150,7 +150,8 @@ struct Visitor : hilti::visitor::PreOrder {
 
         else {
             if ( auto* s = d->type()->type()->tryAs<type::Struct>() )
-                args = cg->compileCallArguments(d->typeArguments(), s->parameters());
+                args = cg->compileCallArguments(d->typeArguments(), s->parameters(),
+                                                hilti::detail::CodeGen::CtorKind::Parameters);
 
             init = cg->typeDefaultValue(d->type());
         }

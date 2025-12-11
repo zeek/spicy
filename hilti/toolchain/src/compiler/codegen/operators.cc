@@ -557,7 +557,8 @@ struct Visitor : hilti::visitor::PreOrder {
 
             if ( ctor->as<ctor::Tuple>()->value().size() )
                 args = util::join(cg->compileCallArguments(ctor->as<ctor::Tuple>()->value(),
-                                                           tv->typeValue()->type()->parameters()),
+                                                           tv->typeValue()->type()->parameters(),
+                                                           hilti::detail::CodeGen::CtorKind::Parameters),
                                   ", ");
             else if ( auto def = cg->typeDefaultValue(tv->typeValue()) )
                 args = *def;

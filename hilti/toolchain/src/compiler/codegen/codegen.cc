@@ -119,10 +119,10 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
                     continue;
 
                 if ( g.init )
-                    body.addStatement(fmt(HILTI_INTERNAL_ID("globals()->%s = {%s}"), g.id.local(), *g.init));
+                    body.addStatement(fmt("%s()->%s = {%s}", HILTI_INTERNAL_ID("globals"), g.id.local(), *g.init));
                 else if ( g.args.size() )
-                    body.addStatement(
-                        fmt(HILTI_INTERNAL_ID("globals()->%s = {%s}"), g.id.local(), util::join(g.args, ", ")));
+                    body.addStatement(fmt("%s()->%s = {::hilti::rt::struct_::tag::Parameters(), %s}",
+                                          HILTI_INTERNAL_ID("globals"), g.id.local(), util::join(g.args, ", ")));
             }
         }
         else {
@@ -132,12 +132,13 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
 
                 if ( g.init )
                     // Initialize to actual value
-                    body.addStatement(fmt("::%s::%s = hilti::rt::optional::make(%s)", ns, g.id.local(), *g.init));
+                    body.addStatement(fmt("::%s::%s = ::hilti::rt::optional::make(%s)", ns, g.id.local(), *g.init));
                 else if ( g.args.size() )
-                    body.addStatement(fmt("::%s::%s = hilti::rt::optional::make<%s>(%s)", ns, g.id.local(), g.type,
-                                          util::join(g.args, ", ")));
+                    body.addStatement(
+                        fmt("::%s::%s = ::hilti::rt::optional::make<%s>(::hilti::rt::struct_::tag::Parameters(), %s)",
+                            ns, g.id.local(), g.type, util::join(g.args, ", ")));
                 else
-                    body.addStatement(fmt("::%s::%s = hilti::rt::optional::make(%s{})", ns, g.id.local(), g.type));
+                    body.addStatement(fmt("::%s::%s = ::hilti::rt::optional::make(%s{})", ns, g.id.local(), g.type));
             }
         }
 
@@ -712,9 +713,22 @@ cxx::declaration::Function CodeGen::compile(Declaration* decl, type::Function* f
 }
 
 std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Expression>& args,
-                                                           const node::Set<declaration::Parameter>& params) {
+                                                           const node::Set<declaration::Parameter>& params,
+                                                           std::optional<CtorKind> struct_ctor) {
     std::vector<cxx::Expression> x;
-    x.reserve(args.size());
+
+    if ( params.empty() )
+        return x;
+
+    if ( struct_ctor ) {
+        switch ( *struct_ctor ) {
+            case CtorKind::Inits: x.emplace_back("::hilti::rt::struct_::tag::Inits()"); break;
+            case CtorKind::Parameters: x.emplace_back("::hilti::rt::struct_::tag::Parameters()"); break;
+            default: util::cannotBeReached();
+        }
+    }
+
+    x.reserve(x.size() + args.size());
 
     unsigned int i = 0;
     for ( const auto& p : params ) {
@@ -735,11 +749,24 @@ std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Exp
 }
 
 std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Expression>& args,
-                                                           const node::Range<declaration::Parameter>& params) {
+                                                           const node::Range<declaration::Parameter>& params,
+                                                           std::optional<CtorKind> struct_ctor) {
     assert(args.size() == params.size());
 
     std::vector<cxx::Expression> x;
-    x.reserve(args.size());
+
+    if ( params.empty() )
+        return x;
+
+    if ( struct_ctor ) {
+        switch ( *struct_ctor ) {
+            case CtorKind::Inits: x.emplace_back("::hilti::rt::struct_::tag::Inits()"); break;
+            case CtorKind::Parameters: x.emplace_back("::hilti::rt::struct_::tag::Parameters()"); break;
+            default: util::cannotBeReached();
+        }
+    }
+
+    x.reserve(x.size() + args.size());
     for ( auto i = 0U; i < args.size(); i++ )
         x.emplace_back(compile(args[i], params[i]->kind() == parameter::Kind::InOut));
 

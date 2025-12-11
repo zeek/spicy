@@ -33,8 +33,8 @@ extern void hlt_internal::Foo::_destroy_globals(::hilti::rt::Context* ctx) {
 }
 
 extern void hlt_internal::Foo::_init_globals(::hilti::rt::Context* ctx) {
-    ::hlt_internal::Foo::d = hilti::rt::optional::make(double{});
-    ::hlt_internal::Foo::r = hilti::rt::optional::make(0x1.999999999999ap-4);
+    ::hlt_internal::Foo::d = ::hilti::rt::optional::make(double{});
+    ::hlt_internal::Foo::r = ::hilti::rt::optional::make(0x1.999999999999ap-4);
 }
 
 extern void hlt_internal::Foo::_init_module() {

@@ -466,7 +466,7 @@ std::string cxx::type::Struct::str() const {
                                                    return fmt("::hilti::rt::Optional<%s> %s", l.type, l.id);
                                                }),
                                                ", ");
-            auto locals_ctor = fmt("explicit %s(%s);", type_name, locals_ctor_args);
+            auto locals_ctor = fmt("explicit %s(::hilti::rt::struct_::tag::Inits, %s);", type_name, locals_ctor_args);
             struct_fields.emplace_back(std::move(locals_ctor));
         }
 
@@ -475,7 +475,8 @@ std::string cxx::type::Struct::str() const {
             auto params_ctor_args =
                 util::join(args | std::views::transform([&](const auto& x) { return fmt("%s %s", x.type, x.id); }),
                            ", ");
-            auto params_ctor = fmt("%s(%s);", type_name, params_ctor_args);
+            auto params_ctor =
+                fmt("explicit %s(::hilti::rt::struct_::tag::Parameters, %s);", type_name, params_ctor_args);
             struct_fields.emplace_back(params_ctor);
         }
     }
@@ -564,8 +565,12 @@ std::string cxx::type::Struct::code() const {
                                      }),
                                      ", ");
 
-        code += fmt("%s::%s(%s) : %s {\n%s%s}\n\n", type_name, type_name, ctor_args, ctor_inits, init_locals_user(),
-                    init_locals_non_user());
+        if ( ctor_args.empty() )
+            code += fmt("%s::%s() : %s {\n%s%s}\n\n", type_name, type_name, ctor_inits, init_locals_user(),
+                        init_locals_non_user());
+        else
+            code += fmt("%s::%s(::hilti::rt::struct_::tag::Parameters, %s) : %s {\n%s%s}\n\n", type_name, type_name,
+                        ctor_args, ctor_inits, init_locals_user(), init_locals_non_user());
     }
 
     if ( ! locals_user.empty() ) {
@@ -582,7 +587,11 @@ std::string cxx::type::Struct::code() const {
                                      }),
                                      "");
 
-        code += fmt("%s::%s(%s) : %s() {\n%s}\n\n", type_name, type_name, ctor_args, type_name, ctor_inits);
+        if ( ctor_args.empty() )
+            code += fmt("%s::%s() : %s() {\n%s}\n\n", type_name, type_name, type_name, ctor_inits);
+        else
+            code += fmt("%s::%s(::hilti::rt::struct_::tag::Inits, %s) : %s() {\n%s}\n\n", type_name, type_name,
+                        ctor_args, type_name, ctor_inits);
     }
 
     return code;
