@@ -19,4 +19,12 @@ function void fn3() {
     }
 }
 
+function uint<64> fn4() {
+    while (local auto ms = /abc/.token_matcher(); True) {
+        break;
+    }
+
+    return 0;
+}
+
 }
