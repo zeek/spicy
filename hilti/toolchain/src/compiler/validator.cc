@@ -55,6 +55,7 @@
 #include <hilti/ast/types/void.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
+#include <hilti/compiler/detail/cfg.h>
 #include <hilti/compiler/validator.h>
 
 using namespace hilti;
@@ -193,6 +194,32 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         }
     }
 
+    // Checks whether there are return or throw statements on all paths through
+    // a CFG starting at a given node.
+    bool ensureReturns(const detail::CFG& cfg, const detail::cfg::GraphNode* n, std::unordered_set<uint64_t>* seen) {
+        auto identity = n->get()->identity();
+        if ( seen->contains(identity) )
+            return true;
+
+        seen->insert(identity);
+
+        // The CFG contains return statements directly, but only the expression
+        // for throw statements.
+        if ( n->get()->isA<statement::Return>() || n->get()->parent<statement::Throw>() )
+            return true;
+
+        const auto& successors = cfg.graph().neighborsDownstream(identity);
+        if ( successors.empty() )
+            return false;
+
+        for ( const auto& s : successors ) {
+            if ( ! ensureReturns(cfg, cfg.graph().getNode(s), seen) )
+                return false;
+        }
+
+        return true;
+    }
+
     void operator()(Node* n) final {
         if ( ! n->scope() )
             return;
@@ -316,6 +343,15 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                     error(fmt("method '%s' is already defined elsewhere", n->id()), n);
                 else
                     method_declarations.insert(index);
+            }
+        }
+
+        if ( ! n->function()->ftype()->result()->type()->isA<type::Void>() ) {
+            if ( auto* body = n->function()->body() ) {
+                const auto cfg = detail::CFG(body);
+                std::unordered_set<uint64_t> seen;
+                if ( ! ensureReturns(cfg, cfg.begin(), &seen) )
+                    error(fmt("not all paths through the function %s return a value", n->id()), n);
             }
         }
     }

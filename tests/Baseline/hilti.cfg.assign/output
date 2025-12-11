@@ -32,8 +32,8 @@ digraph {
     8 [label="(x = 1) = (y = 1);" xlabel="read: [y] write: [x, y] gen: [x: (x = 1) = (y = 1);, y: (x = 1) = (y = 1);] kill: [x: (x = (y = 1)) = x;, y: (x = (y = 1)) = x;] in: [x: (x = (y = 1)) = x;, y: (x = (y = 1)) = x;] out: [x: (x = 1) = (y = 1);, y: (x = 1) = (y = 1);]"];
     9 [label="(y = 1) = (x = (y = 1));" xlabel="read: [x, y] write: [x, y] gen: [x: (y = 1) = (x = (y = 1));, y: (y = 1) = (x = (y = 1));] kill: [x: (x = 1) = (y = 1);, y: (x = 1) = (y = 1);] in: [x: (x = 1) = (y = 1);, y: (x = 1) = (y = 1);] out: [x: (y = 1) = (x = (y = 1));, y: (y = 1) = (x = (y = 1));]"];
     10 [label=start shape=Mdiamond xlabel="in: [] out: []"];
-    11 [label="end <...>/assign.hlt:12:25-26:1" shape=triangle xlabel="in: [] out: []"];
-    12 [label="end <...>/assign.hlt:12:25-26:1" shape=triangle xlabel="kill: [x: (y = 1) = (x = (y = 1));, y: (y = 1) = (x = (y = 1));] in: [x: (y = 1) = (x = (y = 1));, y: (y = 1) = (x = (y = 1));] out: []"];
+    11 [label="end <...>/assign.hlt:12:21-26:1" shape=triangle xlabel="in: [] out: []"];
+    12 [label="end <...>/assign.hlt:12:21-26:1" shape=triangle xlabel="kill: [x: (y = 1) = (x = (y = 1));, y: (y = 1) = (x = (y = 1));] in: [x: (y = 1) = (x = (y = 1));, y: (y = 1) = (x = (y = 1));] out: []"];
     10 -> 0 [label="0"];
     0 -> 1 [label="1"];
     1 -> 2 [label="2"];

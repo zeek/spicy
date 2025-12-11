@@ -9,7 +9,7 @@ function uint<64> fn() {
     return x;
 }
 
-function uint<64> fn2() {
+function void fn2() {
     local auto x = 1;
     local auto y = 1;
 

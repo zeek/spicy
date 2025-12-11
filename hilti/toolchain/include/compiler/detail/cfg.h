@@ -216,6 +216,9 @@ public:
      */
     std::deque<cfg::GraphNode> postorder() const;
 
+    /** Returns the entry point of the CFG. */
+    const auto* begin() const { return &_begin; }
+
 private:
     cfg::GraphNode _getOrAddNode(cfg::GraphNode n);
     void _addEdge(const cfg::GraphNode& from, const cfg::GraphNode& to);
