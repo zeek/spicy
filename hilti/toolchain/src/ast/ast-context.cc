@@ -796,7 +796,7 @@ Result<Nothing> ASTContext::_optimize(Builder* builder) {
 
     HILTI_DEBUG(logging::debug::Compiler, "performing global transformations");
 
-    if ( auto rc = Optimizer(builder->context()).run(); ! rc )
+    if ( auto rc = Optimizer(builder).run(); ! rc )
         return rc;
 
     if ( logger().isEnabled(logging::debug::CfgFinal) )
