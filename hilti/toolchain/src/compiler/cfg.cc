@@ -354,7 +354,6 @@ GraphNode CFG::_addWhile(GraphNode predecessor, const statement::While& while_, 
     if ( auto* init = while_.init() ) {
         auto init_ = _getOrAddNode(init);
         _addEdge(predecessor, init_);
-        _addEdge(init_, scope_end);
 
         predecessor = init_;
     }

@@ -2,8 +2,8 @@
 [debug/cfg-initial] Module 'foo'
 digraph {
     0 [label=start shape=Mdiamond xlabel="in: [] out: []"];
-    1 [label="end <...>/while.hlt:4:1-22:1" shape=triangle xlabel="in: [] out: []"];
-    2 [label="end <...>/while.hlt:4:1-22:1" shape=triangle xlabel="in: [] out: []"];
+    1 [label="end <...>/while.hlt:4:1-30:1" shape=triangle xlabel="in: [] out: []"];
+    2 [label="end <...>/while.hlt:4:1-30:1" shape=triangle xlabel="in: [] out: []"];
     0 -> 2 [label="0"];
     2 -> 1 [label="1"];
 }
@@ -35,14 +35,13 @@ digraph {
     6 [label="end <...>/while.hlt:11:38-11:43" shape=triangle xlabel="in: [i: local uint<64> i = 0] out: [i: local uint<64> i = 0]"];
     7 [shape=point xlabel="in: [i: local uint<64> i = 0] out: [i: local uint<64> i = 0]"];
     3 -> 0 [label="0"];
-    0 -> 5 [label="1"];
-    0 -> 1 [label="2"];
-    1 -> 2 [label="3"];
-    2 -> 6 [label="4"];
-    6 -> 1 [label="5"];
-    1 -> 7 [label="6"];
-    7 -> 5 [label="7"];
-    5 -> 4 [label="8"];
+    0 -> 1 [label="1"];
+    1 -> 2 [label="2"];
+    2 -> 6 [label="3"];
+    6 -> 1 [label="4"];
+    1 -> 7 [label="5"];
+    7 -> 5 [label="6"];
+    5 -> 4 [label="7"];
 }
 [debug/cfg-initial] Function 'fn3'
 digraph {
@@ -65,6 +64,23 @@ digraph {
     8 -> 7 [label="7"];
     7 -> 5 [label="8"];
     5 -> 4 [label="9"];
+}
+[debug/cfg-initial] Function 'fn4'
+digraph {
+    0 [label="local hilti::MatchState ms = /abc/.token_matcher()" xlabel="gen: [ms: local hilti::MatchState ms = /abc/.token_matcher()] in: [] out: [ms: local hilti::MatchState ms = /abc/.token_matcher()]"];
+    1 [label="True" xlabel="in: [ms: local hilti::MatchState ms = /abc/.token_matcher()] out: [ms: local hilti::MatchState ms = /abc/.token_matcher()] keep"];
+    2 [label="return 0;" xlabel="in: [ms: local hilti::MatchState ms = /abc/.token_matcher()] out: [ms: local hilti::MatchState ms = /abc/.token_matcher()] keep"];
+    3 [label=start shape=Mdiamond xlabel="in: [] out: []"];
+    4 [label="end <...>/while.hlt:22:25-28:1" shape=triangle xlabel="kill: [ms: local hilti::MatchState ms = <...>/.token_matcher()] in: [ms: local hilti::MatchState ms = <...>/.token_matcher()] out: []"];
+    5 [label="end <...>/while.hlt:23:57-25:5" shape=triangle xlabel="in: [ms: local hilti::MatchState ms = <...>/.token_matcher()] out: [ms: local hilti::MatchState ms = <...>/.token_matcher()]"];
+    6 [shape=point xlabel="in: [ms: local hilti::MatchState ms = /abc/.token_matcher()] out: [ms: local hilti::MatchState ms = /abc/.token_matcher()]"];
+    3 -> 0 [label="0"];
+    0 -> 1 [label="1"];
+    1 -> 5 [label="2"];
+    5 -> 1 [label="3"];
+    1 -> 6 [label="4"];
+    6 -> 2 [label="5"];
+    2 -> 4 [label="6"];
 }
 [debug/cfg-initial] Module 'hilti'
 digraph {
