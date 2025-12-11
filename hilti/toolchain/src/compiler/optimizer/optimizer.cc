@@ -292,7 +292,7 @@ std::string optimizer::to_string(bitmask<Guarantees> r) {
         return util::fmt("<%s>", util::join(labels, ","));
 }
 
-Optimizer::Optimizer(ASTContext* ctx) : _context(ctx), _builder(ctx), _state(ctx, &_builder) {}
+Optimizer::Optimizer(Builder* builder) : _builder(builder), _state(builder->context(), builder) {}
 
 bool Optimizer::_runPass(const optimizer::PassInfo& pinfo, unsigned int round) {
     unsigned int iteration = 1;

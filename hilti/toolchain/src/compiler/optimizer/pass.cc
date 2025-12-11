@@ -2,6 +2,8 @@
 
 #include "hilti/hilti/compiler/detail/optimizer/pass.h"
 
+#include <cassert>
+
 #include <hilti/ast/ast-context.h>
 #include <hilti/ast/expressions/resolved-operator.h>
 
@@ -72,8 +74,6 @@ void optimizer::visitor::Mutator::recordChange(const Node* old, const std::strin
 }
 
 void optimizer::Registry::register_(PassInfo pinfo) {
-    if ( _pinfos.contains(pinfo) )
-        logger().internalError(util::fmt("optimizer pass '%s' registered multiple times", to_string(pinfo.id)));
-
+    assert(! _pinfos.contains(pinfo));
     _pinfos.emplace(pinfo);
 }

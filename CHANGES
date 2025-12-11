@@ -1,3 +1,48 @@
+1.15.0-dev.164 | 2025-12-11 16:47:37 +0100
+
+  * Add rvalue overloads for `Result` accessors. (Benjamin Bannier, Corelight)
+
+    A somewhat typical use case of results is to get them from some function
+    and then immediately dereference the returned value and bind its value to
+    a new value (i.e., not a reference). The binding to a new value prevents
+    us introducing a reference to a temporary which will go out of scope and
+    the end of the statement.
+
+    This is incorrectly diagnosed by Coverity as a unnecessary copy
+    (`AUTO_CAUSES_COPY`), but also exposes an API which makes it easy to
+    create dangling references. This patch introduces rvalue overloads for
+    `Result` accessors so we can directly obtain a value inside a `Result`
+    without having to go through a copy of a reference. With that we also
+    catch incorrect uses of temporary `Result` values which we also fix.
+
+  * Remove dependency of global pass registry on global logger. (Benjamin Bannier, Corelight)
+
+    Both these objects represent singletons which live in different
+    translation units. That means that the order in which they are
+    constructed is unspecified and we shouldn't rely on a particular one.
+
+    This patch removes a user of the logger to raise an internal error with
+    an assertion to break that dependency.
+
+  * Drop stray CFG edge for `while` loops with inits. (Benjamin Bannier, Corelight)
+
+    It looks like this was simply added by accident, and never caught since
+    we had no test. This patch fixes the code and adds a test.
+
+  * Assert the Spicy plugin is invoked with a `spicy::Builder`. (Benjamin Bannier, Corelight)
+
+  * Add missing scope computations in `flatten-blocks` pass. (Benjamin Bannier, Corelight)
+
+    We incorrectly assumed that a `Node` scope was always present when it
+    might need to be computed. This patch fixes the code to create a scope
+    if it is missing.
+
+  * Fix optimizer to use pre-existing builder instance. (Benjamin Bannier, Corelight)
+
+    The pre-existing builder is of the right kind: if we're running
+    through the Spicy driver, it'll be a Spicy builder (in contrast to a
+    HILTI builder).
+
 1.15.0-dev.157 | 2025-12-11 09:24:35 +0100
 
   * Remove `expression::BuiltInFunction`. (Robin Sommer, Corelight)

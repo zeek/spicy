@@ -245,7 +245,7 @@ void Driver::dumpUnit(const Unit& unit) {
     }
 
     if ( auto cxx = unit.cxxCode() ) {
-        ID id = (unit.isCompiledHILTI() ? ID(unit.uid().str()) : ID(unit.cxxCode()->id()));
+        ID id = (unit.isCompiledHILTI() ? ID(unit.uid().str()) : ID(unit.cxxCode().value().id()));
         auto output_path = util::fmt("dbg.%s.cc", id);
         if ( auto out = openOutput(util::fmt("dbg.%s.cc", id)) ) {
             HILTI_DEBUG(logging::debug::Driver, fmt("saving C++ code for module %s to %s", id, output_path));
@@ -820,6 +820,9 @@ Result<Nothing> Driver::linkUnits() {
     if ( ! linker_unit )
         return error("aborting after linker errors");
 
+    auto cxx_code = (*linker_unit)->cxxCode();
+    assert(cxx_code);
+
     if ( _driver_options.output_linker ) {
         std::string output_path = (_driver_options.output_path.empty() ? "/dev/stdout" : _driver_options.output_path);
 
@@ -828,14 +831,14 @@ Result<Nothing> Driver::linkUnits() {
             return output.error();
 
         HILTI_DEBUG(logging::debug::Driver, fmt("writing linker code to %s", output_path));
-        (*linker_unit)->cxxCode()->save(*output);
+        cxx_code->save(*output);
         return Nothing(); // All done.
     }
 
     if ( _driver_options.dump_code )
         dumpUnit(**linker_unit);
 
-    if ( (*linker_unit)->cxxCode()->code() && (*linker_unit)->cxxCode()->code()->size() )
+    if ( cxx_code->code() && cxx_code->code()->size() )
         _units.emplace((*linker_unit)->uid(), *linker_unit);
 
     return Nothing();

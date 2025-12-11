@@ -244,7 +244,7 @@ public:
      *
      * @param ctx the AST context to operator on
      */
-    Optimizer(ASTContext* ctx);
+    Optimizer(Builder* builder);
 
     /**
      * Applies all optimizations to an AST. The AST must have been fully
@@ -256,10 +256,10 @@ public:
     hilti::Result<Nothing> run();
 
     /** Returns the AST context being optimized. */
-    auto* context() { return _context; }
+    auto* context() { return _builder->context(); }
 
     /** Returns the AST builder to use for AST changes by optimization passes. */
-    auto* builder() { return &_builder; }
+    auto* builder() { return _builder; }
 
     /**
      * Returns the current AST state.
@@ -295,8 +295,7 @@ private:
     // for debugging.
     void _dumpAST(ASTContext* ctx, std::string_view fname, std::string_view header);
 
-    ASTContext* _context;
-    Builder _builder;
+    Builder* _builder;
     optimizer::ASTState _state;
 };
 
