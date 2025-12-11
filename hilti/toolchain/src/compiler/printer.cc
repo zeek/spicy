@@ -482,16 +482,18 @@ struct Printer : visitor::PreOrder {
 
     void operator()(expression::Assign* n) final { _out << n->target() << " = " << n->source(); }
 
-    void operator()(expression::BuiltInFunction* n) final {
-        _out << n->name() << "("
-             << util::join(n->arguments() | std::views::transform([](auto p) { return fmt("%s", p); }), ", ") << ")";
-    }
-
     void operator()(expression::Coerced* n) final { _out << n->expression(); }
 
     void operator()(expression::Ctor* n) final { _out << n->ctor(); }
 
-    void operator()(expression::Grouping* n) final { _out << '(' << n->expression() << ')'; }
+    void operator()(expression::Grouping* n) final {
+        _out << '(';
+
+        if ( auto* local = n->local() )
+            _out << "{" << local << ";} ";
+
+        _out << n->expression() << ')';
+    }
 
     void operator()(expression::Keyword* n) final {
         switch ( n->kind() ) {

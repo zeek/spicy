@@ -8,7 +8,7 @@ using util::fmt;
 
 const Options& Builder::options() const { return context()->compilerContext()->options(); }
 
-Expression* Builder::addTmp(const std::string& prefix, QualifiedType* t, const Expressions& args) {
+ID Builder::_makeTmpID(const std::string& prefix) {
     int n = 0;
 
     if ( auto i = _tmps().find(prefix); i != _tmps().end() )
@@ -22,44 +22,32 @@ Expression* Builder::addTmp(const std::string& prefix, QualifiedType* t, const E
         tmp = ID(fmt(HILTI_INTERNAL_ID("%s_%d"), prefix, n));
 
     _tmps()[prefix] = n;
+    return tmp;
+}
+
+Expression* Builder::addTmp(const std::string& prefix, QualifiedType* t, const Expressions& args) {
+    auto tmp = _makeTmpID(prefix);
     block()->_add(context(), local(tmp, t, args));
     return id(tmp);
 }
 
 Expression* Builder::addTmp(const std::string& prefix, Expression* init) {
-    int n = 0;
-
-    if ( auto i = _tmps().find(prefix); i != _tmps().end() )
-        n = i->second;
-
-    ID tmp;
-
-    if ( ++n == 1 )
-        tmp = ID(fmt(HILTI_INTERNAL_ID("%s"), prefix));
-    else
-        tmp = ID(fmt(HILTI_INTERNAL_ID("%s_%d"), prefix, n));
-
-    _tmps()[prefix] = n;
+    auto tmp = _makeTmpID(prefix);
     block()->_add(context(), local(tmp, init));
     return id(tmp);
 }
 
 Expression* Builder::addTmp(const std::string& prefix, QualifiedType* t, Expression* init) {
-    int n = 0;
-
-    if ( auto i = _tmps().find(prefix); i != _tmps().end() )
-        n = i->second;
-
-    ID tmp;
-
-    if ( ++n == 1 )
-        tmp = ID(fmt(HILTI_INTERNAL_ID("%s"), prefix));
-    else
-        tmp = ID(fmt(HILTI_INTERNAL_ID("%s_%d"), prefix, n));
-
-    _tmps()[prefix] = n;
+    auto tmp = _makeTmpID(prefix);
     block()->_add(context(), local(tmp, t, init));
     return id(tmp);
+}
+
+std::pair<expression::Name*, expression::Grouping*> Builder::groupingWithTmp(const std::string& prefix,
+                                                                             Expression* init, const Meta& m) {
+    auto tmp = _makeTmpID(prefix);
+    auto* decl = declarationLocalVariable(tmp, init, m);
+    return std::make_pair(id(tmp), expressionGrouping(decl, nullptr, m));
 }
 
 void Builder::addDebugMsg(std::string_view stream, std::string_view fmt, Expressions args) {

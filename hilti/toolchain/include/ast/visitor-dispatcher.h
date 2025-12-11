@@ -87,7 +87,6 @@ public:
     virtual void operator()(hilti::declaration::Property*) {}
     virtual void operator()(hilti::declaration::Type*) {}
     virtual void operator()(hilti::expression::Assign*) {}
-    virtual void operator()(hilti::expression::BuiltInFunction*) {}
     virtual void operator()(hilti::expression::Coerced*) {}
     virtual void operator()(hilti::expression::Ctor*) {}
     virtual void operator()(hilti::expression::Grouping*) {}

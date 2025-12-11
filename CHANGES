@@ -1,3 +1,71 @@
+1.15.0-dev.157 | 2025-12-11 09:24:35 +0100
+
+  * Remove `expression::BuiltInFunction`. (Robin Sommer, Corelight)
+
+    This wasn't used anywhere.
+
+  * Fix C++ compile error with tuple assignment expressions. (Robin Sommer, Corelight)
+
+  * GH-2175: Fix tuple assignment when coercing individual elements. (Robin Sommer, Corelight)
+
+    The tuple expression could end up being evaluated multiple times.
+
+    Closes #2175.
+
+  * Add helper to create a grouping with a temporary local. (Robin Sommer, Corelight)
+
+    The helper ensures the temporary's ID is unique.
+
+    Factors out some existing code for creating unique names to avoid
+    duplication.
+
+  * Extend HILTI group expression to support a local temporary. (Robin Sommer, Corelight)
+
+    This extends the HILTI `Grouping` expression (`(...)`) so that it
+    allows declaring a variable local to the group. To do that, one
+    prefixes the group's contained expression with a `local` declaration
+    inside `{...}`:
+
+        ({local int i = 2;} i * i) # evaluates to 4
+
+    This isn't meant as a user-level feature but will be useful for
+    internal transformations. It's helpful for situations where an
+    expression is needed multiple times inside the group but must be
+    evaluated only once.
+
+    The HILTI syntax is pretty arbitrary and primarily meant to not
+    interfere with any code that's currently valid.
+
+    Due to the internal nature, we don't expose this in Spicy.
+
+  * Fix ambiguous C++ constructors for generated struct. (Robin Sommer, Corelight)
+
+    This issue has been hidings for a while but was eventually bound to
+    come up: If a struct had just a single field or parameter, the
+    generated C++ struct would get a constructor that likewise receives a
+    single parameter. However, we also generated constructor copy and move
+    constructors, and if we're unlucky, then creating a struct with its
+    single argument would would become ambiguous with those constructors.
+    The second code example in https://github.com/zeek/spicy/issues/2197
+    taggers just that.
+
+    Additionally, we could also run into trouble if the types of a
+    struct's parameters and its fields matched: then our constructors
+    could likewise become ambiguous.
+
+    This fixes things by adding an additional tag parameters, one for
+    constructors receiving struct fields and one for constructors
+    receiving parameter values. That disambiguates them from each other,
+    and from the copy/move constructors.
+
+    We should have done this a long time ago already. The patch is pretty
+    technical but mostly straight-forward. The main challenge is finding
+    all the places where the tags need to be added now.
+
+  * GH-2197: Support coercion from empty list to struct. (Robin Sommer, Corelight)
+
+    Closes #2197.
+
 1.15.0-dev.148 | 2025-12-10 17:29:38 +0100
 
   * Make optimizer guarantees less granular. (Robin Sommer, Corelight)

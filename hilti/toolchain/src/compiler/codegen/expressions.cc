@@ -32,39 +32,44 @@ struct Visitor : hilti::visitor::PreOrder {
         result = {fmt("%s = %s", cg->compile(n->target(), true), cg->compile(n->source())), Side::LHS};
     }
 
-    void operator()(expression::BuiltInFunction* n) final {
-        // We use a statement expression (this is an extension supported by
-        // both GCC and Clang) in order for this to be callable in global
-        // contexts.
-        // This "obvious" approach runs into issues there since temporaries
-        // potentially created via `CodeGen::compile` require a block which is
-        // not present for certain globals:
-        //
-        //     auto arguments =
-        //         util::join(node::transform(n.arguments(), [this](auto& x) { return cg->compile(x, true); }), ", ");
-        //
-        //     return fmt("%s(%s)", cxx::ID(n.cxxname()), arguments);
-
-        cxx::Block block;
-        cg->pushCxxBlock(&block);
-        auto arguments =
-            util::join(n->arguments() | std::views::transform([this](auto x) { return cg->compile(x, lhs); }), ", ");
-        cg->popCxxBlock();
-
-        block.addStatement(fmt("%s(%s)", cxx::ID(n->cxxname()), arguments));
-
-        cxx::Formatter f;
-        f << block;
-        result = fmt("(%s)", f.str());
-    }
-
     void operator()(expression::Coerced* n) final {
         result = cg->coerce(cg->compile(n->expression(), lhs), n->expression()->type(), n->type());
     }
 
     void operator()(expression::Ctor* n) final { result = cg->compile(n->ctor(), lhs); }
 
-    void operator()(expression::Grouping* n) final { result = fmt("(%s)", cg->compile(n->expression(), lhs)); }
+    void operator()(expression::Grouping* n) final {
+        auto cxx_expr = cg->compile(n->expression());
+
+        if ( auto* local = n->local() ) {
+            cxx::Block block;
+            cg->pushCxxBlock(&block);
+
+            auto cxx_type = cg->compile(local->type(), codegen::TypeUsage::Storage);
+
+            std::optional<cxx::Expression> cxx_init;
+
+            if ( auto* init = local->init() )
+                cxx_init = cg->compile(init);
+            else
+                cxx_init = cg->typeDefaultValue(local->type());
+
+            auto cxx_local =
+                cxx::declaration::Local(cxx::ID(local->id()), cg->compile(local->type(), codegen::TypeUsage::Storage),
+                                        {}, std::move(cxx_init));
+
+            block.addTmp(cxx_local);
+
+            cg->popCxxBlock();
+
+            cxx::Formatter f;
+            f.ensure_braces_for_block = false;
+            f << block;
+            result = fmt("([&](){%s return %s;}())", f.str(), cxx_expr);
+        }
+        else
+            result = fmt("(%s)", cxx_expr);
+    }
 
     void operator()(expression::Keyword* n) final {
         switch ( n->kind() ) {

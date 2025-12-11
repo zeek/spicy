@@ -273,12 +273,6 @@ public:
     auto expressionAssign(Expression* target, Expression* src, Meta meta = {}) {
         return hilti::expression::Assign::create(context(), target, src, std::move(meta));
     }
-    auto expressionBuiltInFunction(const std::string& name, const std::string& cxxname, QualifiedType* type,
-                                   const type::function::Parameters& parameters, const Expressions& arguments,
-                                   Meta meta = {}) {
-        return hilti::expression::BuiltInFunction::create(context(), name, cxxname, type, parameters, arguments,
-                                                          std::move(meta));
-    }
     auto expressionCoerced(Expression* expr, QualifiedType* target, Meta meta = {}) {
         return hilti::expression::Coerced::create(context(), expr, target, std::move(meta));
     }
@@ -287,6 +281,9 @@ public:
     }
     auto expressionGrouping(Expression* expr, Meta meta = {}) {
         return hilti::expression::Grouping::create(context(), expr, std::move(meta));
+    }
+    auto expressionGrouping(declaration::LocalVariable* local, Expression* expr, Meta meta = {}) {
+        return hilti::expression::Grouping::create(context(), local, expr, std::move(meta));
     }
     auto expressionKeyword(expression::keyword::Kind kind, const Meta& meta = {}) {
         return hilti::expression::Keyword::create(context(), kind, meta);

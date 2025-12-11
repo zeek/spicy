@@ -1,0 +1,32 @@
+# @TEST-EXEC: hiltic -d -j %INPUT
+#
+# @TEST-DOC: Ensure that assignment from a coerced tuple doesn't double evaluate; regression test for #2175.
+
+module Test {
+
+global uint<8> glob;
+
+function tuple<uint<8>, uint<8>> ret_tup() {
+    glob++;
+    return (glob, glob);
+}
+
+function void f() {
+    local x = 0;
+    local y = 0;
+
+    assert glob == 0;
+    (x, y) = ret_tup();
+    assert glob == 1;
+
+    local tup = ret_tup();
+    assert glob == 2;
+
+    local z = ((x, y) = ret_tup());
+    assert glob == 3;
+    assert z == (3,3);
+}
+
+f();
+
+}

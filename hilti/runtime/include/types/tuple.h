@@ -314,10 +314,12 @@ constexpr auto& get(std::pair<Ts...>& t) {
  * @param src source tuple
  */
 template<typename Ss, typename... Ts>
-constexpr void assign(std::tuple<Ts&...>&& dst, const Ss& src) {
+constexpr const auto& assign(std::tuple<Ts&...>&& dst, const Ss& src) {
     [&]<size_t... Is>(std::index_sequence<Is...> /*unused*/) {
         ((std::get<Is>(dst) = src.template get<Is>()), ...);
     }(std::index_sequence_for<Ts...>{});
+
+    return src;
 }
 
 /**
