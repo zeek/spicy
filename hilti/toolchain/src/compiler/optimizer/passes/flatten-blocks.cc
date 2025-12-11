@@ -87,7 +87,7 @@ struct Mutator : optimizer::visitor::Mutator {
 
         for ( auto& [decl, uses] : collector.variables ) {
             ID id = decl->id();
-            while ( (used.contains(id) && used[id] != decl) || parent->scope()->has(id) )
+            while ( (used.contains(id) && used[id] != decl) || parent->getOrCreateScope()->has(id) )
                 id = ID(id.str() + "_");
 
             used.emplace(id, decl);
