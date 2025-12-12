@@ -1,6 +1,5 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-#include <algorithm>
 #include <map>
 #include <unordered_set>
 
@@ -72,14 +71,6 @@ struct Mutator : optimizer::visitor::Mutator {
 
         auto collector = Collector(optimizer());
         collector.run(block);
-
-        // TODO(bbannier): Captures are not modelled well on the AST and
-        // instead exist as magic names `__captures` during codegen. This means
-        // we cannot rename them, so we skip any blocks where this would be
-        // needed.
-        if ( std::ranges::any_of(collector.variables,
-                                 [](const auto& x) { return x.first->id() == HILTI_INTERNAL_ID("captures"); }) )
-            return;
 
         // Rename IDs which would clash with existing ones from the parent scope.
 
