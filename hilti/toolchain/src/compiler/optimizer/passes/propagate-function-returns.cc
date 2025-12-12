@@ -733,7 +733,7 @@ struct Mutator : public optimizer::visitor::Mutator {
         int i = 0;
         for ( auto* in_ctor : ctor->value() ) {
             if ( auto* name = in_ctor->tryAs<expression::Name>() ) {
-                if ( *placements[i] == name->id() ) {
+                if ( placements[i].has_value() && *placements[i] == name->id() ) {
                     i++;
                     continue;
                 }
@@ -796,7 +796,7 @@ struct Mutator : public optimizer::visitor::Mutator {
         
         if (is_coerced) {
             // If it's a coercion, we need to replace the coercion as well.
-            replaceNode(tuple_ctor->parent(), tuple_ctor, "Uncoercing changed tuple");
+            replaceNode(tuple_ctor->parent(), node::deepcopy(context(), tuple_ctor), "Uncoercing changed tuple");
         }
     }
 };
