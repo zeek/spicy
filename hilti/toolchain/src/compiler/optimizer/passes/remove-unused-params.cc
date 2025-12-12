@@ -89,18 +89,6 @@ struct CollectorUnusedParameters : public optimizer::visitor::Collector {
             assert(x->resolvedDeclaration());
             resolved_declaration = x->resolvedDeclaration();
         }
-        else if ( const auto* x = name->tryAs<expression::Keyword>() ) {
-            switch ( x->kind() ) {
-                case expression::keyword::Kind::Captures: {
-                    id = HILTI_INTERNAL_ID("captures");
-                    break;
-                }
-                case expression::keyword::Kind::Self:
-                case expression::keyword::Kind::DollarDollar:
-                case expression::keyword::Kind::Scope:
-                    util::detail::internalError(util::fmt("unexpected keyword '%s'", name->print()));
-            }
-        }
         else
             util::detail::internalError(util::fmt("unexpected expression '%s'", name));
 
@@ -208,18 +196,6 @@ struct CollectorUnusedParameters : public optimizer::visitor::Collector {
             return;
 
         removeUsed(ftype, function_id, n);
-    }
-
-    void operator()(expression::Keyword* n) final {
-        auto opt_enclosing_fn = enclosingFunction(n);
-        if ( ! opt_enclosing_fn )
-            return;
-
-        auto [ftype, function_id] = *opt_enclosing_fn;
-
-        // Only apply to captures, everything else seems handled by Name.
-        if ( n->kind() == expression::keyword::Kind::Captures )
-            removeUsed(ftype, function_id, n);
     }
 };
 
