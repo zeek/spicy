@@ -9,6 +9,7 @@
 #include <hilti/ast/declarations/type.h>
 #include <hilti/ast/expressions/coerced.h>
 #include <hilti/ast/expressions/ctor.h>
+#include <hilti/ast/expressions/keyword.h>
 #include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/operators/function.h>
 #include <hilti/ast/operators/map.h>
@@ -294,6 +295,11 @@ struct VisitorPass2 : public visitor::MutatingPostOrder {
     void operator()(operator_::unit::ContextNonConst* n) final {
         auto* x = builder()->member(n->op0(), ID(HILTI_INTERNAL_ID("context")));
         replaceNode(n, x);
+    }
+
+    void operator()(hilti::expression::Keyword* n) final {
+        if ( n->kind() == hilti::expression::keyword::Kind::Captures )
+            replaceNode(n, builder()->id(HILTI_INTERNAL_ID("captures")));
     }
 
     void operator()(operator_::unit::Backtrack* n) final {

@@ -75,7 +75,6 @@ struct Visitor : hilti::visitor::PreOrder {
         switch ( n->kind() ) {
             case expression::keyword::Kind::Self: result = {cg->self(), Side::LHS}; break;
             case expression::keyword::Kind::DollarDollar: result = {cg->dollardollar(), Side::LHS}; break;
-            case expression::keyword::Kind::Captures: result = {HILTI_INTERNAL_ID("captures"), Side::LHS}; break;
             case expression::keyword::Kind::Scope: {
                 auto scope = fmt("%s_hlto_scope", cg->options().cxx_namespace_intern);
                 auto extern_scope = cxx::declaration::Global(cxx::ID(scope), "uint64_t", {}, {}, "extern");
@@ -83,6 +82,10 @@ struct Visitor : hilti::visitor::PreOrder {
                 result = {scope, Side::RHS};
                 break;
             }
+
+            case expression::keyword::Kind::Captures:
+                // Captures are replaced in the Spicy layer and should not be present anymore.
+                [[fallthrough]];
 
             default: util::cannotBeReached();
         }
