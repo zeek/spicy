@@ -3,13 +3,13 @@
 module Benchmark;
 
 type InnerSize = unit {
-    b: b"A";
+    b: uint8;
 };
 
 public type UnitVectorSize = unit {
     length: uint64;
     inner: InnerSize[] &size=self.length;
-    end_: b"END";
+    end_: bytes &size=3;
 };
 
 type InnerLookahead = unit {
