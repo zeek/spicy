@@ -7,6 +7,7 @@
 #include <hilti/compiler/detail/optimizer/pass.h>
 
 #include "ast/ctors/coerced.h"
+#include "ast/ctors/tuple.h"
 #include "ast/node-tag.h"
 #include "ast/operators/struct.h"
 #include "compiler/detail/optimizer/optimizer.h"
@@ -728,7 +729,7 @@ struct Mutator : public optimizer::visitor::Mutator {
         }
     }
 
-    void removeFromTupleCtor(ctor::Tuple* ctor, std::vector<std::optional<ID>> placements) {
+    std::optional<Node*> removeFromTupleCtor(ctor::Tuple* ctor, std::vector<std::optional<ID>> placements) {
         Expressions values;
         int i = 0;
         for ( auto* in_ctor : ctor->value() ) {
@@ -744,19 +745,26 @@ struct Mutator : public optimizer::visitor::Mutator {
 
         // Nothing is removed, do nothing.
         if ( values.size() == ctor->value().size() )
-            return;
+            return {};
 
+        std::optional<Node*> replaced_with;
         switch ( values.size() ) {
             // TODO: message
             case 0: removeNode(ctor->parent(), "Removed"); break;
             case 1:
                 // Replace the *parent* since that has the ctor
-                replaceNode(ctor->parent(), values[0]);
+                replaced_with = values[0];
+                replaceNode(ctor->parent(), *replaced_with);
                 break;
-            default: replaceNode(ctor, builder()->ctorTuple(values)); break;
+            default:
+                replaced_with = builder()->ctorTuple(values);
+                replaceNode(ctor, *replaced_with);
+                break;
         }
 
         ctor->setType(context(), newRet(ctor->type()->type()->as<type::Tuple>(), placements));
+
+        return replaced_with;
     }
 
     void operator()(statement::Return* n) final {
@@ -790,13 +798,24 @@ struct Mutator : public optimizer::visitor::Mutator {
         if ( ! tuple_ctor )
             return;
 
+        std::optional<Node*> replaced_with;
         if ( ! placements.placements.empty() )
-            removeFromTupleCtor(tuple_ctor, placements.placements);
+            replaced_with = removeFromTupleCtor(tuple_ctor, placements.placements);
 
         
-        if (is_coerced) {
+        // TODO: This replacement logic is kind of duplicated before, but
+        // I wanted it here too for coercion with a ctor above that coercion.
+        if (is_coerced && replaced_with.has_value() && ! (*replaced_with)->isA<ctor::Tuple>()) {
+            // If it lowered to just one element, then replace all ctors
+            auto* to_replace = (*replaced_with)->parent();
+            while (to_replace->parent() && (to_replace->parent()->isA<expression::Ctor>() || to_replace->parent()->isA<ctor::Tuple>() || to_replace->parent()->isA<ctor::Coerced>()))
+                to_replace = to_replace->parent();
+
+            replaceNode(to_replace, node::deepcopy(context(), *replaced_with), "Uncoercing changed tuple to single element");
+        }
+        else if (is_coerced && replaced_with.has_value() && (*replaced_with)->parent()->isA<ctor::Coerced>()) {
             // If it's a coercion, we need to replace the coercion as well.
-            replaceNode(tuple_ctor->parent(), node::deepcopy(context(), tuple_ctor), "Uncoercing changed tuple");
+            replaceNode((*replaced_with)->parent(), node::deepcopy(context(), *replaced_with), "Uncoercing changed tuple");
         }
     }
 };
