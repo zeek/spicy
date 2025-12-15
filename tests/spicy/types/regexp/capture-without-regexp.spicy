@@ -10,3 +10,9 @@ public type X = unit {
         print $1;
     }
 };
+
+function fn() {
+    print $1;
+}
+
+print $1;

@@ -7,9 +7,11 @@
 
 #include <hilti/ast/ast-context.h>
 #include <hilti/ast/attribute.h>
+#include <hilti/ast/expressions/keyword.h>
 #include <hilti/ast/node.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/type.h>
+#include <hilti/ast/types/regexp.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
 #include <hilti/compiler/plugin.h>
@@ -18,6 +20,7 @@
 #include <spicy/ast/attribute.h>
 #include <spicy/ast/builder/builder.h>
 #include <spicy/ast/forward.h>
+#include <spicy/ast/types/unit-items/field.h>
 #include <spicy/ast/visitor.h>
 #include <spicy/compiler/detail/validator.h>
 
@@ -1212,6 +1215,29 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     void operator()(operator_::unit::ForwardEod* n) final {
         if ( auto* x = n->op0()->type()->type()->tryAs<type::Unit>(); x && ! x->isFilter() )
             error("unit type cannot be a filter, %filter missing", n);
+    }
+
+    void operator()(hilti::expression::Keyword* n) final {
+        // Validate that captures are only used when we are parsing a regexp.
+        // We check the original type since regexps get parsed as bytes.
+        if ( n->kind() == hilti::expression::keyword::Kind::Captures ) {
+            UnqualifiedType* original_type = nullptr;
+
+            // Check type in hook bodies.
+            if ( auto* hook = n->parent<declaration::Hook>() ) {
+                auto idx = hook->unitFieldIndex();
+                auto* field = context()->lookup(idx)->as<type::unit::item::Field>();
+                original_type = field->originalType()->type();
+            }
+
+            // Captures can also appear in field attributes.
+            else if ( auto* field = n->parent<type::unit::item::Field>() )
+                original_type = field->originalType()->type();
+
+            // In all other cases, or when we are not parsing a regexp raise an error.
+            if ( ! original_type || ! original_type->isA<hilti::type::RegExp>() )
+                error("capture groups can only be used in hooks for fields parsing regexp", n);
+        }
     }
 };
 
