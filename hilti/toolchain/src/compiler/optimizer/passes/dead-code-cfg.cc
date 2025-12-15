@@ -119,11 +119,13 @@ struct Mutator : public optimizer::visitor::Mutator {
         return result;
     }
 
-    // Remove the statement containing a given node from both the AST and the CFG.
-    bool remove(CFG* cfg, Node* data, const std::string& msg) {
+    // Remove the statement containing a given node from the AST
+    bool remove(Node* data, const std::string& msg) {
         assert(data);
 
         Node* node = nullptr;
+        // We replace some nodes if the RHS may have side effects
+        Node* replace_with = nullptr;
 
         if ( data->isA<Statement>() && data->hasParent() )
             node = data;
@@ -136,13 +138,20 @@ struct Mutator : public optimizer::visitor::Mutator {
         else if ( data->isA<Declaration>() ) {
             if ( auto* stmt = data->parent(); stmt && stmt->isA<statement::Declaration>() )
                 node = stmt;
+
+            // Declarations should keep the RHS
+            if ( auto* local = data->tryAs<declaration::LocalVariable>(); local && local->init() )
+                replace_with = builder()->statementExpression(local->init());
         }
 
         if ( ! (node && node->hasParent()) )
             return false;
 
-        removeNode(node, msg);
-        cfg->removeNode(node);
+        if ( replace_with )
+            replaceNode(node, replace_with, msg);
+        else
+            removeNode(node, msg);
+
         return true;
     }
 
@@ -153,14 +162,14 @@ struct Mutator : public optimizer::visitor::Mutator {
             auto* cfg = state()->cfg(block);
 
             for ( auto* x : unusedStatements(cfg) )
-                modified |= remove(cfg, x, "statement result unused");
+                modified |= remove(x, "statement result unused");
 
             if ( modified )
                 break;
 
             // NOLINTNEXTLINE(bugprone-nondeterministic-pointer-iteration-order)
             for ( auto* n : unreachableNodes(cfg) )
-                modified |= remove(cfg, n, "unreachable code");
+                modified |= remove(n, "unreachable code");
 
             if ( ! modified )
                 break;

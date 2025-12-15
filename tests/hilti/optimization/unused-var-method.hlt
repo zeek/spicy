@@ -1,0 +1,29 @@
+# @TEST-EXEC: hiltic -j %INPUT
+#
+# @TEST-DOC: Ensure unused variables don't remove calls; regression test for #2231
+
+module Foo {
+
+import hilti;
+
+type Test = struct() {
+    method int<64> test();
+    int<64> x;
+};
+
+method int<64> Test::test() {
+    self.x = 5;
+    return 1;
+}
+
+function void x() {
+    local Test dat = [$x = 1];
+    assert(dat.x == 1);
+    # The dat.test() should change x to 5
+    local y = dat.test();
+    assert(dat.x == 5);
+}
+
+x();
+
+}

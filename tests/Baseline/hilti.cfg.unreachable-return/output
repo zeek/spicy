@@ -16,7 +16,6 @@
 [debug/optimizer] pass: dead-code-cfg (round 1, pass iteration 1)
 [debug/optimizer]     * function changed: f
 [debug/optimizer]   [unreachable-return.hlt:16:5-16:24] statement::Expression "hilti::print("bad!", True);" -> null (unreachable code)
-[debug/optimizer]   [unreachable-return.hlt:17:5-17:11] statement::Return "return;" -> null (unreachable code)
 [debug/optimizer]     -> modified
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-processing AST, round 1
@@ -28,8 +27,21 @@
 [debug/optimizer] pass: peephole (round 2, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 2, pass iteration 1)
+[debug/optimizer]     * function changed: f
+[debug/optimizer]   [unreachable-return.hlt:17:5-17:11] statement::Return "return;" -> null (unreachable code)
+[debug/optimizer]     -> modified
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]     * computed CFGs
+[debug/optimizer]       - deleting function state: f
 [debug/optimizer] pass: constant-propagation (round 2, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 2, pass iteration 1)
+[debug/optimizer] pass: dead-code-static (round 3, pass iteration 1)
+[debug/optimizer] pass: peephole (round 3, pass iteration 1)
+[debug/optimizer] pass: flatten-blocks (round 3, pass iteration 1)
+[debug/optimizer] pass: dead-code-cfg (round 3, pass iteration 1)
+[debug/optimizer] pass: constant-propagation (round 3, pass iteration 1)
+[debug/optimizer] pass: remove-unused-parameters (round 3, pass iteration 1)
 [debug/cfg-final] Module 'Test'
 digraph {
     0 [label="f();" xlabel="in: [] out: [] keep"];
