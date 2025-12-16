@@ -9,10 +9,9 @@ Spicy distinguishes between different kinds of identifiers:
 
 Declarations
     Identifiers used in declarations of variables, types, functions,
-    etc., must start with a letter or underscore, and otherwise
-    contain only alphanumerical characters and underscores. They must
-    not start with two underscores, and cannot match any of
-    :ref:`Spicy's built-in keywords <reserved_keywords>`.
+    etc., must start with a letter, and otherwise contain only alphanumerical
+    characters and underscores. They must not start with an underscore, and
+    cannot match any of :ref:`Spicy's built-in keywords <reserved_keywords>`.
 
 Attributes
     Identifiers augmenting other language elements with additional
