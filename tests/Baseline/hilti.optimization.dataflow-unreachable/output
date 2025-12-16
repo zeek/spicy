@@ -5,7 +5,7 @@
 [debug/optimizer] pass: flatten-blocks (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 1, pass iteration 1)
 [debug/optimizer]     * function changed: fn
-[debug/optimizer]   [dataflow-unreachable.hlt:14:5-14:25] statement::Declaration "local uint<64> c = a;" -> null (statement result unused)
+[debug/optimizer]   [dataflow-unreachable.hlt:14:5-14:25] statement::Declaration "local uint<64> c = a;" -> statement::Expression "a;" (statement result unused)
 [debug/optimizer]     -> modified
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-processing AST, round 1
@@ -16,7 +16,7 @@
 [debug/optimizer]   [dataflow-unreachable.hlt:12:9-12:9] expression::Name "a" -> expression::Ctor "1" (propagating constant value)
 [debug/optimizer]   [dataflow-unreachable.hlt:13:9-13:9] expression::Name "b" -> expression::Ctor "1" (propagating constant value)
 [debug/optimizer]   [dataflow-unreachable.hlt:15:16-15:16] expression::Name "b" -> expression::Ctor "1" (propagating constant value)
-[debug/optimizer]   [dataflow-unreachable.hlt:8:31-16:1] statement::Block "{ local uint<64> a = 0; a = 1; local uint<64> b = 1; b = 1; a = 1 + 1; return a + 1; }" -> constant propagation
+[debug/optimizer]   [dataflow-unreachable.hlt:8:31-16:1] statement::Block "{ local uint<64> a = 0; a = 1; local uint<64> b = 1; b = 1; a = 1 + 1; a; return a + 1; }" -> constant propagation
 [debug/optimizer]     -> modified
 [debug/optimizer]   re-resolving AST assuming guarantees <none>
 [debug/optimizer]   re-processing AST, round 1
@@ -35,6 +35,7 @@
 [debug/optimizer]     * function changed: fn
 [debug/optimizer]   [dataflow-unreachable.hlt:10:5-10:9] statement::Expression "a = 1;" -> null (statement result unused)
 [debug/optimizer]   [dataflow-unreachable.hlt:12:5-12:9] statement::Expression "b = 1;" -> null (statement result unused)
+[debug/optimizer]   [dataflow-unreachable.hlt:8:31-16:1] statement::Expression "a;" -> null (statement result unused)
 [debug/optimizer]     -> modified
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-processing AST, round 1
@@ -47,7 +48,7 @@
 [debug/optimizer] pass: flatten-blocks (round 3, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 3, pass iteration 1)
 [debug/optimizer]     * function changed: fn
-[debug/optimizer]   [dataflow-unreachable.hlt:11:5-11:25] statement::Declaration "local uint<64> b = 1;" -> null (statement result unused)
+[debug/optimizer]   [dataflow-unreachable.hlt:11:5-11:25] statement::Declaration "local uint<64> b = 1;" -> statement::Expression "1;" (statement result unused)
 [debug/optimizer]     -> modified
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-processing AST, round 1
@@ -59,5 +60,18 @@
 [debug/optimizer] pass: peephole (round 4, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 4, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 4, pass iteration 1)
+[debug/optimizer]     * function changed: fn
+[debug/optimizer]   [dataflow-unreachable.hlt:8:31-16:1] statement::Expression "1;" -> null (statement result unused)
+[debug/optimizer]     -> modified
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]     * computed CFGs
+[debug/optimizer]       - deleting function state: fn
 [debug/optimizer] pass: constant-propagation (round 4, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 4, pass iteration 1)
+[debug/optimizer] pass: dead-code-static (round 5, pass iteration 1)
+[debug/optimizer] pass: peephole (round 5, pass iteration 1)
+[debug/optimizer] pass: flatten-blocks (round 5, pass iteration 1)
+[debug/optimizer] pass: dead-code-cfg (round 5, pass iteration 1)
+[debug/optimizer] pass: constant-propagation (round 5, pass iteration 1)
+[debug/optimizer] pass: remove-unused-parameters (round 5, pass iteration 1)

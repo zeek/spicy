@@ -11,18 +11,29 @@ using namespace hilti::detail::optimizer;
 
 namespace {
 
+struct NodePtrOrder {
+    bool operator()(Node* lhs, Node* rhs) const {
+        if ( ! (lhs && rhs) )
+            return false;
+
+        return lhs->identity() < rhs->identity();
+    }
+};
+
+using NodePtrSet = std::set<Node*, NodePtrOrder>;
+
 // Removes dead code based on control flow analysis.
 struct Mutator : public optimizer::visitor::Mutator {
     using optimizer::visitor::Mutator::Mutator;
 
     // Returns all nodes in the CFG that are unreachable.
-    std::vector<Node*> unreachableNodes(const CFG* cfg) const {
-        std::vector<Node*> result;
+    NodePtrSet unreachableNodes(const CFG* cfg) const {
+        NodePtrSet result;
 
         for ( const auto& [id, n] : cfg->graph().nodes() ) {
             if ( n.value.get() && ! n.value->isA<cfg::MetaNode>() && n.neighbors_upstream.empty() ) {
                 assert(std::ranges::find(result, n.value.get()) == result.end());
-                result.push_back(n.value.get());
+                result.insert(n.value.get());
             }
         }
 
@@ -31,7 +42,7 @@ struct Mutator : public optimizer::visitor::Mutator {
 
     // Returns all statements in the CFG whose results are unused. Must be
     // called after dataflow information has been populated.
-    std::vector<Node*> unusedStatements(const CFG* cfg) const {
+    NodePtrSet unusedStatements(const CFG* cfg) const {
         const auto& dataflow = cfg->dataflow();
         assert(! dataflow.empty());
 
@@ -105,7 +116,7 @@ struct Mutator : public optimizer::visitor::Mutator {
             }
         }
 
-        std::vector<Node*> result;
+        NodePtrSet result;
         for ( const auto& [n, uses] : uses ) {
             if ( uses > 0 )
                 continue;
@@ -113,17 +124,19 @@ struct Mutator : public optimizer::visitor::Mutator {
             if ( dataflow.at(n).keep )
                 continue;
 
-            result.push_back(n.get());
+            result.insert(n.get());
         }
 
         return result;
     }
 
-    // Remove the statement containing a given node from both the AST and the CFG.
-    bool remove(CFG* cfg, Node* data, const std::string& msg) {
+    // Remove the statement containing a given node from the AST
+    bool remove(Node* data, const std::string& msg) {
         assert(data);
 
         Node* node = nullptr;
+        // We replace some nodes if the RHS may have side effects
+        Node* replace_with = nullptr;
 
         if ( data->isA<Statement>() && data->hasParent() )
             node = data;
@@ -136,13 +149,20 @@ struct Mutator : public optimizer::visitor::Mutator {
         else if ( data->isA<Declaration>() ) {
             if ( auto* stmt = data->parent(); stmt && stmt->isA<statement::Declaration>() )
                 node = stmt;
+
+            // Declarations should keep the RHS
+            if ( auto* local = data->tryAs<declaration::LocalVariable>(); local && local->init() )
+                replace_with = builder()->statementExpression(local->init());
         }
 
         if ( ! (node && node->hasParent()) )
             return false;
 
-        removeNode(node, msg);
-        cfg->removeNode(node);
+        if ( replace_with )
+            replaceNode(node, replace_with, msg);
+        else
+            removeNode(node, msg);
+
         return true;
     }
 
@@ -153,14 +173,14 @@ struct Mutator : public optimizer::visitor::Mutator {
             auto* cfg = state()->cfg(block);
 
             for ( auto* x : unusedStatements(cfg) )
-                modified |= remove(cfg, x, "statement result unused");
+                modified |= remove(x, "statement result unused");
 
             if ( modified )
                 break;
 
             // NOLINTNEXTLINE(bugprone-nondeterministic-pointer-iteration-order)
             for ( auto* n : unreachableNodes(cfg) )
-                modified |= remove(cfg, n, "unreachable code");
+                modified |= remove(n, "unreachable code");
 
             if ( ! modified )
                 break;

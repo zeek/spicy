@@ -1,3 +1,23 @@
+1.15.0-dev.170 | 2025-12-16 09:54:28 -0500
+
+  * Fix nondeterminism in CFG dead code elimination. (Evan Typanski, Corelight)
+
+    Co-authored-by: Benjamin Bannier <benjamin.bannier@corelight.com>
+
+  * GH-2231: Fix dead code removing methods when removing vars. (Evan Typanski, Corelight)
+
+    Fixes #2231
+
+    Given code like this:
+
+    ```
+      local y = dat.test();
+    ```
+
+    if `y` was never used, then the whole statement would get removed. This
+    makes it so that the RHS sticks around. Then, if the RHS should also be
+    removed, it gets removed later.
+
 1.15.0-dev.167 | 2025-12-16 15:35:32 +0100
 
   * Add validator rejecting invalid uses of capture groups. (Benjamin Bannier, Corelight)
