@@ -228,7 +228,7 @@ public:
      *
      * @param ctx the AST context to operator on
      */
-    Optimizer(Builder* builder);
+    Optimizer(Builder* builder, cfg::Cache* cfg_cache);
 
     /**
      * Applies all optimizations to an AST. The AST must have been fully
@@ -280,7 +280,6 @@ private:
     void _dumpAST(ASTContext* ctx, std::string_view fname, std::string_view header);
 
     Builder* _builder;
-    cfg::Cache _cfgs; // TODO: We will move this out of the optimizer eventually.
     optimizer::ASTState _state;
 };
 

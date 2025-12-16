@@ -483,7 +483,7 @@ private:
     Result<Nothing> _resolveRoot(bool* modified, Builder* builder, const Plugin& plugin);
     Result<Nothing> _validate(Builder* builder, const Plugin& plugin, bool pre_resolver);
     Result<Nothing> _transform(Builder* builder, const Plugin& plugin);
-    Result<Nothing> _optimize(Builder* builder);
+    Result<Nothing> _optimize(Builder* builder, detail::cfg::Cache* cfg_cache);
     Result<Nothing> _computeDependencies();
 
     // Adds a module to the AST. The module must not be part of any AST yet
