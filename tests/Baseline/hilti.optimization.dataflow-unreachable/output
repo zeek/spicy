@@ -33,9 +33,9 @@
 [debug/optimizer] pass: flatten-blocks (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 2, pass iteration 1)
 [debug/optimizer]     * function changed: fn
-[debug/optimizer]   [dataflow-unreachable.hlt:8:31-16:1] statement::Expression "a;" -> null (statement result unused)
-[debug/optimizer]   [dataflow-unreachable.hlt:12:5-12:9] statement::Expression "b = 1;" -> null (statement result unused)
 [debug/optimizer]   [dataflow-unreachable.hlt:10:5-10:9] statement::Expression "a = 1;" -> null (statement result unused)
+[debug/optimizer]   [dataflow-unreachable.hlt:12:5-12:9] statement::Expression "b = 1;" -> null (statement result unused)
+[debug/optimizer]   [dataflow-unreachable.hlt:8:31-16:1] statement::Expression "a;" -> null (statement result unused)
 [debug/optimizer]     -> modified
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-processing AST, round 1
