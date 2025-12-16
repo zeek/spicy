@@ -1099,3 +1099,96 @@ void cfg::dump(logging::DebugStream stream, ASTRoot* root) {
     auto v = PrintCfgVisitor(std::move(stream));
     visitor::visit(v, root);
 }
+
+// Given a block, returns the outer block (function body or module statements) and the module it is part of.
+static std::pair<statement::Block*, declaration::Module*> outerBlockAndModule(statement::Block* block) {
+    assert(block);
+
+    if ( auto* function = block->parent<hilti::Function>() ) {
+        auto* module = function->parent<declaration::Module>();
+        return {function->body(), module};
+    }
+    else if ( auto* module = block->parent<declaration::Module>() )
+        return {module->statements(), module};
+    else
+        logger().internalError("CFG: outerBlockAndModule(): block is not part of a function or module");
+}
+
+CFG* cfg::Cache::get(statement::Block* block_) {
+    const auto& [block, module] = outerBlockAndModule(block_);
+    assert(block && module);
+
+    auto it = _blocks.find(block);
+    if ( it == _blocks.end() ) {
+        it = _blocks.emplace(block, std::make_pair(module, std::make_unique<CFG>(block))).first;
+        _modules[module].insert(block);
+    }
+
+    return it->second.second.get();
+}
+
+bool cfg::Cache::invalidate(statement::Block* block_) {
+    const auto& [block, module] = outerBlockAndModule(block_);
+    assert(block);
+
+    auto i = _blocks.find(block);
+    if ( i == _blocks.end() )
+        return false;
+
+    _blocks.erase(i);
+
+    // If the block was already removed from the AST, we won't know the module
+    // any more. But that's ok, we can just leave it in the module map, won't
+    // do any harm.
+    if ( module )
+        _modules[module].erase(block);
+
+    return true;
+}
+
+bool cfg::Cache::invalidate(declaration::Module* module) {
+    auto m = _modules.find(module);
+    if ( m == _modules.end() )
+        return false;
+
+    for ( auto* b : m->second )
+        _blocks.erase(b);
+
+    _blocks.erase(module->statements());
+    _modules.erase(m);
+    return true;
+}
+
+void cfg::Cache::prune() {
+    std::vector<statement::Block*> to_delete;
+
+    for ( auto& [block, cfg] : _blocks ) {
+        if ( ! block->parent<declaration::Module>() )
+            to_delete.push_back(block);
+    }
+
+    for ( auto* block : to_delete )
+        invalidate(block);
+}
+
+void cfg::Cache::checkValidity() const {
+    for ( const auto& [block, x] : _blocks ) {
+        const auto& [module, cfg] = x;
+
+        auto actual = cfg->dot(false);
+        auto expected = CFG(block).dot(false);
+
+        if ( actual != expected ) {
+            auto* decl = block->parent<Declaration>();
+            assert(decl);
+
+            std::ofstream("cfg.actual.dot") << actual;
+            std::ofstream("cfg.expected.dot") << expected;
+
+            logger().internalError(
+                util::fmt("cfg::Cache::checkValidity: CFG for %s \"%s\" is not up to date (see cfg.actual.dot vs "
+                          "cfg.expected.dot)",
+                          decl->typename_(), decl->id()));
+        }
+    }
+}

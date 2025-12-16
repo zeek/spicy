@@ -29,6 +29,10 @@ namespace type {
 struct Wildcard;
 }
 
+namespace detail::cfg {
+class Cache;
+}
+
 /**
  * Parses a HILTI source file into an AST.
  *

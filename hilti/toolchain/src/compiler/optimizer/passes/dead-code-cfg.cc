@@ -170,7 +170,7 @@ struct Mutator : public optimizer::visitor::Mutator {
         while ( true ) {
             bool modified = false;
 
-            auto* cfg = state()->cfg(block);
+            auto* cfg = state()->cfgCache()->get(block);
 
             for ( auto* x : unusedStatements(cfg) )
                 modified |= remove(x, "statement result unused");

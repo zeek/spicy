@@ -264,4 +264,85 @@ private:
     cfg::GraphNode _end;
 };
 
+namespace cfg {
+
+/**
+ * A cache storing CFGs already computed for blocks of an AST. This computes
+ * CFGs on first access and then stores them for subsequent requests. The cache
+ * assumes that CFGs remain valid until explicit invalidated through one of the
+ * provided invalidation methods.
+ */
+class Cache {
+public:
+    /**
+     * Returns the control flow graph for a given block.
+     *
+     * The CFG is created on first request and cached for subsequent calls,
+     * until either explicitly invalidated or until the cache is cleared.
+     *
+     * @param block the block to get the CFG for, which must be part of a
+     * function or module
+     * @return the CFG (which will actually be the CFG for the outermost block
+     * containing the given block, i.e., for the function or module body
+     * containing it)
+     */
+    CFG* get(statement::Block* block);
+
+    /**
+     * Removes any cached CFG for the function or module containing a given
+     * block. The CFG will then be re-computed next time it's requested.
+     *
+     * @param block block whose containing function/module's CFG will be
+     * invalidated; the block must indeed be part of a function or module
+     * @return true if a cached CFG was found and invalidated, false otherwise
+     */
+    bool invalidate(statement::Block* block);
+
+    /**
+     * Removes all CFGs cached for a module. This includes the module's global
+     * stsatement block as well as all functions defined in the module. Each of
+     * these CFGs will then be re-computed next time they're requested.
+     *
+     * @param module the module whose cached CFGs to invalidate
+     * @return true if any cached CFGs were found and invalidated, false otherwise
+     */
+    bool invalidate(declaration::Module* module);
+
+    /**
+     * Invalidates any cached CFGs that correspond to blocks no longer part of
+     * the AST. This should be called after AST mutations that may have removed
+     * any blocks from the AST.
+     */
+    void prune();
+
+    /** Clears the entire cache. */
+    void clear() {
+        _blocks.clear();
+        _modules.clear();
+    }
+
+    /**
+     * Confirms that the cached CFGs are all still valid. To do so, it
+     * recomputes the CFGs for all cached blocks and compares them to the
+     * cached ones. Aborts with an internal error if differences are found.
+     * This is intended for debugging purposes only and can be expensive to
+     * perform.
+     */
+    void checkValidity() const;
+
+private:
+    // Maps from blocks to pairs of the blocks containing modules and their
+    // computed & cached CFGs. Using retained pointers to ensure the blocks
+    // stay valid as long as they're in the cache. The module pointers will
+    // remain valid as long as the blocks do because they are kept alive by
+    // _modules.
+    std::unordered_map<node::RetainedPtr<statement::Block>, std::pair<declaration::Module*, std::unique_ptr<CFG>>>
+        _blocks;
+
+    // Maps from module to all blocks part of that module that have cached CFGs
+    // stored in _blocks.
+    std::unordered_map<node::RetainedPtr<declaration::Module>, std::unordered_set<statement::Block*>> _modules;
+};
+
+} // namespace cfg
 } // namespace hilti::detail

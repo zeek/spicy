@@ -106,7 +106,7 @@ struct Mutator : optimizer::visitor::Mutator {
         // see an update.
         if ( ! statements.empty() ) {
             if ( auto* last = *statements.rbegin() ) {
-                auto* cfg = state()->cfg(function->body());
+                auto* cfg = state()->cfgCache()->get(function->body());
 
                 const auto& successors = cfg->graph().neighborsDownstream(last->identity());
                 // A block should have at most one child, the statement following it.

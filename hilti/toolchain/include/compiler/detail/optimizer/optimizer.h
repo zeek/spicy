@@ -58,19 +58,8 @@ public:
         return *_pinfo;
     }
 
-    /**
-     * Returns the control flow graph for the given block.
-     *
-     * The CFG is created on first request and cached for subsequent calls,
-     * until the block or its containing function/module is modified.
-     *
-     * @param block the block to get the CFG for, which must be part of a
-     * function or module
-     * @return the CFG (which will actually be the CFG for the outermost block
-     * containing the given block, i.e., the function or module body containing
-     * it)
-     */
-    CFG* cfg(statement::Block* block);
+    /** Returns the CFG cache in use. */
+    auto* cfgCache() { return _cfg_cache; }
 
 protected:
     friend class hilti::detail::Optimizer;
@@ -82,8 +71,9 @@ protected:
      *
      * @param ctx the AST context being optimized
      * @param builder the AST builder to use for AST changes by optimization passes
+     * @param cfg_cache the CFG cache to use
      */
-    ASTState(ASTContext* ctx, Builder* builder) : _context(ctx), _builder(builder) {}
+    ASTState(ASTContext* ctx, Builder* builder, cfg::Cache* cfg_cache);
 
     /**
      * Records a pass as the one currently running.
@@ -141,22 +131,16 @@ protected:
 #endif
 
 private:
-    // When we have collected all modifications for a pass, prepares the state
-    // for upcoming use by `updateAST()`.
-    void _normalizeModificationState();
-
     // Re-resolves the AST after modifications made by a pass.
     bool _resolve(Node* node);
 
     ASTContext* _context = nullptr;
     Builder* _builder = nullptr;
+    cfg::Cache* _cfg_cache = nullptr;
     const PassInfo* _pinfo = nullptr;
 
-    std::unordered_map<Function*, declaration::Module*>
-        _modified_functions;                                    // maps modified functions to its containing module
+    std::unordered_set<Function*> _modified_functions;          // maps modified functions to its containing module
     std::unordered_set<declaration::Module*> _modified_modules; // set of modified modules
-
-    std::unordered_map<statement::Block*, std::unique_ptr<CFG>> _cfgs; // cached CFGs
 };
 
 /**
@@ -296,6 +280,7 @@ private:
     void _dumpAST(ASTContext* ctx, std::string_view fname, std::string_view header);
 
     Builder* _builder;
+    cfg::Cache _cfgs; // TODO: We will move this out of the optimizer eventually.
     optimizer::ASTState _state;
 };
 
