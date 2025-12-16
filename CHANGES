@@ -1,3 +1,25 @@
+1.15.0-dev.167 | 2025-12-16 15:35:32 +0100
+
+  * Add validator rejecting invalid uses of capture groups. (Benjamin Bannier, Corelight)
+
+  * GH-2222: Add resolving for capture groups. (Benjamin Bannier, Corelight)
+
+    We would previously not perform proper resolving of capture groups.
+    Instead we emitted a magic C++ identifier so this only resolved at C++
+    compile time. This introduced a number of downsides:
+
+    - incorrect uses of capture groups via `$1`, `$2`, ... outside of field
+      hooks which defined the magic captures was impossible to diagnose;
+      instead this caused failed C++ compilation
+
+    - code rewrites needed to treat captures special since their use was not
+      correctly reflected on the AST
+
+    This patch lowers uses of capture keywords to the identifier name
+    much earlier so it behaves like any other use of an identifier.
+
+    Closes #2222.
+
 1.15.0-dev.164 | 2025-12-11 16:47:37 +0100
 
   * Add rvalue overloads for `Result` accessors. (Benjamin Bannier, Corelight)

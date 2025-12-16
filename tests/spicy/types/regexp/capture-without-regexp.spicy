@@ -1,0 +1,18 @@
+# @TEST-DOC: Validate that we reject uses of capture groups outside of regexp field hooks.
+#
+# @TEST-EXEC-FAIL: spicyc -dj %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module test;
+
+public type X = unit {
+    x: uint8 {
+        print $1;
+    }
+};
+
+function fn() {
+    print $1;
+}
+
+print $1;
