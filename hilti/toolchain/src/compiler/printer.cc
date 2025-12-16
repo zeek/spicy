@@ -660,7 +660,12 @@ struct Printer : visitor::PreOrder {
         if ( auto* e = n->condition() )
             _out << e;
 
-        _out << " ) " << n->true_();
+        _out << " ) ";
+
+        if ( n->true_() )
+            _out << n->true_();
+        else
+            _out << "{ }";
 
         if ( n->false_() ) {
             _out.beginLine();
