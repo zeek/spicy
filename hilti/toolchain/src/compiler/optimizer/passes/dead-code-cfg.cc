@@ -138,12 +138,24 @@ struct Mutator : public optimizer::visitor::Mutator {
         // We replace some nodes if the RHS may have side effects
         Node* replace_with = nullptr;
 
-        if ( data->isA<Statement>() && data->hasParent() )
+        if ( data->isA<Statement>() && data->hasParent() ) {
             node = data;
+
+            // Expression statement with an assignment should just replace
+            // with the RHS.
+            if ( const auto* expr_stmt = data->tryAs<statement::Expression>() ) {
+                if ( const auto* assign = expr_stmt->expression()->tryAs<expression::Assign>() )
+                    replace_with = builder()->statementExpression(assign->source());
+            }
+        }
 
         else if ( data->isA<Expression>() ) {
             if ( auto* p = data->parent<Statement>(); p && p->hasParent() )
                 node = p;
+
+            // Assignments should keep the RHS as the result.
+            if ( const auto* assign = data->tryAs<expression::Assign>() )
+                replace_with = assign->source();
         }
 
         else if ( data->isA<Declaration>() ) {

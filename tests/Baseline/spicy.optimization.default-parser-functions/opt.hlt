@@ -67,6 +67,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::P1::_parse_foo__P1_stage2(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) {
     # "<...>/default-parser-functions.spicy:14:18-14:24"
     hilti::debugDedent("spicy");
+    (_cur, _lah, _lahe, _error);
     return (_cur, _lah, _lahe, _error);
 }
 
@@ -182,6 +183,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     (*self)._on_y((*self).y);
     _error = (*self)._error;
     hilti::debugDedent("spicy");
+    (_cur, _lah, _lahe, _error);
     return (_cur, _lah, _lahe, _error);
 }
 

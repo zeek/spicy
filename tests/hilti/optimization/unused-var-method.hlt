@@ -22,6 +22,14 @@ function void x() {
     # The dat.test() should change x to 5
     local y = dat.test();
     assert(dat.x == 5);
+
+    # Should also apply for assignments without a declaration
+    local Test dat_assign = [$x = 1];
+    assert(dat_assign.x == 1);
+    # The dat_assign.test() should change x to 5
+    local int<64> z = 10;
+    z = dat_assign.test();
+    assert(dat_assign.x == 5);
 }
 
 x();

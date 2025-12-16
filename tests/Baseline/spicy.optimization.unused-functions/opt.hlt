@@ -88,6 +88,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::B::_parse_foo__B_stage2(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) {
     # "<...>/unused-functions.spicy:21:17-21:23"
     hilti::debugDedent("spicy");
+    (_cur, _lah, _lahe, _error);
     return (_cur, _lah, _lahe, _error);
 }
 
@@ -165,6 +166,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::C::_parse_foo__C_stage2(copy view<stream> _cur, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) {
     # "<...>/unused-functions.spicy:24:10-24:16"
     hilti::debugDedent("spicy");
+    (_cur, _lah, _lahe, _error);
     return (_cur, _lah, _lahe, _error);
 }
 
@@ -191,6 +193,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     # End parsing production: Unit: foo__C_2 ->
 
     hilti::debugDedent("spicy");
+    (_cur, _lah, _lahe, _error);
     return (_cur, _lah, _lahe, _error);
 }
 
