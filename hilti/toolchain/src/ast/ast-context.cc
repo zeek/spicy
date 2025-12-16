@@ -26,6 +26,7 @@
 #include <hilti/compiler/driver.h>
 #include <hilti/compiler/plugin.h>
 #include <hilti/compiler/type-unifier.h>
+#include <hilti/compiler/validator.h>
 
 using namespace hilti;
 using namespace hilti::detail;
@@ -634,6 +635,16 @@ Result<Nothing> ASTContext::processAST(Builder* builder, Driver* driver) {
         if ( auto rc = _validate(builder, plugin::registry().hiltiPlugin(), false); ! rc )
             return rc;
     }
+
+    // We run CFG-based validation after optimizations as that allows us to
+    // reuse the cached CFGs that the optimizer leaves behind. Downside is that
+    // we won't report any errors in code that's been optimized away, but that
+    // seems like an acceptable trade-off. Note that these validations are
+    // HILTI-only (i.e., no plugins) because CFGs are expressed at the
+    // HILTI-level only.
+    validator::detail::validateCFG(builder, _root, &cfg_cache);
+    if ( auto rc = collectErrors(); ! rc )
+        return rc;
 
     HILTI_DEBUG(logging::debug::Compiler, "finalized AST");
 
