@@ -59,6 +59,40 @@ if (f) {
     hilti::print(5);
 }
 
+# NOOPT: if ( local int<64> x = 1; t ) {
+# OPT: if ( local int<64> x = 1; True ) {
+if ( local int<64> x = 1; t ) {
+    hilti::print(x);
+}
+
+# NOOPT: if ( local int<64> x = 1; f ) {
+# OPT: if ( local int<64> x = 1; False ) {
+if ( local int<64> x = 1; f ) {
+    hilti::print(x);
+}
+
+# NOOPT: if ( local int<64> x = 1; t ) {
+# OPT: if ( local int<64> x = 1; True ) {
+if ( local int<64> x = 1; t ) {
+    hilti::print(x);
+}
+# NOOPT: else {
+# OPT: else {
+else {
+    hilti::print(! x);
+}
+
+# NOOPT: if ( local int<64> x = 1; f ) {
+# OPT: if ( local int<64> x = 1; False ) {
+if ( local int<64> x = 1; f ) {
+    hilti::print(x);
+}
+# NOOPT: else {
+# OPT: else {
+else {
+    hilti::print(! x);
+}
+
 # NOOPT: hilti::print(t ? 1 : 0
 # OPT: hilti::print(1
 hilti::print(t ? 1: 0);
@@ -105,6 +139,40 @@ while (True) {
     # NOOPT: in while 4 else
     # OPT-NOT: in while 4 else
     hilti::print("in while 4 else");
+}
+
+# NOOPT: while ( local int<64> x = 1; t ) {
+# OPT: while ( local int<64> x = 1; True ) {
+while ( local int<64> x = 1; t ) {
+    hilti::print(x);
+}
+
+# NOOPT: while ( local int<64> x = 1; f ) {
+# OPT: while ( local int<64> x = 1; False ) {
+while ( local int<64> x = 1; f ) {
+    hilti::print(x);
+}
+
+# NOOPT: while ( local int<64> x = 1; t ) {
+# OPT: while ( local int<64> x = 1; True ) {
+while ( local int<64> x = 1; t ) {
+    hilti::print(x);
+}
+# NOOPT: else {
+# OPT: else {
+else {
+    hilti::print(! x);
+}
+
+# NOOPT: while ( local int<64> x = 1; f ) {
+# OPT: while ( local int<64> x = 1; False ) {
+while ( local int<64> x = 1; f ) {
+    hilti::print(x);
+}
+# NOOPT: else {
+# OPT: else {
+else {
+    hilti::print(! x);
 }
 
 }

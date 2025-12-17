@@ -647,8 +647,10 @@ public:
      * Removes the node from its parent. The node will remain valid and can be
      * re-inserted into the AST elsewhere later. Does nothing if the node has
      * no parent.
+     *
+     * @return the node itself, for convenience
      */
-    void removeFromParent();
+    Node* removeFromParent();
 
     /** Returns true if a node is of a particular type (class). */
     template<typename T>

@@ -461,42 +461,27 @@ struct Mutator : public optimizer::visitor::Mutator {
     }
 
     void operator()(statement::If* n) final {
+        if ( n->init() )
+            // Leave this alone for now as it may have side effects.
+            return;
+
         auto bool_ = tryAsBoolLiteral(n->condition());
         if ( ! bool_ )
             return;
 
-        if ( auto* else_ = n->false_() ) {
-            if ( ! bool_.value() )
-                replaceNode(n, else_, "replacing if statement with else block");
-            else {
-                auto* init = n->init();
-                auto* condition = n->condition();
-                auto* true_ = n->true_();
-
-                // Unlink first so that we don't recreate the nodes (which
-                // would require new resolving).
-                if ( init )
-                    init->removeFromParent();
-
-                if ( condition )
-                    condition->removeFromParent();
-
-                if ( true_ )
-                    true_->removeFromParent();
-
-                replaceNode(n, builder()->statementIf(init, condition, true_, nullptr),
-                            "replacing if statement with true block");
-            }
-        }
-        else {
-            if ( ! bool_.value() )
-                removeNode(n, "removing if statement with always-false condition");
-            else
-                replaceNode(n, n->true_(), "replacing if statement with true block");
-        }
+        if ( bool_.value() )
+            replaceNode(n, n->true_()->removeFromParent(), "replacing if statement with true block");
+        else if ( n->false_() )
+            replaceNode(n, n->false_()->removeFromParent(), "replacing if statement with else block");
+        else
+            removeNode(n, "removing if statement with always-false condition");
     }
 
     void operator()(statement::While* n) final {
+        if ( n->init() )
+            // Leave this alone for now as it may have side effects.
+            return;
+
         const auto* condition = n->condition();
         if ( ! condition )
             return;
@@ -515,7 +500,7 @@ struct Mutator : public optimizer::visitor::Mutator {
         // run either the `else` block if it is present or nothing.
         else if ( ! *bool_ ) {
             if ( n->else_() )
-                replaceNode(n, n->else_(), "replacing while loop with its else block");
+                replaceNode(n, n->else_()->removeFromParent(), "replacing while loop with its else block");
             else {
                 recordChange(n, "removing while loop with false condition");
                 n->parent()->removeChild(n);
