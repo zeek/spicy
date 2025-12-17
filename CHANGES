@@ -1,3 +1,22 @@
+1.15.0-dev.186 | 2025-12-17 17:38:15 -0500
+
+  * Remove expression statements without side effects. (Evan Typanski, Corelight)
+
+    This is necessary to be separate from the statement/declaration tracking
+    since there are more cases of just "floating" expression statements,
+    like `(a, b, c, d)` after some constant propagation and dead code
+    elimination.
+
+  * Replace assignments with their RHS, not remove. (Evan Typanski, Corelight)
+
+    After 5197e79, we replace some declarations with the RHS of the
+    assignment so that we don't remove method calls. The same problem applies
+    to assignments generally, so add cases for those.
+
+    This also makes some code stick around (particularly when paired with
+    constant propagation), so we need more aggressive removal of expressions
+    whose result is unused and who don't have side effects.
+
 1.15.0-dev.183 | 2025-12-17 12:43:42 +0100
 
   * GH-2236: Include `Flow` nodes in CFG construction pruning step. (Benjamin Bannier, Corelight)

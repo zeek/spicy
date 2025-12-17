@@ -17,7 +17,7 @@
 [debug/optimizer]       - deleting function state: f
 [debug/optimizer] pass: dead-code-cfg (round 1, pass iteration 1)
 [debug/optimizer]     * function changed: f
-[debug/optimizer]   [dead-write-shadowed.hlt:15:9-15:13] statement::Expression "x_ = 2;" -> null (statement result unused)
+[debug/optimizer]   [dead-write-shadowed.hlt:15:9-15:13] statement::Expression "x_ = 2;" -> statement::Expression "2;" (statement result unused)
 [debug/optimizer]     -> modified
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-processing AST, round 1
@@ -26,6 +26,15 @@
 [debug/optimizer] pass: constant-propagation (round 1, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 2, pass iteration 1)
+[debug/optimizer]     * function changed: f
+[debug/optimizer]   [dead-write-shadowed.hlt:10:19-18:1] statement::Expression "2;" -> null (removing unused expression result)
+[debug/optimizer]     -> modified
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]     * resolver
+[debug/optimizer]       - updating function: f
+[debug/optimizer]     * computed CFGs
+[debug/optimizer]       - deleting function state: f
 [debug/optimizer] pass: peephole (round 2, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 2, pass iteration 1)
@@ -39,16 +48,18 @@
 [debug/optimizer] pass: constant-propagation (round 2, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 3, pass iteration 1)
+[debug/optimizer]     * function changed: f
+[debug/optimizer]   [dead-write-shadowed.hlt:10:19-18:1] statement::Expression "10;" -> null (removing unused expression result)
+[debug/optimizer]     -> modified
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]     * resolver
+[debug/optimizer]       - updating function: f
+[debug/optimizer]     * computed CFGs
+[debug/optimizer]       - deleting function state: f
 [debug/optimizer] pass: peephole (round 3, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 3, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 3, pass iteration 1)
-[debug/optimizer]     * function changed: f
-[debug/optimizer]   [dead-write-shadowed.hlt:10:19-18:1] statement::Expression "10;" -> null (statement result unused)
-[debug/optimizer]     -> modified
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
-[debug/optimizer]   re-processing AST, round 1
-[debug/optimizer]     * computed CFGs
-[debug/optimizer]       - deleting function state: f
 [debug/optimizer] pass: constant-propagation (round 3, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 3, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 4, pass iteration 1)
