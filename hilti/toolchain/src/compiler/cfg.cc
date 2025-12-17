@@ -79,6 +79,37 @@ using namespace hilti;
 using namespace hilti::detail;
 using namespace hilti::detail::cfg;
 
+namespace {
+// Helper to detect whether `operand` is used as a `const` argument to a given `operator_`.
+bool isConstOperand(const expression::ResolvedOperator& operator_, const Node& operand) {
+    // Find the offset of the passed operand.
+    const auto& ops_passed = operator_.operands();
+
+    auto it = std::ranges::find(ops_passed, &operand);
+    if ( it == ops_passed.end() )
+        return false;
+
+    auto offset = std::distance(ops_passed.begin(), it);
+
+    // Look up operand kind in signature.
+    auto signature = operator_.operator_().signature();
+    const auto& ops_defined = signature.operands->operands();
+
+    assert(offset < ops_defined.size());
+    const auto* op = ops_defined[offset];
+    assert(op);
+
+    switch ( op->kind() ) {
+        case parameter::Kind::Copy: [[fallthrough]];
+        case parameter::Kind::In: return true;
+        case parameter::Kind::Unknown: [[fallthrough]];
+        case parameter::Kind::InOut: return false;
+    };
+
+    util::cannotBeReached();
+}
+} // namespace
+
 std::deque<GraphNode> CFG::postorder() const {
     std::deque<GraphNode> sorted;
 
@@ -805,6 +836,10 @@ struct DataflowVisitor : visitor::PreOrder {
                   node->isA<expression::LogicalAnd>() || node->isA<expression::LogicalNot>() ||
                   node->isA<expression::Name>() )
             // Simply flows a value but does not generate or kill any.
+            transfer.read.insert(decl);
+
+        else if ( auto* operator_ = node->tryAs<expression::ResolvedOperator>();
+                  operator_ && isConstOperand(*operator_, *name) )
             transfer.read.insert(decl);
 
         else {
