@@ -1212,3 +1212,8 @@ inline hilti::node::Properties operator+(hilti::node::Properties p1, hilti::node
     p1.merge(std::move(p2));
     return p1;
 }
+
+template<typename T>
+struct std::hash<hilti::node::RetainedPtr<T>> {
+    size_t operator()(const hilti::node::RetainedPtr<T>& p) const { return std::hash<T*>()(p.get()); }
+};

@@ -26,6 +26,7 @@
 #include <hilti/compiler/driver.h>
 #include <hilti/compiler/plugin.h>
 #include <hilti/compiler/type-unifier.h>
+#include <hilti/compiler/validator.h>
 
 using namespace hilti;
 using namespace hilti::detail;
@@ -625,13 +626,25 @@ Result<Nothing> ASTContext::processAST(Builder* builder, Driver* driver) {
     if ( auto rc = driver->hookCompilationFinished(_root); ! rc )
         return rc;
 
+    cfg::Cache cfg_cache;
+
     if ( _context->options().global_optimizations ) {
-        if ( auto rc = _optimize(builder); ! rc )
+        if ( auto rc = _optimize(builder, &cfg_cache); ! rc )
             return rc;
 
         if ( auto rc = _validate(builder, plugin::registry().hiltiPlugin(), false); ! rc )
             return rc;
     }
+
+    // We run CFG-based validation after optimizations as that allows us to
+    // reuse the cached CFGs that the optimizer leaves behind. Downside is that
+    // we won't report any errors in code that's been optimized away, but that
+    // seems like an acceptable trade-off. Note that these validations are
+    // HILTI-only (i.e., no plugins) because CFGs are expressed at the
+    // HILTI-level only.
+    validator::detail::validateCFG(builder, _root, &cfg_cache);
+    if ( auto rc = collectErrors(); ! rc )
+        return rc;
 
     HILTI_DEBUG(logging::debug::Compiler, "finalized AST");
 
@@ -790,13 +803,13 @@ Result<Nothing> ASTContext::_transform(Builder* builder, const Plugin& plugin) {
     return Nothing();
 }
 
-Result<Nothing> ASTContext::_optimize(Builder* builder) {
+Result<Nothing> ASTContext::_optimize(Builder* builder, cfg::Cache* cfg_cache) {
     if ( logger().isEnabled(logging::debug::CfgInitial) )
         cfg::dump(logging::debug::CfgInitial, _root);
 
     HILTI_DEBUG(logging::debug::Compiler, "performing global transformations");
 
-    if ( auto rc = Optimizer(builder).run(); ! rc )
+    if ( auto rc = Optimizer(builder, cfg_cache).run(); ! rc )
         return rc;
 
     if ( logger().isEnabled(logging::debug::CfgFinal) )

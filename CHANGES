@@ -1,3 +1,45 @@
+1.15.0-dev.179 | 2025-12-17 11:49:52 +0100
+
+  * Add new validator pass that checks CFG-based properties. (Robin Sommer, Corelight)
+
+    We run this *after* optimization because then we can just reuse the
+    CFGs the optimizer is leaving behind, meaning no performance
+    impact. Downside is that we won't catch stuff in code that was
+    optimized out—-which however seems like a reasonable trade-off.
+
+  * Pass externally instantiated CFG cache into optimizer. (Robin Sommer, Corelight)
+
+    This moves ownership of the cache over to the AST processing. That
+    way we will be able to re-use it elsewhere.
+
+  * Factor out logic & state for CFG caching into separate class. (Robin Sommer, Corelight)
+
+    This encapsulates the functionality, making it reusable; and will also
+    allow us to later pass the cache around to different parts of the
+    compiler pipeline.
+
+    While the internal structure of the cache is slightly different to the
+    previous implementation inside the optimizer, there's no functionality
+    change to the optimizer except for one fix: we were not correctly
+    discarding all affected block CFGs when invalidating a module. We do
+    now, with the result that we're computing some more CFGs overall,
+    costing us about 1-2% in performance.
+
+  * Correct guarantees provided by feature-requirements visitor. (Robin Sommer, Corelight)
+
+    The pass *is* changing the CFG. Doesn't really matter right now,
+    because it's always the first pass running, but still.
+
+  * Fix optimizer for `if`/`while` statements with initializers. (Robin Sommer, Corelight)
+
+    Constant folding was removing initializer expressions. For simplicity,
+    we know just don't fold if/while-statements at all if they have
+    initializers.
+
+     Also improving optimizer logic for `if` and `while`.
+
+    Baseline diffs are due to avoiding more unnecessary node copies now.
+
 1.15.0-dev.172 | 2025-12-16 18:09:03 +0100
 
   * GH-2214: Update documentation for #2214. (Benjamin Bannier, Corelight)

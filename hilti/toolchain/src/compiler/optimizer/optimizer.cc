@@ -20,21 +20,12 @@ using namespace hilti;
 using namespace hilti::detail;
 using namespace hilti::detail::optimizer;
 
-CFG* ASTState::cfg(statement::Block* block) {
-    assert(block);
-
-    // Climb up to outer-most block of function or module.
-    if ( auto* f = block->parent<hilti::Function>() )
-        block = f->body();
-    else if ( auto* m = block->parent<declaration::Module>() )
-        block = m->statements();
-    else
-        logger().internalError("ASTState::cfg(): block is not part of a function or module");
-
-    if ( auto it = _cfgs.find(block); it != _cfgs.end() )
-        return it->second.get();
-    else
-        return _cfgs.emplace(block, std::make_unique<CFG>(block)).first->second.get();
+ASTState::ASTState(ASTContext* ctx, Builder* builder, cfg::Cache* cfg_cache)
+    : _context(ctx), _builder(builder), _cfg_cache(cfg_cache) {
+#ifndef NDEBUG
+    // Ensure the CFG cache is valid to begin with.
+    _cfg_cache->checkValidity();
+#endif
 }
 
 void ASTState::functionChanged(hilti::Function* function) {
@@ -45,7 +36,7 @@ void ASTState::functionChanged(hilti::Function* function) {
 
     logging::DebugPushIndent _(logging::debug::Optimizer);
     HILTI_DEBUG(logging::debug::Optimizer, util::fmt("* function changed: %s", function->id()));
-    _modified_functions.emplace(function, nullptr); // record without module for now, will set later
+    _modified_functions.insert(function); // record without module for now, will set later
 }
 
 void ASTState::moduleChanged(declaration::Module* module) {
@@ -57,29 +48,6 @@ void ASTState::moduleChanged(declaration::Module* module) {
     logging::DebugPushIndent _(logging::debug::Optimizer);
     HILTI_DEBUG(logging::debug::Optimizer, util::fmt("* module changed: %s", module->id()));
     _modified_modules.insert(module);
-}
-
-void ASTState::_normalizeModificationState() {
-    // Go through modified functions and now set their parent module (which was
-    // left unset during insertion into the set).
-    for ( auto& [function, module] : _modified_functions ) {
-        assert(! module); // was left unset
-
-        module = function->parent<declaration::Module>();
-        if ( ! module )
-            // This can happen if the function has been removed from the AST in
-            // the meantime. We still leave the function in the set, but let
-            // its module remain unset.
-            HILTI_DEBUG(logging::debug::Optimizer,
-                        util::fmt("  - skipping function %s as its no longer part of the AST", function->id()));
-    }
-
-    // Go through cached CFGs and invalidate any whose block is no longer part
-    // of the AST.
-    for ( auto& [block, cfg] : _cfgs ) {
-        if ( ! block->parent<declaration::Module>() )
-            cfg = nullptr;
-    }
 }
 
 bool ASTState::_resolve(Node* node) {
@@ -119,12 +87,13 @@ void ASTState::updateAST(const PassInfo& pinfo) {
         HILTI_DEBUG(logging::debug::Optimizer, util::fmt("* %s", post_processor));
         logging::DebugPushIndent _2(logging::debug::Optimizer);
 
-        for ( const auto& [function, module] : _modified_functions ) {
+        for ( const auto& function : _modified_functions ) {
+            auto* module = function->parent<declaration::Module>();
             if ( ! module )
                 continue; // no longer in AST
 
-            if ( _modified_modules.contains(module) ) // will be handled when processing module
-                continue;
+            if ( _modified_modules.contains(module) )
+                continue; // will be handled when processing module
 
             HILTI_DEBUG(logging::debug::Optimizer, util::fmt("- updating function: %s", function->id()));
             modified |= callback(function->parent());
@@ -144,7 +113,7 @@ void ASTState::updateAST(const PassInfo& pinfo) {
     HILTI_DEBUG(logging::debug::Optimizer,
                 util::fmt("re-resolving AST assuming guarantees %s", to_string(pinfo.guarantees)));
 
-    _normalizeModificationState();
+    _cfg_cache->prune();
 
     unsigned int round = 1;
 
@@ -169,35 +138,17 @@ void ASTState::updateAST(const PassInfo& pinfo) {
             HILTI_DEBUG(logging::debug::Optimizer, util::fmt("* computed CFGs"));
             logging::DebugPushIndent _2(logging::debug::Optimizer);
 
-            for ( const auto& [function, module] : _modified_functions ) {
-                if ( ! module )
-                    continue; // no longer in AST
-
-                if ( _modified_modules.contains(module) ) // will be handled when processing module
-                    continue;
-
+            for ( const auto& function : _modified_functions ) {
                 if ( auto* block = function->body() ) {
-                    if ( _cfgs.erase(block->as<statement::Block>()) )
+                    if ( cfgCache()->invalidate(block) )
                         HILTI_DEBUG(logging::debug::Optimizer,
                                     util::fmt("- deleting function state: %s", function->id()));
                 }
             }
 
             for ( auto* module : _modified_modules ) {
-                if ( auto* block = module->statements() ) {
-                    if ( _cfgs.erase(block) )
-                        HILTI_DEBUG(logging::debug::Optimizer, util::fmt("- deleting module state: %s", module->id()));
-                }
-
-                for ( const auto& [function, fmodule] : _modified_functions ) {
-                    if ( fmodule != module )
-                        continue;
-
-                    if ( auto* body = function->body(); body && _cfgs.erase(body) )
-                        HILTI_DEBUG(logging::debug::Optimizer,
-                                    util::fmt("  * deleting function state: %s (via module %s)", function->id(),
-                                              module->id()));
-                }
+                if ( cfgCache()->invalidate(module) )
+                    HILTI_DEBUG(logging::debug::Optimizer, util::fmt("- deleting module state: %s", module->id()));
             }
         }
 
@@ -249,28 +200,7 @@ void ASTState::checkAST(PassID pass_id) {
         logger().internalError(
             util::fmt("Optimizer::_checkState: AST is not fully resolved after optimizer pass %s", to_string(pass_id)));
 
-    // Go through cached CFGs and verify that they are still up to date.
-    for ( const auto& [block, cfg] : _cfgs ) {
-        assert(block);
-
-        if ( ! cfg )
-            continue; // block no longer part of AST
-
-        auto actual = cfg->dot(false);
-        auto expected = CFG(block).dot(false);
-
-        if ( actual != expected ) {
-            std::cerr << "=== ACTUAL   ===\n\n" << actual << "\n\n";
-            std::cerr << "=== EXPECTED ===\n\n" << expected << "\n\n";
-
-            auto* decl = block->parent<Declaration>();
-            assert(decl);
-
-            logger().internalError(
-                util::fmt("Optimizer::_checkState: CFG for %s \"%s\" is not up to date after optimizer pass %s",
-                          decl->typename_(), decl->id(), to_string(pass_id)));
-        }
-    }
+    _cfg_cache->checkValidity();
 }
 #endif
 
@@ -292,7 +222,8 @@ std::string optimizer::to_string(bitmask<Guarantees> r) {
         return util::fmt("<%s>", util::join(labels, ","));
 }
 
-Optimizer::Optimizer(Builder* builder) : _builder(builder), _state(builder->context(), builder) {}
+Optimizer::Optimizer(Builder* builder, cfg::Cache* cfg_cache)
+    : _builder(builder), _state(builder->context(), builder, cfg_cache) {}
 
 bool Optimizer::_runPass(const optimizer::PassInfo& pinfo, unsigned int round) {
     unsigned int iteration = 1;

@@ -1,0 +1,51 @@
+# @TEST-EXEC-FAIL: hiltic -p %INPUT >output 2>&1
+# @TEST-EXEC:      btest-diff output
+#
+# @TEST-DOC: Check that we report a missing return statement in a non-void function.
+
+module Test {
+
+# These following functions are all missing a return statement on some path.
+
+function int<8> f1() {
+}
+
+function string f2(uint<8> n) {
+    if ( n == 1 )
+        return "123";
+    else if ( n == 2 )
+        return "456";
+    else
+        42;
+}
+
+function string f3(uint<8> n) {
+    if ( n == 1 )
+        return "123";
+}
+
+function int<8> f4() {
+    switch ( 1 ) {
+        case 1:
+            return 10;
+        case 2:
+            return 20;
+    }
+}
+
+# These should NOT report missing return statements.
+
+type MyException = exception;
+
+function int<8> f5() {
+    throw MyException("test exception");
+}
+
+# Call the functions to avoid having them optimized away.
+f1();
+f2(10);
+f3(20);
+f4();
+f5();
+
+}

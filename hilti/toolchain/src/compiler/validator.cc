@@ -55,9 +55,11 @@
 #include <hilti/ast/types/void.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
+#include <hilti/compiler/detail/cfg.h>
 #include <hilti/compiler/validator.h>
 
 using namespace hilti;
+using namespace hilti::detail;
 using util::fmt;
 
 /**
@@ -913,6 +915,51 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     }
 };
 
+struct VisitorCFG : visitor::PreOrder, public validator::VisitorMixIn {
+    VisitorCFG(Builder* builder, cfg::Cache* cfg_cache) : validator::VisitorMixIn(builder), cfg_cache(cfg_cache) {}
+
+    detail::cfg::Cache* cfg_cache;
+
+    // Checks whether there are return or throw statements on all paths through
+    // a CFG starting at a given node.
+    bool ensureReturns(const detail::CFG& cfg, detail::cfg::GraphNode n, std::unordered_set<uint64_t>* seen) {
+        auto identity = n->identity();
+        if ( seen->contains(identity) )
+            return true;
+
+        seen->insert(identity);
+
+        // The CFG contains return statements directly but only the expression
+        // for throw statements.
+        if ( n->isA<statement::Return>() || n->parent<statement::Throw>() )
+            return true;
+
+        const auto& successors = cfg.graph().neighborsDownstream(identity);
+        if ( successors.empty() )
+            return false;
+
+        for ( const auto& s : successors ) {
+            if ( ! ensureReturns(cfg, *cfg.graph().getNode(s), seen) )
+                return false;
+        }
+
+        return true;
+    }
+
+    void operator()(declaration::Function* n) final {
+        auto* body = n->function()->body();
+        if ( ! body )
+            return;
+
+        if ( ! n->function()->ftype()->result()->type()->isA<type::Void>() ) {
+            const auto* cfg = cfg_cache->get(body);
+            std::unordered_set<uint64_t> seen;
+            if ( ! ensureReturns(*cfg, cfg->begin(), &seen) )
+                error(fmt("not all paths through the function %s return a value", n->id()), n);
+        }
+    }
+};
+
 } // anonymous namespace
 
 void validator::detail::validatePre(Builder* builder, ASTRoot* root) {
@@ -923,4 +970,9 @@ void validator::detail::validatePre(Builder* builder, ASTRoot* root) {
 void validator::detail::validatePost(Builder* builder, ASTRoot* root) {
     util::timing::Collector _("hilti/compiler/ast/validator");
     ::hilti::visitor::visit(VisitorPost(builder), root);
+}
+
+void validator::detail::validateCFG(Builder* builder, ASTRoot* root, cfg::Cache* cfg_cache) {
+    util::timing::Collector _("hilti/compiler/ast/validator");
+    ::hilti::visitor::visit(VisitorCFG(builder, cfg_cache), root);
 }

@@ -9,7 +9,13 @@
 #include <hilti/ast/forward.h>
 #include <hilti/ast/node.h>
 
-namespace hilti::validator {
+namespace hilti {
+
+namespace detail::cfg {
+class Cache;
+}
+
+namespace validator {
 
 /** Mix-in class for AST validators providing some common helpers. */
 class VisitorMixIn {
@@ -58,5 +64,9 @@ void validatePre(Builder* builder, ASTRoot* root);
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */
 void validatePost(Builder* builder, ASTRoot* root);
 
+/** Implements a final HILTI-level validator performing additional checks that require CFGs. */
+void validateCFG(Builder* builder, ASTRoot* root, ::hilti::detail::cfg::Cache* cfg_cache);
+
 } // namespace detail
-} // namespace hilti::validator
+} // namespace validator
+} // namespace hilti
