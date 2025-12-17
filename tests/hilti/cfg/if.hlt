@@ -15,4 +15,11 @@ function void fn2() {
         2;
 }
 
+function bool fn3(uint<64> i) {
+    if ( i == 5 )
+        return False;
+    else
+        return True;
+}
+
 }

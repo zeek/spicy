@@ -129,15 +129,19 @@ CFG::CFG(const Node* root)
     if ( last != _end )
         _addEdge(last, _end);
 
-    // Clean up artifacts from CFG construction.
+    // Prune artifacts from CFG construction.
     //
-    // - `End` nodes with no incoming edges. These can arise if blocks never
-    //   flow through their end node, e.g., due to early return.
+    // Since we construct flows top-down we might have added flows with `Meta`
+    // nodes with no incoming edges, in particular scope ends for blocks which
+    // we never pass through due to earlier return. This is different from true
+    // unreachable flows in the code, e.g., statements after `return` which
+    // have non-`Meta` nodes. The only `Meta` node with no incoming edges
+    // should be the `Start` node, so we remove all others.
     while ( true ) {
         std::set<uintptr_t> dead_ends;
 
         for ( const auto& [id, n] : _graph.nodes() ) {
-            if ( n.value->isA<End>() && n.neighbors_upstream.empty() )
+            if ( n.neighbors_upstream.empty() && n.value->isA<MetaNode>() && ! n.value->isA<Start>() )
                 dead_ends.insert(id);
         }
 
