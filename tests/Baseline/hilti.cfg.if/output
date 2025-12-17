@@ -50,7 +50,7 @@ digraph {
     0 [label="uint<64> i" xlabel="in: [] out: []"];
     1 [label="return False;" xlabel="in: [] out: [] keep"];
     2 [label="return True;" xlabel="in: [] out: [] keep"];
-    3 [label="i == 5" xlabel="read: [i] write: [i] in: [] out: [] keep"];
+    3 [label="i == 5" xlabel="read: [i] in: [] out: [] keep"];
     4 [label=start shape=Mdiamond xlabel="in: [] out: []"];
     5 [label="end <...>/if.hlt:18:31-23:1" shape=triangle xlabel="in: [] out: []"];
     4 -> 0 [label="0"];
