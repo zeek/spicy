@@ -41,7 +41,6 @@
 [debug/optimizer]       - deleting function state: foo::X4::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::X4::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::X4::_parse_stage1
-[debug/optimizer]       - deleting function state: foo::X4::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::X4::parse1
 [debug/optimizer]       - deleting function state: foo::X4::parse1
 [debug/optimizer]       - deleting function state: foo::X4::parse2
@@ -60,7 +59,6 @@
 [debug/optimizer]       - deleting function state: foo::X6::_parse_foo__X6_stage2
 [debug/optimizer]       - deleting function state: foo::X6::_parse_foo__X6_stage2
 [debug/optimizer]       - deleting function state: foo::X6::_parse_foo__X6_stage2
-[debug/optimizer]       - deleting function state: foo::X6::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::X6::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::X6::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::X6::_parse_stage1
@@ -172,6 +170,7 @@
 [debug/optimizer]     * function changed: foo::X0::_parse_foo__X0_stage2
 [debug/optimizer]     * function changed: foo::X0::_parse_foo__X0_stage2
 [debug/optimizer]     * function changed: foo::X0::_parse_foo__X0_stage2
+[debug/optimizer]     * function changed: foo::X0::_parse_foo__X0_stage2
 [debug/optimizer]     * function changed: foo::X0::_parse_stage1
 [debug/optimizer]     * function changed: foo::X0::_parse_stage1
 [debug/optimizer]     * function changed: foo::X0::_parse_stage1
@@ -182,6 +181,7 @@
 [debug/optimizer]     * function changed: foo::X0::parse1
 [debug/optimizer]     * function changed: foo::X0::parse2
 [debug/optimizer]     * function changed: foo::X0::parse3
+[debug/optimizer]     * function changed: foo::X1::_parse_foo__X1_stage2
 [debug/optimizer]     * function changed: foo::X1::_parse_foo__X1_stage2
 [debug/optimizer]     * function changed: foo::X1::_parse_foo__X1_stage2
 [debug/optimizer]     * function changed: foo::X1::_parse_foo__X1_stage2
@@ -203,6 +203,7 @@
 [debug/optimizer]     * function changed: foo::X2::_parse_foo__X2_stage2
 [debug/optimizer]     * function changed: foo::X2::_parse_foo__X2_stage2
 [debug/optimizer]     * function changed: foo::X2::_parse_foo__X2_stage2
+[debug/optimizer]     * function changed: foo::X2::_parse_foo__X2_stage2
 [debug/optimizer]     * function changed: foo::X2::_parse_stage1
 [debug/optimizer]     * function changed: foo::X2::_parse_stage1
 [debug/optimizer]     * function changed: foo::X2::_parse_stage1
@@ -211,6 +212,7 @@
 [debug/optimizer]     * function changed: foo::X2::parse1
 [debug/optimizer]     * function changed: foo::X2::parse2
 [debug/optimizer]     * function changed: foo::X2::parse3
+[debug/optimizer]     * function changed: foo::X3::_parse_foo__X3_stage2
 [debug/optimizer]     * function changed: foo::X3::_parse_foo__X3_stage2
 [debug/optimizer]     * function changed: foo::X3::_parse_foo__X3_stage2
 [debug/optimizer]     * function changed: foo::X3::_parse_foo__X3_stage2
@@ -232,6 +234,7 @@
 [debug/optimizer]     * function changed: foo::X4::_parse_foo__X4_stage2
 [debug/optimizer]     * function changed: foo::X4::_parse_foo__X4_stage2
 [debug/optimizer]     * function changed: foo::X4::_parse_foo__X4_stage2
+[debug/optimizer]     * function changed: foo::X4::_parse_foo__X4_stage2
 [debug/optimizer]     * function changed: foo::X4::_parse_stage1
 [debug/optimizer]     * function changed: foo::X4::_parse_stage1
 [debug/optimizer]     * function changed: foo::X4::_parse_stage1
@@ -251,6 +254,7 @@
 [debug/optimizer]     * function changed: foo::X4::parse3
 [debug/optimizer]     * function changed: foo::X4::parse3
 [debug/optimizer]     * function changed: foo::X4::parse3
+[debug/optimizer]     * function changed: foo::X5::_parse_foo__X5_stage2
 [debug/optimizer]     * function changed: foo::X5::_parse_foo__X5_stage2
 [debug/optimizer]     * function changed: foo::X5::_parse_foo__X5_stage2
 [debug/optimizer]     * function changed: foo::X5::_parse_foo__X5_stage2
@@ -272,6 +276,7 @@
 [debug/optimizer]     * function changed: foo::X6::_parse_foo__X6_stage2
 [debug/optimizer]     * function changed: foo::X6::_parse_foo__X6_stage2
 [debug/optimizer]     * function changed: foo::X6::_parse_foo__X6_stage2
+[debug/optimizer]     * function changed: foo::X6::_parse_foo__X6_stage2
 [debug/optimizer]     * function changed: foo::X6::_parse_stage1
 [debug/optimizer]     * function changed: foo::X6::_parse_stage1
 [debug/optimizer]     * function changed: foo::X6::_parse_stage1
@@ -291,6 +296,7 @@
 [debug/optimizer]     * function changed: foo::X6::parse3
 [debug/optimizer]     * function changed: foo::X6::parse3
 [debug/optimizer]     * function changed: foo::X6::parse3
+[debug/optimizer]     * function changed: foo::X7::_parse_foo__X7_stage2
 [debug/optimizer]     * function changed: foo::X7::_parse_foo__X7_stage2
 [debug/optimizer]     * function changed: foo::X7::_parse_foo__X7_stage2
 [debug/optimizer]     * function changed: foo::X7::_parse_foo__X7_stage2
@@ -555,11 +561,19 @@
 [debug/optimizer]   [<no location>] statement::Expression "(*self)._error = _error;" -> removing unneeded error push/pop statements
 [debug/optimizer]   [<no location>] statement::Expression "(*self)._error = _error;" -> removing unneeded error push/pop statements
 [debug/optimizer]   [<no location>] statement::Expression "(*self)._error = _error;" -> removing unneeded error push/pop statements
+[debug/optimizer]   [<no location>] statement::Expression "(_cur, _lah, _lahe, _error);" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "(_cur, _lah, _lahe, _error);" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "(_cur, _lah, _lahe, _error);" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "(_cur, _lah, _lahe, _error);" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "(_cur, _lah, _lahe, _error);" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "(_cur, _lah, _lahe, _error);" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "(_cur, _lah, _lahe, _error);" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "(_cur, _lah, _lahe, _error);" -> null (removing unused expression result)
 [debug/optimizer]   [<no location>] statement::Expression "<void expression>;" -> null (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "<void expression>;" -> null (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "<void expression>;" -> null (statement result unused)
-[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (statement result unused)
-[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (statement result unused)
+[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (removing unused expression result)
 [debug/optimizer]   [<no location>] statement::Expression "_error = (*self)._error;" -> statement::Expression "(*self)._error;" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "_error = (*self)._error;" -> statement::Expression "(*self)._error;" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "_result = (_cur, _lah, _lahe, _error);" -> statement::Expression "(_cur, _lah, _lahe, _error);" (statement result unused)

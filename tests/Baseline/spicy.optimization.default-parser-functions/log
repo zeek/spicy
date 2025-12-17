@@ -11,13 +11,11 @@
 [debug/optimizer]       - deleting function state: foo::P1::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::P1::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::P1::_parse_stage1
-[debug/optimizer]       - deleting function state: foo::P1::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::P2::_parse_foo__P2_stage2
 [debug/optimizer]       - deleting function state: foo::P2::_parse_foo__P2_stage2
 [debug/optimizer]       - deleting function state: foo::P2::_parse_foo__P2_stage2
 [debug/optimizer]       - deleting function state: foo::P2::_parse_foo__P2_stage2
 [debug/optimizer]       - deleting function state: foo::P2::_parse_foo__P2_stage2
-[debug/optimizer]       - deleting function state: foo::P2::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::P2::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::P2::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::P2::_parse_stage1
@@ -73,6 +71,7 @@
 [debug/optimizer]     * function changed: foo::P0::_parse_foo__P0_stage2
 [debug/optimizer]     * function changed: foo::P0::_parse_foo__P0_stage2
 [debug/optimizer]     * function changed: foo::P0::_parse_foo__P0_stage2
+[debug/optimizer]     * function changed: foo::P0::_parse_foo__P0_stage2
 [debug/optimizer]     * function changed: foo::P0::_parse_stage1
 [debug/optimizer]     * function changed: foo::P0::_parse_stage1
 [debug/optimizer]     * function changed: foo::P0::_parse_stage1
@@ -81,6 +80,7 @@
 [debug/optimizer]     * function changed: foo::P0::parse1
 [debug/optimizer]     * function changed: foo::P0::parse2
 [debug/optimizer]     * function changed: foo::P0::parse3
+[debug/optimizer]     * function changed: foo::P1::_parse_foo__P1_stage2
 [debug/optimizer]     * function changed: foo::P1::_parse_foo__P1_stage2
 [debug/optimizer]     * function changed: foo::P1::_parse_foo__P1_stage2
 [debug/optimizer]     * function changed: foo::P1::_parse_foo__P1_stage2
@@ -98,6 +98,7 @@
 [debug/optimizer]     * function changed: foo::P1::parse1
 [debug/optimizer]     * function changed: foo::P1::parse2
 [debug/optimizer]     * function changed: foo::P1::parse3
+[debug/optimizer]     * function changed: foo::P2::_parse_foo__P2_stage2
 [debug/optimizer]     * function changed: foo::P2::_parse_foo__P2_stage2
 [debug/optimizer]     * function changed: foo::P2::_parse_foo__P2_stage2
 [debug/optimizer]     * function changed: foo::P2::_parse_foo__P2_stage2
@@ -217,10 +218,13 @@
 [debug/optimizer]   [<no location>] statement::Expression "(*self)._error = _error;" -> removing unneeded error push/pop statements
 [debug/optimizer]   [<no location>] statement::Expression "(*self)._error = _error;" -> removing unneeded error push/pop statements
 [debug/optimizer]   [<no location>] statement::Expression "(*self)._error = _error;" -> removing unneeded error push/pop statements
+[debug/optimizer]   [<no location>] statement::Expression "(_cur, _lah, _lahe, _error);" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "(_cur, _lah, _lahe, _error);" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "(_cur, _lah, _lahe, _error);" -> null (removing unused expression result)
 [debug/optimizer]   [<no location>] statement::Expression "<void expression>;" -> null (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "<void expression>;" -> null (statement result unused)
-[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (statement result unused)
-[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (statement result unused)
+[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (removing unused expression result)
 [debug/optimizer]   [<no location>] statement::Expression "_result = (_cur, _lah, _lahe, _error);" -> statement::Expression "(_cur, _lah, _lahe, _error);" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "_result = (_cur, _lah, _lahe, _error);" -> statement::Expression "(_cur, _lah, _lahe, _error);" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "_result = (_cur, _lah, _lahe, _error);" -> statement::Expression "(_cur, _lah, _lahe, _error);" (statement result unused)

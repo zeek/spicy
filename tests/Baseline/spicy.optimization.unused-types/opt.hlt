@@ -142,7 +142,6 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Pub2::_parse_foo__Pub2_stage2(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) {
     # "<...>/unused-types.spicy:16:20-16:26"
     hilti::debugDedent("spicy");
-    (_cur, _lah, _lahe, _error);
     return (_cur, _lah, _lahe, _error);
 }
 
@@ -229,7 +228,6 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv5::_parse_foo__Priv5_stage2(copy view<stream> _cur, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) {
     # "<...>/unused-types.spicy:27:14-27:20"
     hilti::debugDedent("spicy");
-    (_cur, _lah, _lahe, _error);
     return (_cur, _lah, _lahe, _error);
 }
 
@@ -248,7 +246,6 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv6::_parse_foo__Priv6_stage2(copy view<stream> _cur, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) {
     # "<...>/unused-types.spicy:28:14-28:20"
     hilti::debugDedent("spicy");
-    (_cur, _lah, _lahe, _error);
     return (_cur, _lah, _lahe, _error);
 }
 
@@ -282,7 +279,6 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     # End parsing production: Unit: foo__Priv6_2 ->
 
     hilti::debugDedent("spicy");
-    (_cur, _lah, _lahe, _error);
     return (_cur, _lah, _lahe, _error);
 }
 
@@ -360,7 +356,6 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv10::_parse_foo__Priv10_stage2(inout value_ref<stream> _data, iterator<stream> _begin, copy view<stream> _cur, copy bool _trim, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) {
     # "<...>/unused-types.spicy:43:22-46:1"
     hilti::debugDedent("spicy");
-    (_cur, _lah, _lahe, _error);
     return (_cur, _lah, _lahe, _error);
 }
 

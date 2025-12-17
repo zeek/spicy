@@ -164,7 +164,6 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     # "<...>/feature_requirements.spicy:32:11-34:1"
     spicy_rt::filter_forward_eod(self);
     hilti::debugDedent("spicy");
-    (_cur, _lah, _lahe, _error);
     return (_cur, _lah, _lahe, _error);
 }
 
@@ -275,7 +274,6 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     # "<...>/feature_requirements.spicy:36:18-40:1"
     spicy_rt::filter_disconnect(self);
     hilti::debugDedent("spicy");
-    (_cur, _lah, _lahe, _error);
     return (_cur, _lah, _lahe, _error);
 }
 
@@ -368,7 +366,6 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     # "<...>/feature_requirements.spicy:43:11-46:1"
     (*(*self).data).close();
     hilti::debugDedent("spicy");
-    (_cur, _lah, _lahe, _error);
     return (_cur, _lah, _lahe, _error);
 }
 

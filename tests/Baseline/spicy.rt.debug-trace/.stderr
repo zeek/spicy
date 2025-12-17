@@ -66,7 +66,6 @@
 [hilti-trace] debug-trace.spicy:12:18-12:28: : hilti::print(self, True);
 [hilti-trace] : _error = (*self)._error;
 [hilti-trace] : hilti::debugDedent("spicy");
-[hilti-trace] : (_cur, _lah, _lahe, _error);
 [hilti-trace] : return (_cur, _lah, _lahe, _error);
 [hilti-trace] : return _result;
 [hilti-trace] : hilti::debugDedent("spicy-verbose");

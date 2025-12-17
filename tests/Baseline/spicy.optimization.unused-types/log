@@ -6,7 +6,6 @@
 [debug/optimizer]       - deleting function state: foo::Priv10::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv10::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv10::_parse_stage1
-[debug/optimizer]       - deleting function state: foo::Priv10::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv1::_parse_foo__Priv1_stage2
 [debug/optimizer]       - deleting function state: foo::Priv1::_parse_foo__Priv1_stage2
 [debug/optimizer]       - deleting function state: foo::Priv1::_parse_foo__Priv1_stage2
@@ -22,13 +21,11 @@
 [debug/optimizer]       - deleting function state: foo::Priv2::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv2::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv2::_parse_stage1
-[debug/optimizer]       - deleting function state: foo::Priv2::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv3::_parse_foo__Priv3_stage2
 [debug/optimizer]       - deleting function state: foo::Priv3::_parse_foo__Priv3_stage2
 [debug/optimizer]       - deleting function state: foo::Priv3::_parse_foo__Priv3_stage2
 [debug/optimizer]       - deleting function state: foo::Priv3::_parse_foo__Priv3_stage2
 [debug/optimizer]       - deleting function state: foo::Priv3::_parse_foo__Priv3_stage2
-[debug/optimizer]       - deleting function state: foo::Priv3::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv3::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv3::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv3::_parse_stage1
@@ -51,13 +48,11 @@
 [debug/optimizer]       - deleting function state: foo::Priv5::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv5::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv5::_parse_stage1
-[debug/optimizer]       - deleting function state: foo::Priv5::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv6::_parse_foo__Priv6_stage2
 [debug/optimizer]       - deleting function state: foo::Priv6::_parse_foo__Priv6_stage2
 [debug/optimizer]       - deleting function state: foo::Priv6::_parse_foo__Priv6_stage2
 [debug/optimizer]       - deleting function state: foo::Priv6::_parse_foo__Priv6_stage2
 [debug/optimizer]       - deleting function state: foo::Priv6::_parse_foo__Priv6_stage2
-[debug/optimizer]       - deleting function state: foo::Priv6::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv6::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv6::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv6::_parse_stage1
@@ -70,7 +65,6 @@
 [debug/optimizer]       - deleting function state: foo::Pub2::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Pub2::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Pub2::_parse_stage1
-[debug/optimizer]       - deleting function state: foo::Pub2::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Pub3::_parse_foo__Pub3_stage2
 [debug/optimizer]       - deleting function state: foo::Pub3::_parse_foo__Pub3_stage2
 [debug/optimizer]       - deleting function state: foo::Pub3::_parse_foo__Pub3_stage2
@@ -78,7 +72,6 @@
 [debug/optimizer]       - deleting function state: foo::Pub3::_parse_foo__Pub3_stage2
 [debug/optimizer]       - deleting function state: foo::Pub3::_parse_foo__Pub3_stage2
 [debug/optimizer]       - deleting function state: foo::Pub3::_parse_foo__Pub3_stage2
-[debug/optimizer]       - deleting function state: foo::Pub3::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Pub3::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Pub3::_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Pub3::_parse_stage1
@@ -181,6 +174,7 @@
 [debug/optimizer]     * function changed: foo::Priv10::_parse_foo__Priv10_stage2
 [debug/optimizer]     * function changed: foo::Priv10::_parse_foo__Priv10_stage2
 [debug/optimizer]     * function changed: foo::Priv10::_parse_foo__Priv10_stage2
+[debug/optimizer]     * function changed: foo::Priv10::_parse_foo__Priv10_stage2
 [debug/optimizer]     * function changed: foo::Priv10::_parse_stage1
 [debug/optimizer]     * function changed: foo::Priv10::_parse_stage1
 [debug/optimizer]     * function changed: foo::Priv10::_parse_stage1
@@ -192,6 +186,7 @@
 [debug/optimizer]     * function changed: foo::Priv10::parse1
 [debug/optimizer]     * function changed: foo::Priv10::parse2
 [debug/optimizer]     * function changed: foo::Priv10::parse3
+[debug/optimizer]     * function changed: foo::Priv1::_parse_foo__Priv1_stage2
 [debug/optimizer]     * function changed: foo::Priv1::_parse_foo__Priv1_stage2
 [debug/optimizer]     * function changed: foo::Priv1::_parse_foo__Priv1_stage2
 [debug/optimizer]     * function changed: foo::Priv1::_parse_foo__Priv1_stage2
@@ -212,6 +207,7 @@
 [debug/optimizer]     * function changed: foo::Priv2::_parse_foo__Priv2_stage2
 [debug/optimizer]     * function changed: foo::Priv2::_parse_foo__Priv2_stage2
 [debug/optimizer]     * function changed: foo::Priv2::_parse_foo__Priv2_stage2
+[debug/optimizer]     * function changed: foo::Priv2::_parse_foo__Priv2_stage2
 [debug/optimizer]     * function changed: foo::Priv2::_parse_stage1
 [debug/optimizer]     * function changed: foo::Priv2::_parse_stage1
 [debug/optimizer]     * function changed: foo::Priv2::_parse_stage1
@@ -225,6 +221,7 @@
 [debug/optimizer]     * function changed: foo::Priv2::parse1
 [debug/optimizer]     * function changed: foo::Priv2::parse2
 [debug/optimizer]     * function changed: foo::Priv2::parse3
+[debug/optimizer]     * function changed: foo::Priv3::_parse_foo__Priv3_stage2
 [debug/optimizer]     * function changed: foo::Priv3::_parse_foo__Priv3_stage2
 [debug/optimizer]     * function changed: foo::Priv3::_parse_foo__Priv3_stage2
 [debug/optimizer]     * function changed: foo::Priv3::_parse_foo__Priv3_stage2
@@ -253,6 +250,7 @@
 [debug/optimizer]     * function changed: foo::Priv4::_parse_foo__Priv4_stage2
 [debug/optimizer]     * function changed: foo::Priv4::_parse_foo__Priv4_stage2
 [debug/optimizer]     * function changed: foo::Priv4::_parse_foo__Priv4_stage2
+[debug/optimizer]     * function changed: foo::Priv4::_parse_foo__Priv4_stage2
 [debug/optimizer]     * function changed: foo::Priv4::_parse_stage1
 [debug/optimizer]     * function changed: foo::Priv4::_parse_stage1
 [debug/optimizer]     * function changed: foo::Priv4::_parse_stage1
@@ -261,6 +259,7 @@
 [debug/optimizer]     * function changed: foo::Priv4::parse1
 [debug/optimizer]     * function changed: foo::Priv4::parse2
 [debug/optimizer]     * function changed: foo::Priv4::parse3
+[debug/optimizer]     * function changed: foo::Priv5::_parse_foo__Priv5_stage2
 [debug/optimizer]     * function changed: foo::Priv5::_parse_foo__Priv5_stage2
 [debug/optimizer]     * function changed: foo::Priv5::_parse_foo__Priv5_stage2
 [debug/optimizer]     * function changed: foo::Priv5::_parse_foo__Priv5_stage2
@@ -288,6 +287,7 @@
 [debug/optimizer]     * function changed: foo::Priv6::_parse_foo__Priv6_stage2
 [debug/optimizer]     * function changed: foo::Priv6::_parse_foo__Priv6_stage2
 [debug/optimizer]     * function changed: foo::Priv6::_parse_foo__Priv6_stage2
+[debug/optimizer]     * function changed: foo::Priv6::_parse_foo__Priv6_stage2
 [debug/optimizer]     * function changed: foo::Priv6::_parse_stage1
 [debug/optimizer]     * function changed: foo::Priv6::_parse_stage1
 [debug/optimizer]     * function changed: foo::Priv6::_parse_stage1
@@ -307,6 +307,7 @@
 [debug/optimizer]     * function changed: foo::Pub2::_parse_foo__Pub2_stage2
 [debug/optimizer]     * function changed: foo::Pub2::_parse_foo__Pub2_stage2
 [debug/optimizer]     * function changed: foo::Pub2::_parse_foo__Pub2_stage2
+[debug/optimizer]     * function changed: foo::Pub2::_parse_foo__Pub2_stage2
 [debug/optimizer]     * function changed: foo::Pub2::_parse_stage1
 [debug/optimizer]     * function changed: foo::Pub2::_parse_stage1
 [debug/optimizer]     * function changed: foo::Pub2::_parse_stage1
@@ -318,6 +319,7 @@
 [debug/optimizer]     * function changed: foo::Pub2::parse1
 [debug/optimizer]     * function changed: foo::Pub2::parse2
 [debug/optimizer]     * function changed: foo::Pub2::parse3
+[debug/optimizer]     * function changed: foo::Pub3::_parse_foo__Pub3_stage2
 [debug/optimizer]     * function changed: foo::Pub3::_parse_foo__Pub3_stage2
 [debug/optimizer]     * function changed: foo::Pub3::_parse_foo__Pub3_stage2
 [debug/optimizer]     * function changed: foo::Pub3::_parse_foo__Pub3_stage2
@@ -613,6 +615,15 @@
 [debug/optimizer]   [<no location>] statement::Expression "(*self)._error = _error;" -> removing unneeded error push/pop statements
 [debug/optimizer]   [<no location>] statement::Expression "(*self)._error = _error;" -> removing unneeded error push/pop statements
 [debug/optimizer]   [<no location>] statement::Expression "(*self)._error = _error;" -> removing unneeded error push/pop statements
+[debug/optimizer]   [<no location>] statement::Expression "(_cur, _lah, _lahe, _error);" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "(_cur, _lah, _lahe, _error);" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "(_cur, _lah, _lahe, _error);" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "(_cur, _lah, _lahe, _error);" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "(_cur, _lah, _lahe, _error);" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "(_cur, _lah, _lahe, _error);" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "(_cur, _lah, _lahe, _error);" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "(_cur, _lah, _lahe, _error);" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "(_cur, _lah, _lahe, _error);" -> null (removing unused expression result)
 [debug/optimizer]   [<no location>] statement::Expression "<void expression>;" -> null (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "<void expression>;" -> null (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "<void expression>;" -> null (statement result unused)
@@ -620,13 +631,13 @@
 [debug/optimizer]   [<no location>] statement::Expression "<void expression>;" -> null (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "<void expression>;" -> null (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "<void expression>;" -> null (statement result unused)
-[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (statement result unused)
-[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (statement result unused)
-[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (statement result unused)
-[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (statement result unused)
-[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (statement result unused)
-[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (statement result unused)
-[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (statement result unused)
+[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (removing unused expression result)
 [debug/optimizer]   [<no location>] statement::Expression "_result = (_cur, _lah, _lahe, _error);" -> statement::Expression "(_cur, _lah, _lahe, _error);" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "_result = (_cur, _lah, _lahe, _error);" -> statement::Expression "(_cur, _lah, _lahe, _error);" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "_result = (_cur, _lah, _lahe, _error);" -> statement::Expression "(_cur, _lah, _lahe, _error);" (statement result unused)
@@ -1062,7 +1073,7 @@
 [debug/optimizer]   [unused-types.spicy:19:14-19:20] declaration::Field "method view<stream> parse1(inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context);" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-types.spicy:19:14-19:20] declaration::Field "method view<stream> parse2(inout value_ref<foo::Priv2> _unit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context);" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-types.spicy:19:14-19:20] declaration::Field "method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _gunit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context);" -> null (removing declaration for unused method)
-[debug/optimizer]   [unused-types.spicy:19:14-19:20] declaration::Function "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv2::_parse_foo__Priv2_stage2(copy view<stream> _cur, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) { # "<...>/unused-types.spicy:19:14-19:20" hilti::debugDedent("spicy"); (_cur, _lah, _lahe, _error); return (_cur, _lah, _lahe, _error); }" -> null (removing declaration for unused function)
+[debug/optimizer]   [unused-types.spicy:19:14-19:20] declaration::Function "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv2::_parse_foo__Priv2_stage2(copy view<stream> _cur, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) { # "<...>/unused-types.spicy:19:14-19:20" hilti::debugDedent("spicy"); return (_cur, _lah, _lahe, _error); }" -> null (removing declaration for unused function)
 [debug/optimizer]   [unused-types.spicy:19:14-19:20] declaration::Function "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv2::_parse_stage1(copy view<stream> _cur, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) { # "<...>/unused-types.spicy:19:14-19:20" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result(); hilti::debugIndent("spicy"); local iterator<stream> _begin_ = begin(_cur); _result = (*self)._parse_foo__Priv2_stage2(_cur, _lah, _lahe, _error); return _result; }" -> null (removing declaration for unused function)
 [debug/optimizer]   [unused-types.spicy:19:14-19:20] declaration::Function "method view<stream> foo::Priv2::parse1(inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-types.spicy:19:14-19:20" local value_ref<foo::Priv2> _unit = default<foo::Priv2>(); local view<stream> _ncur = _cur ? (*_cur) : cast<view<stream>>((*_data)); local int<64> _lahead = 0; local iterator<stream> _lahead_end; local optional<hilti::RecoverableFailure> _error = Null; # "<...>/unused-types.spicy:19:14-19:20" # Begin parsing production: Unit: foo__Priv2 -> (_ncur, _lahead, _lahead_end, _error) = (*_unit)._parse_stage1(_data, begin(_ncur), _ncur, True, _lahead, _lahead_end, _error); # End parsing production: Unit: foo__Priv2 -> if ( False ) (*_unit)._begin = begin(_ncur); if ( False ) (*_unit)._offset = cast<uint<64>>(begin(_ncur).offset() - begin(_ncur).offset()); if ( _error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_error))); return _ncur; }" -> null (removing declaration for unused function)
 [debug/optimizer]   [unused-types.spicy:19:14-19:20] declaration::Function "method view<stream> foo::Priv2::parse2(inout value_ref<foo::Priv2> _unit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-types.spicy:19:14-19:20" local view<stream> _ncur = _cur ? (*_cur) : cast<view<stream>>((*_data)); local int<64> _lahead = 0; local iterator<stream> _lahead_end; local optional<hilti::RecoverableFailure> _error = Null; # "<...>/unused-types.spicy:19:14-19:20" # Begin parsing production: Unit: foo__Priv2 -> (_ncur, _lahead, _lahead_end, _error) = (*_unit)._parse_stage1(_data, begin(_ncur), _ncur, True, _lahead, _lahead_end, _error); # End parsing production: Unit: foo__Priv2 -> if ( False ) (*_unit)._begin = begin(_ncur); if ( False ) (*_unit)._offset = cast<uint<64>>(begin(_ncur).offset() - begin(_ncur).offset()); if ( _error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_error))); return _ncur; }" -> null (removing declaration for unused function)
@@ -1103,7 +1114,7 @@
 [debug/optimizer]   [unused-types.spicy:20:14-20:20] declaration::Field "method view<stream> parse1(inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context);" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-types.spicy:20:14-20:20] declaration::Field "method view<stream> parse2(inout value_ref<foo::Priv3> _unit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context);" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-types.spicy:20:14-20:20] declaration::Field "method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _gunit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context);" -> null (removing declaration for unused method)
-[debug/optimizer]   [unused-types.spicy:20:14-20:20] declaration::Function "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv3::_parse_foo__Priv3_stage2(copy view<stream> _cur, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) { # "<...>/unused-types.spicy:20:14-20:20" hilti::debugDedent("spicy"); (_cur, _lah, _lahe, _error); return (_cur, _lah, _lahe, _error); }" -> null (removing declaration for unused function)
+[debug/optimizer]   [unused-types.spicy:20:14-20:20] declaration::Function "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv3::_parse_foo__Priv3_stage2(copy view<stream> _cur, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) { # "<...>/unused-types.spicy:20:14-20:20" hilti::debugDedent("spicy"); return (_cur, _lah, _lahe, _error); }" -> null (removing declaration for unused function)
 [debug/optimizer]   [unused-types.spicy:20:14-20:20] declaration::Function "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::Priv3::_parse_stage1(copy view<stream> _cur, copy int<64> _lah, copy iterator<stream> _lahe, copy optional<hilti::RecoverableFailure> _error) { # "<...>/unused-types.spicy:20:14-20:20" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _result(); hilti::debugIndent("spicy"); local iterator<stream> _begin_ = begin(_cur); _result = (*self)._parse_foo__Priv3_stage2(_cur, _lah, _lahe, _error); return _result; }" -> null (removing declaration for unused function)
 [debug/optimizer]   [unused-types.spicy:20:14-20:20] declaration::Function "method view<stream> foo::Priv3::parse1(inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-types.spicy:20:14-20:20" local value_ref<foo::Priv3> _unit = default<foo::Priv3>(); local view<stream> _ncur = _cur ? (*_cur) : cast<view<stream>>((*_data)); local int<64> _lahead = 0; local iterator<stream> _lahead_end; local optional<hilti::RecoverableFailure> _error = Null; # "<...>/unused-types.spicy:20:14-20:20" # Begin parsing production: Unit: foo__Priv3 -> (_ncur, _lahead, _lahead_end, _error) = (*_unit)._parse_stage1(_data, begin(_ncur), _ncur, True, _lahead, _lahead_end, _error); # End parsing production: Unit: foo__Priv3 -> if ( False ) (*_unit)._begin = begin(_ncur); if ( False ) (*_unit)._offset = cast<uint<64>>(begin(_ncur).offset() - begin(_ncur).offset()); if ( _error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_error))); return _ncur; }" -> null (removing declaration for unused function)
 [debug/optimizer]   [unused-types.spicy:20:14-20:20] declaration::Function "method view<stream> foo::Priv3::parse2(inout value_ref<foo::Priv3> _unit, inout value_ref<stream> _data, optional<view<stream>> _cur = Null, optional<spicy_rt::UnitContext> _context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-types.spicy:20:14-20:20" local view<stream> _ncur = _cur ? (*_cur) : cast<view<stream>>((*_data)); local int<64> _lahead = 0; local iterator<stream> _lahead_end; local optional<hilti::RecoverableFailure> _error = Null; # "<...>/unused-types.spicy:20:14-20:20" # Begin parsing production: Unit: foo__Priv3 -> (_ncur, _lahead, _lahead_end, _error) = (*_unit)._parse_stage1(_data, begin(_ncur), _ncur, True, _lahead, _lahead_end, _error); # End parsing production: Unit: foo__Priv3 -> if ( False ) (*_unit)._begin = begin(_ncur); if ( False ) (*_unit)._offset = cast<uint<64>>(begin(_ncur).offset() - begin(_ncur).offset()); if ( _error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_error))); return _ncur; }" -> null (removing declaration for unused function)
