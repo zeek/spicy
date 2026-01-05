@@ -108,17 +108,6 @@ struct CollectorUnusedParameters : public optimizer::visitor::Collector {
         }
     }
 
-    std::optional<std::tuple<const type::Function*, ID>> enclosingFunction(const Node* n) const {
-        for ( const auto* current = n->parent(); current; current = current->parent() ) {
-            if ( const auto* fn_decl = current->tryAs<declaration::Function>() )
-                return std::tuple(fn_decl->function()->ftype(), fn_decl->functionID(context()));
-            else if ( const auto* field = current->tryAs<declaration::Field>(); field && field->inlineFunction() )
-                return std::tuple(field->inlineFunction()->ftype(), field->fullyQualifiedID());
-        }
-
-        return {};
-    }
-
     void operator()(declaration::Function* n) final {
         auto function_id = n->functionID(context());
 
@@ -185,17 +174,17 @@ struct CollectorUnusedParameters : public optimizer::visitor::Collector {
     }
 
     void operator()(expression::Name* n) final {
-        auto opt_enclosing_fn = enclosingFunction(n);
+        auto opt_enclosing_fn = hilti::detail::Optimizer::enclosingFunction(context(), n);
         if ( ! opt_enclosing_fn )
             return;
 
-        auto [ftype, function_id] = *opt_enclosing_fn;
+        auto [func, function_id] = *opt_enclosing_fn;
 
         auto& unused = unused_params.at(function_id);
         if ( unused.size() == 0 )
             return;
 
-        removeUsed(ftype, function_id, n);
+        removeUsed(func->ftype(), function_id, n);
     }
 };
 
