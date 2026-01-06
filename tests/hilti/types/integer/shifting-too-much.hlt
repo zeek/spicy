@@ -31,8 +31,10 @@ int64(0)>>64;
 
 module Test {
 
+import hilti;
+
 global x = 128;
-uint64(0)<<x; # caught at runtime by SafeInt as an overflow
+hilti::print(uint64(0)<<x, True); # caught at runtime by SafeInt as an overflow
 
 }
 
@@ -40,7 +42,9 @@ uint64(0)<<x; # caught at runtime by SafeInt as an overflow
 
 module Test {
 
+import hilti;
+
 global x = 8;
-int8(0)>>x; # caught at runtime by SafeInt as an overflow
+hilti::print(int8(0)>>x, True); # caught at runtime by SafeInt as an overflow
 
 }
