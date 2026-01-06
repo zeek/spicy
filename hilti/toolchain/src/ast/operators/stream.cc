@@ -791,7 +791,7 @@ public:
     Signature signature(Builder* builder) const final {
         return Signature{
             .kind = Kind::MemberCall,
-            .self = {.kind = parameter::Kind::In, .type = builder->typeStream()},
+            .self = {.kind = parameter::Kind::InOut, .type = builder->typeStream()},
             .member = "unfreeze",
             .result = {.constness = Constness::Const, .type = builder->typeVoid()},
             .ns = "stream",
