@@ -26,10 +26,10 @@
 #include <hilti/rt/types/vector_fwd.h>
 
 /** Helper to construct an internal identifier. */
-#define HILTI_INTERNAL(id) _##id
+#define HILTI_INTERNAL(id) _t_##id
 
 /** Helper to construct an internal identifier string. */
-#define HILTI_INTERNAL_ID(id) "_" id
+#define HILTI_INTERNAL_ID(id) "_t_" id
 
 /** Helper to refer to the generated global namespace. */
 #define HILTI_INTERNAL_NS hlt_internal
