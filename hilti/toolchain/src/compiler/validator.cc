@@ -939,7 +939,9 @@ struct VisitorCFG : visitor::PreOrder, public validator::VisitorMixIn {
             return false;
 
         for ( const auto& s : successors ) {
-            if ( ! ensureReturns(cfg, *cfg.graph().getNode(s), seen) )
+            const auto* n = cfg.graph().getNode(s);
+            assert(n);
+            if ( ! ensureReturns(cfg, *n, seen) )
                 return false;
         }
 
