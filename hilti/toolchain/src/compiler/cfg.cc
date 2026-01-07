@@ -82,31 +82,16 @@ using namespace hilti::detail::cfg;
 namespace {
 // Helper to detect whether `operand` is used as a `const` argument to a given `operator_`.
 bool isConstOperand(const expression::ResolvedOperator& operator_, const Node& operand) {
-    // Find the offset of the passed operand.
-    const auto& ops_passed = operator_.operands();
+    if ( const auto* op = operator_.lookupOperand(operand) ) {
+        switch ( op->kind() ) {
+            case parameter::Kind::Copy: [[fallthrough]];
+            case parameter::Kind::In: return true;
+            case parameter::Kind::Unknown: [[fallthrough]];
+            case parameter::Kind::InOut: return false;
+        };
+    }
 
-    auto it = std::ranges::find(ops_passed, &operand);
-    if ( it == ops_passed.end() )
-        return false;
-
-    auto offset = std::distance(ops_passed.begin(), it);
-
-    // Look up operand kind in signature.
-    auto signature = operator_.operator_().signature();
-    const auto& ops_defined = signature.operands->operands();
-
-    assert(offset < ops_defined.size());
-    const auto* op = ops_defined[offset];
-    assert(op);
-
-    switch ( op->kind() ) {
-        case parameter::Kind::Copy: [[fallthrough]];
-        case parameter::Kind::In: return true;
-        case parameter::Kind::Unknown: [[fallthrough]];
-        case parameter::Kind::InOut: return false;
-    };
-
-    util::cannotBeReached();
+    return false;
 }
 } // namespace
 

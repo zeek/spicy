@@ -2,12 +2,15 @@
 
 #pragma once
 
+#include <cassert>
+#include <iterator>
 #include <string>
 #include <utility>
 
 #include <hilti/ast/expression.h>
 #include <hilti/ast/operator.h>
 #include <hilti/ast/type.h>
+#include <hilti/ast/types/operand-list.h>
 
 namespace hilti::expression {
 
@@ -45,6 +48,30 @@ public:
     }
 
     HILTI_NODE_1(expression::ResolvedOperator, Expression, override);
+
+    /**
+     * Retrieve definition for an operand.
+     *
+     * @parameter operand the operand to look up
+     *
+     * @returns a pointer to the operand definition, or nothing if the operand was not found
+     */
+    const type::operand_list::Operand* lookupOperand(const Node& operand) const {
+        const auto& ops_passed = operands();
+
+        auto it = std::ranges::find(ops_passed, &operand);
+        if ( it == ops_passed.end() )
+            return {};
+
+        auto offset = std::distance(ops_passed.begin(), it);
+
+        const auto& ops = operator_().signature().operands;
+        assert(ops);
+        const auto& ops_defined = ops->operands();
+
+        assert(offset < ops_defined.size());
+        return ops_defined[offset];
+    };
 
 protected:
     ResolvedOperator(ASTContext* ctx, node::Tags node_tags, const Operator* op, QualifiedType* result,
