@@ -17,19 +17,19 @@ namespace hlt_internal::Foo {
 }
 
 namespace hlt_internal::Bar {
-    extern void _init_globals(::hilti::rt::Context* ctx);
-    extern void _destroy_globals(::hilti::rt::Context* ctx);
-    extern void _init_module();
-    extern void _register_module();
+    extern void _t_init_globals(::hilti::rt::Context* ctx);
+    extern void _t_destroy_globals(::hilti::rt::Context* ctx);
+    extern void _t_init_module();
+    extern void _t_register_module();
 }
 
-HILTI_PRE_INIT(hlt_internal::Bar::_register_module)
+HILTI_PRE_INIT(hlt_internal::Bar::_t_register_module)
 
-extern void hlt_internal::Bar::_destroy_globals(::hilti::rt::Context* ctx) { ::hlt_internal::Bar::bar.reset();; }
+extern void hlt_internal::Bar::_t_destroy_globals(::hilti::rt::Context* ctx) { ::hlt_internal::Bar::bar.reset();; }
 
-extern void hlt_internal::Bar::_init_globals(::hilti::rt::Context* ctx) { ::hlt_internal::Bar::bar = ::hilti::rt::optional::make("Bar!"s); }
+extern void hlt_internal::Bar::_t_init_globals(::hilti::rt::Context* ctx) { ::hlt_internal::Bar::bar = ::hilti::rt::optional::make("Bar!"s); }
 
-extern void hlt_internal::Bar::_init_module() {
+extern void hlt_internal::Bar::_t_init_module() {
       ::hilti::rt::location("bar.hlt:10:1-10:38");
     ::hilti::rt::print("Hello, world from Bar!"s, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
       ::hilti::rt::location("bar.hlt:11:1-11:22");
@@ -38,9 +38,9 @@ extern void hlt_internal::Bar::_init_module() {
     ::hilti::rt::print((*hlt_internal::Bar::bar), &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
 }
 
-extern void hlt_internal::Bar::_register_module() {
+extern void hlt_internal::Bar::_t_register_module() {
     ::hilti::rt::Library::setScope(&hlt_internal_hlto_scope);
-    ::hilti::rt::detail::registerModule({ "Bar", hlt_internal_hlto_scope, &_init_module, &_init_globals, &_destroy_globals, nullptr});
+    ::hilti::rt::detail::registerModule({ "Bar", hlt_internal_hlto_scope, &_t_init_module, &_t_init_globals, &_t_destroy_globals, nullptr});
 }
 
 // Begin of Foo (from "foo.hlt")
@@ -58,19 +58,19 @@ namespace hlt_internal::Bar {
 
 namespace hlt_internal::Foo {
     ::hilti::rt::Optional<std::string> foo = {};
-    extern void _init_globals(::hilti::rt::Context* ctx);
-    extern void _destroy_globals(::hilti::rt::Context* ctx);
-    extern void _init_module();
-    extern void _register_module();
+    extern void _t_init_globals(::hilti::rt::Context* ctx);
+    extern void _t_destroy_globals(::hilti::rt::Context* ctx);
+    extern void _t_init_module();
+    extern void _t_register_module();
 }
 
-HILTI_PRE_INIT(hlt_internal::Foo::_register_module)
+HILTI_PRE_INIT(hlt_internal::Foo::_t_register_module)
 
-extern void hlt_internal::Foo::_destroy_globals(::hilti::rt::Context* ctx) { ::hlt_internal::Foo::foo.reset();; }
+extern void hlt_internal::Foo::_t_destroy_globals(::hilti::rt::Context* ctx) { ::hlt_internal::Foo::foo.reset();; }
 
-extern void hlt_internal::Foo::_init_globals(::hilti::rt::Context* ctx) { ::hlt_internal::Foo::foo = ::hilti::rt::optional::make("Foo!"s); }
+extern void hlt_internal::Foo::_t_init_globals(::hilti::rt::Context* ctx) { ::hlt_internal::Foo::foo = ::hilti::rt::optional::make("Foo!"s); }
 
-extern void hlt_internal::Foo::_init_module() {
+extern void hlt_internal::Foo::_t_init_module() {
       ::hilti::rt::location("foo.hlt:10:1-10:38");
     ::hilti::rt::print("Hello, world from Foo!"s, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
       ::hilti::rt::location("foo.hlt:11:1-11:17");
@@ -79,9 +79,9 @@ extern void hlt_internal::Foo::_init_module() {
     ::hilti::rt::print((*hlt_internal::Bar::bar), &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
 }
 
-extern void hlt_internal::Foo::_register_module() {
+extern void hlt_internal::Foo::_t_register_module() {
     ::hilti::rt::Library::setScope(&hlt_internal_hlto_scope);
-    ::hilti::rt::detail::registerModule({ "Foo", hlt_internal_hlto_scope, &_init_module, &_init_globals, &_destroy_globals, nullptr});
+    ::hilti::rt::detail::registerModule({ "Foo", hlt_internal_hlto_scope, &_t_init_module, &_t_init_globals, &_t_destroy_globals, nullptr});
 }
 
 // Begin of __linker__

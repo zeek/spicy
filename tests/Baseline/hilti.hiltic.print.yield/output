@@ -17,10 +17,10 @@ namespace hlt::Foo {
 }
 
 namespace hlt_internal::Foo {
-    extern void _register_module();
+    extern void _t_register_module();
 }
 
-HILTI_PRE_INIT(hlt_internal::Foo::_register_module)
+HILTI_PRE_INIT(hlt_internal::Foo::_t_register_module)
 
 extern auto hlt::Foo::test(const std::string& x) -> ::hilti::rt::Resumable {
     auto args = std::make_tuple(::hilti::rt::resumable::detail::copyArg(x));
@@ -34,7 +34,7 @@ extern auto hlt::Foo::test(const std::string& x) -> ::hilti::rt::Resumable {
     return std::move(*r);
 }
 
-extern void hlt_internal::Foo::_register_module() {
+extern void hlt_internal::Foo::_t_register_module() {
     ::hilti::rt::Library::setScope(&hlt_internal_hlto_scope);
     ::hilti::rt::detail::registerModule({ "Foo", hlt_internal_hlto_scope, nullptr, nullptr, nullptr, nullptr});
 }

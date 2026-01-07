@@ -24,20 +24,6 @@ static const unsigned int AddSeparatorBefore = (1U << 4U); // Force adding a sep
 
 static const std::set<std::string_view> ReservedKeywords = {
     "NULL",
-    "_Alignas",
-    "_Alignof",
-    "_Atomic",
-    "_Bool",
-    "_Complex",
-    "_Decimal128",
-    "_Decimal32",
-    "_Decimal64",
-    "_Generic",
-    "_Imaginary",
-    "_Noreturn",
-    "_Pragma",
-    "_Static_assert",
-    "_Thread_local",
     "alignas",
     "alignof",
     "and",
@@ -143,6 +129,14 @@ std::optional<std::string> cxx::normalizeID(std::string_view id) {
 
     if ( ReservedKeywords.contains(id) )
         return std::string(id) + "_";
+
+    if ( id == "__linker__" )
+        // We use it internally and prefer to keep it as is.
+        return std::string(id);
+
+    if ( id.size() >= 2 && id[0] == '_' && (id[1] == '_' || isupper(id[1])) )
+        // These are reserved in C++, rename.
+        return std::string("_r_" + std::string(id.substr(1)));
 
     if ( std::ranges::all_of(id, [](auto c) { return std::isalnum(c) || c == '_'; }) )
         // Fast-path: no special-characters, no leading digits.

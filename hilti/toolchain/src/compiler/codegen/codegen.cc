@@ -317,7 +317,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
                 return;
             }
 
-            d.id = ID(*a->valueAsString()).makeAbsolute();
+            d.id = cxx::ID(*a->valueAsString(), cxx::ID::AlreadyNormalized()).makeAbsolute();
             cg->unit()->add(d);
 
             return;

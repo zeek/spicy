@@ -14,4 +14,7 @@ const class = "42";
 hilti::print(class);
 f(class);
 
+global _NULLPTR_T = 1234;
+hilti::print(_NULLPTR_T);
+
 }

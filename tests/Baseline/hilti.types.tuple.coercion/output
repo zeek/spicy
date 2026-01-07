@@ -9,29 +9,29 @@
 extern uint64_t hlt_internal_hlto_scope;
 
 namespace hlt_internal::type_info { namespace {
-    extern const ::hilti::rt::TypeInfo _ti_tuple_a__uint_64___b__string__tuplex2auint64_string_x2b;
+    extern const ::hilti::rt::TypeInfo _t_ti_tuple_a__uint_64___b__string__tuplex2auint64_string_x2b;
 } }
 
 namespace hlt_internal::Foo {
     static auto f() -> ::hilti::rt::Tuple<::hilti::rt::integer::safe<uint64_t>, std::string>;
-    extern void _init_module();
-    extern void _register_module();
+    extern void _t_init_module();
+    extern void _t_register_module();
 }
 
 namespace hlt_internal::type_info { namespace {
-    const ::hilti::rt::TypeInfo _ti_tuple_a__uint_64___b__string__tuplex2auint64_string_x2b = { {}, "tuple<a: uint<64>, b: string>", [](const void *self) { return hilti::rt::to_string(*reinterpret_cast<const ::hilti::rt::Tuple<::hilti::rt::integer::safe<uint64_t>, std::string>*>(self)); }, new ::hilti::rt::type_info::Tuple(std::vector<::hilti::rt::type_info::tuple::Element>({::hilti::rt::type_info::tuple::Element{ "a", &::hilti::rt::type_info::uint64, ::hilti::rt::Tuple<::hilti::rt::integer::safe<uint64_t>, std::string>::elementOffset<0>() }, ::hilti::rt::type_info::tuple::Element{ "b", &::hilti::rt::type_info::string, ::hilti::rt::Tuple<::hilti::rt::integer::safe<uint64_t>, std::string>::elementOffset<1>() }})) };
+    const ::hilti::rt::TypeInfo _t_ti_tuple_a__uint_64___b__string__tuplex2auint64_string_x2b = { {}, "tuple<a: uint<64>, b: string>", [](const void *self) { return hilti::rt::to_string(*reinterpret_cast<const ::hilti::rt::Tuple<::hilti::rt::integer::safe<uint64_t>, std::string>*>(self)); }, new ::hilti::rt::type_info::Tuple(std::vector<::hilti::rt::type_info::tuple::Element>({::hilti::rt::type_info::tuple::Element{ "a", &::hilti::rt::type_info::uint64, ::hilti::rt::Tuple<::hilti::rt::integer::safe<uint64_t>, std::string>::elementOffset<0>() }, ::hilti::rt::type_info::tuple::Element{ "b", &::hilti::rt::type_info::string, ::hilti::rt::Tuple<::hilti::rt::integer::safe<uint64_t>, std::string>::elementOffset<1>() }})) };
 } }
 
-HILTI_PRE_INIT(hlt_internal::Foo::_register_module)
+HILTI_PRE_INIT(hlt_internal::Foo::_t_register_module)
 
-extern void hlt_internal::Foo::_init_module() {
+extern void hlt_internal::Foo::_t_init_module() {
       ::hilti::rt::location("<...>/coercion.hlt:14:1-14:17");
-    ::hilti::rt::print(f(), &type_info::_ti_tuple_a__uint_64___b__string__tuplex2auint64_string_x2b, ::hilti::rt::Bool(true));
+    ::hilti::rt::print(f(), &type_info::_t_ti_tuple_a__uint_64___b__string__tuplex2auint64_string_x2b, ::hilti::rt::Bool(true));
 }
 
-extern void hlt_internal::Foo::_register_module() {
+extern void hlt_internal::Foo::_t_register_module() {
     ::hilti::rt::Library::setScope(&hlt_internal_hlto_scope);
-    ::hilti::rt::detail::registerModule({ "Foo", hlt_internal_hlto_scope, &_init_module, nullptr, nullptr, nullptr});
+    ::hilti::rt::detail::registerModule({ "Foo", hlt_internal_hlto_scope, &_t_init_module, nullptr, nullptr, nullptr});
 }
 
 static auto hlt_internal::Foo::f() -> ::hilti::rt::Tuple<::hilti::rt::integer::safe<uint64_t>, std::string> {

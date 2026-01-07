@@ -9,8 +9,8 @@
 extern uint64_t hlt_internal_hlto_scope;
 
 namespace hlt_internal::Bar {
-    struct _globals_t;
-    struct _globals_t : ::hilti::rt::trait::isStruct, ::hilti::rt::Controllable<_globals_t> {
+    struct _t_globals_t;
+    struct _t_globals_t : ::hilti::rt::trait::isStruct, ::hilti::rt::Controllable<_t_globals_t> {
         std::string bar{};
 
         std::string __to_string() const {
@@ -18,32 +18,32 @@ namespace hlt_internal::Bar {
         }
     };
 
-    inline unsigned int _globals_index;
-    static inline auto _globals() { return ::hilti::rt::detail::moduleGlobals<_globals_t>(_globals_index); }
-    extern void _init_globals(::hilti::rt::Context* ctx);
-    extern void _init_module();
-    extern void _register_module();
+    inline unsigned int _t_globals_index;
+    static inline auto _t_globals() { return ::hilti::rt::detail::moduleGlobals<_t_globals_t>(_t_globals_index); }
+    extern void _t_init_globals(::hilti::rt::Context* ctx);
+    extern void _t_init_module();
+    extern void _t_register_module();
 }
 
-HILTI_PRE_INIT(hlt_internal::Bar::_register_module)
+HILTI_PRE_INIT(hlt_internal::Bar::_t_register_module)
 
-extern void hlt_internal::Bar::_init_globals(::hilti::rt::Context* ctx) {
-    ::hilti::rt::detail::initModuleGlobals<_globals_t>(_globals_index);
-    _globals()->bar = {"Bar!"s};
+extern void hlt_internal::Bar::_t_init_globals(::hilti::rt::Context* ctx) {
+    ::hilti::rt::detail::initModuleGlobals<_t_globals_t>(_t_globals_index);
+    _t_globals()->bar = {"Bar!"s};
 }
 
-extern void hlt_internal::Bar::_init_module() {
+extern void hlt_internal::Bar::_t_init_module() {
       ::hilti::rt::location("bar.hlt:10:1-10:38");
     ::hilti::rt::print("Hello, world from Bar!"s, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
       ::hilti::rt::location("bar.hlt:11:1-11:22");
-    ::hilti::rt::print(Foo::_globals()->foo, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
+    ::hilti::rt::print(Foo::_t_globals()->foo, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
       ::hilti::rt::location("bar.hlt:12:1-12:17");
-    ::hilti::rt::print(Bar::_globals()->bar, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
+    ::hilti::rt::print(Bar::_t_globals()->bar, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
 }
 
-extern void hlt_internal::Bar::_register_module() {
+extern void hlt_internal::Bar::_t_register_module() {
     ::hilti::rt::Library::setScope(&hlt_internal_hlto_scope);
-    ::hilti::rt::detail::registerModule({ "Bar", hlt_internal_hlto_scope, &_init_module, &_init_globals, nullptr, &_globals_index});
+    ::hilti::rt::detail::registerModule({ "Bar", hlt_internal_hlto_scope, &_t_init_module, &_t_init_globals, nullptr, &_t_globals_index});
 }
 
 // Begin of Foo (from "foo.hlt")
@@ -56,8 +56,8 @@ extern void hlt_internal::Bar::_register_module() {
 extern uint64_t hlt_internal_hlto_scope;
 
 namespace hlt_internal::Foo {
-    struct _globals_t;
-    struct _globals_t : ::hilti::rt::trait::isStruct, ::hilti::rt::Controllable<_globals_t> {
+    struct _t_globals_t;
+    struct _t_globals_t : ::hilti::rt::trait::isStruct, ::hilti::rt::Controllable<_t_globals_t> {
         std::string foo{};
 
         std::string __to_string() const {
@@ -65,32 +65,32 @@ namespace hlt_internal::Foo {
         }
     };
 
-    inline unsigned int _globals_index;
-    static inline auto _globals() { return ::hilti::rt::detail::moduleGlobals<_globals_t>(_globals_index); }
-    extern void _init_globals(::hilti::rt::Context* ctx);
-    extern void _init_module();
-    extern void _register_module();
+    inline unsigned int _t_globals_index;
+    static inline auto _t_globals() { return ::hilti::rt::detail::moduleGlobals<_t_globals_t>(_t_globals_index); }
+    extern void _t_init_globals(::hilti::rt::Context* ctx);
+    extern void _t_init_module();
+    extern void _t_register_module();
 }
 
-HILTI_PRE_INIT(hlt_internal::Foo::_register_module)
+HILTI_PRE_INIT(hlt_internal::Foo::_t_register_module)
 
-extern void hlt_internal::Foo::_init_globals(::hilti::rt::Context* ctx) {
-    ::hilti::rt::detail::initModuleGlobals<_globals_t>(_globals_index);
-    _globals()->foo = {"Foo!"s};
+extern void hlt_internal::Foo::_t_init_globals(::hilti::rt::Context* ctx) {
+    ::hilti::rt::detail::initModuleGlobals<_t_globals_t>(_t_globals_index);
+    _t_globals()->foo = {"Foo!"s};
 }
 
-extern void hlt_internal::Foo::_init_module() {
+extern void hlt_internal::Foo::_t_init_module() {
       ::hilti::rt::location("foo.hlt:10:1-10:38");
     ::hilti::rt::print("Hello, world from Foo!"s, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
       ::hilti::rt::location("foo.hlt:11:1-11:17");
-    ::hilti::rt::print(Foo::_globals()->foo, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
+    ::hilti::rt::print(Foo::_t_globals()->foo, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
       ::hilti::rt::location("foo.hlt:12:1-12:22");
-    ::hilti::rt::print(Bar::_globals()->bar, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
+    ::hilti::rt::print(Bar::_t_globals()->bar, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
 }
 
-extern void hlt_internal::Foo::_register_module() {
+extern void hlt_internal::Foo::_t_register_module() {
     ::hilti::rt::Library::setScope(&hlt_internal_hlto_scope);
-    ::hilti::rt::detail::registerModule({ "Foo", hlt_internal_hlto_scope, &_init_module, &_init_globals, nullptr, &_globals_index});
+    ::hilti::rt::detail::registerModule({ "Foo", hlt_internal_hlto_scope, &_t_init_module, &_t_init_globals, nullptr, &_t_globals_index});
 }
 
 // Begin of __linker__

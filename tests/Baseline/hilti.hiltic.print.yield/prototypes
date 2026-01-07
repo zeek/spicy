@@ -17,7 +17,7 @@ namespace hlt::Foo {
 }
 
 namespace hlt_internal::Foo {
-    extern void _register_module();
+    extern void _t_register_module();
 }
 
 #endif

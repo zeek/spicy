@@ -5,6 +5,7 @@ module Test {
 
 const a-b = 1;
 const __private_name = 2;
+const _t_private_name = 3;
 
 type Bar-Baz = bool;
 

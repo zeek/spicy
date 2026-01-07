@@ -6,7 +6,7 @@ const __private_name = 2;
 
 # @TEST-START-NEXT-FILE
 module Foo;
-const _private_name = 2;
+const _t_private_name = 2;
 
 # @TEST-START-NEXT-FILE
 module Foo;
