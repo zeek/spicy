@@ -92,14 +92,23 @@ using Operands = NodeVector<Operand>;
 class OperandList final : public UnqualifiedType {
 public:
     auto operands() const { return children<operand_list::Operand>(0, {}); }
+
+    /** Returns the operand at the given index. */
+    auto operand(size_t i) const {
+        assert(i < children().size());
+        return child<operand_list::Operand>(i);
+    }
+
     auto op0() const {
         assert(children().size() >= 1);
         return child<operand_list::Operand>(0);
     }
+
     auto op1() const {
         assert(children().size() >= 2);
         return child<operand_list::Operand>(1);
     }
+
     auto op2() const {
         assert(children().size() >= 3);
         return child<operand_list::Operand>(2);
