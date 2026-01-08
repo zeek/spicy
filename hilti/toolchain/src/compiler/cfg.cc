@@ -81,8 +81,12 @@ using namespace hilti::detail::cfg;
 
 namespace {
 // Helper to detect whether `operand` is used as a `const` argument to a given `operator_`.
-bool isConstOperand(const expression::ResolvedOperator& operator_, const Node& operand) {
-    if ( const auto* op = operator_.lookupOperand(operand) ) {
+bool isConstOperand(const expression::ResolvedOperator* operator_, const Expression* expr) {
+    auto idx = operator_->operandIndex(expr);
+    if ( ! idx )
+        return false;
+
+    if ( const auto* op = operator_->operator_().signature().operands->operand(*idx) ) {
         switch ( op->kind() ) {
             case parameter::Kind::Copy: [[fallthrough]];
             case parameter::Kind::In: return true;
@@ -824,7 +828,7 @@ struct DataflowVisitor : visitor::PreOrder {
             transfer.read.insert(decl);
 
         else if ( auto* operator_ = node->tryAs<expression::ResolvedOperator>();
-                  operator_ && isConstOperand(*operator_, *name) )
+                  operator_ && isConstOperand(operator_, name) )
             transfer.read.insert(decl);
 
         else {
