@@ -6,8 +6,6 @@
 #include <hilti/compiler/detail/optimizer/optimizer.h>
 #include <hilti/compiler/detail/optimizer/pass.h>
 
-#include "compiler/detail/optimizer/optimizer.h"
-
 using namespace hilti;
 using namespace hilti::detail;
 using namespace hilti::detail::optimizer;
