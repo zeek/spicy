@@ -2,6 +2,8 @@
 
 #include <hilti/ast/builder/builder.h>
 #include <hilti/base/logger.h>
+#include <hilti/compiler/detail/optimizer/collector-callers.h>
+#include <hilti/compiler/detail/optimizer/optimizer.h>
 #include <hilti/compiler/detail/optimizer/pass.h>
 
 #include "compiler/detail/optimizer/optimizer.h"
@@ -11,26 +13,6 @@ using namespace hilti::detail;
 using namespace hilti::detail::optimizer;
 
 namespace {
-
-/** Collects a mapping of all call operators to their uses. */
-struct CollectorCallers : public optimizer::visitor::Collector {
-    using optimizer::visitor::Collector::Collector;
-
-    // Maps the call operator to the places where's been used.
-    using Callers = std::map<const Operator*, std::vector<expression::ResolvedOperator*>>;
-    Callers callers;
-
-    const Callers::mapped_type* uses(const Operator* x) const {
-        if ( ! callers.contains(x) )
-            return nullptr;
-
-        return &callers.at(x);
-    }
-
-    void operator()(operator_::function::Call* n) final { callers[&n->operator_()].push_back(n); }
-
-    void operator()(operator_::struct_::MemberCall* n) final { callers[&n->operator_()].push_back(n); }
-};
 
 /** Collects function parameters not used within the function body. */
 struct CollectorUnusedParameters : public optimizer::visitor::Collector {
