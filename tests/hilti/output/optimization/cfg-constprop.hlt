@@ -99,6 +99,41 @@ function void propagate_call() {
     hilti::print(x);
 }
 
+# CHECK: function void copy_prop
+function void copy_prop(uint<64> x) {
+    local y = x;
+    # CHECK: print(x
+    hilti::print(y);
+
+    # Scope should not copy prop
+    local a = 10;
+    # Make it so this scope won't get flattened
+    if ( x == 10 ) {
+        # Branch so that we don't propagate the constant in 'b'
+        local uint<64> b;
+        if ( x == 10 )
+            b = 10;
+        else
+            b = 15;
+
+        # CHECK: a = b
+        a = b;
+    }
+
+    # CHECK: print(a
+    hilti::print(a);
+
+    # We can, however, constant propagate
+    local n = 10;
+    if ( x == 10 ) {
+        local m = 15;
+        # CHECK: n = 15
+        n = m;
+    }
+    # CHECK: print(n
+    hilti::print(n);
+}
+
 simple();
 global uint<64> x = 10;
 param(x);
@@ -106,5 +141,6 @@ branching(True);
 switch_controlflow(2);
 propagate_return();
 propagate_call();
+copy_prop(5);
 
 }
