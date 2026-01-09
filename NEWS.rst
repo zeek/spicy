@@ -2,17 +2,62 @@ This following summarizes the most important changes in recent Spicy releases.
 For an exhaustive list of all changes, see the :repo:`CHANGES` file coming with
 the distribution.
 
-Version 1.15 (in progress)
-==========================
+Version 1.15
+============
 
 .. rubric:: New Functionality
 
+- Control-flow-based optimizations enabled and expanded
+
+  We built out the control-flow-based optimization first introduced as an
+  experimental feature in spicy-1.14, and with this release these optimizer
+  passes are enabled by default. For that we made the framework more efficient
+  and cleaned up issues in the implementation.
+
+  We also introduced a new pass performing constant propagation (GH-2137,
+  GH-2150) and reducing nested scopes to simplify data flow analysis (GH-1425).
+
+- GH-2197: Support coercion from empty list to struct
+
+  Spicy ``struct`` fields can already be declared with a ``&default`` value to
+  reduce data duplication. We now allow constructing ``struct`` values from
+  empty lists ``[]`` which effectively allows default-construction.
+
 .. rubric:: Changed Functionality
+
+- GH-2183: Use dedicated C++ types for representing ``optional`` and ``tuple`` in the runtime library
+- GH-2194: Reimplement ``hilti::rt::currentExecutable`` without external dependency
+- GH-2201: ``HILTI_OPTIMIZER_PASSES`` has been removed
+- GH-2204: Minimum required GCC version bumped to gcc-12
+- GH-2222: Properly resolve and validate capture groups
+
+  Previously, incorrect uses of regular expression capture groups (e.g.,
+  ``$1``, ``$2``) were emitted to C++ without any analysis, causing compilation
+  failures or unexpected behavior. Now, we validate capture groups and reject
+  invalid Spicy code that was previously accepted.
+
+- GH-2245: Extend our notion of reserved C++ identifiers
+
+  When generating C++ code from Spicy sources, we transform Spicy identifiers
+  which are not valid in C++. We extended the set of identifiers we transform,
+  which might be visible when directly working with the generated C++ code,
+  like e.g., in custom host applications.
 
 .. rubric:: Bug fixes
 
+- GH-2144: Function parameter and local variable name clash leads to C++ error
+- GH-2154: Coercion from Null gets unhandled internal error
+- GH-2162: Fix ASAN false positive on ARM
+- GH-2175: Fix tuple assignment when coercing individual elements
+- GH-2177: Fix C++ code generation for struct parameters passed as references
+- GH-2184: FunctionParamVisitor fails to remove some redundant parameters
+- GH-2205: Uglify internal identifiers
+- Multiple fixes for issues reported by static analysis tools (``clang-tidy``, Coverity)
+- zeek/zeek#5008: Do not normalize ID names inside type information
+
 .. rubric:: Documentation
 
+- GH-2218: Add FAQ for code optimizers can remove
 
 Version 1.14 (in progress)
 ==========================
