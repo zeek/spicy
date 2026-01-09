@@ -13,14 +13,14 @@ namespace {
 
 struct ConstantValue {
     Expression* expr = nullptr;
-    bool not_a_constant = false; // NAC
+    bool is_unknown = false; // NAC
 
     bool operator==(const ConstantValue& other) const {
         // If both are NAC, what's in expr doesn't matter
-        if ( not_a_constant && other.not_a_constant )
+        if ( is_unknown && other.is_unknown )
             return true;
 
-        return expr == other.expr && not_a_constant == other.not_a_constant;
+        return expr == other.expr && is_unknown == other.is_unknown;
     }
 };
 
@@ -30,6 +30,18 @@ struct AnalysisResult {
     std::map<cfg::GraphNode, ConstantMap> in;
     std::map<cfg::GraphNode, ConstantMap> out;
 };
+
+void killDependencies(Declaration* modified_decl, ConstantMap* constants) {
+    for ( auto& [decl, value] : *constants ) {
+        if ( value.is_unknown )
+            continue;
+
+        if ( const auto* name = value.expr->tryAs<expression::Name>() ) {
+            if ( name->resolvedDeclaration() == modified_decl )
+                value.is_unknown = true;
+        }
+    }
+}
 
 // Marks all children that are names as not a constant in the given map.
 // This is used by function calls, since they have deeply nested names
@@ -41,8 +53,11 @@ struct NameNACer : optimizer::visitor::Collector {
     ConstantMap* constants;
 
     void operator()(expression::Name* name) override {
-        if ( auto* decl = name->resolvedDeclaration() )
-            (*constants)[decl].not_a_constant = true;
+        if ( auto* decl = name->resolvedDeclaration() ) {
+            // TODO: This is O(n) for each assignment, consider a reverse map
+            killDependencies(decl, constants);
+            (*constants)[decl].is_unknown = true;
+        }
     }
 };
 
@@ -61,11 +76,16 @@ struct TransferVisitor : optimizer::visitor::Collector {
         if ( const auto* name = expr->tryAs<expression::Name>() ) {
             if ( auto* decl = name->resolvedDeclaration(); decl && constants->contains(decl) ) {
                 const auto& val = constants->at(decl);
-                if ( val.not_a_constant )
-                    return nullptr;
+                if ( val.is_unknown )
+                    return expr;
 
-                return val.expr;
+                if ( val.expr ) {
+                    auto* simplified = evaluate(val.expr);
+                    return simplified ? simplified : val.expr;
+                }
             }
+
+            return expr;
         }
 
         return nullptr;
@@ -74,8 +94,10 @@ struct TransferVisitor : optimizer::visitor::Collector {
     void operator()(expression::Assign* assign) override {
         if ( const auto* name = assign->target()->tryAs<expression::Name>() ) {
             if ( auto* decl = name->resolvedDeclaration() ) {
+                // TODO: This is O(n) for each assignment, consider a reverse map
+                killDependencies(decl, constants);
                 auto* const_val = evaluate(assign->source());
-                (*constants)[decl] = {.expr = const_val, .not_a_constant = (const_val == nullptr)};
+                (*constants)[decl] = {.expr = const_val, .is_unknown = (const_val == nullptr)};
             }
         }
     }
@@ -83,7 +105,7 @@ struct TransferVisitor : optimizer::visitor::Collector {
     void operator()(declaration::LocalVariable* decl) override {
         if ( auto* init = decl->init() ) {
             auto* const_val = evaluate(init);
-            (*constants)[decl] = {.expr = const_val, .not_a_constant = (const_val == nullptr)};
+            (*constants)[decl] = {.expr = const_val, .is_unknown = (const_val == nullptr)};
         }
     }
 
@@ -178,7 +200,7 @@ struct Replacer : optimizer::visitor::Mutator {
 
         auto const_val = const_it->second;
 
-        if ( ! const_val.not_a_constant ) {
+        if ( ! const_val.is_unknown ) {
             Node* to_replace = n;
             // Replace the coercion, too, so that the coercer reruns.
             if ( auto* coerced = n->parent()->tryAs<expression::Coerced>() )
@@ -194,7 +216,15 @@ struct Mutator : public optimizer::visitor::Mutator {
 
     std::map<Node*, AnalysisResult> analysis_results;
 
-    void transfer(const cfg::GraphNode& n, ConstantMap& new_out) {
+    void transfer(const CFG* cfg, const cfg::GraphNode& n, ConstantMap& new_out) {
+        if ( n->isA<cfg::End>() ) {
+            const auto& transfer = cfg->dataflow().at(n);
+            for ( auto&& [decl, xx] : transfer.kill ) {
+                killDependencies(decl, &new_out);
+                new_out.erase(decl);
+            }
+        }
+
         TransferVisitor(optimizer(), &new_out).run(n.get());
     }
 
@@ -228,13 +258,13 @@ struct Mutator : public optimizer::visitor::Mutator {
 
                 // cfg_node was retrieved from the graph itself so should be present.
                 assert(cfg_node);
-                const auto& pred_out = result.out[*cfg_node];
+                auto filtered_pred_out = result.out[*cfg_node];
 
-                for ( const auto& [decl, const_val] : pred_out ) {
+                for ( const auto& [decl, const_val] : filtered_pred_out ) {
                     // Add if we can, otherwise NAC if they're not the same const.
                     auto [found, inserted] = new_in.try_emplace(decl, const_val);
                     if ( ! inserted && found->second != const_val )
-                        found->second.not_a_constant = true;
+                        found->second.is_unknown = true;
                 }
             }
 
@@ -242,7 +272,7 @@ struct Mutator : public optimizer::visitor::Mutator {
 
             // Transfer
             ConstantMap new_out = result.in[n];
-            transfer(n, new_out);
+            transfer(cfg, n, new_out);
 
             // If it changed, add successors to worklist
             ConstantMap old_out = result.out[n];
@@ -286,7 +316,7 @@ struct Mutator : public optimizer::visitor::Mutator {
 
         ConstantMap init;
         for ( auto* param : n->function()->ftype()->parameters() )
-            init[param].not_a_constant = true;
+            init[param].is_unknown = true;
 
         AnalysisResult result;
         populateDataflow(result, init, n);
