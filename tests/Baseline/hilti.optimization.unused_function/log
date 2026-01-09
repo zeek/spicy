@@ -5,9 +5,6 @@
 [debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]     * computed CFGs
-[debug/optimizer] pass: constant-propagation (round 1, pass iteration 1)
-[debug/optimizer] pass: constant-propagation (round 2, pass iteration 1)
-[debug/optimizer] pass: constant-propagation (round 3, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 3, pass iteration 1)
@@ -41,3 +38,6 @@
 [debug/optimizer]     * resolver
 [debug/optimizer]       - updating module: Foo
 [debug/optimizer]       - updating module: Foo
+[debug/optimizer] pass: value-propagation (round 1, pass iteration 1)
+[debug/optimizer] pass: value-propagation (round 2, pass iteration 1)
+[debug/optimizer] pass: value-propagation (round 3, pass iteration 1)

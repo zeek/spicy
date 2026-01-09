@@ -1468,14 +1468,6 @@
 [debug/optimizer]   re-resolving AST assuming guarantees <none>
 [debug/optimizer]   re-resolving AST assuming guarantees <none>
 [debug/optimizer]   re-resolving AST assuming guarantees <resolved>
-[debug/optimizer] pass: constant-propagation (round 1, pass iteration 1)
-[debug/optimizer] pass: constant-propagation (round 1, pass iteration 2)
-[debug/optimizer] pass: constant-propagation (round 2, pass iteration 1)
-[debug/optimizer] pass: constant-propagation (round 2, pass iteration 2)
-[debug/optimizer] pass: constant-propagation (round 3, pass iteration 1)
-[debug/optimizer] pass: constant-propagation (round 4, pass iteration 1)
-[debug/optimizer] pass: constant-propagation (round 5, pass iteration 1)
-[debug/optimizer] pass: constant-propagation (round 6, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 3, pass iteration 1)
@@ -1519,3 +1511,11 @@
 [debug/optimizer] pass: remove-unused-parameters (round 4, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 5, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 6, pass iteration 1)
+[debug/optimizer] pass: value-propagation (round 1, pass iteration 1)
+[debug/optimizer] pass: value-propagation (round 1, pass iteration 2)
+[debug/optimizer] pass: value-propagation (round 2, pass iteration 1)
+[debug/optimizer] pass: value-propagation (round 2, pass iteration 2)
+[debug/optimizer] pass: value-propagation (round 3, pass iteration 1)
+[debug/optimizer] pass: value-propagation (round 4, pass iteration 1)
+[debug/optimizer] pass: value-propagation (round 5, pass iteration 1)
+[debug/optimizer] pass: value-propagation (round 6, pass iteration 1)

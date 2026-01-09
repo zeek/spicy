@@ -12,61 +12,89 @@ using namespace hilti::detail::optimizer;
 
 namespace {
 
-struct ConstantValue {
+struct ReachingValue {
     Expression* expr = nullptr;
-    bool not_a_constant = false; // NAC
+    bool propagate = false; // True if it may be propagated
 
-    bool operator==(const ConstantValue& other) const {
-        // If both are NAC, what's in expr doesn't matter
-        if ( not_a_constant && other.not_a_constant )
+    bool operator==(const ReachingValue& other) const {
+        // If neither should propagate, what's in expr doesn't matter
+        if ( ! propagate && ! other.propagate )
             return true;
 
-        return expr == other.expr && not_a_constant == other.not_a_constant;
+        return expr == other.expr && propagate == other.propagate;
     }
 };
 
-using ConstantMap = std::map<Declaration*, ConstantValue>;
+using PropagationMap = std::map<Declaration*, ReachingValue>;
 
 struct AnalysisResult {
-    std::map<cfg::GraphNode, ConstantMap> in;
-    std::map<cfg::GraphNode, ConstantMap> out;
+    std::map<cfg::GraphNode, PropagationMap> in;
+    std::map<cfg::GraphNode, PropagationMap> out;
 };
 
-// Marks all children that are names as not a constant in the given map.
-// This is used by function calls, since they have deeply nested names
-// that should all be marked NAC.
-struct NameNACer : optimizer::visitor::Collector {
-    NameNACer(Optimizer* optimizer, ConstantMap* constants)
-        : optimizer::visitor::Collector(optimizer), constants(constants) {}
+// Marks any sources on a modified decl as also unavailable. This is necessary
+// with copy propagation if there is an assignment to the to-be-propagated value
+// between the initial copy and use (like if storing an old value then modifying
+// the new one).
+void invalidateDependencies(const Declaration* modified_decl, PropagationMap* reaching_copies) {
+    // We could also make a new map of decl->names, but this seems
+    // reasonable unless efficiency becomes a concern.
+    for ( auto& [decl, value] : *reaching_copies ) {
+        if ( ! value.propagate )
+            continue;
 
-    ConstantMap* constants;
+        if ( const auto* name = value.expr->tryAs<expression::Name>() ) {
+            if ( name->resolvedDeclaration() == modified_decl )
+                value.propagate = false;
+        }
+    }
+}
+
+// Marks all children that are names as not propagatable in the given map.
+// This is used when a name might be nested in various operators and we
+// must clear all propagate flags.
+struct Invalidator : optimizer::visitor::Collector {
+    Invalidator(Optimizer* optimizer, PropagationMap* reaching_copies)
+        : optimizer::visitor::Collector(optimizer), reaching_copies(reaching_copies) {}
+
+    PropagationMap* reaching_copies;
 
     void operator()(expression::Name* name) override {
-        if ( auto* decl = name->resolvedDeclaration() )
-            (*constants)[decl].not_a_constant = true;
+        if ( auto* decl = name->resolvedDeclaration() ) {
+            invalidateDependencies(decl, reaching_copies);
+            (*reaching_copies)[decl].propagate = false;
+        }
     }
 };
 
 struct TransferVisitor : optimizer::visitor::Collector {
-    TransferVisitor(Optimizer* optimizer, ConstantMap* constants)
-        : optimizer::visitor::Collector(optimizer), constants(constants), name_nac(optimizer, constants) {}
+    TransferVisitor(Optimizer* optimizer, PropagationMap* reaching_copies)
+        : optimizer::visitor::Collector(optimizer),
+          reaching_copies(reaching_copies),
+          invalidator(optimizer, reaching_copies) {}
 
-    ConstantMap* constants;
-    NameNACer name_nac;
+    PropagationMap* reaching_copies;
+    Invalidator invalidator;
 
-    // Tries to evaluate an expression to a constant value given a map of known constants.
-    Expression* evaluate(Expression* expr) {
+    // Tries to resolve an expression to a known reaching value via the propagation map.
+    Expression* resolveValue(Expression* expr) {
         if ( expr->isConstant() && expr->isA<expression::Ctor>() )
             return expr;
 
         if ( const auto* name = expr->tryAs<expression::Name>() ) {
-            if ( auto* decl = name->resolvedDeclaration(); decl && constants->contains(decl) ) {
-                const auto& val = constants->at(decl);
-                if ( val.not_a_constant )
-                    return nullptr;
+            if ( auto* decl = name->resolvedDeclaration(); decl && reaching_copies->contains(decl) ) {
+                const auto& val = reaching_copies->at(decl);
+                if ( ! val.propagate )
+                    return expr;
 
-                return val.expr;
+                if ( val.expr ) {
+                    // Recurse to try and limit dependency chains of names
+                    auto* simplified = resolveValue(val.expr);
+                    return simplified ? simplified : val.expr;
+                }
             }
+
+            return expr;
         }
 
         return nullptr;
@@ -75,27 +103,28 @@ struct TransferVisitor : optimizer::visitor::Collector {
     void operator()(expression::Assign* assign) override {
         if ( const auto* name = assign->target()->tryAs<expression::Name>() ) {
             if ( auto* decl = name->resolvedDeclaration() ) {
-                auto* const_val = evaluate(assign->source());
-                (*constants)[decl] = {.expr = const_val, .not_a_constant = (const_val == nullptr)};
+                invalidateDependencies(decl, reaching_copies);
+                auto* source_expr = resolveValue(assign->source());
+                (*reaching_copies)[decl] = {.expr = source_expr, .propagate = (source_expr != nullptr)};
             }
         }
     }
 
     void operator()(declaration::LocalVariable* decl) override {
         if ( auto* init = decl->init() ) {
-            auto* const_val = evaluate(init);
-            (*constants)[decl] = {.expr = const_val, .not_a_constant = (const_val == nullptr)};
+            auto* source_expr = resolveValue(init);
+            (*reaching_copies)[decl] = {.expr = source_expr, .propagate = (source_expr != nullptr)};
         }
     }
 
-    /** Marks mutable arguments to a function as NAC. */
+    /** Marks mutable arguments to a function as not propagatable. */
     void taintMutableArgs(const node::Range<Expression> args, type::Function* ft) {
         assert(args.size() == ft->parameters().size());
 
-        // NAC any inout arguments or aliasing types.
+        // Do not propagate any inout arguments or aliasing types.
         for ( const auto [i, operand] : util::enumerate(ft->parameters()) ) {
             if ( operand->kind() == hilti::parameter::Kind::InOut || operand->type()->type()->isAliasingType() )
-                name_nac.run(args[i]);
+                invalidator.run(args[i]);
         }
     }
 
@@ -121,8 +150,8 @@ struct TransferVisitor : optimizer::visitor::Collector {
         std::size_t i = 0;
         for ( const auto* operand : sig.operands->operands() ) {
             if ( operand->kind() == parameter::Kind::InOut )
-                // NAC any names within
-                name_nac.run(op->operands()[i]);
+                // Avoid propagating inout parameters.
+                invalidator.run(op->operands()[i]);
 
             i++;
         }
@@ -180,11 +209,11 @@ struct Replacer : optimizer::visitor::Mutator {
         if ( ! decl )
             return;
 
-        const auto& constants = in_it->second;
-        const auto& out_constants = out_it->second;
-        auto const_it = constants.find(decl);
-        auto out_const_it = out_constants.find(decl);
-        if ( const_it == constants.end() || out_const_it == out_constants.end() )
+        const auto& reaching_copies = in_it->second;
+        const auto& out_reaching_copies = out_it->second;
+        auto const_it = reaching_copies.find(decl);
+        auto out_const_it = out_reaching_copies.find(decl);
+        if ( const_it == reaching_copies.end() || out_const_it == out_reaching_copies.end() )
             return;
 
         // If they aren't the same, something changed within the statement.
@@ -192,15 +221,15 @@ struct Replacer : optimizer::visitor::Mutator {
         if ( const_it->second != out_const_it->second )
             return;
 
-        auto const_val = const_it->second;
+        auto source_expr = const_it->second;
 
-        if ( ! const_val.not_a_constant ) {
+        if ( source_expr.propagate ) {
             Node* to_replace = n;
             // Replace the coercion, too, so that the coercer reruns.
             if ( auto* coerced = n->parent()->tryAs<expression::Coerced>() )
                 to_replace = coerced;
 
-            replaceNode(to_replace, const_val.expr, "propagating constant value");
+            replaceNode(to_replace, source_expr.expr, "propagating constant value");
         }
     }
 };
@@ -210,11 +239,20 @@ struct Mutator : public optimizer::visitor::Mutator {
 
     std::map<Node*, AnalysisResult> analysis_results;
 
-    void transfer(const cfg::GraphNode& n, ConstantMap& new_out) {
+    void transfer(const CFG& cfg, const cfg::GraphNode& n, PropagationMap& new_out) {
+        // For copy propagation, we need to make sure the value is in scope.
+        if ( n->isA<cfg::End>() ) {
+            const auto& transfer = cfg.dataflow().at(n);
+            for ( auto&& [decl, _] : transfer.kill ) {
+                invalidateDependencies(decl, &new_out);
+                new_out.erase(decl);
+            }
+        }
+
         TransferVisitor(optimizer(), &new_out).run(n.get());
     }
 
-    void populateDataflow(AnalysisResult& result, const ConstantMap& init, const declaration::Function* function) {
+    void populateDataflow(AnalysisResult& result, const PropagationMap& init, const declaration::Function* function) {
         const auto* cfg = state()->cfgCache()->get(function->function()->body());
         assert(cfg);
 
@@ -237,31 +275,32 @@ struct Mutator : public optimizer::visitor::Mutator {
             worklist.pop_front();
 
             // Meet
-            ConstantMap new_in;
+            PropagationMap new_in;
 
             for ( auto pred : cfg->graph().neighborsUpstream(n->identity()) ) {
                 const auto* cfg_node = cfg->graph().getNode(pred);
 
                 // cfg_node was retrieved from the graph itself so should be present.
                 assert(cfg_node);
-                const auto& pred_out = result.out[*cfg_node];
+                auto filtered_pred_out = result.out[*cfg_node];
 
-                for ( const auto& [decl, const_val] : pred_out ) {
-                    // Add if we can, otherwise NAC if they're not the same const.
-                    auto [found, inserted] = new_in.try_emplace(decl, const_val);
-                    if ( ! inserted && found->second != const_val )
-                        found->second.not_a_constant = true;
+                for ( const auto& [decl, source_expr] : filtered_pred_out ) {
+                    // Add if we can, otherwise only propagate if they're
+                    // the same const.
+                    auto [found, inserted] = new_in.try_emplace(decl, source_expr);
+                    if ( ! inserted && found->second != source_expr )
+                        found->second.propagate = false;
                 }
             }
 
             result.in[n] = std::move(new_in);
 
             // Transfer
-            ConstantMap new_out = result.in[n];
-            transfer(n, new_out);
+            PropagationMap new_out = result.in[n];
+            transfer(*cfg, n, new_out);
 
             // If it changed, add successors to worklist
-            ConstantMap old_out = result.out[n];
+            PropagationMap old_out = result.out[n];
 
             if ( old_out != new_out ) {
                 result.out[n] = std::move(new_out);
@@ -348,9 +387,9 @@ struct Mutator : public optimizer::visitor::Mutator {
         if ( ! body )
             return;
 
-        ConstantMap init;
+        PropagationMap init;
         for ( auto* param : n->function()->ftype()->parameters() )
-            init[param].not_a_constant = true;
+            init[param].propagate = false;
 
         AnalysisResult result;
         populateDataflow(result, init, n);
@@ -360,7 +399,7 @@ struct Mutator : public optimizer::visitor::Mutator {
 
 bool run(Optimizer* optimizer) { return Mutator(optimizer).run(); }
 
-optimizer::RegisterPass constant_propagation(
-    {.id = PassID::ConstantPropagation, .iterate = true, .guarantees = Guarantees::None, .run = run});
+optimizer::RegisterPass value_propagation(
+    {.id = PassID::ValuePropagation, .iterate = true, .guarantees = Guarantees::None, .run = run});
 
 } // namespace

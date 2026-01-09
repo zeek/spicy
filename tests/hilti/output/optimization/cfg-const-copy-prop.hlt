@@ -1,4 +1,4 @@
-# @TEST-DOC: Tests optimizations performing CFG-based constant propagation.
+# @TEST-DOC: Tests optimizations performing CFG-based constant and copy propagation.
 #
 # @TEST-REQUIRES: which FileCheck
 # @TEST-EXEC: hiltic %INPUT -p -o output.hlt
@@ -101,6 +101,41 @@ function void propagate_call() {
     take_num(x);
 }
 
+# CHECK: function void copy_prop
+function void copy_prop(uint<64> x) {
+    local y = x;
+    # CHECK: take_num(x
+    take_num(y);
+
+    # Scope should not copy prop
+    local a = 10;
+    # Make it so this scope won't get flattened
+    if ( x == 10 ) {
+        # Branch so that we don't propagate the constant in 'b'
+        local uint<64> b;
+        if ( x == 10 )
+            b = 10;
+        else
+            b = 15;
+
+        # CHECK: a = b
+        a = b;
+    }
+
+    # CHECK: take_num(a
+    take_num(a);
+
+    # We can, however, constant propagate
+    local n = 10;
+    if ( x == 10 ) {
+        local m = 15;
+        # CHECK: n = 15
+        n = m;
+    }
+    # CHECK: take_num(n
+    take_num(n);
+}
+
 simple();
 global uint<64> x = 10;
 param(x);
@@ -108,5 +143,6 @@ branching(True);
 switch_controlflow(2);
 propagate_return();
 propagate_call();
+copy_prop(5);
 
 }
