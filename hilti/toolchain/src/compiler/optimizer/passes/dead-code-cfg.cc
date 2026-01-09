@@ -159,11 +159,17 @@ struct Mutator : public optimizer::visitor::Mutator {
         }
 
         else if ( data->isA<Declaration>() ) {
-            if ( auto* stmt = data->parent(); stmt && stmt->isA<statement::Declaration>() )
-                node = stmt;
+            if ( auto* stmt = data->parent() ) {
+                if ( stmt->isA<statement::Declaration>() )
+                    node = stmt;
+                else if ( auto *if_ = stmt->tryAs<statement::If>(); if_ && if_->init() == data)
+                    node = data;
+                else if ( auto *while_ = stmt->tryAs<statement::While>(); while_ && while_->init() == data)
+                    node = data;
+            }
 
             // Declarations should keep the RHS
-            if ( auto* local = data->tryAs<declaration::LocalVariable>(); local && local->init() )
+            else if ( auto* local = data->tryAs<declaration::LocalVariable>(); local && local->init() )
                 replace_with = builder()->statementExpression(local->init());
         }
 
@@ -213,7 +219,7 @@ struct Mutator : public optimizer::visitor::Mutator {
 bool run(Optimizer* optimizer) { return Mutator(optimizer).run(); }
 
 optimizer::RegisterPass cfg({.id = PassID::DeadCodeCFG,
-                             .guarantees = Guarantees::Resolved | Guarantees::ConstantsFolded,
+                             .guarantees = Guarantees::Resolved,
                              .run = run});
 
 } // namespace
