@@ -112,13 +112,13 @@ struct TransferVisitor : optimizer::visitor::Collector {
     void operator()(operator_::struct_::MemberCall* op) override {
         // NAC anything used in a call; unfortunately they may silently
         // coerce to a reference.
-        name_nac.run(op);
+        //name_nac.run(op);
     }
 
     void operator()(operator_::function::Call* op) override {
         // NAC anything used in a call; unfortunately they may silently
         // coerce to a reference.
-        name_nac.run(op);
+        //name_nac.run(op);
     }
 
     void operator()(expression::ResolvedOperator* op) override {
