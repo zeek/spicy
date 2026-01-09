@@ -1,0 +1,35 @@
+# @TEST-DOC: Ensures unused initializers in 'while' and 'if' get removed.
+#
+# @TEST-REQUIRES: which FileCheck
+# @TEST-EXEC: hiltic %INPUT -p | FileCheck %INPUT
+
+module Test {
+
+import hilti;
+
+function uint<64> potential_side_effect() { return 1; }
+
+function void fn(uint<64> param) {
+    # CHECK: if ( param == 10 )
+    if ( local uint<64> x = 5; param == 10 ) {
+        hilti::print(param);
+    }
+    # CHECK: while ( param == 10 )
+    while ( local uint<64> x = 5; param == 10 ) {
+        hilti::print(param);
+    }
+
+    # CHECK: if ( local uint<64> x = potential_side_effect
+    if ( local uint<64> x = potential_side_effect(); param == 10 ) {
+        hilti::print(param);
+    }
+
+    # CHECK: while ( local uint<64> x = potential_side_effect
+    while ( local uint<64> x = potential_side_effect(); param == 10 ) {
+        hilti::print(param);
+    }
+}
+
+fn(1);
+
+}
