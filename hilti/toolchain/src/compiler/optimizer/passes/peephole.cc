@@ -161,6 +161,54 @@ struct Mutator : public optimizer::visitor::Mutator {
             }
         }
     }
+
+    void operator()(statement::Return* n) final {
+        if ( ! n->expression() || ! n->parent() )
+            return;
+
+        auto* block = n->parent()->tryAs<statement::Block>();
+        if ( ! block )
+            return;
+
+        // Skip the coercion if it exists
+        Expression* expr = n->expression();
+        auto* coerced = expr->tryAs_<expression::Coerced>();
+        if ( coerced )
+            expr = coerced->expression();
+
+        auto* name = expr->tryAs_<expression::Name>();
+        if ( ! name )
+            return;
+
+        // Find the statement before this one
+        const auto& statements = block->statements();
+        auto it = std::ranges::find(statements, n);
+        if ( it == statements.end() || it == statements.begin() )
+            return;
+
+        // Loop until first not-null predecessor
+        do {
+            if ( --it == statements.begin() )
+                return;
+        } while ( ! *it );
+
+        auto* sibling = *it;
+
+        auto* stmt_expr = sibling->tryAs<statement::Expression>();
+        if ( ! stmt_expr )
+            return;
+        auto* assign = stmt_expr->expression()->tryAs<expression::Assign>();
+        if ( ! assign )
+            return;
+        auto* assign_to = assign->target()->tryAs<expression::Name>();
+        if ( ! assign_to )
+            return;
+
+        if ( assign_to->id() == name->id() ) {
+            replaceNode(n->expression(), node::deepcopy(context(), assign->source()));
+            removeNode(sibling, "Removing variable propagated to return");
+        }
+    }
 };
 
 bool run(Optimizer* optimizer) { return Mutator(optimizer).run(); }

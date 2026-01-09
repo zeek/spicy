@@ -256,6 +256,25 @@ public:
     // Static helper functions that optimization passes may find useful.
 
     /**
+     * Provides the enclosing function of this node, if any. This standardizes
+     * field inline functions and function declarations.
+     *
+     * @param ctx the AST Context
+     * @param node the node, possibly within a function
+     * @return the function which encloses the node, or nullopt if none
+     */
+    static std::optional<std::tuple<Function*, ID>> enclosingFunction(ASTContext* ctx, const Node* n) {
+        for ( const auto* current = n->parent(); current; current = current->parent() ) {
+            if ( const auto* fn_decl = current->tryAs<declaration::Function>() )
+                return std::tuple(fn_decl->function(), fn_decl->functionID(ctx));
+            else if ( const auto* field = current->tryAs<declaration::Field>(); field && field->inlineFunction() )
+                return std::tuple(field->inlineFunction(), field->fullyQualifiedID());
+        }
+
+        return {};
+    }
+
+    /**
      * Returns true if the given ID names a feature flag.
      *
      * @param id the ID to check
