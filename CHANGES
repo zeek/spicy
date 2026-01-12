@@ -1,3 +1,18 @@
+1.16.0-dev.8 | 2026-01-12 10:03:48 -0500
+
+  * Avoid lookahead in size benchmarks. (Evan Typanski, Corelight)
+
+  * Separate lookahead and size benchmarks. (Evan Typanski, Corelight)
+
+    Since the two benchmarks used the same `Inner`, they would get the same
+    interprocedural optimizations. This doesn't give the full picture about
+    how something changes, so separate them so that we can get a better
+    picture.
+
+    This definitely makes the benchmarks more "micro," but I believe that we
+    see more people using *either* lookahead *or* size, not both on the same
+    unit.
+
 1.16.0-dev.5 | 2026-01-12 14:51:21 +0100
 
   * Fix a typo. (Benjamin Bannier, Corelight)

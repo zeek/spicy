@@ -2,19 +2,23 @@
 
 module Benchmark;
 
-type Inner = unit {
-    b: b"A";
+type InnerSize = unit {
+    b: uint8;
 };
 
 public type UnitVectorSize = unit {
     length: uint64;
-    inner: Inner[] &size=self.length;
-    end_: b"END";
+    inner: InnerSize[] &size=self.length;
+    end_: bytes &size=3;
+};
+
+type InnerLookahead = unit {
+    b: b"A";
 };
 
 public type UnitVectorLookahead = unit {
     length: uint64;
-    inner: Inner[];
+    inner: InnerLookahead[];
     end_: b"END";
 };
 
