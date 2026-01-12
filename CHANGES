@@ -1,3 +1,30 @@
+1.16.0-dev.5 | 2026-01-12 14:51:21 +0100
+
+  * Fix a typo. (Benjamin Bannier, Corelight)
+
+  * Take operand constness into account in CFG construction. (Benjamin Bannier, Corelight)
+
+    When computing the CFG data access information we would previously
+    assume that any operator use would both read and write its operands,
+    e.g., we would assume that an equality check could write its operands.
+    Due to how we resolve operators of non-const operands this does reflect
+    what we see in many ASTs, but does not take into account when we
+    actually use an operand as const.
+
+    This patch adds handling of operators so that we can avoid recording
+    writes when the operand is used as const.
+
+  * Fix method signatures. (Benjamin Bannier, Corelight)
+
+    The methods claimed to not modify `self` when they did in fact do that.
+
+  * Add side effects to test. (Benjamin Bannier, Corelight)
+
+    This prevents removal of these operations should we ever (i.e., in a
+    following patch) detect them as having no effect of their own.
+
+  * Start of v1.16.0 development. (Benjamin Bannier, Corelight)
+
 1.15.0 | 2026-01-12 11:43:12 +0100
 
   * Add spicy-1.15 release notes. [skip CI] (Benjamin Bannier, Corelight)

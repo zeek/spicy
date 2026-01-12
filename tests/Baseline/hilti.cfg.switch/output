@@ -15,9 +15,9 @@ digraph {
     3 [label="x = 3;" xlabel="write: [x] gen: [x: x = 3;] kill: [x: local uint<64> x = 0] in: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] out: [_t_x: local uint<64> _t_x = 1, x: x = 3;]"];
     4 [label="x = 0;" xlabel="write: [x] gen: [x: x = 0;] kill: [x: local uint<64> x = 0] in: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] out: [_t_x: local uint<64> _t_x = 1, x: x = 0;]"];
     5 [label="local uint<64> _t_x = 1" xlabel="gen: [_t_x: local uint<64> _t_x = 1] in: [x: local uint<64> x = 0] out: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] keep"];
-    6 [label="_t_x == 1" xlabel="read: [_t_x] write: [_t_x] in: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] out: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] keep"];
-    7 [label="_t_x == 2" xlabel="read: [_t_x] write: [_t_x] in: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] out: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] keep"];
-    8 [label="_t_x == 3" xlabel="read: [_t_x] write: [_t_x] in: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] out: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] keep"];
+    6 [label="_t_x == 1" xlabel="read: [_t_x] in: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] out: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] keep"];
+    7 [label="_t_x == 2" xlabel="read: [_t_x] in: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] out: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] keep"];
+    8 [label="_t_x == 3" xlabel="read: [_t_x] in: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] out: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] keep"];
     9 [label=start shape=Mdiamond xlabel="in: [] out: []"];
     10 [label="end <...>/switch.hlt:6:24-14:1" shape=triangle xlabel="in: [] out: []"];
     11 [label="end <...>/switch.hlt:6:24-14:1" shape=triangle xlabel="kill: [_t_x: local uint<64> _t_x = 1, x: x = 0;, x = 1;, x = 2;, x = 3;] in: [_t_x: local uint<64> _t_x = 1, x: x = 0;, x = 1;, x = 2;, x = 3;] out: []"];
@@ -59,9 +59,9 @@ digraph {
     2 [label="x = 2;" xlabel="write: [x] gen: [x: x = 2;] kill: [x: local uint<64> x = 0] in: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] out: [_t_x: local uint<64> _t_x = 1, x: x = 2;]"];
     3 [label="x = 3;" xlabel="write: [x] gen: [x: x = 3;] kill: [x: local uint<64> x = 0] in: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] out: [_t_x: local uint<64> _t_x = 1, x: x = 3;]"];
     4 [label="local uint<64> _t_x = 1" xlabel="gen: [_t_x: local uint<64> _t_x = 1] in: [x: local uint<64> x = 0] out: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] keep"];
-    5 [label="_t_x == 1" xlabel="read: [_t_x] write: [_t_x] in: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] out: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] keep"];
-    6 [label="_t_x == 2" xlabel="read: [_t_x] write: [_t_x] in: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] out: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] keep"];
-    7 [label="_t_x == 3" xlabel="read: [_t_x] write: [_t_x] in: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] out: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] keep"];
+    5 [label="_t_x == 1" xlabel="read: [_t_x] in: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] out: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] keep"];
+    6 [label="_t_x == 2" xlabel="read: [_t_x] in: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] out: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] keep"];
+    7 [label="_t_x == 3" xlabel="read: [_t_x] in: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] out: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] keep"];
     8 [label=start shape=Mdiamond xlabel="in: [] out: []"];
     9 [label="end <...>/switch.hlt:16:38-23:1" shape=triangle xlabel="in: [] out: []"];
     10 [label="end <...>/switch.hlt:16:38-23:1" shape=triangle xlabel="kill: [_t_x: local uint<64> _t_x = 1, x: x = 1;, x = 2;, x = 3;] in: [_t_x: local uint<64> _t_x = 1, x: x = 1;, x = 2;, x = 3;] out: []"];
@@ -96,7 +96,7 @@ digraph {
     0 [label="local uint<64> x = 0" xlabel="gen: [x: local uint<64> x = 0] in: [] out: [x: local uint<64> x = 0]"];
     1 [label="x = 1;" xlabel="write: [x] gen: [x: x = 1;] kill: [x: local uint<64> x = 0] in: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] out: [_t_x: local uint<64> _t_x = 1, x: x = 1;]"];
     2 [label="local uint<64> _t_x = 1" xlabel="gen: [_t_x: local uint<64> _t_x = 1] in: [x: local uint<64> x = 0] out: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] keep"];
-    3 [label="_t_x == 1" xlabel="read: [_t_x] write: [_t_x] in: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] out: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] keep"];
+    3 [label="_t_x == 1" xlabel="read: [_t_x] in: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] out: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0] keep"];
     4 [label=start shape=Mdiamond xlabel="in: [] out: []"];
     5 [label="end <...>/switch.hlt:25:28-30:1" shape=triangle xlabel="in: [] out: []"];
     6 [label="end <...>/switch.hlt:25:28-30:1" shape=triangle xlabel="kill: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0, x = 1;] in: [_t_x: local uint<64> _t_x = 1, x: local uint<64> x = 0, x = 1;] out: []"];
