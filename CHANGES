@@ -1,3 +1,7 @@
+1.15.0 | 2026-01-12 11:43:12 +0100
+
+  * Add spicy-1.15 release notes. [skip CI] (Benjamin Bannier, Corelight)
+
 1.15.0-dev.189 | 2026-01-07 13:41:24 +0100
 
   * Extend our notion of reserved C++ identifiers. (Robin Sommer, Corelight)
