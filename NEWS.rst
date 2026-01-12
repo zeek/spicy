@@ -2,6 +2,17 @@ This following summarizes the most important changes in recent Spicy releases.
 For an exhaustive list of all changes, see the :repo:`CHANGES` file coming with
 the distribution.
 
+Version 1.16 (in progress)
+==========================
+
+.. rubric:: New Functionality
+
+.. rubric:: Changed Functionality
+
+.. rubric:: Bug fixes
+
+.. rubric:: Documentation
+
 Version 1.15
 ============
 
@@ -59,7 +70,7 @@ Version 1.15
 
 - GH-2218: Add FAQ for code optimizers can remove
 
-Version 1.14 (in progress)
+Version 1.14
 ==========================
 
 .. rubric:: New Functionality
