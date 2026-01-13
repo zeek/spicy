@@ -167,6 +167,9 @@ void ASTState::updateAST(const PassInfo& pinfo) {
 
 #ifndef NDEBUG
 void ASTState::checkAST(PassID pass_id) {
+    if ( context()->compilerContext()->options().skip_validation )
+        return;
+
     // In debug builds, we check the AST after each pass to enforce that it's
     // been left in good shape.
     util::timing::Collector _("hilti/compiler/optimizer/check-state");
