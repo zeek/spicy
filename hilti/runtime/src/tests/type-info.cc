@@ -203,6 +203,8 @@ TEST_CASE("no-emit fields") {
     // We shouldn't see this field when iterating.
     int count = std::ranges::distance(type_info::value::auxType<type_info::Struct>(v)->iterate(v));
     CHECK_EQ(count, 0);
+
+    // TODO: Add a test for seeing the field with a custom message.
 }
 
 TEST_SUITE_END();

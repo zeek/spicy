@@ -438,9 +438,9 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
 
             case OptSkipStdImports: _compiler_options.import_standard_modules = false; break;
 
-            case OptStrictPublicAPI: _compiler_options.strict_public_api = false; break;
+            case OptStrictPublicAPI: _compiler_options.strict_public_api = true; break;
 
-            case OptNoStrictPublicAPI: _compiler_options.strict_public_api = true; break;
+            case OptNoStrictPublicAPI: _compiler_options.strict_public_api = false; break;
 
             case 'h': usage(); return Nothing();
 

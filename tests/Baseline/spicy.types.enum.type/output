@@ -4,4 +4,4 @@ Y::Undef
 X::A1
 Y::B2
 Y::Undef
-[$x1=X::Undef, $x2=(not set), $y1=(not set)]
+[$x1=(optimized out), $x2=(optimized out), $y1=(optimized out)]

@@ -215,9 +215,9 @@ void SpicyDump::parseOptions(int argc, char** argv) {
                 driver_options.enable_profiling = true;
                 break;
 
-            case OptStrictPublicAPI: hilti_compiler_options.strict_public_api = false; break;
+            case OptStrictPublicAPI: hilti_compiler_options.strict_public_api = true; break;
 
-            case OptNoStrictPublicAPI: hilti_compiler_options.strict_public_api = true; break;
+            case OptNoStrictPublicAPI: hilti_compiler_options.strict_public_api = false; break;
 
             case 'h': usage(); exit(0);
 

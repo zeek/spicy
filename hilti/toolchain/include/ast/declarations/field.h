@@ -59,6 +59,22 @@ public:
     auto isStatic() const { return attributes()->find(hilti::attribute::kind::Static) != nullptr; }
     auto isNoEmit() const { return attributes()->find(hilti::attribute::kind::NoEmit) != nullptr; }
 
+    auto isNoEmitPrivate() const {
+        if ( auto* attrs = attributes()->find(hilti::attribute::kind::NoEmit);
+             attrs && *attrs->valueAsString() == "private" )
+            return true;
+        else
+            return false;
+    }
+
+    auto isNoEmitOptimized() const {
+        if ( auto* attrs = attributes()->find(hilti::attribute::kind::NoEmit);
+             attrs && *attrs->valueAsString() == "optimized" )
+            return true;
+        else
+            return false;
+    }
+
     /**
      * Returns the type that has been semantically linked to this field. The
      * resolver sets the linked type to the field's parent type.
