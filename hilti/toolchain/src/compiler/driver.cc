@@ -34,6 +34,8 @@ inline const DebugStream Driver("driver");
 constexpr int OptCxxLink = 1000;
 constexpr int OptCxxEnableDynamicGlobals = 1001;
 constexpr int OptSkipStdImports = 1002;
+constexpr int OptStrictPublicAPI = 1003;
+constexpr int OptNoStrictPublicAPI = 1004;
 
 static struct option long_driver_options[] =
     {{.name = "abort-on-exceptions", .has_arg = required_argument, .flag = nullptr, .val = 'A'},
@@ -62,6 +64,8 @@ static struct option long_driver_options[] =
      {.name = "skip-validation", .has_arg = no_argument, .flag = nullptr, .val = 'V'},
      {.name = "skip-dependencies", .has_arg = no_argument, .flag = nullptr, .val = 'S'},
      {.name = "skip-standard-imports", .has_arg = no_argument, .flag = nullptr, .val = OptSkipStdImports},
+     {.name = "strict-public-api", .has_arg = no_argument, .flag = nullptr, .val = OptStrictPublicAPI},
+     {.name = "no-strict-public-api", .has_arg = no_argument, .flag = nullptr, .val = OptNoStrictPublicAPI},
      {.name = "version", .has_arg = no_argument, .flag = nullptr, .val = 'v'},
      {.name = nullptr, .has_arg = 0, .flag = nullptr, .val = 0}};
 
@@ -133,6 +137,10 @@ void Driver::usage() {
            "produced HLTO file. Can be given multiple times.\n"
            "       --skip-standard-imports      Do not automatically import standard library modules (for debugging "
            "only).\n"
+           "       --strict-public-api          Skip optimizations that change the public C++ API of generated code.  "
+           "[default in debug builds]\n"
+           "       --no-strict-public-api       Allow optimizations that change the public C++ API of generated code. "
+           "[default in release builds]\n"
         << addl_usage
         << "\n"
            "Inputs can be "
@@ -430,6 +438,10 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
 
             case OptSkipStdImports: _compiler_options.import_standard_modules = false; break;
 
+            case OptStrictPublicAPI: _compiler_options.strict_public_api = false; break;
+
+            case OptNoStrictPublicAPI: _compiler_options.strict_public_api = true; break;
+
             case 'h': usage(); return Nothing();
 
             case '?':
@@ -467,6 +479,9 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
         if ( ! util::endsWith(_driver_options.output_path, ".hlto") )
             return error("output will be a precompiled object file and must have '.hlto' extension");
     }
+
+    if ( ! _compiler_options.strict_public_api.has_value() )
+        _compiler_options.strict_public_api = _compiler_options.debug; // be strict in debug builds by default
 
     return Nothing();
 }
