@@ -1,0 +1,154 @@
+# @TEST-DOC: Tests removing return values from tuples if unchanged
+#
+# @TEST-REQUIRES: which FileCheck
+# @TEST-EXEC: hiltic %INPUT -p | FileCheck %INPUT
+# @TEST-EXEC: hiltic %INPUT -dj
+
+module Test {
+
+import hilti;
+
+# Random global that gets used to mark as uses
+global glob = 0;
+
+function tuple<uint<64>, uint<64>, uint<64>, uint<64>> use_none(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4) {
+    return (p1, p2, p3, p4);
+}
+
+function tuple<uint<64>, uint<64>, uint<64>, uint<64>> use_one(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4) {
+    glob = p3;
+    return (p1, p2, p3, p4);
+}
+
+function tuple<uint<64>, uint<64>, uint<64>, uint<64>> use_two(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4) {
+    glob = p3 + p1;
+    return (p1, p2, p3, p4);
+}
+
+function tuple<uint<64>, uint<64>, uint<64>, uint<64>> use_two_out_of_order(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4) {
+    glob = p3 + p1;
+    return (p3, p1, p4, p2);
+}
+
+function tuple<uint<64>, uint<64>, uint<64>, uint<64>> use_two_with_two_different_uses(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4) {
+    glob = p3 + p1;
+    return (p1, p2, p3, p4);
+}
+
+function tuple<uint<64>, uint<64>> unrelated_param_and_return(uint<64> p1, uint<64> p2) {
+    return (p1, p2);
+}
+
+function tuple<uint<64>, uint<64>> flip(uint<64> p1, uint<64> p2) {
+    return (p2, p1);
+}
+
+type S = struct {
+    bool b;
+
+    method tuple<uint<64>, uint<64>, uint<64>, uint<64>> use_none(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4);
+    method tuple<uint<64>, uint<64>, uint<64>, uint<64>> use_one(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4);
+    method tuple<uint<64>, uint<64>, uint<64>, uint<64>> use_two(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4);
+    method tuple<uint<64>, uint<64>, uint<64>, uint<64>> passthrough(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4);
+    method tuple<uint<64>, uint<64>, uint<64>, uint<64>> passthrough1(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4);
+    method tuple<uint<64>, uint<64>, uint<64>, uint<64>> passthrough2(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4);
+
+    # This is basically an end-to-end test for parse functions
+    method tuple<uint<64>, uint<64>, uint<64>, uint<64>> parse_stage2(uint<64> not_returned, uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4);
+    method tuple<uint<64>, uint<64>, uint<64>, uint<64>> parse_stage1(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4);
+
+};
+
+method tuple<uint<64>, uint<64>, uint<64>, uint<64>> S::use_none(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4) {
+    return (p1, p2, p3, p4);
+}
+
+method tuple<uint<64>, uint<64>, uint<64>, uint<64>> S::passthrough(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4) {
+    return self.use_none(p1, p2, p3, p4);
+}
+
+method tuple<uint<64>, uint<64>, uint<64>, uint<64>> S::use_one(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4) {
+    glob = p3;
+    return (p1, p2, p3, p4);
+}
+
+method tuple<uint<64>, uint<64>, uint<64>, uint<64>> S::passthrough1(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4) {
+    return self.use_one(p1, p2, p3, p4);
+}
+
+method tuple<uint<64>, uint<64>, uint<64>, uint<64>> S::use_two(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4) {
+    glob = p3 + p1;
+    return (p1, p2, p3, p4);
+}
+
+method tuple<uint<64>, uint<64>, uint<64>, uint<64>> S::passthrough2(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4) {
+    return self.use_two(p1, p2, p3, p4);
+}
+
+method tuple<uint<64>, uint<64>, uint<64>, uint<64>> S::parse_stage2(uint<64> not_returned, uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4) {
+    glob = p1 + not_returned;
+    return (p1, p2, p3, p4);
+}
+
+method tuple<uint<64>, uint<64>, uint<64>, uint<64>> S::parse_stage1(uint<64> p1, uint<64> p2, uint<64> p3, uint<64> p4) {
+    local tuple<uint<64>, uint<64>, uint<64>, uint<64>> result_;
+    result_ = self.parse_stage2(10, p1, p2, p3, p4) ;
+    return result_;
+}
+
+function void test() {
+    local uint<64> x = 1;
+    local uint<64> y = 1;
+    local uint<64> z = 1;
+    local uint<64> a = 1;
+
+    # Simple cases
+    # CHECK: use_none()
+    # CHECK-NOT: = use_none(
+    (x, y, z, a) = use_none(x, y, z, a);
+    # CHECK: z = use_one(z)
+    (x, y, z, a) = use_one(x, y, z, a);
+    # CHECK: (x, z) = use_two(x, z)
+    (x, y, z, a) = use_two(x, y, z, a);
+
+    # p3 and p1 used, so x and z should stay, but it's a different order
+    # CHECK: (z, x) = use_two_out_of_order(x, z)
+    (z, x, a, y) = use_two_out_of_order(x, y, z, a);
+
+    # Two uses, one backwards and one forwards
+    # CHECK: (x, z) = use_two_with_two_different_uses(x, z)
+    (x, y, z, a) = use_two_with_two_different_uses(x, y, z, a);
+    # CHECK: (a, y) = use_two_with_two_different_uses(a, y)
+    (a, z, y, x) = use_two_with_two_different_uses(a, z, y, x);
+
+    # Since the parameter and return are unrelated, they should not be optimized.
+    # CHECK: (x, y) ={{.*}}unrelated_param_and_return(z, a)
+    (x, y) = unrelated_param_and_return(z, a);
+
+    # Flips the order of them so it shouldn't get optimized
+    # CHECK: (x, y) ={{.*}}flip(x, y)
+    (x, y) = flip(x, y);
+
+    # Methods and passthroughs
+    local S s = [$b = True];
+    # CHECK: s.passthrough()
+    (x, y, z, a) = s.passthrough(x, y, z, a);
+    # CHECK: z = s.passthrough1(z)
+    (x, y, z, a) = s.passthrough1(x, y, z, a);
+    # CHECK: (x, z) = s.passthrough2(x, z)
+    (x, y, z, a) = s.passthrough2(x, y, z, a);
+
+    # Basically end-to-end test
+    # CHECK: x = s.parse_stage1(x)
+    (x, y, z, a) = s.parse_stage1(x, y, z, a);
+
+    # Use the variables again so nothing funky happens
+    hilti::print(x);
+    hilti::print(y);
+    hilti::print(z);
+    hilti::print(a);
+}
+
+test();
+
+}

@@ -2,35 +2,15 @@
 
 #include <hilti/ast/builder/builder.h>
 #include <hilti/base/logger.h>
+#include <hilti/compiler/detail/optimizer/collector-callers.h>
+#include <hilti/compiler/detail/optimizer/optimizer.h>
 #include <hilti/compiler/detail/optimizer/pass.h>
-
-#include "compiler/detail/optimizer/optimizer.h"
 
 using namespace hilti;
 using namespace hilti::detail;
 using namespace hilti::detail::optimizer;
 
 namespace {
-
-/** Collects a mapping of all call operators to their uses. */
-struct CollectorCallers : public optimizer::visitor::Collector {
-    using optimizer::visitor::Collector::Collector;
-
-    // Maps the call operator to the places where's been used.
-    using Callers = std::map<const Operator*, std::vector<expression::ResolvedOperator*>>;
-    Callers callers;
-
-    const Callers::mapped_type* uses(const Operator* x) const {
-        if ( ! callers.contains(x) )
-            return nullptr;
-
-        return &callers.at(x);
-    }
-
-    void operator()(operator_::function::Call* n) final { callers[&n->operator_()].push_back(n); }
-
-    void operator()(operator_::struct_::MemberCall* n) final { callers[&n->operator_()].push_back(n); }
-};
 
 /** Collects function parameters not used within the function body. */
 struct CollectorUnusedParameters : public optimizer::visitor::Collector {
@@ -108,17 +88,6 @@ struct CollectorUnusedParameters : public optimizer::visitor::Collector {
         }
     }
 
-    std::optional<std::tuple<const type::Function*, ID>> enclosingFunction(const Node* n) const {
-        for ( const auto* current = n->parent(); current; current = current->parent() ) {
-            if ( const auto* fn_decl = current->tryAs<declaration::Function>() )
-                return std::tuple(fn_decl->function()->ftype(), fn_decl->functionID(context()));
-            else if ( const auto* field = current->tryAs<declaration::Field>(); field && field->inlineFunction() )
-                return std::tuple(field->inlineFunction()->ftype(), field->fullyQualifiedID());
-        }
-
-        return {};
-    }
-
     void operator()(declaration::Function* n) final {
         auto function_id = n->functionID(context());
 
@@ -185,17 +154,17 @@ struct CollectorUnusedParameters : public optimizer::visitor::Collector {
     }
 
     void operator()(expression::Name* n) final {
-        auto opt_enclosing_fn = enclosingFunction(n);
+        auto opt_enclosing_fn = hilti::detail::Optimizer::enclosingFunction(context(), n);
         if ( ! opt_enclosing_fn )
             return;
 
-        auto [ftype, function_id] = *opt_enclosing_fn;
+        auto [func, function_id] = *opt_enclosing_fn;
 
         auto& unused = unused_params.at(function_id);
         if ( unused.size() == 0 )
             return;
 
-        removeUsed(ftype, function_id, n);
+        removeUsed(func->ftype(), function_id, n);
     }
 };
 

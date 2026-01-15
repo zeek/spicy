@@ -595,7 +595,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         }
 
         if ( func->ftype()->result()->type()->isA<type::Void>() ) {
-            if ( n->expression() )
+            if ( n->expression() && ! n->expression()->type()->type()->isA<type::Void>() )
                 error("void function cannot return a value", n);
         }
         else {

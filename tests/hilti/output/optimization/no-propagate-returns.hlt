@@ -1,0 +1,55 @@
+# @TEST-DOC: Ensures certain patterns do not get their returns propagated.
+#
+# @TEST-REQUIRES: which FileCheck
+# @TEST-EXEC: hiltic %INPUT -p | FileCheck %INPUT
+# @TEST-EXEC: hiltic %INPUT -dj
+
+module Test {
+
+import hilti;
+
+# Random global that gets used to mark as uses
+global glob = 0;
+
+# Ensure multiple returns with different order don't propagate
+function tuple<uint<64>, uint<64>> multiple_rets(uint<64> flag, uint<64> p1, uint<64> p2) {
+    if ( flag == 0 )
+        return (p2, p1);
+
+    return (p1, p2);
+}
+
+# Ensure if two parameters are the same it doesn't propagate
+function tuple<uint<64>, uint<64>> same_param(uint<64> p1, uint<64> p2) {
+    return (p1, p2);
+}
+
+# Ensure changed inout variables stay
+function tuple<uint<64>, uint<64>> inout_param(inout uint<64> p1, inout uint<64> p2) {
+    p2 = 10;
+    return (p1, p2);
+}
+
+function void test() {
+    local uint<64> x = 1;
+    local uint<64> y = 1;
+    local uint<64> z = 1;
+    local uint<64> a = 1;
+
+    # CHECK: (x, y) ={{.*}}multiple_rets(0, x, y)
+    (x, y) = multiple_rets(0, x, y);
+    # CHECK: (y, y) ={{.*}}same_param(y, y)
+    (y, y) = same_param(y, y);
+    # CHECK: y ={{.*}}inout_param(y)
+    (x, y) = inout_param(x, y);
+
+    # Use the variables again so nothing funky happens
+    hilti::print(x);
+    hilti::print(y);
+    hilti::print(z);
+    hilti::print(a);
+}
+
+test();
+
+}
