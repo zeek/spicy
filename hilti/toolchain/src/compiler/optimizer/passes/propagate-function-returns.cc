@@ -164,6 +164,21 @@ struct CollectorPlacements : public optimizer::visitor::Collector {
             }
         }
 
+        // If any are the same param, be safe and remove both.
+        std::map<ID, int> id_counts;
+
+        // Gather number of occurrences of each ID in the placements.
+        for ( const auto& opt_id : result ) {
+            if ( opt_id )
+                id_counts[*opt_id]++;
+        }
+
+        // Remove duplicate placement IDs.
+        for ( auto& opt_id : result ) {
+            if ( opt_id && id_counts[*opt_id] > 1 )
+                opt_id = {};
+        }
+
         return result;
     }
 
