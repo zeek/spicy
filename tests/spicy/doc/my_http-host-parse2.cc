@@ -32,9 +32,9 @@ int main(int argc, char** argv) {
     hlt_my_http::MyHTTP::RequestLine::parse2(request, stream, {}, {});
 
     // Access fields.
-    std::cout << "method : " << *request->method << std::endl;
-    std::cout << "uri    : " << *request->uri << std::endl;
-    std::cout << "version: " << *(*request->version)->number << std::endl;
+    std::cout << "method : " << *request->method << '\n';
+    std::cout << "uri    : " << *request->uri << '\n';
+    std::cout << "version: " << *request->version->number << '\n';
 
     // Wrap up runtime libraries.
     spicy::rt::done();

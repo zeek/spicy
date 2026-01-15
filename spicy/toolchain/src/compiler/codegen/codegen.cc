@@ -93,6 +93,31 @@ struct VisitorASTInfo : public visitor::PreOrder {
             }
         }
     }
+
+    void operator()(hilti::type::StrongReference* n) final {
+        if ( auto* t = n->dereferencedType()->type(); t->isA<type::Unit>() )
+            info->units_with_references.insert(t->canonicalID());
+    }
+
+    void operator()(hilti::type::ValueReference* n) final {
+        if ( auto* t = n->dereferencedType()->type(); t->isA<type::Unit>() )
+            info->units_with_references.insert(t->canonicalID());
+    }
+
+    void operator()(hilti::type::WeakReference* n) final {
+        if ( auto* t = n->dereferencedType()->type(); t->isA<type::Unit>() )
+            info->units_with_references.insert(t->canonicalID());
+    }
+
+    void operator()(hilti::declaration::Parameter* n) final {
+        if ( n->kind() == hilti::parameter::Kind::InOut ) {
+            if ( auto* t = n->type()->type(); t->isA<type::Unit>() )
+                // For historical reasons, `inout` unit parameters are expected
+                // to be wrapped into a reference, so mark them as such so that
+                // they will gain a `value_ref` wrapping.
+                info->units_with_references.insert(t->canonicalID());
+        }
+    }
 };
 
 // Visitor that runs over each module's AST at the beginning of their
@@ -143,7 +168,6 @@ struct VisitorPass1 : public visitor::MutatingPostOrder {
         auto* qstruct = builder()->qualifiedType(struct_, n->type()->constness());
 
         n->setType(context(), qstruct);
-        n->addAttribute(context(), builder()->attribute(hilti::attribute::kind::OnHeap));
 
         if ( info->uses_sync_advance.contains(u->typeID()) )
             // Unit has an implementation of `%sync_advance`, so add feature
@@ -153,6 +177,23 @@ struct VisitorPass1 : public visitor::MutatingPostOrder {
                                                             builder()->stringLiteral("uses_sync_advance")));
 
         cg->recordTypeMapping(u, struct_);
+
+        auto* unit_decl = u->typeDeclaration();
+        const auto& dependent_decls = context()->dependentDeclarations(unit_decl);
+
+        const bool add_on_heap =
+            // Add &on-heap attribute to types that are wrapped into an
+            // explicit, Spicy-level reference anywhere.
+            info->units_with_references.contains(n->canonicalID()) ||
+
+            // Add &on-heap to types that are recursively self-referencing.
+            // Without, we couldn't express the type at the C++ level.
+            dependent_decls.contains(unit_decl);
+
+        if ( add_on_heap ) {
+            recordChange(n, hilti::util::fmt("marking struct type %s as %%on-heap", n->canonicalID()));
+            n->attributes()->add(context(), builder()->attribute(hilti::attribute::kind::OnHeap));
+        }
 
         recordChange(n, "replaced unit type with struct");
     }

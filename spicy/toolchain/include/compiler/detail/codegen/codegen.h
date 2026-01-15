@@ -32,6 +32,7 @@ class ParserBuilder;
 struct ASTInfo {
     std::set<ID> uses_sync_advance; // type ID of units implementing %sync_advance
     std::set<uint64_t> look_aheads_in_use;
+    std::set<ID> units_with_references; // IDs of all unit types that are wrapped into a reference somewhere
 };
 
 } // namespace codegen
