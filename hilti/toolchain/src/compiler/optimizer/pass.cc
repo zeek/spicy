@@ -73,7 +73,18 @@ void optimizer::visitor::Mutator::recordChange(const Node* old, const std::strin
     hilti::visitor::MutatingVisitorBase::recordChange(old, msg);
 }
 
+optimizer::Registry::Registry() {
+    if ( auto disabled = rt::getenv("HILTI_DISABLE_OPTIMIZER_PASSES"); disabled && ! disabled->empty() ) {
+        auto range = util::split(*disabled, ":") | std::views::transform([](const auto& p) { return util::trim(p); });
+        _disabled_passes = std::set(range.begin(), range.end());
+    }
+}
+
 void optimizer::Registry::register_(PassInfo pinfo) {
     assert(! _pinfos.contains(pinfo));
-    _pinfos.emplace(pinfo);
+
+    if ( ! _disabled_passes.contains(to_string(pinfo.id)) )
+        _pinfos.emplace(pinfo);
+    else
+        HILTI_DEBUG(logging::debug::Optimizer, util::fmt("skipping disabled optimizer pass %s", to_string(pinfo.id)));
 }
