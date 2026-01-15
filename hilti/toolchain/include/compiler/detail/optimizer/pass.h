@@ -175,6 +175,9 @@ private:
 // Class for global registry of available optimizer passes.
 class Registry {
 public:
+    /** Constructor. */
+    Registry();
+
     /**
      * Returns a set of all optimizer passes registered so far, sorted by their
      * order.
@@ -191,6 +194,7 @@ public:
 
 private:
     std::set<PassInfo> _pinfos;
+    std::set<std::string> _disabled_passes;
 };
 
 /** Returns the global pass registry singleton. */

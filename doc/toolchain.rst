@@ -72,6 +72,9 @@ control the compilation process:
         ``HILTI_CXX_INCLUDE_DIRS`` will be searched for headers before any
         header search paths implicit in Spicy C++ compilation.
 
+    ``HILTI_DISABLE_OPTIMIZER_PASSES``
+        Colon-separated list of optimizer passes to disable.
+
     ``HILTI_JIT_PARALLELISM``
         Set to specify the maximum number of background compilation jobs to run
         during JIT. Defaults to number of cores.
