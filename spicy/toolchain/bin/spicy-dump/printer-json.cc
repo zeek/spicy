@@ -103,20 +103,23 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
 
             const auto* struct_ = type.struct_;
 
-            for ( const auto& [f, y] : struct_->iterate(v) ) {
-                if ( ! y )
-                    // Field not set.
+            for ( const auto& [f, y] : struct_->iterate(v, false, true) ) {
+                if ( f.isEmitted() && ! y )
                     continue;
 
                 if ( f.type->tag == TypeInfo::Bitfield && f.isAnonymous() ) {
                     // Special case anonymous bitfield: map field to into current array.
+                    assert(f.isEmitted());
                     for ( const auto& [b, val] : f.type->bitfield->iterate(y) )
                         j[b.name] = convert(val);
 
                     continue;
                 }
 
-                j[f.name] = convert(y);
+                if ( f.isEmitted() )
+                    j[f.name] = convert(y);
+                else // TODO: Do want to print not-emitted values? Do want an option for that?
+                    j[f.name] = "(optimized out)";
             }
 
             if ( const auto* field_offsets = spicy::rt::get_offsets_for_unit(*struct_, v);
@@ -124,6 +127,9 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
                 auto json_map = json::object();
 
                 for ( const auto& field : struct_->fields() ) {
+                    if ( ! field.get().isEmitted() )
+                        continue;
+
                     auto offsets = field_offsets->get_optional(field.get().name);
                     if ( ! offsets )
                         continue;

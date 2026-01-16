@@ -387,7 +387,10 @@ std::string cxx::type::Struct::str() const {
                         fmt_bitfield(x); // special-case bitfield printing
                     else {
                         auto id = (x->isAnonymous() ? cxx::ID("<anon>") : x->id);
-                        to_string_fields.emplace_back(fmt(R"("$%s=" + hilti::rt::to_string(%s))", id, x->id));
+                        if ( x->emitted )
+                            to_string_fields.emplace_back(fmt(R"("$%s=" + hilti::rt::to_string(%s))", id, x->id));
+                        else
+                            to_string_fields.emplace_back(fmt(R"#("$%s=(optimized out)")#", id));
                     }
                 }
             }

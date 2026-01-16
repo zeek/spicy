@@ -1,0 +1,45 @@
+# @TEST-EXEC: hiltic -d --no-strict-public-api -D optimizer-passes -p %INPUT  >output.hlt 2>debug.log
+# @TEST-EXEC: hiltic -d --no-strict-public-api -j %INPUT  >output
+# @TEST-EXEC: cat debug.log | awk '/Struct variables/{p=1; next} p==1 && !/     /{ exit; } p==1{print}' >debug.log.tmp && mv debug.log.tmp debug.log
+# @TEST-EXEC: btest-diff debug.log
+# @TEST-EXEC: btest-diff output.hlt
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Ensure unused struct fields are properly removed by the optimizer.
+
+module Test {
+
+import hilti;
+
+type Foo = struct {
+    string name;
+    string nick;
+    Bar bar;
+
+    method void f() { }
+};
+
+type Bar  = struct {
+    string title &optional;
+};
+
+type X = struct {
+    value_ref<Foo> foo;
+
+    method void x() {}
+};
+
+global Foo foo;
+
+foo.name = "Hello, World!";
+foo.bar.title = "Greetings";
+(foo.bar.title, foo.name) = ("X", "Y");
+
+unset foo.bar.title;
+
+global value_ref<X> ref;
+(*ref).foo.f();
+
+hilti::print(foo);
+
+}
