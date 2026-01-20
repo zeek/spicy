@@ -1,3 +1,87 @@
+1.16.0-dev.25 | 2026-01-20 17:41:16 -0500
+
+  * Include optimizer header when used. (Evan Typanski, Corelight)
+
+    This header had a bit of messiness, and that's an important header.
+
+  * Do not propagate returns if same name and test. (Evan Typanski, Corelight)
+
+  * GH-2031: Add function return propagation. (Evan Typanski, Corelight)
+
+    Closes #2031
+
+    This optimization aims to reduce the amount of tuples propagated through
+    Spicy parsers. Many of the parse functions get a parameter, then return
+    the unchanged parameter. This adds unnecessary work, as we have to
+    construct a tuple at the end with the parameter, even though it does
+    nothing.
+
+    The general form is this transformation:
+
+    function tuple<uint<64>, uint<64>> f(uint<64> x, uint<64> y) {
+      return (x, y);
+    }
+    global x = 0, y = 1;
+    (x, y) = f(x, y);
+
+    Turns into:
+
+    function void f() {
+      return;
+    }
+    global x = 0, y = 1;
+    f();
+
+    In order for this to actually apply to real parsers, there is an extra
+    consideration: sometimes there is a second function in the middle, like:
+
+    function tuple<uint<64>, uint<64>> f(uint<64> x, uint<64> y) {
+      return (x, y);
+    }
+    function tuple<uint<64>, uint<64>> passthrough(uint<64> x, uint<64> y) {
+      return f(x, y);
+    }
+
+    Then, something will call passthrough, not f. For this case, we need a
+    concept of passthroughs, where we check the *passthroughs* uses instead
+    of the particular function we are optimizing.
+
+    This can often make the parsing functions only pass around `_t_error`,
+    which means that the tuple is no longer constructed at all. Many others
+    will never use lookahead, so they get to only a 2-element tuple, which
+    may make a significant impact. Any sufficiently complex Spicy parser
+    would likely not see much change.
+
+    This also aligns more with what a user would expect when reading the
+    code, giving a nice simplification.
+
+  * Remove unnecessary quote include. (Evan Typanski, Corelight)
+
+  * Move callers optimizer collector to header. (Evan Typanski, Corelight)
+
+    This way, we can reuse it, namely in the function return propagation.
+
+  * Allow void functions to return void expressions. (Evan Typanski, Corelight)
+
+    This is needed if we remove an expression in a return.
+
+  * Move `enclosingFunction` to the optimizer. (Evan Typanski, Corelight)
+
+  * Propagate variable that is immediately returned. (Evan Typanski, Corelight)
+
+    This will propagate the `result` variable in cases like:
+
+    ```
+    result = my_method_call();
+    return result;
+    ```
+
+    into:
+
+    ```
+    return my_method_call();
+    ```
+
 1.16.0-dev.16 | 2026-01-20 09:47:15 +0100
 
   * Apply `&on-heap` selectively only where needed. (Robin Sommer, Corelight)

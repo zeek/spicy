@@ -4,6 +4,7 @@
 
 #include <hilti/ast/builder/builder.h>
 #include <hilti/base/logger.h>
+#include <hilti/compiler/detail/optimizer/optimizer.h>
 #include <hilti/compiler/detail/optimizer/pass.h>
 
 using namespace hilti;

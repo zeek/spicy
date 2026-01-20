@@ -288,6 +288,22 @@ public:
             return _parent->parent<T>();
     }
 
+    /*
+     * Returns if this node matches the path in order of template types.
+     *
+     * @tparam Args the parent types to match, starting from immediate parent
+     * @return whether this node has parents of those types
+     */
+    template<typename... Args>
+    bool pathMatches() const {
+        const Node* current = this;
+        return (([&]() {
+                    current = current->parent();
+                    return current && current->isA<Args>();
+                }()) &&
+                ...);
+    }
+
     /**
      * Returns the length of the AST path to the current node from the AST's
      * root. If the node is part of an AST, returns a number >= 1. If it is not

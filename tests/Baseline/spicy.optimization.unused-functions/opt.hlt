@@ -7,26 +7,26 @@ import spicy_rt;
 public type B = struct {
     spicy_rt::Parser _t_parser &static &internal &needed-by-feature="supports_filters" &always-emit;
     optional<hilti::RecoverableFailure> _t_error &always-emit &internal;
-    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_parse_stage1(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error);
+    method optional<hilti::RecoverableFailure> _t_parse_stage1(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error);
     method view<stream> parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
     method view<stream> parse2(inout value_ref<B> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
     method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
-    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_parse_foo__B_stage2(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error);
+    method optional<hilti::RecoverableFailure> _t_parse_foo__B_stage2(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error);
 };
 type C = struct {
     optional<hilti::RecoverableFailure> _t_error &always-emit &internal;
-    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_parse_stage1(copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error);
-    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_parse_foo__C_stage2(copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error);
+    method optional<hilti::RecoverableFailure> _t_parse_stage1(copy optional<hilti::RecoverableFailure> _t_error);
+    method optional<hilti::RecoverableFailure> _t_parse_foo__C_stage2(copy optional<hilti::RecoverableFailure> _t_error);
 };
 public type D = struct {
     C _anon &optional &anonymous &no-emit;
     spicy_rt::Parser _t_parser &static &internal &needed-by-feature="supports_filters" &always-emit;
     optional<hilti::RecoverableFailure> _t_error &always-emit &internal;
-    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_parse_stage1(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error);
+    method optional<hilti::RecoverableFailure> _t_parse_stage1(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error);
     method view<stream> parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
     method view<stream> parse2(inout value_ref<D> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
     method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;
-    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_parse_foo__D_stage2(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error);
+    method optional<hilti::RecoverableFailure> _t_parse_foo__D_stage2(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error);
 };
 
 const bool _t_feat%foo@@A%uses_offset = False;
@@ -76,19 +76,17 @@ public function void f2() {
 init function void _t_register_foo_A() {
 }
 
-method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::B::_t_parse_stage1(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error) {
+method optional<hilti::RecoverableFailure> foo::B::_t_parse_stage1(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error) {
     # "<...>/unused-functions.spicy:21:17-21:23"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result();
     hilti::debugIndent("spicy");
     local iterator<stream> _t_begin_ = begin(_t_cur);
-    _t_result = (*self)._t_parse_foo__B_stage2(_t_data, _t_begin_, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error);
-    return _t_result;
+    return (*self)._t_parse_foo__B_stage2(_t_data, _t_begin_, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error);
 }
 
-method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::B::_t_parse_foo__B_stage2(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error) {
+method optional<hilti::RecoverableFailure> foo::B::_t_parse_foo__B_stage2(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error) {
     # "<...>/unused-functions.spicy:21:17-21:23"
     hilti::debugDedent("spicy");
-    return (_t_cur, _t_lah, _t_lahe, _t_error);
+    return _t_error;
 }
 
 method view<stream> foo::B::parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
@@ -101,7 +99,7 @@ method view<stream> foo::B::parse1(inout value_ref<stream> _t_data, optional<vie
     # "<...>/unused-functions.spicy:21:17-21:23"
 
     # Begin parsing production: Unit: foo__B ->
-    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__B ->
 
     if ( _t_error ) 
@@ -121,7 +119,7 @@ method view<stream> foo::B::parse3(inout value_ref<spicy_rt::ParsedUnit> _t_guni
     # "<...>/unused-functions.spicy:21:17-21:23"
 
     # Begin parsing production: Unit: foo__B ->
-    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__B ->
 
     if ( _t_error ) 
@@ -139,7 +137,7 @@ method view<stream> foo::B::parse2(inout value_ref<B> _t_unit, inout value_ref<s
     # "<...>/unused-functions.spicy:21:17-21:23"
 
     # Begin parsing production: Unit: foo__B ->
-    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__B ->
 
     if ( _t_error ) 
@@ -153,45 +151,40 @@ init function void _t_register_foo_B() {
     spicy_rt::registerParser(foo::B::_t_parser, $scope, Null);
 }
 
-method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::C::_t_parse_stage1(copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error) {
+method optional<hilti::RecoverableFailure> foo::C::_t_parse_stage1(copy optional<hilti::RecoverableFailure> _t_error) {
     # "<...>/unused-functions.spicy:24:10-24:16"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result();
     hilti::debugIndent("spicy");
-    local iterator<stream> _t_begin_ = begin(_t_cur);
-    _t_result = (*self)._t_parse_foo__C_stage2(_t_cur, _t_lah, _t_lahe, _t_error);
-    return _t_result;
+    return (*self)._t_parse_foo__C_stage2(_t_error);
 }
 
-method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::C::_t_parse_foo__C_stage2(copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error) {
+method optional<hilti::RecoverableFailure> foo::C::_t_parse_foo__C_stage2(copy optional<hilti::RecoverableFailure> _t_error) {
     # "<...>/unused-functions.spicy:24:10-24:16"
     hilti::debugDedent("spicy");
-    return (_t_cur, _t_lah, _t_lahe, _t_error);
+    return _t_error;
 }
 
 init function void _t_register_foo_C() {
 }
 
-method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::D::_t_parse_stage1(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error) {
+method optional<hilti::RecoverableFailure> foo::D::_t_parse_stage1(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error) {
     # "<...>/unused-functions.spicy:25:17-27:1"
-    local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result();
     hilti::debugIndent("spicy");
     local iterator<stream> _t_begin_ = begin(_t_cur);
-    _t_result = (*self)._t_parse_foo__D_stage2(_t_data, _t_begin_, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error);
-    return _t_result;
+    return (*self)._t_parse_foo__D_stage2(_t_data, _t_begin_, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error);
 }
 
-method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::D::_t_parse_foo__D_stage2(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error) {
+method optional<hilti::RecoverableFailure> foo::D::_t_parse_foo__D_stage2(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error) {
     # "<...>/unused-functions.spicy:25:17-27:1"
     local C _t_transient__anon;
     # "<...>/unused-functions.spicy:24:10-24:16"
 
     # Begin parsing production: Unit: foo__C_2 ->
     _t_transient__anon = default<C>();
-    (_t_cur, _t_lah, _t_lahe, _t_error) = _t_transient__anon._t_parse_stage1(_t_cur, _t_lah, _t_lahe, _t_error);
+    _t_error = _t_transient__anon._t_parse_stage1(_t_error);
     # End parsing production: Unit: foo__C_2 ->
 
     hilti::debugDedent("spicy");
-    return (_t_cur, _t_lah, _t_lahe, _t_error);
+    return _t_error;
 }
 
 method view<stream> foo::D::parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
@@ -204,7 +197,7 @@ method view<stream> foo::D::parse1(inout value_ref<stream> _t_data, optional<vie
     # "<...>/unused-functions.spicy:25:17-27:1"
 
     # Begin parsing production: Unit: foo__D -> Resolved_5
-    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__D -> Resolved_5
 
     if ( _t_error ) 
@@ -224,7 +217,7 @@ method view<stream> foo::D::parse3(inout value_ref<spicy_rt::ParsedUnit> _t_guni
     # "<...>/unused-functions.spicy:25:17-27:1"
 
     # Begin parsing production: Unit: foo__D -> Resolved_5
-    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__D -> Resolved_5
 
     if ( _t_error ) 
@@ -242,7 +235,7 @@ method view<stream> foo::D::parse2(inout value_ref<D> _t_unit, inout value_ref<s
     # "<...>/unused-functions.spicy:25:17-27:1"
 
     # Begin parsing production: Unit: foo__D -> Resolved_5
-    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__D -> Resolved_5
 
     if ( _t_error ) 

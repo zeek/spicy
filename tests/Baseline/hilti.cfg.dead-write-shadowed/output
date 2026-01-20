@@ -25,6 +25,7 @@
 [debug/optimizer]       - deleting function state: f
 [debug/optimizer] pass: constant-propagation (round 1, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 1, pass iteration 1)
+[debug/optimizer] pass: propagate-function-returns (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 2, pass iteration 1)
 [debug/optimizer]     * function changed: f
 [debug/optimizer]   [dead-write-shadowed.hlt:10:19-18:1] statement::Expression "2;" -> null (removing unused expression result)
@@ -47,6 +48,7 @@
 [debug/optimizer]       - deleting function state: f
 [debug/optimizer] pass: constant-propagation (round 2, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 2, pass iteration 1)
+[debug/optimizer] pass: propagate-function-returns (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 3, pass iteration 1)
 [debug/optimizer]     * function changed: f
 [debug/optimizer]   [dead-write-shadowed.hlt:10:19-18:1] statement::Expression "10;" -> null (removing unused expression result)
@@ -62,12 +64,14 @@
 [debug/optimizer] pass: dead-code-cfg (round 3, pass iteration 1)
 [debug/optimizer] pass: constant-propagation (round 3, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 3, pass iteration 1)
+[debug/optimizer] pass: propagate-function-returns (round 3, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 4, pass iteration 1)
 [debug/optimizer] pass: peephole (round 4, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 4, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 4, pass iteration 1)
 [debug/optimizer] pass: constant-propagation (round 4, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 4, pass iteration 1)
+[debug/optimizer] pass: propagate-function-returns (round 4, pass iteration 1)
 [debug/cfg-final] Module 'Test'
 digraph {
     0 [label="f();" xlabel="in: [] out: [] keep"];
