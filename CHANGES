@@ -1,3 +1,28 @@
+1.16.0-dev.16 | 2026-01-20 09:47:15 +0100
+
+  * Apply `&on-heap` selectively only where needed. (Robin Sommer, Corelight)
+
+    Previously, we would attach `&on-heap` to any `struct` compiled from a
+    Spicy `unit`. Now we only attach it only for specific cases that need it,
+    moving state to the stack otherwise.
+
+  * Prepare for moving parser temporaries to the stack. (Robin Sommer, Corelight)
+
+    The parser generator is creating temporaries at a few places that will
+    then later receive parsed values. Currently, those temporaries are
+    always simply of the type being parsed. Turns out that works for
+    units/structs only because we're always wrapping them into
+    `value_ref`, meaning we can create those temporaries as null values.
+    However, in a subsequent commit, we will get rid of those wrappings in
+    some cases, meaning the structs would need to be default initialized
+    at the time they are created on the stack. That doesn't work for some
+    struct types though: if a struct receives parameters, we would need to
+    pass them at instantiation time, but for these temporaries we don't
+    know parameters at that point. So to prepare for the upcoming change,
+    this commit wraps such struct values types into `optional<>`.
+
+  * Skip optimizer consistency checks with `--skip-validation`. (Robin Sommer, Corelight)
+
 1.16.0-dev.12 | 2026-01-14 18:23:48 +0100
 
   * Bump 3rdparty/utfcpp from `7079562` to `cfc9112` (dependabot[bot])
