@@ -21,6 +21,7 @@ enum PassID {
     ConstantPropagation,
     RemoveUnusedParameters,
     PropagateFunctionReturns,
+    MoveIDs,
 };
 
 namespace detail {
@@ -33,6 +34,7 @@ constexpr util::enum_::Value<PassID> PassIDs[] = {
     {.value = PassID::RemoveUnusedParameters, .name = "remove-unused-parameters"},
     {.value = PassID::FlattenBlocks, .name = "flatten-blocks"},
     {.value = PassID::PropagateFunctionReturns, .name = "propagate-function-returns"},
+    {.value = PassID::MoveIDs, .name = "move-ids"},
 };
 }
 
