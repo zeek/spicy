@@ -320,8 +320,8 @@ struct Visitor : hilti::visitor::PreOrder {
                 if ( const auto& block = last_stmt->tryAs<statement::Block>(); block && ! block->statements().empty() )
                     last_stmt = block->statements().back();
 
-                if ( ! (last_stmt->isA<statement::Break>() || last_stmt->isA<statement::Continue>() ||
-                        last_stmt->isA<statement::Return>() || last_stmt->isA<statement::Throw>()) )
+                if ( ! (last_stmt
+                            ->isAnyOf<statement::Break, statement::Continue, statement::Return, statement::Throw>()) )
                     cases.back().second.addStatement("break");
             }
 
@@ -378,7 +378,7 @@ struct Visitor : hilti::visitor::PreOrder {
         };
 
         static auto is_integral_type = [](const UnqualifiedType* t) {
-            return t->isA<type::Enum>() || t->isA<type::SignedInteger>() || t->isA<type::UnsignedInteger>();
+            return t->isAnyOf<type::Enum, type::SignedInteger, type::UnsignedInteger>();
         };
 
         static auto is_integral_and_constant_value = [](const Expression* e) {

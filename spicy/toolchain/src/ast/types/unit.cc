@@ -18,8 +18,7 @@ using namespace spicy;
 using namespace spicy::type;
 
 static Node* itemByNameBackend(spicy::type::unit::Item* i, const ID& id) {
-    if ( i->id() == id &&
-         (i->isA<unit::item::Field>() || i->isA<unit::item::Variable>() || i->isA<unit::item::Sink>()) )
+    if ( i->id() == id && (i->isAnyOf<unit::item::Field, unit::item::Variable, unit::item::Sink>()) )
         return i;
 
     if ( auto* x = i->tryAs<unit::item::Switch>() ) {
