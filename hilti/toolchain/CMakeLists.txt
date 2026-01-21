@@ -119,6 +119,7 @@ set(SOURCES
     src/compiler/optimizer/passes/dead-code-static.cc
     src/compiler/optimizer/passes/feature-requirements.cc
     src/compiler/optimizer/passes/flatten-blocks.cc
+    src/compiler/optimizer/passes/move-last-uses.cc
     src/compiler/optimizer/passes/peephole.cc
     src/compiler/optimizer/passes/propagate-function-returns.cc
     src/compiler/optimizer/passes/remove-unused-fields.cc

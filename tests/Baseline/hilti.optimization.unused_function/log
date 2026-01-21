@@ -22,6 +22,9 @@
 [debug/optimizer]     -> modified
 [debug/optimizer]     * module changed: Foo
 [debug/optimizer]     * module changed: Foo
+[debug/optimizer] pass: move-last-uses (round 1, pass iteration 1)
+[debug/optimizer] pass: move-last-uses (round 2, pass iteration 1)
+[debug/optimizer] pass: move-last-uses (round 3, pass iteration 1)
 [debug/optimizer] pass: peephole (round 1, pass iteration 1)
 [debug/optimizer] pass: peephole (round 2, pass iteration 1)
 [debug/optimizer] pass: peephole (round 3, pass iteration 1)

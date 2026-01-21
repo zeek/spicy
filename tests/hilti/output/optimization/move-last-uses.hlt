@@ -1,0 +1,107 @@
+# @TEST-DOC: Tests move-last-uses optimization
+#
+# @TEST-REQUIRES: which FileCheck
+# @TEST-EXEC: hiltic %INPUT -p -o out.hlt
+# @TEST-EXEC: FileCheck %INPUT < out.hlt
+#
+# Make sure it runs with output
+# @TEST-EXEC: hiltic %INPUT -j >output
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+import hilti;
+
+global glob = 0;
+
+public type S = struct {
+    uint<64> i;
+
+    # Some methods for testing
+    method void nothing();
+    method void takes_self(S s);
+};
+
+method void S::nothing() {
+    hilti::print(self.i);
+}
+
+method void S::takes_self(S s) {
+    hilti::print(s.i);
+}
+
+public function void take_one(S s) {
+    hilti::print(s.i);
+}
+
+# Same thing, but different name to differentiate the two
+public function void take_one_again(S s) {
+    hilti::print(s.i);
+}
+
+public function void take_two(S s1, S s2) {
+    hilti::print(s1.i);
+    hilti::print(s2.i);
+}
+
+function void f() {
+    local S one = [$i = 1];
+    # CHECK: take_one(move(one))
+    take_one(one);
+
+    local S two = [$i = 2];
+
+    # Both ends of if terminate it
+    if (glob == 0)
+        # CHECK: take_one(move(two))
+        take_one(two);
+    else
+        # CHECK: take_one_again(move(two))
+        take_one_again(two);
+
+    # Move only the last occurrence
+    local S three = [$i = 3];
+    # CHECK: take_one(three)
+    take_one(three);
+    # CHECK-NEXT: take_one_again(three)
+    take_one_again(three);
+    # CHECK-NEXT: take_one(move(three))
+    take_one(three);
+
+    local S four = [$i = 4];
+    # No moves if there are multiple in a call: ordering is up to compiler
+    # CHECK: take_two(four, four)
+    take_two(four, four);
+
+    local S five = [$i = 5];
+    # If there's already a move, make sure the other case doesn't get moved
+    # CHECK: take_two(five, move(five))
+    take_two(five, move(five));
+
+    local S six = [$i = 6];
+    # Same but the move is first, don't move the second.
+    # CHECK: take_two(move(six), six)
+    take_two(move(six), six);
+
+    local S seven = [$i = 7];
+    local S eight = [$i = 8];
+    # Can move both if they're different
+    # CHECK: take_two(move(seven), move(eight))
+    take_two(seven, eight);
+
+    # Methods can move the LHS
+    local S nine = [$i = 9];
+    # CHECK: move(nine).nothing()
+    nine.nothing();
+
+    local S ten = [$i = 10];
+    # Technically the first ten will always execute first, and second could be
+    # moved. This is from C++17 P0145R3. But, do not rely on that. It's brittle.
+    # Thus, neither should move.
+    # CHECK: ten.takes_self(ten)
+    ten.takes_self(ten);
+}
+
+f();
+
+}

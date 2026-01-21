@@ -13,7 +13,7 @@
 [hilti-trace] : spicy_rt::printParserState("Mini::Test", _t_data, begin(_t_ncur), _t_ncur, 0, _t_lahead_end, "default", True, _t_error);
 [hilti-trace] : hilti::debug("spicy-verbose", "- parsing production: Unit: Mini__Test -> f1 f2");
 [hilti-trace] : hilti::debugIndent("spicy-verbose");
-[hilti-trace] : (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+[hilti-trace] : (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*move(_t_unit))._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, move(_t_lahead), _t_lahead_end, _t_error);
 [hilti-trace] : # "<...>/debug-trace.spicy:8:20-13:1"
 [hilti-trace] : hilti::debug("spicy", "Mini::Test");
 [hilti-trace] : hilti::debugIndent("spicy");
@@ -41,7 +41,7 @@
 [hilti-trace] : hilti::debug("spicy", "f1 = %s" % _t_v_f1);
 [hilti-trace] : hilti::debug("spicy-verbose", "- setting field 'f1' to '%s'" % _t_v_f1);
 [hilti-trace] : (*self)._t_error = _t_error;
-[hilti-trace] debug-trace.spicy:10:5-10:33: : (*self)._t_on_f1(_t_v_f1);
+[hilti-trace] debug-trace.spicy:10:5-10:33: : (*self)._t_on_f1(move(_t_v_f1));
 [hilti-trace] debug-trace.spicy:10:18-10:31: : hilti::print((*self).f1, True);
 [hilti-trace] : _t_error = (*self)._t_error;
 [hilti-trace] : local uint<8> _t_v_f2;
@@ -61,7 +61,7 @@
 [hilti-trace] : hilti::debug("spicy", "f2 = %s" % _t_v_f2);
 [hilti-trace] : hilti::debug("spicy-verbose", "- setting field 'f2' to '%s'" % _t_v_f2);
 [hilti-trace] : (*self)._t_error = _t_error;
-[hilti-trace] debug-trace.spicy:11:5-11:33: : (*self)._t_on_f2(_t_v_f2);
+[hilti-trace] debug-trace.spicy:11:5-11:33: : (*self)._t_on_f2(move(_t_v_f2));
 [hilti-trace] debug-trace.spicy:11:18-11:31: : hilti::print((*self).f2, True);
 [hilti-trace] : _t_error = (*self)._t_error;
 [hilti-trace] : (*self)._t_error = _t_error;

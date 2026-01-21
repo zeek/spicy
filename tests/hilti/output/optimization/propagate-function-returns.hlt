@@ -144,6 +144,7 @@ function void test() {
     (x, y, z, a) = s.parse_stage1(x, y, z, a);
 
     # Use the variables again so nothing funky happens
+    hilti::print(s);
     hilti::print(x);
     hilti::print(y);
     hilti::print(z);
