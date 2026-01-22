@@ -370,8 +370,12 @@ std::string cxx::type::Struct::str() const {
         if ( ! x->isAnonymous() )
             out = fmt(R"("$%s=("s + )", x->id.local());
 
-        out += fmt("::hilti::rt::bitfield::detail::render(%s, %s, %s)", x->id, *x->typeinfo_bitfield,
-                   (x->isAnonymous() ? "true" : "false"));
+        if ( x->emitted )
+            out += fmt("::hilti::rt::bitfield::detail::render(%s, %s, %s)", x->id, *x->typeinfo_bitfield,
+                       (x->isAnonymous() ? "true" : "false"));
+        else
+            out += fmt("::hilti::rt::bitfield::detail::renderNotEmitted(%s, %s)", *x->typeinfo_bitfield,
+                       (x->isAnonymous() ? "true" : "false"));
 
         if ( ! x->isAnonymous() )
             out += "+ \")\"";
@@ -387,7 +391,10 @@ std::string cxx::type::Struct::str() const {
                         fmt_bitfield(x); // special-case bitfield printing
                     else {
                         auto id = (x->isAnonymous() ? cxx::ID("<anon>") : x->id);
-                        to_string_fields.emplace_back(fmt(R"("$%s=" + hilti::rt::to_string(%s))", id, x->id));
+                        if ( x->emitted )
+                            to_string_fields.emplace_back(fmt(R"("$%s=" + hilti::rt::to_string(%s))", id, x->id));
+                        else
+                            to_string_fields.emplace_back(fmt(R"#("$%s=(optimized out)")#", id));
                     }
                 }
             }
@@ -396,7 +403,8 @@ std::string cxx::type::Struct::str() const {
             // explicit "init" expression. Those that do will be initialized
             // through our constructors.
             cxx::Expression init = x->init ? "" : "{}";
-            return fmt("%s%s;", fmtDeclaration(x->id, x->type, x->args, x->linkage, {}), init);
+            return fmt("%s%s%s;", (x->emitted ? "" : "// "), fmtDeclaration(x->id, x->type, x->args, x->linkage, {}),
+                       init);
         }
 
         if ( auto x = std::get_if<declaration::Function>(&f) ) {
@@ -451,7 +459,7 @@ std::string cxx::type::Struct::str() const {
 
         auto locals_user = members | std::views::filter([](const auto& m) {
                                auto l = std::get_if<declaration::Local>(&m);
-                               return l && ! l->isInternal();
+                               return l && l->emitted && ! l->isInternal();
                            });
 
         if ( ! locals_user.empty() ) {
@@ -498,12 +506,12 @@ std::string cxx::type::Struct::code() const {
 
     auto locals_user = members | std::views::filter([](const auto& m) {
                            auto l = std::get_if<declaration::Local>(&m);
-                           return l && ! l->isInternal();
+                           return l && l->emitted && ! l->isInternal();
                        });
 
     auto locals_non_user = members | std::views::filter([](const auto& m) {
                                auto l = std::get_if<declaration::Local>(&m);
-                               return l && l->isInternal();
+                               return l && l->emitted && l->isInternal();
                            });
 
     auto init_locals_user = [&]() {
