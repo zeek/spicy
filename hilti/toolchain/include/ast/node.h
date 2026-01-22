@@ -637,6 +637,21 @@ public:
     }
 
     /**
+     * Clears the child at a given index. The child pointer at that index will
+     * be set to null.
+     *
+     * @param idx index of child to clear
+     * @return the old child that was cleared, which will be detached from the AST
+     */
+    Node* clearChild(size_t idx) {
+        auto* old = _children[idx];
+        old->_parent = nullptr;
+        old->release();
+        _children[idx] = nullptr;
+        return old;
+    }
+
+    /**
      * Replaces *all* children with a new set children. The function operates
      * like first removing all children, and then adding all the new ones in
      * the same order, with the same semantics for parent pointering and

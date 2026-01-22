@@ -84,7 +84,7 @@ namespace {
 // Helper to detect whether `operand` is used as a `const` argument to a given `operator_`.
 bool isConstOperand(const expression::ResolvedOperator* operator_, const Expression* expr) {
     auto get_kind = [&]() -> std::optional<parameter::Kind> {
-        auto kind_from_oplist = [&](Expression* operand, size_t i) -> std::optional<parameter::Kind> {
+        auto kind_from_oplist = [&](Expression* operand, int i) -> std::optional<parameter::Kind> {
             if ( ! operand )
                 return {};
 
@@ -102,7 +102,7 @@ bool isConstOperand(const expression::ResolvedOperator* operator_, const Express
                     const auto& value = tuple->value();
                     if ( auto it = std::ranges::find(value, expr); it != value.end() ) {
                         if ( auto* operands = d->type()->type()->tryAs<type::OperandList>() )
-                            op = operands->operand(std::distance(value.begin(), it));
+                            op = operands->operand(static_cast<int>(std::distance(value.begin(), it)));
                     }
                 }
 
@@ -112,7 +112,7 @@ bool isConstOperand(const expression::ResolvedOperator* operator_, const Express
             return {};
         };
 
-        for ( size_t i = 0; i < operator_->operands().size(); ++i ) {
+        for ( int i = 0; std::cmp_less(i, operator_->operands().size()); ++i ) {
             if ( auto* op = operator_->operands()[i] )
                 if ( auto kind = kind_from_oplist(op, i) )
                     return kind;
