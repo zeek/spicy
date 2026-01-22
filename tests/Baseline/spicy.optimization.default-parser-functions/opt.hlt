@@ -14,7 +14,7 @@ public type P1 = struct {
     method optional<hilti::RecoverableFailure> _t_parse_foo__P1_stage2(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error);
 };
 public type P2 = struct {
-    uint<8> x &optional;
+    uint<8> x &optional &no-emit="optimized";
     uint<8> y &optional;
     spicy_rt::Parser _t_parser &static &internal &needed-by-feature="supports_filters" &always-emit;
     optional<hilti::RecoverableFailure> _t_error &always-emit &internal;
@@ -158,7 +158,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
     # Begin parsing production: Variable: x   -> uint<8>
     spicy_rt::waitForInput(_t_data, _t_cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:17:8-17:12", Null);
-    ((*self).x, _t_cur) = (*unpack<uint<8>>((_t_cur, hilti::ByteOrder::Network)));
+    (_t_cur) = ({local tuple<uint<8>, view<stream>> _t_elem = (*unpack<uint<8>>((_t_cur, hilti::ByteOrder::Network)));} (_t_elem[1]));
 
     if ( _t_trim ) 
         (*_t_data).trim(begin(_t_cur));
