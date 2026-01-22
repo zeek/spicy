@@ -44,6 +44,7 @@
 #include <hilti/ast/operator.h>
 #include <hilti/ast/operators/function.h>
 #include <hilti/ast/operators/struct.h>
+#include <hilti/ast/operators/union.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/statement.h>
 #include <hilti/ast/statements/assert.h>
@@ -820,6 +821,10 @@ struct DataflowVisitor : visitor::PreOrder {
             if ( type && type->isAliasingType() )
                 transfer.maybe_alias.insert(decl);
         }
+
+        else if ( node->isA<operator_::struct_::MemberNonConst>() || node->isA<operator_::struct_::MemberConst>() ||
+                  node->isA<operator_::union_::MemberNonConst>() || node->isA<operator_::union_::MemberConst>() )
+            transfer.read.insert(decl);
 
         else if ( node->isA<statement::Return>() || node->isA<expression::LogicalOr>() ||
                   node->isA<expression::LogicalAnd>() || node->isA<expression::LogicalNot>() ||

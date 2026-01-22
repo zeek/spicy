@@ -1,0 +1,20 @@
+# @TEST-EXEC: hiltic -p -o /dev/null -D cfg-initial %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module foo {
+
+type Foo = struct {
+    bool x;
+};
+
+public function void f() {
+    local Foo f;
+    f.x;
+    g(f);
+}
+
+function void g(Foo f) {
+    assert f.x;
+}
+
+}
