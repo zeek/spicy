@@ -2769,9 +2769,10 @@ hilti::Attributes ParserBuilder::removeGenericParseAttributes(hilti::AttributeSe
     // vs field-specific. So this best-effort weeding out attributes that
     // field-specific code usually doesn't need to care about.
     static std::unordered_set<hilti::attribute::Kind> generic_attributes = {
-        attribute::kind::Convert,  attribute::kind::Default,     attribute::kind::Eod,       attribute::kind::MaxSize,
-        attribute::kind::Optional, attribute::kind::ParseAt,     attribute::kind::ParseFrom, attribute::kind::Requires,
-        attribute::kind::Size,     attribute::kind::Synchronize, attribute::kind::Try,
+        attribute::kind::AlwaysEmit, attribute::kind::Convert,     attribute::kind::Default,
+        attribute::kind::Eod,        attribute::kind::MaxSize,     attribute::kind::Optional,
+        attribute::kind::ParseAt,    attribute::kind::ParseFrom,   attribute::kind::Requires,
+        attribute::kind::Size,       attribute::kind::Synchronize, attribute::kind::Try,
     };
 
     hilti::Attributes filtered;

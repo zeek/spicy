@@ -8,6 +8,7 @@
 #include <hilti/ast/expression.h>
 #include <hilti/ast/type.h>
 
+#include <spicy/ast/attribute.h>
 #include <spicy/ast/types/unit-item.h>
 
 namespace spicy::type::unit::item {

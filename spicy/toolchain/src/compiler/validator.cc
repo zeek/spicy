@@ -46,15 +46,30 @@ std::unordered_map<node::Tag, std::unordered_set<hilti::attribute::Kind>> allowe
     {hilti::node::tag::type::Unit,
      {attribute::kind::ByteOrder, attribute::kind::Convert, attribute::kind::Size, attribute::kind::MaxSize,
       attribute::kind::Requires}},
-    {hilti::node::tag::type::unit::item::Variable, {attribute::kind::Optional}},
+    {hilti::node::tag::type::unit::item::Variable, {hilti::attribute::kind::AlwaysEmit, attribute::kind::Optional}},
     {hilti::node::tag::type::unit::item::Field,
-     {attribute::kind::Count,       attribute::kind::Convert,        attribute::kind::Chunked,
-      attribute::kind::Synchronize, attribute::kind::Size,           attribute::kind::ParseAt,
-      attribute::kind::MaxSize,     attribute::kind::ParseFrom,      attribute::kind::Type,
-      attribute::kind::Until,       attribute::kind::UntilIncluding, attribute::kind::While,
-      attribute::kind::IPv4,        attribute::kind::IPv6,           attribute::kind::Eod,
-      attribute::kind::ByteOrder,   attribute::kind::BitOrder,       attribute::kind::Requires,
-      attribute::kind::Try,         attribute::kind::Nosub,          attribute::kind::Default}},
+     {hilti::attribute::kind::AlwaysEmit,
+      attribute::kind::Count,
+      attribute::kind::Convert,
+      attribute::kind::Chunked,
+      attribute::kind::Synchronize,
+      attribute::kind::Size,
+      attribute::kind::ParseAt,
+      attribute::kind::MaxSize,
+      attribute::kind::ParseFrom,
+      attribute::kind::Type,
+      attribute::kind::Until,
+      attribute::kind::UntilIncluding,
+      attribute::kind::While,
+      attribute::kind::IPv4,
+      attribute::kind::IPv6,
+      attribute::kind::Eod,
+      attribute::kind::ByteOrder,
+      attribute::kind::BitOrder,
+      attribute::kind::Requires,
+      attribute::kind::Try,
+      attribute::kind::Nosub,
+      attribute::kind::Default}},
     {hilti::node::tag::type::unit::item::Block,
      {attribute::kind::Size, attribute::kind::ParseAt, attribute::kind::ParseFrom}},
     {hilti::node::tag::type::unit::item::Switch,
@@ -78,9 +93,10 @@ std::unordered_map<node::Tag, std::unordered_set<hilti::attribute::Kind>> allowe
 };
 
 std::unordered_set<hilti::attribute::Kind> allowed_attributes_for_any_field =
-    {attribute::kind::Synchronize, attribute::kind::Convert, attribute::kind::Requires,
-     attribute::kind::Default,     attribute::kind::Size,    attribute::kind::MaxSize,
-     attribute::kind::Try,         attribute::kind::ParseAt, attribute::kind::ParseFrom};
+    {hilti::attribute::kind::AlwaysEmit, attribute::kind::Synchronize, attribute::kind::Convert,
+     attribute::kind::Requires,          attribute::kind::Default,     attribute::kind::Size,
+     attribute::kind::MaxSize,           attribute::kind::Try,         attribute::kind::ParseAt,
+     attribute::kind::ParseFrom};
 
 bool isEnumType(QualifiedType* t, const char* expected_id) {
     return t->type()->typeID() && t->type()->typeID() == ID(expected_id);

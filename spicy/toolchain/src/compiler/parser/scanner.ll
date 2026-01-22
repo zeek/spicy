@@ -62,7 +62,7 @@ doc_field    [ \t]*##<[^\n]*\n?
 doc_text     [ \t]*##[^\n]*\n?
 comment      [ \t]*#[^#\n]*\n?
 
-attribute \&(bit-order|byte-order|chunked|convert|count|cxxname|cxx-any-as-ptr|default|eod|internal|ipv4|ipv6|hilti_type|length|max-size|no-emit|nosub|on-heap|optional|originator|parse-at|parse-from|requires|responder|size|static|synchronize|transient|try|type|until|until-including|while|have_prototype)
+attribute \&(always-emit|bit-order|byte-order|chunked|convert|count|cxxname|cxx-any-as-ptr|default|eod|internal|ipv4|ipv6|hilti_type|length|max-size|no-emit|nosub|on-heap|optional|originator|parse-at|parse-from|requires|responder|size|static|synchronize|transient|try|type|until|until-including|while|have_prototype)
 property  %(byte-order|context|cxx-include|debug|description|done|error|filter|mime-type|orig|port|random-access|resp|s_default|skip|skip-implementation|skip-post|skip-pre|spicy-version|sync-advance-block-size|synchronize-after|synchronize-at)
 
 blank     [ \t]
