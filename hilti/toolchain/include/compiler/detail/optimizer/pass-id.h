@@ -21,18 +21,20 @@ enum PassID {
     ConstantPropagation,
     RemoveUnusedParameters,
     PropagateFunctionReturns,
+    RemoveUnusedFields,
 };
 
 namespace detail {
 constexpr util::enum_::Value<PassID> PassIDs[] = {
-    {.value = PassID::FeatureRequirements, .name = "feature-requirements"},
-    {.value = PassID::DeadCodeStatic, .name = "dead-code-static"},
-    {.value = PassID::Peephole, .name = "peephole"},
-    {.value = PassID::DeadCodeCFG, .name = "dead-code-cfg"},
     {.value = PassID::ConstantPropagation, .name = "constant-propagation"},
-    {.value = PassID::RemoveUnusedParameters, .name = "remove-unused-parameters"},
+    {.value = PassID::DeadCodeCFG, .name = "dead-code-cfg"},
+    {.value = PassID::DeadCodeStatic, .name = "dead-code-static"},
+    {.value = PassID::FeatureRequirements, .name = "feature-requirements"},
     {.value = PassID::FlattenBlocks, .name = "flatten-blocks"},
+    {.value = PassID::Peephole, .name = "peephole"},
     {.value = PassID::PropagateFunctionReturns, .name = "propagate-function-returns"},
+    {.value = PassID::RemoveUnusedFields, .name = "remove-unused-fields"},
+    {.value = PassID::RemoveUnusedParameters, .name = "remove-unused-parameters"},
 };
 }
 

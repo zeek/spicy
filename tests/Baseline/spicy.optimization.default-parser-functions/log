@@ -19,9 +19,13 @@
 [debug/optimizer]       - deleting function state: foo::P2::_t_parse_foo__P2_stage2
 [debug/optimizer]       - deleting function state: foo::P2::_t_parse_foo__P2_stage2
 [debug/optimizer]       - deleting function state: foo::P2::_t_parse_foo__P2_stage2
+[debug/optimizer]       - deleting function state: foo::P2::_t_parse_foo__P2_stage2
 [debug/optimizer]       - deleting function state: foo::P2::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::P2::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::P2::_t_parse_stage1
+[debug/optimizer]       - deleting module state: foo
+[debug/optimizer]       - deleting module state: foo
+[debug/optimizer]       - deleting module state: foo
 [debug/optimizer]       - deleting module state: foo
 [debug/optimizer]       - deleting module state: foo
 [debug/optimizer]       - deleting module state: foo
@@ -549,6 +553,11 @@
 [debug/optimizer] pass: propagate-function-returns (round 3, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 4, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 5, pass iteration 1)
+[debug/optimizer] pass: remove-unused-fields (round 1, pass iteration 1)
+[debug/optimizer] pass: remove-unused-fields (round 2, pass iteration 1)
+[debug/optimizer] pass: remove-unused-fields (round 3, pass iteration 1)
+[debug/optimizer] pass: remove-unused-fields (round 4, pass iteration 1)
+[debug/optimizer] pass: remove-unused-fields (round 5, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 1, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 2, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 3, pass iteration 1)
