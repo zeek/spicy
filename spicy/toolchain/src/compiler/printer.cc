@@ -92,5 +92,10 @@ struct VisitorPrinter : visitor::PreOrder {
 bool spicy::detail::printer::print(hilti::printer::Stream& stream, Node* root) {
     hilti::util::timing::Collector _("spicy/printer");
 
+    if ( ! root ) {
+        stream << "<null>";
+        return true;
+    }
+
     return visitor::dispatch(VisitorPrinter(stream), root, [](const auto& v) { return v.result; });
 }
