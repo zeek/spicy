@@ -227,6 +227,9 @@ public:
     /** Removes all attributes of the given kind. */
     void remove(const attribute::Kind& kind);
 
+    /** Removes a specific attribute from the set. */
+    void remove(Attribute* a) { removeChild(a); }
+
     /** Returns true if the set has at least one element. */
     operator bool() const { return ! attributes().empty(); }
 

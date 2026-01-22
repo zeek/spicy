@@ -18,6 +18,19 @@ public:
 
     QualifiedType* type() const final { return child<QualifiedType>(0); }
 
+    /**
+     * Removes an element from the tuple.
+     *
+     * @param i index of the element to remove
+     * @return the removed expression, now detached from the AST
+     */
+    Expression* removeElement(int i) {
+        assert(i >= 0 && i < children().size() - 1);
+        auto* old = child<Expression>(i + 1);
+        old->removeFromParent();
+        return old;
+    }
+
     void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
 
     static auto create(ASTContext* ctx, const Expressions& exprs, Meta meta = {}) {

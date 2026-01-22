@@ -94,8 +94,8 @@ public:
     auto operands() const { return children<operand_list::Operand>(0, {}); }
 
     /** Returns the operand at the given index. */
-    auto operand(size_t i) const {
-        assert(i < children().size());
+    auto operand(int i) const {
+        assert(i >= 0 && i < children().size());
         return child<operand_list::Operand>(i);
     }
 
