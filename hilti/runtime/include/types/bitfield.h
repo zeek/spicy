@@ -113,6 +113,30 @@ inline std::string render(const hilti::rt::Optional<Bitfield<Ts...>>& x, const h
     return out;
 }
 
+// Helper for the HILTI codegen to render a bitfield value that's not stored
+// but has been optimized out.
+template<typename... Ts>
+inline std::string renderNotEmitted(const hilti::rt::TypeInfo* type_info, bool is_anonymous = false) {
+    if ( ! type_info )
+        return "<uninitialized bitfield>";
+
+    if ( ! is_anonymous )
+        return fmt("optimized out");
+
+    std::string out;
+
+    Bitfield<Ts...> empty(type_info);
+    type_info::Value bitfield(&empty, type_info);
+    for ( const auto& b : type_info->bitfield->bits() ) {
+        if ( ! out.empty() )
+            out += ", ";
+
+        out += fmt("$%s=(optimized out)", b.name);
+    }
+
+    return out;
+}
+
 } // namespace bitfield::detail
 
 namespace detail::adl {

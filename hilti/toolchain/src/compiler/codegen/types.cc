@@ -107,10 +107,8 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                 }
 
                 for ( const auto& f : n->fields() ) {
-                    if ( f->isNoEmit() )
-                        continue;
-
                     if ( auto* ft = f->type()->type()->tryAs<type::Function>() ) {
+                        assert(! f->isNoEmit());
                         auto d = cg->compile(f, ft, declaration::Linkage::Struct, f->attributes());
 
                         if ( f->isStatic() )
@@ -214,6 +212,26 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
 
                     if ( f->isOptional() )
                         t = fmt("::hilti::rt::Optional<%s>", t);
+
+                    if ( f->isNoEmit() ) {
+                        if ( const auto& no_emit = f->isNoEmitOptimized() ) {
+                            auto x = cxx::declaration::Local(cxx::ID(f->id()), std::move(t),
+                                                             cxx::declaration::Local::NotEmittedTag());
+
+                            if ( f->type()->type()->isA<type::Bitfield>() )
+                                x.typeinfo_bitfield = cg->typeInfo(f->type());
+
+                            fields.emplace_back(std::move(x));
+                        }
+                        else if ( f->isNoEmitPrivate() ) {
+                            // We completely skip non-emitted private fields.
+                        }
+                        else
+                            // `&no-emit` must be either optimized or private.
+                            hilti::rt::cannot_be_reached();
+
+                        continue;
+                    }
 
                     std::optional<cxx::Expression> default_;
 
@@ -930,7 +948,7 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
             if ( f->type()->type()->isA<type::Function>() )
                 continue;
 
-            if ( f->isStatic() )
+            if ( f->isStatic() || f->isNoEmitPrivate() )
                 continue;
 
             std::string accessor;
@@ -951,8 +969,8 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
                 offset = "std::ptrdiff_t{-1}";
 
             fields.push_back(fmt("::hilti::rt::type_info::struct_::Field{ \"%s\", %s, %s, %s, %s, %s%s }", f->id(),
-                                 cg->typeInfo(f->type()), offset, f->isInternal(), f->isAnonymous(), ! f->isNoEmit(),
-                                 accessor));
+                                 cg->typeInfo(f->type()), offset, f->isInternal(), f->isAnonymous(),
+                                 (f->isNoEmit() ? "false" : "true"), accessor));
         }
 
         result = fmt("::hilti::rt::type_info::Struct(std::vector<::hilti::rt::type_info::struct_::Field>({%s}))",

@@ -4,4 +4,5 @@
 Test::Foo {
   x: 15
   y: 15
+  z: (unset)
 }
