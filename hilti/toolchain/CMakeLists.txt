@@ -122,6 +122,7 @@ set(SOURCES
     src/compiler/optimizer/passes/flatten-blocks.cc
     src/compiler/optimizer/passes/peephole.cc
     src/compiler/optimizer/passes/propagate-function-returns.cc
+    src/compiler/optimizer/passes/remove-unused-fields.cc
     src/compiler/optimizer/passes/remove-unused-params.cc
     src/compiler/parser/driver.cc
     src/compiler/plugin.cc

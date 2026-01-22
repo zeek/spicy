@@ -1,0 +1,80 @@
+# @TEST-EXEC: hiltic -d --no-strict-public-api -D optimizer-passes -p %INPUT  >output.hlt 2>debug.log
+# @TEST-EXEC: hiltic -d --no-strict-public-api -j %INPUT  >output
+# @TEST-EXEC: echo "----" >>output
+# @TEST-EXEC: cat debug.log | awk '/Struct variables/{p=1; next} p==1 && !/     /{ exit; } p==1{print}' >>output
+# @TEST-EXEC: echo "----" >>output
+# @TEST-EXEC: cat output.hlt >>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Ensure unused struct fields are properly removed by the optimizer.
+
+module Test {
+
+import hilti;
+
+function string f() {
+    return "f()";
+}
+
+function tuple<uint<64>, string> t() {
+    return (42, "t()");
+}
+
+type X = struct {
+    string not_accessed_at_all &optional; # optimized away
+    string not_accessed_at_all_either_but_always_emit &always-emit &optional; # kept
+
+    string only_reads &optional &default=""; # optimized away
+    string only_reads_no_default &optional; # optimized away
+    string only_writes &optional &default=f(); # optimized away; non-constant default counts as a write access
+};
+
+type ExportedType = struct {
+    string not_accessed_at_all_but_type_is_exported; # kept
+};
+
+export ExportedType;
+
+public function void member_const(X x) {
+    assert x.only_reads == ""; # read access
+}
+
+public function void member_non_const(inout X x) {
+    assert x.only_reads == ""; # read access
+    x.only_writes = "write"; # write access
+}
+
+global X x = [$only_writes="X"]; # write access through ctor
+global uint<64> tmp;
+
+assert x.only_reads == ""; # read access
+assert ! x?.only_reads; # read access
+assert x.?only_reads == ""; # read access
+
+x.only_writes = "write"; # write access
+(x.only_writes, ) = ("write", ); # write access
+
+(tmp, x.only_writes) = (42, f()); # write access; RHS side could have side effect
+(tmp, x.only_writes) = t(); # write access; RHS side is not a tuple constant
+
+unset x.only_reads; # unset access
+unset x.only_writes; # unset access
+
+try {
+    assert x.only_reads_no_default == ""; # read access; triggers exception
+} catch ( hilti::Exception e ) {
+    hilti::print(("1", e.description()));
+}
+
+try {
+    assert x.?only_reads_no_default == ""; # read access; triggers exception
+} catch ( hilti::Exception e ) {
+    hilti::print(("2", e.description()));
+}
+
+hilti::print(x);
+
+global ExportedType y;
+hilti::print(y);
+
+}

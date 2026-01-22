@@ -406,7 +406,7 @@ std::vector<T> concat(std::vector<T> v1, const std::vector<T>& v2) {
 template<typename T, std::ranges::input_range R>
 std::vector<T>& append(std::vector<T>& v1, R&& v2) {
     v1.reserve(v1.size() + v2.size());
-    v1.insert(v1.end(), v2.begin(), v2.end());
+    v1.insert(v1.end(), std::ranges::begin(v2), std::ranges::end(v2));
     return v1;
 }
 
