@@ -1172,6 +1172,11 @@ void printer::print(std::ostream& out, Node* root, bool compact, bool user_visib
 void printer::Stream::_print(Node* root) {
     util::timing::Collector _("hilti/printer");
 
+    if ( ! root ) {
+        (*this) << "<null>";
+        return;
+    }
+
     for ( const auto& p : plugin::registry().plugins() ) {
         if ( ! p.ast_print )
             continue;
