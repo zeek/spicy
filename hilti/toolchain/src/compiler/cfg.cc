@@ -828,7 +828,7 @@ struct DataflowVisitor : visitor::PreOrder {
 
         else if ( node->isA<statement::Return>() || node->isA<expression::LogicalOr>() ||
                   node->isA<expression::LogicalAnd>() || node->isA<expression::LogicalNot>() ||
-                  node->isA<expression::Name>() )
+                  node->isA<expression::Name>() || node->isA<statement::Assert>() )
             // Simply flows a value but does not generate or kill any.
             transfer.read.insert(decl);
 
