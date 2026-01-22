@@ -13,6 +13,7 @@ using hilti::attribute::Kind;
 // attribute already. Since attributes compare by name, any attribute defined
 // here will be considered equal to a HILTI one bearing the same name.
 
+const Kind AlwaysEmit("&always-emit");
 const Kind Anonymous("&anonymous");
 const Kind BitOrder("&bit-order");
 const Kind ByteOrder("&byte-order");
