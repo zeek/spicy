@@ -637,6 +637,30 @@ public:
     }
 
     /**
+     * Clears the child at a given index. The child pointer at that index will
+     * be set to null.
+     *
+     * @param i zero-based index of the child, in the order they were passed
+     * into the constructor and/or added; a negative index counts Python-style
+     * from the end
+     * @return the old child that was cleared, which will be detached from the
+     * AST; will return null if the child was out of range.
+     */
+    Node* clearChild(int i) {
+        if ( i < 0 )
+            i = static_cast<int>(_children.size()) + i;
+
+        if ( std::cmp_greater_equal(i, _children.size()) )
+            return nullptr;
+
+        auto* old = _children[i];
+        old->_parent = nullptr;
+        old->release();
+        _children[i] = nullptr;
+        return old;
+    }
+
+    /**
      * Replaces *all* children with a new set children. The function operates
      * like first removing all children, and then adding all the new ones in
      * the same order, with the same semantics for parent pointering and

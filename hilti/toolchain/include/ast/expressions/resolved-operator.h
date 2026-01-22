@@ -39,6 +39,27 @@ public:
     void setOp1(ASTContext* ctx, Expression* e) { setChild(ctx, 2, e); }
     void setOp2(ASTContext* ctx, Expression* e) { setChild(ctx, 3, e); }
 
+    /**
+     * Removes operand 0. The operand will be null afterwards.
+     *
+     * @return the removed expression, now detached from the AST
+     */
+    Expression* removeOp0() { return clearChild(1)->as<Expression>(); }
+
+    /**
+     * Removes operand 1. The operand will be null afterwards.
+     *
+     * @return the removed expression, now detached from the AST
+     */
+    Expression* removeOp1() { return clearChild(2)->as<Expression>(); }
+
+    /**
+     * Removes operand 2. The operand will be null afterwards.
+     *
+     * @return the removed expression, now detached from the AST
+     */
+    Expression* removeOp2() { return clearChild(3)->as<Expression>(); }
+
     QualifiedType* type() const final { return result(); }
 
     std::string printSignature() const { return operator_::detail::printSignature(kind(), operands(), meta()); }
