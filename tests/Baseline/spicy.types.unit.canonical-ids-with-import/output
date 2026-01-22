@@ -85,6 +85,8 @@
 [debug/ast-declarations]             - Parameter "M" (hilti::M)
 [debug/ast-declarations]             - Parameter "S" (hilti::S)
 [debug/ast-declarations]     - Function "abort" (hilti::abort)
+[debug/ast-declarations]     - Function "throw_unset_optional" (hilti::throw_unset_optional)
+[debug/ast-declarations]     - Function "throw_attribute_not_set" (hilti::throw_attribute_not_set)
 [debug/ast-declarations]     - Function "profiler_start" (hilti::profiler_start)
 [debug/ast-declarations]             - Parameter "name" (hilti::name)
 [debug/ast-declarations]             - Parameter "size" (hilti::size)
@@ -375,7 +377,7 @@
 [debug/ast-declarations]             - Parameter "reason" (spicy::reason)
 [debug/ast-declarations] Declaration dependencies:
 [debug/ast-declarations] - [module] a -> a::X
-[debug/ast-declarations] - [module] hilti -> hilti::AddressFamily, hilti::BitOrder, hilti::ByteOrder, hilti::Captures, hilti::Charset, hilti::DecodeErrorStrategy, hilti::Exception, hilti::MatchState, hilti::MissingData, hilti::Profiler, hilti::Protocol, hilti::RealType, hilti::RecoverableFailure, hilti::RuntimeError, hilti::Side, hilti::StreamStatistics, hilti::SystemException, hilti::abort, hilti::current_time, hilti::debug, hilti::debugDedent, hilti::debugIndent, hilti::exception_what, hilti::exception_what_2, hilti::exception_where, hilti::exception_where_2, hilti::mktime, hilti::print, hilti::printTuple, hilti::profiler_start, hilti::profiler_stop
+[debug/ast-declarations] - [module] hilti -> hilti::AddressFamily, hilti::BitOrder, hilti::ByteOrder, hilti::Captures, hilti::Charset, hilti::DecodeErrorStrategy, hilti::Exception, hilti::MatchState, hilti::MissingData, hilti::Profiler, hilti::Protocol, hilti::RealType, hilti::RecoverableFailure, hilti::RuntimeError, hilti::Side, hilti::StreamStatistics, hilti::SystemException, hilti::abort, hilti::current_time, hilti::debug, hilti::debugDedent, hilti::debugIndent, hilti::exception_what, hilti::exception_what_2, hilti::exception_where, hilti::exception_where_2, hilti::mktime, hilti::print, hilti::printTuple, hilti::profiler_start, hilti::profiler_stop, hilti::throw_attribute_not_set, hilti::throw_unset_optional
 [debug/ast-declarations] - [type] hilti::MatchState -> hilti::Captures
 [debug/ast-declarations] - [type] hilti::MissingData -> hilti::Exception
 [debug/ast-declarations] - [type] hilti::RecoverableFailure -> hilti::Exception
@@ -647,6 +649,8 @@
 [debug/ast-declarations]             - Parameter "M" (hilti::M)
 [debug/ast-declarations]             - Parameter "S" (hilti::S)
 [debug/ast-declarations]     - Function "abort" (hilti::abort)
+[debug/ast-declarations]     - Function "throw_unset_optional" (hilti::throw_unset_optional)
+[debug/ast-declarations]     - Function "throw_attribute_not_set" (hilti::throw_attribute_not_set)
 [debug/ast-declarations]     - Function "profiler_start" (hilti::profiler_start)
 [debug/ast-declarations]             - Parameter "name" (hilti::name)
 [debug/ast-declarations]             - Parameter "size" (hilti::size)
@@ -948,7 +952,7 @@
 [debug/ast-declarations] - [function] a::a::X::parse3 -> a::X, hilti::Exception, hilti::RecoverableFailure, hilti::exception_what_2, hilti::exception_where_2, spicy_rt::MIMEType, spicy_rt::ParseError, spicy_rt::ParsedUnit, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::UnitContext, spicy_rt::initializeParsedUnit
 [debug/ast-declarations] - [module] b -> a::X, b::a::X::_t_on_x, hilti::Exception, hilti::RecoverableFailure, hilti::printTuple, spicy_rt::MIMEType, spicy_rt::ParsedUnit, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::UnitContext
 [debug/ast-declarations] - [function] b::a::X::_t_on_x -> a::X, hilti::Exception, hilti::RecoverableFailure, hilti::printTuple, spicy_rt::MIMEType, spicy_rt::ParsedUnit, spicy_rt::Parser, spicy_rt::ParserPort, spicy_rt::UnitContext
-[debug/ast-declarations] - [module] hilti -> hilti::AddressFamily, hilti::BitOrder, hilti::ByteOrder, hilti::Captures, hilti::Charset, hilti::DecodeErrorStrategy, hilti::Exception, hilti::MatchState, hilti::MissingData, hilti::Profiler, hilti::Protocol, hilti::RealType, hilti::RecoverableFailure, hilti::RuntimeError, hilti::Side, hilti::StreamStatistics, hilti::SystemException, hilti::abort, hilti::current_time, hilti::debug, hilti::debugDedent, hilti::debugIndent, hilti::exception_what, hilti::exception_what_2, hilti::exception_where, hilti::exception_where_2, hilti::mktime, hilti::print, hilti::printTuple, hilti::profiler_start, hilti::profiler_stop
+[debug/ast-declarations] - [module] hilti -> hilti::AddressFamily, hilti::BitOrder, hilti::ByteOrder, hilti::Captures, hilti::Charset, hilti::DecodeErrorStrategy, hilti::Exception, hilti::MatchState, hilti::MissingData, hilti::Profiler, hilti::Protocol, hilti::RealType, hilti::RecoverableFailure, hilti::RuntimeError, hilti::Side, hilti::StreamStatistics, hilti::SystemException, hilti::abort, hilti::current_time, hilti::debug, hilti::debugDedent, hilti::debugIndent, hilti::exception_what, hilti::exception_what_2, hilti::exception_where, hilti::exception_where_2, hilti::mktime, hilti::print, hilti::printTuple, hilti::profiler_start, hilti::profiler_stop, hilti::throw_attribute_not_set, hilti::throw_unset_optional
 [debug/ast-declarations] - [type] hilti::MatchState -> hilti::Captures
 [debug/ast-declarations] - [type] hilti::MissingData -> hilti::Exception
 [debug/ast-declarations] - [type] hilti::RecoverableFailure -> hilti::Exception
