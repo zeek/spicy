@@ -60,6 +60,24 @@ public:
     auto isNoEmit() const { return attributes()->find(hilti::attribute::kind::NoEmit) != nullptr; }
 
     /**
+     * Returns true if the field has a `&no-emit` attribute with a string
+     * value of `private`.
+     */
+    auto isNoEmitPrivate() const {
+        auto* attrs = attributes()->find(hilti::attribute::kind::NoEmit);
+        return attrs && *attrs->valueAsString() == "private";
+    }
+
+    /**
+     * Returns true if the field has a `&no-emit` attribute with a string
+     * value of `optimized`.
+     */
+    auto isNoEmitOptimized() const {
+        auto* attrs = attributes()->find(hilti::attribute::kind::NoEmit);
+        return attrs && *attrs->valueAsString() == "optimized";
+    }
+
+    /**
      * Returns the type that has been semantically linked to this field. The
      * resolver sets the linked type to the field's parent type.
      *

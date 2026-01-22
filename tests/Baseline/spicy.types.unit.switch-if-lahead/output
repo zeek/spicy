@@ -2,7 +2,13 @@
 Test::Foo {
   x1: Test::X {
     a: x1
+    b: (unset)
+    c: (unset)
   }
-  x2: Test::X {}
+  x2: Test::X {
+    a: (unset)
+    b: (unset)
+    c: (unset)
+  }
   y: Y
 }

@@ -58,7 +58,8 @@ struct FieldBuilder : public visitor::PreOrder {
             // This field will never make it into the C++ struct. We still
             // carry it around though as that makes type inference easier at
             // times, and also can improve error messages.
-            attrs->add(context(), builder()->attribute(hilti::attribute::kind::NoEmit));
+            attrs->add(context(),
+                       builder()->attribute(hilti::attribute::kind::NoEmit, builder()->stringLiteral("private")));
 
         auto* nf = builder()->declarationField(f->id(), f->itemType(), attrs, f->meta());
         addField(nf);

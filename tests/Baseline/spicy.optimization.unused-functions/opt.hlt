@@ -19,7 +19,7 @@ type C = struct {
     method optional<hilti::RecoverableFailure> _t_parse_foo__C_stage2(copy optional<hilti::RecoverableFailure> _t_error);
 };
 public type D = struct {
-    C _anon &optional &anonymous &no-emit;
+    C _anon &optional &anonymous &no-emit="private";
     spicy_rt::Parser _t_parser &static &internal &needed-by-feature="supports_filters" &always-emit;
     optional<hilti::RecoverableFailure> _t_error &always-emit &internal;
     method optional<hilti::RecoverableFailure> _t_parse_stage1(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error);

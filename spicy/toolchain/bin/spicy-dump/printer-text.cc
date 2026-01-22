@@ -139,34 +139,51 @@ void TextPrinter::print(const type_info::Value& v) {
             bool empty = true;
             uint64_t index = 0;
             indent([&]() {
-                for ( const auto& [f, y] : x->iterate(v) ) {
-                    if ( y ) {
-                        if ( f.type->tag == TypeInfo::Bitfield && f.isAnonymous() ) {
-                            // Special case anonymous bitfield: print at top level.
+                for ( const auto& [f, y] : x->iterate(v, false, true) ) {
+                    if ( f.type->tag == TypeInfo::Bitfield && f.isAnonymous() ) {
+                        // Special case anonymous bitfield: print at top level.
+                        if ( f.isEmitted() && y ) {
                             for ( const auto& [b, val] : f.type->bitfield->iterate(y) ) {
                                 out() << '\n';
                                 outputIndent();
 
                                 out() << b.name << ": ";
+
                                 print(val);
                                 printOffsets(*x, v, f.name);
                             }
                         }
                         else {
-                            out() << '\n';
-                            outputIndent();
+                            for ( const auto& b : f.type->bitfield->bits() ) {
+                                out() << '\n';
+                                outputIndent();
 
-                            if ( ! f.isAnonymous() )
-                                out() << f.name;
-
-                            out() << ": ";
-                            print(y);
-                            printOffsets(*x, v, f.name);
+                                out() << b.name << ": " << (f.isEmitted() ? "(unset)" : "(optimized out)");
+                            }
                         }
+                    }
+                    else {
+                        out() << '\n';
+                        outputIndent();
 
-                        empty = false;
+                        if ( ! f.isAnonymous() )
+                            out() << f.name;
+
+                        out() << ": ";
+
+                        if ( f.isEmitted() ) {
+                            if ( y ) {
+                                print(y);
+                                printOffsets(*x, v, f.name);
+                            }
+                            else
+                                out() << "(unset)";
+                        }
+                        else
+                            out() << ("(optimized out)");
                     }
 
+                    empty = false;
                     ++index;
                 }
             });
