@@ -35,21 +35,6 @@ public:
     auto hasOp1() const { return children().size() >= 3; }
     auto hasOp2() const { return children().size() >= 4; }
 
-    /**
-     * Returns the index of the given operand among the operator's operands.
-     *
-     * @param operand operand to look for
-     * @returns index of the operand (0-2), or unset if not found
-     */
-    std::optional<size_t> operandIndex(const Expression* operand) const {
-        const auto& ops = operands();
-
-        if ( auto it = std::ranges::find(ops, operand); it != ops.end() )
-            return std::distance(ops.begin(), it);
-
-        return {};
-    }
-
     void setOp0(ASTContext* ctx, Expression* e) { setChild(ctx, 1, e); }
     void setOp1(ASTContext* ctx, Expression* e) { setChild(ctx, 2, e); }
     void setOp2(ASTContext* ctx, Expression* e) { setChild(ctx, 3, e); }

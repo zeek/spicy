@@ -83,18 +83,51 @@ using namespace hilti::detail::cfg;
 namespace {
 // Helper to detect whether `operand` is used as a `const` argument to a given `operator_`.
 bool isConstOperand(const expression::ResolvedOperator* operator_, const Expression* expr) {
-    auto idx = operator_->operandIndex(expr);
-    if ( ! idx )
-        return false;
+    auto get_kind = [&]() -> std::optional<parameter::Kind> {
+        auto kind_from_oplist = [&](Expression* operand, size_t i) -> std::optional<parameter::Kind> {
+            if ( ! operand )
+                return {};
 
-    if ( const auto* op = operator_->operator_().signature().operands->operand(*idx) ) {
-        switch ( op->kind() ) {
+            type::operand_list::Operand* op = nullptr;
+
+            auto* d = operator_->operator_().signature().operands->operand(i);
+            if ( ! d )
+                return {};
+
+            if ( operand == expr )
+                op = d;
+
+            else if ( auto* ctor = operand->tryAs<expression::Ctor>() )
+                if ( auto* tuple = ctor->ctor()->tryAs<ctor::Tuple>() ) {
+                    const auto& value = tuple->value();
+                    if ( auto it = std::ranges::find(value, expr); it != value.end() ) {
+                        if ( auto* operands = d->type()->type()->tryAs<type::OperandList>() )
+                            op = operands->operand(std::distance(value.begin(), it));
+                    }
+                }
+
+            if ( op )
+                return op->kind();
+
+            return {};
+        };
+
+        for ( size_t i = 0; i < operator_->operands().size(); ++i ) {
+            if ( auto* op = operator_->operands()[i] )
+                if ( auto kind = kind_from_oplist(op, i) )
+                    return kind;
+        }
+
+        return {};
+    };
+
+    if ( auto kind = get_kind() )
+        switch ( *kind ) {
             case parameter::Kind::Copy: [[fallthrough]];
             case parameter::Kind::In: return true;
             case parameter::Kind::Unknown: [[fallthrough]];
             case parameter::Kind::InOut: return false;
         };
-    }
 
     return false;
 }

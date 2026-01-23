@@ -11,7 +11,7 @@ digraph {
 digraph {
     0 [label="local Foo f" xlabel="gen: [f: local Foo f] in: [] out: [f: local Foo f]"];
     1 [label="f.x;" xlabel="read: [f] in: [f: local Foo f] out: [f: local Foo f]"];
-    2 [label="g(f);" xlabel="read: [f] write: [f] in: [f: local Foo f] out: [f: local Foo f] keep"];
+    2 [label="g(f);" xlabel="read: [f] in: [f: local Foo f] out: [f: local Foo f] keep"];
     3 [label=start shape=Mdiamond xlabel="in: [] out: []"];
     4 [label="end <...>/struct_member_access.hlt:10:26-14:1" shape=triangle xlabel="in: [] out: []"];
     5 [label="end <...>/struct_member_access.hlt:10:26-14:1" shape=triangle xlabel="kill: [f: local Foo f] in: [f: local Foo f] out: []"];
