@@ -126,7 +126,7 @@ namespace cfg {
 bool contains(const Node& outer, const Node& inner);
 
 /** Prints out the dot representation of the CFG to a debug stream. */
-void dump(logging::DebugStream stream, ASTRoot* root);
+void dump(ASTContext* context, logging::DebugStream stream, ASTRoot* root);
 
 /**
  * Dataflow facts about a node.
@@ -185,7 +185,7 @@ public:
      *
      * @param root the node pointing to the AST subtree to work on
      */
-    CFG(const Node* root);
+    CFG(ASTContext* context, const Node* root);
 
     /**
      * Remove a node from the graph.
@@ -262,6 +262,7 @@ private:
         return r;
     }
 
+    ASTContext* _context = nullptr;
     Graph _graph;
 
     std::set<std::unique_ptr<cfg::MetaNode>> _meta_nodes;
@@ -280,6 +281,13 @@ namespace cfg {
  */
 class Cache {
 public:
+    /**
+     * Constructs a new, empty cache.
+     *
+     * @param context the AST context
+     */
+    Cache(ASTContext* context) : _context(context) {}
+
     /**
      * Returns the control flow graph for a given block.
      *
@@ -337,6 +345,8 @@ public:
     void checkValidity() const;
 
 private:
+    ASTContext* _context = nullptr;
+
     // Maps from blocks to pairs of the blocks containing modules and their
     // computed & cached CFGs. Using retained pointers to ensure the blocks
     // stay valid as long as they're in the cache. The module pointers will

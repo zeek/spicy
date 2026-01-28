@@ -626,7 +626,7 @@ Result<Nothing> ASTContext::processAST(Builder* builder, Driver* driver) {
     if ( auto rc = driver->hookCompilationFinished(_root); ! rc )
         return rc;
 
-    cfg::Cache cfg_cache;
+    cfg::Cache cfg_cache(_context->astContext());
 
     if ( _context->options().global_optimizations ) {
         if ( auto rc = _optimize(builder, &cfg_cache); ! rc )
@@ -805,7 +805,7 @@ Result<Nothing> ASTContext::_transform(Builder* builder, const Plugin& plugin) {
 
 Result<Nothing> ASTContext::_optimize(Builder* builder, cfg::Cache* cfg_cache) {
     if ( logger().isEnabled(logging::debug::CfgInitial) )
-        cfg::dump(logging::debug::CfgInitial, _root);
+        cfg::dump(this, logging::debug::CfgInitial, _root);
 
     HILTI_DEBUG(logging::debug::Compiler, "performing global transformations");
 
@@ -813,7 +813,7 @@ Result<Nothing> ASTContext::_optimize(Builder* builder, cfg::Cache* cfg_cache) {
         return rc;
 
     if ( logger().isEnabled(logging::debug::CfgFinal) )
-        cfg::dump(logging::debug::CfgFinal, _root);
+        cfg::dump(this, logging::debug::CfgFinal, _root);
 
     return Nothing();
 }

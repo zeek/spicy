@@ -170,8 +170,10 @@ bool cfg::contains(const Node& outer, const Node& inner) {
     return false;
 }
 
-CFG::CFG(const Node* root)
-    : _begin(_getOrAddNode(_createMetaNode<Start>())), _end(_getOrAddNode(_createMetaNode<End>(root))) {
+CFG::CFG(ASTContext* context, const Node* root)
+    : _context(context),
+      _begin(_getOrAddNode(_createMetaNode<Start>())),
+      _end(_getOrAddNode(_createMetaNode<End>(root))) {
     util::timing::Collector _1("hilti/compiler/cfg");
 
     assert(root && root->isA<statement::Block>() && "only building from blocks currently supported");
@@ -253,28 +255,27 @@ GraphNode CFG::_addParameters(GraphNode predecessor, const Node& root) {
 
     switch ( fn->ftype()->flavor() ) {
         case type::function::Flavor::Method: {
-            auto type_name = fn->id().namespace_();
-            assert(! type_name.empty());
+            type::Struct* struct_ = nullptr;
 
-            auto lookup = scope::lookupID<declaration::Type>(type_name, p, "type");
-            if ( ! lookup )
-                util::detail::internalError(
-                    util::fmt("could not find type '%s' for method/hook '%s'", type_name, fn->id()));
+            if ( auto* field = fn->parent()->tryAs<declaration::Field>() )
+                struct_ = field->linkedType(_context)->as<type::Struct>();
+            else {
+                auto* fdecl = fn->parent()->as<declaration::Function>();
+                assert(fdecl);
+                struct_ =
+                    fdecl->linkedDeclaration(_context)->as<declaration::Type>()->type()->type()->as<type::Struct>();
+            }
 
-            const auto& [decl, id] = *lookup;
+            // Add implicit `self` parameter for methods.
+            auto d = _getOrAddNode(struct_->self());
+            _addEdge(predecessor, d);
+            predecessor = d;
 
-            if ( auto* struct_ = decl->type()->type()->tryAs<type::Struct>() ) {
-                // Add implicit `self` parameter for methods.
-                auto d = _getOrAddNode(struct_->self());
-                _addEdge(predecessor, d);
-                predecessor = d;
-
-                // Add unit parameters which are implicitly in scope.
-                for ( auto* p : struct_->parameters() ) {
-                    auto n = _getOrAddNode(p);
-                    _addEdge(predecessor, n);
-                    predecessor = n;
-                }
+            // Add unit parameters which are implicitly in scope.
+            for ( auto* p : struct_->parameters() ) {
+                auto n = _getOrAddNode(p);
+                _addEdge(predecessor, n);
+                predecessor = n;
             }
 
             break;
@@ -1133,8 +1134,8 @@ void CFG::_populateDataflow() {
 }
 
 // Helper function to output control flow graphs for statements.
-static std::string dataflowDot(const hilti::Statement& stmt) {
-    auto cfg = CFG(&stmt);
+static std::string dataflowDot(ASTContext* context, const hilti::Statement& stmt) {
+    auto cfg = CFG(context, &stmt);
 
     auto omit_dataflow = false;
     if ( const auto& env = rt::getenv("HILTI_OPTIMIZER_OMIT_CFG_DATAFLOW") )
@@ -1145,24 +1146,25 @@ static std::string dataflowDot(const hilti::Statement& stmt) {
 
 // Helper class to print CFGs to a debug stream.
 class PrintCfgVisitor : public visitor::PreOrder {
+    ASTContext* _context = nullptr;
     logging::DebugStream _stream;
 
 public:
-    PrintCfgVisitor(logging::DebugStream stream) : _stream(std::move(stream)) {}
+    PrintCfgVisitor(ASTContext* context, logging::DebugStream stream) : _context(context), _stream(std::move(stream)) {}
 
     void operator()(declaration::Function* f) override {
         if ( auto* body = f->function()->body() )
-            HILTI_DEBUG(_stream, util::fmt("Function '%s'\n%s", f->id(), dataflowDot(*body)));
+            HILTI_DEBUG(_stream, util::fmt("Function '%s'\n%s", f->id(), dataflowDot(_context, *body)));
     }
 
     void operator()(declaration::Module* m) override {
         if ( auto* body = m->statements() )
-            HILTI_DEBUG(_stream, util::fmt("Module '%s'\n%s", m->id(), dataflowDot(*body)));
+            HILTI_DEBUG(_stream, util::fmt("Module '%s'\n%s", m->id(), dataflowDot(_context, *body)));
     }
 };
 
-void cfg::dump(logging::DebugStream stream, ASTRoot* root) {
-    auto v = PrintCfgVisitor(std::move(stream));
+void cfg::dump(ASTContext* context, logging::DebugStream stream, ASTRoot* root) {
+    auto v = PrintCfgVisitor(context, std::move(stream));
     visitor::visit(v, root);
 }
 
@@ -1186,7 +1188,7 @@ CFG* cfg::Cache::get(statement::Block* block_) {
 
     auto it = _blocks.find(block);
     if ( it == _blocks.end() ) {
-        it = _blocks.emplace(block, std::make_pair(module, std::make_unique<CFG>(block))).first;
+        it = _blocks.emplace(block, std::make_pair(module, std::make_unique<CFG>(_context, block))).first;
         _modules[module].insert(block);
     }
 
@@ -1242,7 +1244,7 @@ void cfg::Cache::checkValidity() const {
         const auto& [module, cfg] = x;
 
         auto actual = cfg->dot(false);
-        auto expected = CFG(block).dot(false);
+        auto expected = CFG(_context, block).dot(false);
 
         if ( actual != expected ) {
             auto* decl = block->parent<Declaration>();
