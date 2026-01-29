@@ -105,11 +105,12 @@ struct VisitorConstantFolder : public visitor::PreOrder {
     }
 
     void operator()(expression::Grouping* n) final {
-        if ( n->local() )
-            // Don't fold if there is a local variable.
+        if ( n->local() || n->expressions().size() != 1 )
+            // Don't fold if there is a local variable, or we have a series of
+            // (or no) expressions.
             return;
 
-        if ( auto x = foldConstant(builder, n->expression(), style) )
+        if ( auto x = foldConstant(builder, n->expressions().front(), style) )
             result = *x;
     }
 

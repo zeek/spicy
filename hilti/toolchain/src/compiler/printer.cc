@@ -492,7 +492,7 @@ struct Printer : visitor::PreOrder {
         if ( auto* local = n->local() )
             _out << "{" << local << ";} ";
 
-        _out << n->expression() << ')';
+        _out << std::make_pair(n->expressions(), " ,") << ')';
     }
 
     void operator()(expression::Keyword* n) final {

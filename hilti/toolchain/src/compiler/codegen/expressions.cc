@@ -39,7 +39,8 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(expression::Ctor* n) final { result = cg->compile(n->ctor(), lhs); }
 
     void operator()(expression::Grouping* n) final {
-        auto cxx_expr = cg->compile(n->expression());
+        auto cxx_exprs =
+            util::join(n->expressions() | std::views::transform([this](auto e) { return cg->compile(e); }), ", ");
 
         if ( auto* local = n->local() ) {
             cxx::Block block;
@@ -65,10 +66,10 @@ struct Visitor : hilti::visitor::PreOrder {
             cxx::Formatter f;
             f.ensure_braces_for_block = false;
             f << block;
-            result = fmt("([&](){%s return %s;}())", f.str(), cxx_expr);
+            result = fmt("([&](){%s return %s;}())", f.str(), cxx_exprs);
         }
         else
-            result = fmt("(%s)", cxx_expr);
+            result = fmt("(%s)", cxx_exprs);
     }
 
     void operator()(expression::Keyword* n) final {
