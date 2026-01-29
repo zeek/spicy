@@ -1391,7 +1391,7 @@ struct VisitorPass3 : visitor::MutatingPostOrder {
                             new_elems.push_back(rhs_elem);
                     }
 
-                    new_rhs->setExpression(context(), builder()->tuple(new_elems));
+                    new_rhs->setExpressions(context(), {builder()->tuple(new_elems)});
                     recordChange(n->op1(), new_rhs, "tuple assign");
                     n->setOp1(context(), new_rhs);
                 }

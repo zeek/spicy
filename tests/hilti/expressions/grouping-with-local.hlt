@@ -5,6 +5,7 @@
 module Foo {
 
 assert ({local string x = "abc"; } x) == "abc";
+assert ({local string x = "abc"; } 1, 2, 3, x) == "abc";
 assert ({local i = 2; } i * i) == 4;
 assert ({local int<64> i; } i) == 0;
 

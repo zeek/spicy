@@ -528,6 +528,11 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         }
     }
 
+    void operator()(expression::Grouping* n) final {
+        if ( n->expressions().empty() )
+            error("group cannot be empty", n);
+    }
+
     void operator()(expression::ListComprehension* n) final {
         if ( ! n->input()->type()->type()->iteratorType() )
             error("input value not iterable", n);
