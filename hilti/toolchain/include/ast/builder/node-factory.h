@@ -283,10 +283,16 @@ public:
         return hilti::expression::Ctor::create(context(), ctor, std::move(meta));
     }
     auto expressionGrouping(Expression* expr, Meta meta = {}) {
-        return hilti::expression::Grouping::create(context(), expr, std::move(meta));
+        return hilti::expression::Grouping::create(context(), {expr}, std::move(meta));
+    }
+    auto expressionGrouping(Expressions exprs, Meta meta = {}) {
+        return hilti::expression::Grouping::create(context(), std::move(exprs), std::move(meta));
     }
     auto expressionGrouping(declaration::LocalVariable* local, Expression* expr, Meta meta = {}) {
-        return hilti::expression::Grouping::create(context(), local, expr, std::move(meta));
+        return hilti::expression::Grouping::create(context(), local, {expr}, std::move(meta));
+    }
+    auto expressionGrouping(declaration::LocalVariable* local, Expressions exprs, Meta meta = {}) {
+        return hilti::expression::Grouping::create(context(), local, std::move(exprs), std::move(meta));
     }
     auto expressionKeyword(expression::keyword::Kind kind, const Meta& meta = {}) {
         return hilti::expression::Keyword::create(context(), kind, meta);

@@ -442,6 +442,7 @@ public:
 
     auto grouping(Expression* e, const Meta& m = Meta()) { return expressionGrouping(e, m); }
 
+    auto grouping(Expressions exprs, const Meta& m = Meta()) { return expressionGrouping(std::move(exprs), m); }
 
     /**
      * Creates a grouping expression that declares a temporary variable that
