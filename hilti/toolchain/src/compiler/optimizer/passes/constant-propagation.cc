@@ -88,16 +88,31 @@ struct TransferVisitor : optimizer::visitor::Collector {
         }
     }
 
-    void operator()(operator_::struct_::MemberCall* op) override {
-        // NAC anything used in a call; unfortunately they may silently
-        // coerce to a reference.
-        name_nac.run(op);
+    /** Marks mutable arguments to a function as NAC. */
+    void taintMutableArgs(const node::Range<Expression> args, type::Function* ft) {
+        assert(args.size() == ft->parameters().size());
+
+        // NAC any inout arguments or aliasing types.
+        for ( const auto [i, operand] : util::enumerate(ft->parameters()) ) {
+            if ( operand->kind() == hilti::parameter::Kind::InOut || operand->type()->type()->isAliasingType() )
+                name_nac.run(args[i]);
+        }
     }
 
-    void operator()(operator_::function::Call* op) override {
-        // NAC anything used in a call; unfortunately they may silently
-        // coerce to a reference.
-        name_nac.run(op);
+    void operator()(operator_::struct_::MemberCall* n) override {
+        const auto& op = static_cast<const struct_::MemberCall&>(n->operator_());
+        auto* fdecl = op.declaration();
+        auto* ft = fdecl->type()->type()->as<type::Function>();
+        auto args = n->op2()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value();
+        taintMutableArgs(args, ft);
+    }
+
+    void operator()(operator_::function::Call* n) override {
+        auto* decl = context()->lookup(n->op0()->as<expression::Name>()->resolvedDeclarationIndex());
+        auto* fdecl = decl->as<declaration::Function>();
+        auto* ft = fdecl->function()->type()->type()->as<type::Function>();
+        auto args = n->op1()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value();
+        taintMutableArgs(args, ft);
     }
 
     void operator()(expression::ResolvedOperator* op) override {

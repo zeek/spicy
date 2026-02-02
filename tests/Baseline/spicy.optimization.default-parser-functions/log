@@ -55,6 +55,8 @@
 [debug/optimizer]       - deleting function state: foo::P1::parse1
 [debug/optimizer]       - deleting function state: foo::P1::parse1
 [debug/optimizer]       - deleting function state: foo::P1::parse1
+[debug/optimizer]       - deleting function state: foo::P1::parse1
+[debug/optimizer]       - deleting function state: foo::P1::parse1
 [debug/optimizer]       - deleting function state: foo::P1::parse2
 [debug/optimizer]       - deleting function state: foo::P1::parse2
 [debug/optimizer]       - deleting function state: foo::P1::parse2
@@ -63,6 +65,10 @@
 [debug/optimizer]       - deleting function state: foo::P1::parse2
 [debug/optimizer]       - deleting function state: foo::P1::parse2
 [debug/optimizer]       - deleting function state: foo::P1::parse2
+[debug/optimizer]       - deleting function state: foo::P1::parse2
+[debug/optimizer]       - deleting function state: foo::P1::parse2
+[debug/optimizer]       - deleting function state: foo::P1::parse3
+[debug/optimizer]       - deleting function state: foo::P1::parse3
 [debug/optimizer]       - deleting function state: foo::P1::parse3
 [debug/optimizer]       - deleting function state: foo::P1::parse3
 [debug/optimizer]       - deleting function state: foo::P1::parse3
@@ -127,7 +133,13 @@
 [debug/optimizer]       - updating function: foo::P1::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::P1::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::P1::parse1
+[debug/optimizer]       - updating function: foo::P1::parse1
+[debug/optimizer]       - updating function: foo::P1::parse1
 [debug/optimizer]       - updating function: foo::P1::parse2
+[debug/optimizer]       - updating function: foo::P1::parse2
+[debug/optimizer]       - updating function: foo::P1::parse2
+[debug/optimizer]       - updating function: foo::P1::parse3
+[debug/optimizer]       - updating function: foo::P1::parse3
 [debug/optimizer]       - updating function: foo::P1::parse3
 [debug/optimizer]       - updating function: foo::P2::_t_parse_foo__P2_stage2
 [debug/optimizer]       - updating function: foo::P2::_t_parse_foo__P2_stage2
@@ -179,6 +191,7 @@
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]     * computed CFGs
+[debug/optimizer]     * constant-folder
 [debug/optimizer]     * constant-folder
 [debug/optimizer]     * constant-folder
 [debug/optimizer]     * constant-folder
@@ -248,6 +261,8 @@
 [debug/optimizer]     * function changed: foo::P1::parse1
 [debug/optimizer]     * function changed: foo::P1::parse1
 [debug/optimizer]     * function changed: foo::P1::parse1
+[debug/optimizer]     * function changed: foo::P1::parse1
+[debug/optimizer]     * function changed: foo::P1::parse1
 [debug/optimizer]     * function changed: foo::P1::parse2
 [debug/optimizer]     * function changed: foo::P1::parse2
 [debug/optimizer]     * function changed: foo::P1::parse2
@@ -256,6 +271,10 @@
 [debug/optimizer]     * function changed: foo::P1::parse2
 [debug/optimizer]     * function changed: foo::P1::parse2
 [debug/optimizer]     * function changed: foo::P1::parse2
+[debug/optimizer]     * function changed: foo::P1::parse2
+[debug/optimizer]     * function changed: foo::P1::parse2
+[debug/optimizer]     * function changed: foo::P1::parse3
+[debug/optimizer]     * function changed: foo::P1::parse3
 [debug/optimizer]     * function changed: foo::P1::parse3
 [debug/optimizer]     * function changed: foo::P1::parse3
 [debug/optimizer]     * function changed: foo::P1::parse3
@@ -408,12 +427,15 @@
 [debug/optimizer]   [<no location>] expression::Ctor "(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
 [debug/optimizer]   [<no location>] expression::Ctor "(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
 [debug/optimizer]   [<no location>] expression::Ctor "(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_ncur, 0, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_ncur, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_ncur, 0, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_ncur, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_ncur, 0, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_ncur, _t_error)" (removing unused arguments from method call)
 [debug/optimizer]   [<no location>] expression::Ctor "(_t_ncur, _t_error)" -> expression::Ctor "(_t_error)" (removing unused arguments from method call)
 [debug/optimizer]   [<no location>] expression::Ctor "(_t_ncur, _t_error)" -> expression::Ctor "(_t_error)" (removing unused arguments from method call)
 [debug/optimizer]   [<no location>] expression::Ctor "(_t_ncur, _t_error)" -> expression::Ctor "(_t_error)" (removing unused arguments from method call)
-[debug/optimizer]   [<no location>] expression::Ctor "(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_ncur, _t_error)" (removing unused arguments from method call)
-[debug/optimizer]   [<no location>] expression::Ctor "(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_ncur, _t_error)" (removing unused arguments from method call)
-[debug/optimizer]   [<no location>] expression::Ctor "(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_ncur, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Name "_t_lahead" -> expression::Ctor "0" (propagating constant value)
+[debug/optimizer]   [<no location>] expression::Name "_t_lahead" -> expression::Ctor "0" (propagating constant value)
+[debug/optimizer]   [<no location>] expression::Name "_t_lahead" -> expression::Ctor "0" (propagating constant value)
 [debug/optimizer]   [<no location>] expression::Ternary "False ? (*self)._t_filters : Null" -> expression::Ctor "Null" (replacing ternary with false branch)
 [debug/optimizer]   [<no location>] expression::Ternary "False ? (*self)._t_filters : Null" -> expression::Ctor "Null" (replacing ternary with false branch)
 [debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" -> expression::Assign "_t_error = (*_t_unit)._t_parse_stage1(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" (removing tuple from propagated return)
@@ -663,6 +685,9 @@
 [debug/optimizer]   [default-parser-functions.spicy:14:18-14:24] operator_::struct_::MemberCall "(*self)._t_on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer]   [default-parser-functions.spicy:14:18-14:24] operator_::struct_::MemberCall "(*self)._t_on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer]   [default-parser-functions.spicy:14:18-14:24] operator_::struct_::MemberCall "(*self)._t_on_0x25_init()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
+[debug/optimizer]   [default-parser-functions.spicy:14:18-14:24] statement::Block "{ # "<...>/default-parser-functions.spicy:14:18-14:24" local value_ref<foo::P1> _t_unit = default<foo::P1>(); local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data)); local int<64> _t_lahead = 0; local iterator<stream> _t_lahead_end; local optional<hilti::RecoverableFailure> _t_error = Null; # "<...>/default-parser-functions.spicy:14:18-14:24" # Begin parsing production: Unit: foo__P1 -> _t_error = (*_t_unit)._t_parse_stage1(_t_ncur, 0, _t_lahead_end, _t_error); # End parsing production: Unit: foo__P1 -> if ( _t_error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_t_error))); return _t_ncur; }" -> constant propagation
+[debug/optimizer]   [default-parser-functions.spicy:14:18-14:24] statement::Block "{ # "<...>/default-parser-functions.spicy:14:18-14:24" local value_ref<foo::P1> _t_unit = default<foo::P1>(); spicy_rt::initializeParsedUnit((*_t_gunit), _t_unit); local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data)); local int<64> _t_lahead = 0; local iterator<stream> _t_lahead_end; local optional<hilti::RecoverableFailure> _t_error = Null; # "<...>/default-parser-functions.spicy:14:18-14:24" # Begin parsing production: Unit: foo__P1 -> _t_error = (*_t_unit)._t_parse_stage1(_t_ncur, 0, _t_lahead_end, _t_error); # End parsing production: Unit: foo__P1 -> if ( _t_error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_t_error))); return _t_ncur; }" -> constant propagation
+[debug/optimizer]   [default-parser-functions.spicy:14:18-14:24] statement::Block "{ # "<...>/default-parser-functions.spicy:14:18-14:24" local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data)); local int<64> _t_lahead = 0; local iterator<stream> _t_lahead_end; local optional<hilti::RecoverableFailure> _t_error = Null; # "<...>/default-parser-functions.spicy:14:18-14:24" # Begin parsing production: Unit: foo__P1 -> _t_error = (*_t_unit)._t_parse_stage1(_t_ncur, 0, _t_lahead_end, _t_error); # End parsing production: Unit: foo__P1 -> if ( _t_error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_t_error))); return _t_ncur; }" -> constant propagation
 [debug/optimizer]   [default-parser-functions.spicy:14:18-14:24] statement::Expression "0;" -> null (removing unused expression result)
 [debug/optimizer]   [default-parser-functions.spicy:14:18-14:24] statement::Expression "0;" -> null (removing unused expression result)
 [debug/optimizer]   [default-parser-functions.spicy:14:18-14:24] statement::Expression "0;" -> null (removing unused expression result)
@@ -772,7 +797,7 @@
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-resolving AST assuming guarantees <none>
 [debug/optimizer]   re-resolving AST assuming guarantees <none>
 [debug/optimizer]   re-resolving AST assuming guarantees <none>
 [debug/optimizer]   re-resolving AST assuming guarantees <none>
@@ -784,10 +809,10 @@
 [debug/optimizer] pass: constant-propagation (round 2, pass iteration 2)
 [debug/optimizer] pass: constant-propagation (round 3, pass iteration 1)
 [debug/optimizer] pass: constant-propagation (round 4, pass iteration 1)
+[debug/optimizer] pass: constant-propagation (round 4, pass iteration 2)
 [debug/optimizer] pass: constant-propagation (round 5, pass iteration 1)
 [debug/optimizer] pass: constant-propagation (round 6, pass iteration 1)
 [debug/optimizer] pass: constant-propagation (round 7, pass iteration 1)
-[debug/optimizer] pass: constant-propagation (round 8, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 3, pass iteration 1)
@@ -795,7 +820,6 @@
 [debug/optimizer] pass: dead-code-cfg (round 5, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 6, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 7, pass iteration 1)
-[debug/optimizer] pass: dead-code-cfg (round 8, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 3, pass iteration 1)
@@ -803,7 +827,6 @@
 [debug/optimizer] pass: dead-code-static (round 5, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 6, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 7, pass iteration 1)
-[debug/optimizer] pass: dead-code-static (round 8, pass iteration 1)
 [debug/optimizer] pass: feature-requirements (round 1, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 1, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 2, pass iteration 1)
@@ -812,7 +835,6 @@
 [debug/optimizer] pass: flatten-blocks (round 5, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 6, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 7, pass iteration 1)
-[debug/optimizer] pass: flatten-blocks (round 8, pass iteration 1)
 [debug/optimizer] pass: peephole (round 1, pass iteration 1)
 [debug/optimizer] pass: peephole (round 2, pass iteration 1)
 [debug/optimizer] pass: peephole (round 3, pass iteration 1)
@@ -820,7 +842,6 @@
 [debug/optimizer] pass: peephole (round 5, pass iteration 1)
 [debug/optimizer] pass: peephole (round 6, pass iteration 1)
 [debug/optimizer] pass: peephole (round 7, pass iteration 1)
-[debug/optimizer] pass: peephole (round 8, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 1, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 2, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 3, pass iteration 1)
@@ -828,7 +849,6 @@
 [debug/optimizer] pass: propagate-function-returns (round 5, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 6, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 7, pass iteration 1)
-[debug/optimizer] pass: propagate-function-returns (round 8, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 1, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 2, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 3, pass iteration 1)
@@ -836,7 +856,6 @@
 [debug/optimizer] pass: remove-unused-fields (round 5, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 6, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 7, pass iteration 1)
-[debug/optimizer] pass: remove-unused-fields (round 8, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 1, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 2, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 3, pass iteration 1)
@@ -844,4 +863,3 @@
 [debug/optimizer] pass: remove-unused-parameters (round 5, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 6, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 7, pass iteration 1)
-[debug/optimizer] pass: remove-unused-parameters (round 8, pass iteration 1)
