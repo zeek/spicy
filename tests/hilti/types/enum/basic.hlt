@@ -36,7 +36,14 @@ assert x;
 assert !y;
 assert X::A1;
 assert !X::Undef;
+assert !X(4711);
 assert x && X::A1 ;
+
+# Different undef values only compare equal if they hold the same integer
+# value, so equality comparison against undef should not be used to coerce
+# to bool.
+assert X(4711) == X(4711);
+assert X(4711) != X(67);
 
 # has_label()
 global X no_label = X(42);

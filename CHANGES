@@ -1,3 +1,21 @@
+1.16.0-dev.33 | 2026-02-02 13:25:18 +0100
+
+  * GH-2251: Actually implement `enum` coercion to `bool`. (Benjamin Bannier, Corelight)
+
+    Previously we implemented `enum` coercion to `bool` as a comparison
+    against the `Undef` label. While `Undef` values coerce to `false`,
+    different `Undef` values only compare equal if they map to the exact
+    same underlying integer value, so our implementation was not correct.
+
+    This patch implements coercion in terms of `has_label`. While this is
+    unlikely to be the most performant implementation a better impl
+    would likely require to change how we declare runtime enums so we could
+    have the macro generate code which explicitly checks against all know
+    labels. Given that `HILTI_RT_ENUM..` allows declaring values both with
+    and without values that is currently hard to implement.
+
+    Closes #2251.
+
 1.16.0-dev.31 | 2026-02-02 13:24:50 +0100
 
   * GH-2238: Correctly compute argument constness in CFG. (Benjamin Bannier, Corelight)

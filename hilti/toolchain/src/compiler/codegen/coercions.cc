@@ -47,10 +47,8 @@ struct Visitor : public hilti::visitor::PreOrder {
     }
 
     void operator()(type::Enum* n) final {
-        if ( dst->type()->isA<type::Bool>() ) {
-            auto id = cg->compile(src, codegen::TypeUsage::Storage);
-            result = fmt("(%s != %s(%s::Undef))", expr, id, id);
-        }
+        if ( dst->type()->isA<type::Bool>() )
+            result = fmt("::hilti::rt::enum_::has_label(%s, %s)", expr, cg->typeInfo(src));
 
         else
             logger().internalError(fmt("codegen: unexpected type coercion from enum to %s", dst->type()->typename_()));
