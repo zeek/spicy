@@ -125,14 +125,12 @@ const bool _t_feat%foo@@X7%supports_sinks = False;
 const bool _t_feat%foo@@X7%synchronization = False;
 
 hook void foo::X0::_t_on_0x25_init() {
-    (*self)._t_offset;
 }
 
 init function void _t_register_foo_X0() {
 }
 
 hook void foo::X1::_t_on_0x25_init() {
-    (*self)._t_begin;
 }
 
 init function void _t_register_foo_X1() {

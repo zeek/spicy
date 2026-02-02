@@ -1,3 +1,28 @@
+1.16.0-dev.31 | 2026-02-02 13:24:50 +0100
+
+  * GH-2238: Correctly compute argument constness in CFG. (Benjamin Bannier, Corelight)
+
+    We previously tried to fix this in #2238, but did not take into account
+    that one cannot simply iterate operands since often they are present as
+    tuples. This patch reimplements the helper function we introduced then,
+    and removes a helper which is not used anymore.
+
+  * Add explicit CFG handling for `assert` arguments. (Benjamin Bannier, Corelight)
+
+    By default arguments to an `assert` are just read. Add explicit handling
+    for that so we do not mark them as writes as well.
+
+  * GH-2254: Add explicit CFG handling for member accesses. (Benjamin Bannier, Corelight)
+
+    We previously didn't explicitly handle access of struct and union
+    members, and instead used the default treatment of marking them as both
+    read and write operations. Since both these accesses are just reads this
+    patch adds explicit treatment for that.
+
+    Closes #2254.
+
+  * Bump CodSpeedHQ/action from 4.5.2 to 4.8.2 (dependabot[bot])
+
 1.16.0-dev.25 | 2026-01-20 17:41:16 -0500
 
   * Include optimizer header when used. (Evan Typanski, Corelight)

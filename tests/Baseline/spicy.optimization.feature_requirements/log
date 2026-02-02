@@ -3,6 +3,7 @@
 [debug/optimizer]       - deleting function state: _t_register_foo_X4
 [debug/optimizer]       - deleting function state: _t_register_foo_X6
 [debug/optimizer]       - deleting function state: _t_register_foo_X6
+[debug/optimizer]       - deleting function state: foo::X0::_t_on_0x25_init
 [debug/optimizer]       - deleting function state: foo::X0::_t_parse_foo__X0_stage2
 [debug/optimizer]       - deleting function state: foo::X0::_t_parse_foo__X0_stage2
 [debug/optimizer]       - deleting function state: foo::X0::_t_parse_foo__X0_stage2
@@ -11,6 +12,7 @@
 [debug/optimizer]       - deleting function state: foo::X0::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::X0::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::X0::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::X1::_t_on_0x25_init
 [debug/optimizer]       - deleting function state: foo::X1::_t_parse_foo__X1_stage2
 [debug/optimizer]       - deleting function state: foo::X1::_t_parse_foo__X1_stage2
 [debug/optimizer]       - deleting function state: foo::X1::_t_parse_foo__X1_stage2
@@ -164,6 +166,7 @@
 [debug/optimizer]     * function changed: _t_register_foo_X6
 [debug/optimizer]     * function changed: _t_register_foo_X6
 [debug/optimizer]     * function changed: _t_register_foo_X7
+[debug/optimizer]     * function changed: foo::X0::_t_on_0x25_init
 [debug/optimizer]     * function changed: foo::X0::_t_parse_foo__X0_stage2
 [debug/optimizer]     * function changed: foo::X0::_t_parse_foo__X0_stage2
 [debug/optimizer]     * function changed: foo::X0::_t_parse_foo__X0_stage2
@@ -181,6 +184,7 @@
 [debug/optimizer]     * function changed: foo::X0::parse1
 [debug/optimizer]     * function changed: foo::X0::parse2
 [debug/optimizer]     * function changed: foo::X0::parse3
+[debug/optimizer]     * function changed: foo::X1::_t_on_0x25_init
 [debug/optimizer]     * function changed: foo::X1::_t_parse_foo__X1_stage2
 [debug/optimizer]     * function changed: foo::X1::_t_parse_foo__X1_stage2
 [debug/optimizer]     * function changed: foo::X1::_t_parse_foo__X1_stage2
@@ -904,6 +908,7 @@
 [debug/optimizer]   [feature_requirements.spicy:13:11-15:1] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [feature_requirements.spicy:13:11-15:1] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [feature_requirements.spicy:13:11-15:1] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (iterator<stream> _t_begin, copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [feature_requirements.spicy:14:16-14:28] statement::Expression "(*self)._t_offset;" -> null (statement result unused)
 [debug/optimizer]   [feature_requirements.spicy:18:11-20:1] declaration::Field "hook optional<string> _t_hook_to_string();" -> null (removing declaration for unused method)
 [debug/optimizer]   [feature_requirements.spicy:18:11-20:1] declaration::Field "hook void _t_on_0x25_confirmed() &needed-by-feature="synchronization";" -> null (removing declaration for unused method)
 [debug/optimizer]   [feature_requirements.spicy:18:11-20:1] declaration::Field "hook void _t_on_0x25_done();" -> null (removing declaration for unused method)
@@ -937,6 +942,7 @@
 [debug/optimizer]   [feature_requirements.spicy:18:11-20:1] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [feature_requirements.spicy:18:11-20:1] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [feature_requirements.spicy:18:11-20:1] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (iterator<stream> _t_begin, copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [feature_requirements.spicy:19:16-19:27] statement::Expression "(*self)._t_begin;" -> null (statement result unused)
 [debug/optimizer]   [feature_requirements.spicy:23:1-23:18] declaration::Type "type X2 = struct { optional<hilti::RecoverableFailure> _t_error &always-emit &internal; method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_parse_foo__X2_stage2(); };" -> null (removing unused type)
 [debug/optimizer]   [feature_requirements.spicy:23:11-23:17] declaration::Field "hook optional<string> _t_hook_to_string();" -> null (removing declaration for unused method)
 [debug/optimizer]   [feature_requirements.spicy:23:11-23:17] declaration::Field "hook void _t_on_0x25_confirmed() &needed-by-feature="synchronization";" -> null (removing declaration for unused method)
