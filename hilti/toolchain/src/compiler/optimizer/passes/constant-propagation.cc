@@ -88,16 +88,32 @@ struct TransferVisitor : optimizer::visitor::Collector {
         }
     }
 
-    void operator()(operator_::struct_::MemberCall* op) override {
-        // NAC anything used in a call; unfortunately they may silently
-        // coerce to a reference.
-        name_nac.run(op);
+    void operator()(operator_::struct_::MemberCall* n) override {
+        const auto& op = static_cast<const struct_::MemberCall&>(n->operator_());
+        auto* fdecl = op.declaration();
+        auto* ft = fdecl->type()->type()->as<type::Function>();
+        auto args = n->op2()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value();
+        assert(args.size() == ft->parameters().size());
+
+        // Mark anything withoun inout params as NAC
+        for ( const auto [i, operand] : util::enumerate(ft->parameters()) ) {
+            if ( operand->kind() == hilti::parameter::Kind::InOut )
+                name_nac.run(args[i]);
+        }
     }
 
-    void operator()(operator_::function::Call* op) override {
-        // NAC anything used in a call; unfortunately they may silently
-        // coerce to a reference.
-        name_nac.run(op);
+    void operator()(operator_::function::Call* n) override {
+        auto* decl = context()->lookup(n->op0()->as<expression::Name>()->resolvedDeclarationIndex());
+        auto* fdecl = decl->as<declaration::Function>();
+        auto* ft = fdecl->function()->type()->type()->as<type::Function>();
+        auto args = n->op1()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value();
+        assert(args.size() == ft->parameters().size());
+
+        // Mark anything withoun inout params as NAC
+        for ( const auto [i, operand] : util::enumerate(ft->parameters()) ) {
+            if ( operand->kind() == hilti::parameter::Kind::InOut )
+                name_nac.run(args[i]);
+        }
     }
 
     void operator()(expression::ResolvedOperator* op) override {
