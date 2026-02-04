@@ -1,4 +1,4 @@
-# @TEST-EXEC:  ${SCRIPTS}/printf '\001\002\003\004\005\006' | spicy-driver %INPUT >output
+# @TEST-EXEC:  ${SCRIPTS}/printf '\001\002\003\004\005\006' | spicy-driver -d %INPUT >output
 # @TEST-EXEC:  btest-diff output
 #
 # Test combinations of nested units with/without %print.

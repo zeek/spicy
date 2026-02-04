@@ -1,4 +1,4 @@
-# @TEST-EXEC:  printf '\007' | spicy-driver %INPUT >output
+# @TEST-EXEC:  printf '\007' | spicy-driver -d %INPUT >output
 # @TEST-EXEC:  btest-diff output
 
 module Test;

@@ -4,11 +4,11 @@
 # @TEST-EXEC: mkdir -p a/b/c && cp bar.spicy.templ a/b/c/bar.spicy
 #
 # By default the module cannot be found.
-# @TEST-EXEC-FAIL: printf '\01' | spicy-driver -p Bar::P test.spicy >>output
+# @TEST-EXEC-FAIL: printf '\01' | spicy-driver -d -p Bar::P test.spicy >>output
 #
 # Injecting an additional lookup path lets the script succeed.
-# @TEST-EXEC: printf '\01' | spicy-driver --library-path a/b/c -p Bar::P test.spicy >>output
-# @TEST-EXEC: printf '\01' | SPICY_PATH=.:${DIST}/spicy/lib:a/b/c spicy-driver -p Bar::P test.spicy >>output
+# @TEST-EXEC: printf '\01' | spicy-driver -d --library-path a/b/c -p Bar::P test.spicy >>output
+# @TEST-EXEC: printf '\01' | SPICY_PATH=.:${DIST}/spicy/lib:a/b/c spicy-driver -d -p Bar::P test.spicy >>output
 # @TEST-EXEC: rm -rf a/b/c
 #
 #
@@ -17,16 +17,16 @@
 # @TEST-EXEC: cp bar.spicy.templ bar.spicy
 #
 # By default we should find the module in `.`.
-# @TEST-EXEC: printf '\01' | spicy-driver -p Bar::P test.spicy >>output
+# @TEST-EXEC: printf '\01' | spicy-driver -d -p Bar::P test.spicy >>output
 #
 # Injecting another lookup path removes the builtin lookups, e.g., in `.`.
-# @TEST-EXEC-FAIL: printf '\01' | SPICY_PATH=${DIST}/spicy/lib:a/b/c spicy-driver -p Bar::P test.spicy >> output 2>&1
+# @TEST-EXEC-FAIL: printf '\01' | SPICY_PATH=${DIST}/spicy/lib:a/b/c spicy-driver -d -p Bar::P test.spicy >> output 2>&1
 #
 #
 # Test that configuration via the command line flag is applied on top of any
 # setting via the environment variable.
-# @TEST-EXEC-FAIL: printf '\01' | SPICY_PATH=${DIST}/spicy/lib spicy-driver -p Bar::P test.spicy >>output
-# @TEST-EXEC: printf '\01' | SPICY_PATH=${DIST}/spicy/lib spicy-driver --library-path . -p Bar::P test.spicy >>output
+# @TEST-EXEC-FAIL: printf '\01' | SPICY_PATH=${DIST}/spicy/lib spicy-driver -d -p Bar::P test.spicy >>output
+# @TEST-EXEC: printf '\01' | SPICY_PATH=${DIST}/spicy/lib spicy-driver -d --library-path . -p Bar::P test.spicy >>output
 #
 #
 # @TEST-EXEC: btest-diff output

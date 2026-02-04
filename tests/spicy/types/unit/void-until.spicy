@@ -1,4 +1,4 @@
-# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: ${SPICYC} -d %INPUT -j -o %INPUT.hlto
 # @TEST-EXEC: ${SCRIPTS}/printf 'abcdefgXXXYZ123' | spicy-driver -d %INPUT.hlto >> output
 # @TEST-EXEC: ${SCRIPTS}/printf 'abcdefgXXXYZ123' | spicy-driver -i 3 -d %INPUT.hlto >> output
 # @TEST-EXEC-FAIL: ${SCRIPTS}/printf 'abcdefgXXXY123' | spicy-driver -d %INPUT.hlto >> output 2>&1

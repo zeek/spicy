@@ -1,4 +1,4 @@
-# @TEST-EXEC: spicyc -j -o a.hlto %INPUT
+# @TEST-EXEC: spicyc -d -j -o a.hlto %INPUT
 # @TEST-EXEC: cat input.dat | spicy-driver a.hlto >>output
 # @TEST-EXEC: btest-diff output
 

@@ -1,4 +1,4 @@
-# @TEST-EXEC: hiltic -j %INPUT >output
+# @TEST-EXEC: hiltic -d -j %INPUT >output
 # @TEST-EXEC: btest-diff output
 
 module Test {
