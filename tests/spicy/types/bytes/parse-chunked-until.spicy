@@ -1,4 +1,4 @@
-# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: ${SPICYC} -d %INPUT -j -o %INPUT.hlto
 # @TEST-EXEC: printf 'abc123456788890' | spicy-driver -p Test::X %INPUT.hlto >output 2>&1
 # @TEST-EXEC: printf 'abc123456788890' | spicy-driver -i 3 -p Test::X %INPUT.hlto >>output 2>&1
 # @TEST-EXEC: printf 'abc123456788890' | spicy-driver -p Test::Y %INPUT.hlto >>output 2>&1

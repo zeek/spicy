@@ -1,4 +1,4 @@
-# @TEST-EXEC: spicy-driver %INPUT </dev/null >output
+# @TEST-EXEC: spicy-driver -d %INPUT </dev/null >output
 # @TEST-EXEC: btest-diff output
 
 module foo;

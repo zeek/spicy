@@ -1,4 +1,4 @@
-# @TEST-EXEC:  printf '\001\002\003\204\005' | spicy-driver %INPUT >>output
+# @TEST-EXEC:  printf '\001\002\003\204\005' | spicy-driver -d %INPUT >>output
 # @TEST-EXEC:  btest-diff output
 #
 # @TEST-DOC: Check look-ahead vector parsing with bitfield constant as terminator.

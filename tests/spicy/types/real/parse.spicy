@@ -1,4 +1,4 @@
-# @TEST-EXEC:  printf '\100\050\260\374\323\057\157\073\100\050\260\374\323\057\157\073\100\110\365\303\303\365\110\100' | spicy-driver %INPUT >output
+# @TEST-EXEC:  printf '\100\050\260\374\323\057\157\073\100\050\260\374\323\057\157\073\100\110\365\303\303\365\110\100' | spicy-driver -d %INPUT >output
 # @TEST-EXEC:  btest-diff output
 
 module Mini;

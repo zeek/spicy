@@ -1,9 +1,9 @@
-# @TEST-EXEC: spicyc -j -Z %INPUT -o test.hlto >>output 2>prof.log.raw
+# @TEST-EXEC: spicyc -d -j -Z %INPUT -o test.hlto >>output 2>prof.log.raw
 #
-# @TEST-EXEC: ${SCRIPTS}/printf '\x00\x00\x27\x10\x2a' | spicy-driver -Z test.hlto >>output 2>prof.log.raw
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00\x00\x27\x10\x2a' | spicy-driver -d -Z test.hlto >>output 2>prof.log.raw
 # @TEST-EXEC: cat prof.log.raw | awk '/total/ { print $1, $2, $4, $5; next } { print $1, $2 }' >>prof.log
 #
-# @TEST-EXEC: ${SCRIPTS}/printf '\x00\x00\x27\x10\x2a' | spicy-driver -Z -F test.dat test.hlto >>output 2>prof.log.raw
+# @TEST-EXEC: ${SCRIPTS}/printf '\x00\x00\x27\x10\x2a' | spicy-driver -d -Z -F test.dat test.hlto >>output 2>prof.log.raw
 # @TEST-EXEC: cat prof.log.raw | awk '/total/ { print $1, $2, $4, $5; next } { print $1, $2 }' >>prof.log
 #
 # @TEST-EXEC: btest-diff output

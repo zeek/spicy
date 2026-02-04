@@ -1,8 +1,8 @@
-# @TEST-EXEC: printf 'abc123' | spicy-driver %INPUT >output 2>&1
+# @TEST-EXEC: printf 'abc123' | spicy-driver -d %INPUT >output 2>&1
 # @TEST-EXEC: btest-diff output
 #
 # Ensure type-specific optimization kicks in.
-# @TEST-EXEC: spicyc -p %INPUT | grep -q 'b2 = spicy_rt::extractBytes'
+# @TEST-EXEC: spicyc -d -p %INPUT | grep -q 'b2 = spicy_rt::extractBytes'
 
 module Test;
 

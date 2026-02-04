@@ -1,4 +1,4 @@
-# @TEST-EXEC:  spicyc -j -o x.hlto %INPUT
+# @TEST-EXEC:  spicyc -d -j -o x.hlto %INPUT
 # @TEST-EXEC:  ${SCRIPTS}/printf '\x04ABC\n' | spicy-driver -p Test::A x.hlto | sort >>output
 # @TEST-EXEC:  ${SCRIPTS}/printf '\x04ABCD' | spicy-driver -p Test::A x.hlto | sort >>output
 # @TEST-EXEC:  btest-diff output

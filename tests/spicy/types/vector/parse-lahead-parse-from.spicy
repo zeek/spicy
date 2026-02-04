@@ -1,4 +1,4 @@
-# @TEST-EXEC:  printf x | spicy-driver %INPUT >output
+# @TEST-EXEC:  printf x | spicy-driver -d %INPUT >output
 # @TEST-EXEC:  btest-diff output
 #
 # This tests that look-ahead is not applied to fields with &parse-from.

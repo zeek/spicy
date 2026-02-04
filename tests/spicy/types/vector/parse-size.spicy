@@ -1,4 +1,4 @@
-# @TEST-EXEC:  printf 'XXX\nXXX\nXXX\n---\nXXX\n' | spicy-driver %INPUT >output
+# @TEST-EXEC:  printf 'XXX\nXXX\nXXX\n---\nXXX\n' | spicy-driver -d %INPUT >output
 # @TEST-EXEC:  btest-diff output
 
 module HTTP;

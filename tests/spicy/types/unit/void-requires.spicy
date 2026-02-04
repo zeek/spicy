@@ -1,6 +1,6 @@
-# @TEST-EXEC: spicyc %INPUT -j -o %INPUT.hlto
-# @TEST-EXEC: ${SCRIPTS}/printf '\x01\x02' | spicy-dump %INPUT.hlto >> output 2>&1
-# @TEST-EXEC-FAIL: ${SCRIPTS}/printf '\x00\x02' | spicy-dump %INPUT.hlto >> output 2>&1
+# @TEST-EXEC: spicyc -d %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: ${SCRIPTS}/printf '\x01\x02' | spicy-dump -d %INPUT.hlto >> output 2>&1
+# @TEST-EXEC-FAIL: ${SCRIPTS}/printf '\x00\x02' | spicy-dump -d %INPUT.hlto >> output 2>&1
 # @TEST-EXEC: btest-diff output
 #
 # @TEST-DOC: Test that `void` fields support `&requires`.

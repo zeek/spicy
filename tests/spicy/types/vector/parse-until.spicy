@@ -1,4 +1,4 @@
-# @TEST-EXEC: printf "AAA\nBBB\nCCC\nDDD\nEEEE\n---\nFFF\n" | spicy-driver %INPUT >output
+# @TEST-EXEC: printf "AAA\nBBB\nCCC\nDDD\nEEEE\n---\nFFF\n" | spicy-driver -d %INPUT >output
 # @TEST-EXEC: btest-diff output
 
 module HTTP;

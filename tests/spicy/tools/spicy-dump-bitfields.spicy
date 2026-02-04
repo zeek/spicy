@@ -1,7 +1,7 @@
-# @TEST-EXEC: spicyc -j -Q -o test.hlto %INPUT
-# @TEST-EXEC: printf '\001\002\003' | spicy-dump -Q test.hlto >output-text
+# @TEST-EXEC: spicyc -d -j -Q -o test.hlto %INPUT
+# @TEST-EXEC: printf '\001\002\003' | spicy-dump -d -Q test.hlto >output-text
 # @TEST-EXEC: btest-diff output-text
-# @TEST-EXEC: printf '\001\002\003' | spicy-dump -J -Q test.hlto >output-json
+# @TEST-EXEC: printf '\001\002\003' | spicy-dump -d -J -Q test.hlto >output-json
 # @TEST-EXEC: btest-diff output-json
 
 module Test;

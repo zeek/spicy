@@ -1,4 +1,4 @@
-# @TEST-EXEC: ${SCRIPTS}/printf 'x' | spicy-driver %INPUT >output
+# @TEST-EXEC: ${SCRIPTS}/printf 'x' | spicy-driver -d %INPUT >output
 # @TEST-EXEC: btest-diff output
 
 module Test;
