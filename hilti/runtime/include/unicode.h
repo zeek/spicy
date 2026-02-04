@@ -19,7 +19,7 @@ HILTI_RT_ENUM_WITH_DEFAULT(DecodeErrorStrategy, IGNORE,
 );
 
 /** For bytes decoding, which character set to use. */
-HILTI_RT_ENUM(Charset, Undef, UTF8, UTF16LE, UTF16BE, ASCII);
+HILTI_RT_ENUM(Charset, UTF8, UTF16LE, UTF16BE, ASCII, Undef = -1);
 
 constexpr uint32_t REPLACEMENT_CHARACTER = 0x0000FFFD;
 

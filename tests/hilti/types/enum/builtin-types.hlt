@@ -1,0 +1,42 @@
+# @TEST-EXEC: ${HILTIC} -dj %INPUT >output
+
+module foo {
+
+import hilti;
+
+{
+    local hilti::AddressFamily e;
+    assert ! e;
+    assert e == hilti::AddressFamily::Undef;
+    assert ! e.has_label();
+}
+
+{
+    local hilti::BitOrder e;
+    assert ! e;
+    assert e == hilti::BitOrder::Undef;
+    assert ! e.has_label();
+}
+
+{
+    local hilti::Protocol e;
+    assert ! e;
+    assert e == hilti::Protocol::Undef;
+    assert ! e.has_label();
+}
+
+{
+    local hilti::RealType e;
+    assert ! e;
+    assert e == hilti::RealType::Undef;
+    assert ! e.has_label();
+}
+
+{
+    local hilti::Charset e;
+    assert ! e;
+    assert e == hilti::Charset::Undef;
+    assert ! e.has_label();
+}
+
+}

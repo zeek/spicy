@@ -31,7 +31,7 @@
 namespace spicy::rt {
 
 /** Defines the direction a `ParserPort` applies to. */
-HILTI_RT_ENUM(Direction, Originator, Responder, Both, Undef);
+HILTI_RT_ENUM(Direction, Originator, Responder, Both, Undef = -1);
 
 } // namespace spicy::rt
 

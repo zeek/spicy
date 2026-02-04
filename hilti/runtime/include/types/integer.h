@@ -304,7 +304,7 @@ inline uint64_t flip(uint64_t v, uint64_t n) {
 }
 
 /** Available bit orders. */
-HILTI_RT_ENUM(BitOrder, LSB0, MSB0, Undef);
+HILTI_RT_ENUM(BitOrder, LSB0, MSB0, Undef = -1);
 
 /** Extracts a range of bits from an integer value, shifting them to the very left before returning. */
 template<typename UINT>

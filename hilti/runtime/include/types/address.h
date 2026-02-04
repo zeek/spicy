@@ -15,7 +15,7 @@
 
 namespace hilti::rt {
 
-HILTI_RT_ENUM(AddressFamily, Undef, IPv4, IPv6);
+HILTI_RT_ENUM(AddressFamily, IPv4, IPv6, Undef = -1);
 
 /**
  * Represents HILTI address type. This treats IPv4 and IPv6 addresses
