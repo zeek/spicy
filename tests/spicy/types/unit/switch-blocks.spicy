@@ -1,4 +1,4 @@
-# @TEST-EXEC:  echo 1234567890 | spicy-driver %INPUT >output
+# @TEST-EXEC:  echo 1234567890 | spicy-driver -d %INPUT >output
 # @TEST-EXEC:  btest-diff output
 
 module Mini;

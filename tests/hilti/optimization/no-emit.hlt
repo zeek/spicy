@@ -1,9 +1,9 @@
-# @TEST-EXEC: hiltic -j %INPUT >output
-# @TEST-EXEC: hiltic -c %INPUT | egrep "std::string X|return.*X" >>output.c++
+# @TEST-EXEC: hiltic -g -j %INPUT >output
+# @TEST-EXEC: hiltic -g -c %INPUT | egrep "std::string X|return.*X" >>output.c++
 # @TEST-EXEC: btest-diff output
 # @TEST-EXEC: btest-diff output.c++
 #
-# @TEST-DOC: Tests different types of &no-emit fields.
+# @TEST-DOC: Tests different types of &no-emit fields; disable optimizer to avoid conflicting changes
 
 module Test {
 

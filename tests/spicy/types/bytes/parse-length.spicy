@@ -1,18 +1,18 @@
-# @TEST-EXEC: printf 'abc12345def' | spicy-driver %INPUT >output 2>&1
+# @TEST-EXEC: printf 'abc12345def' | spicy-driver -d %INPUT >output 2>&1
 # @TEST-EXEC: btest-diff output
 #
 # Ensure type-specific optimization kicks in.
-# @TEST-EXEC: spicyc -p %INPUT | grep -q 'b2 = spicy_rt::extractBytes'
+# @TEST-EXEC: spicyc -d -p %INPUT | grep -q 'b2 = spicy_rt::extractBytes'
 #
 # Ensure literal-specific optimization kicks in.
-# @TEST-EXEC: spicyc -p %INPUT | grep -q '^ *spicy_rt::expectBytesLiteral'
+# @TEST-EXEC: spicyc -d -p %INPUT | grep -q '^ *spicy_rt::expectBytesLiteral'
 #
 # Ensure we don't get any look-ahead checks when parsing the literals, we don't need them here.
-# @TEST-EXEC: spicyc -p %INPUT | grep -vq 'if.*lah'
+# @TEST-EXEC: spicyc -d -p %INPUT | grep -vq 'if.*lah'
 #
 # Ensure our peephole optimizer removes `(*self).$error = $error; default<void>(); $error = (*self).$error;` blocks
-# @TEST-EXEC-FAIL: spicyc -p %INPUT | grep -q 'default<void>()'
-# @TEST-EXEC-FAIL: spicyc -p %INPUT | grep -v 'default<void>()' | grep -A1 '(.self).$error = $error' | grep -q -B1 "$error = (.self).$error"
+# @TEST-EXEC-FAIL: spicyc -d -p %INPUT | grep -q 'default<void>()'
+# @TEST-EXEC-FAIL: spicyc -d -p %INPUT | grep -v 'default<void>()' | grep -A1 '(.self).$error = $error' | grep -q -B1 "$error = (.self).$error"
 
 module Test;
 

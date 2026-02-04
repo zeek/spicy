@@ -1,4 +1,4 @@
-# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: ${SPICYC} -d %INPUT -j -o %INPUT.hlto
 # @TEST-EXEC: echo 1234567890 | spicy-driver %INPUT.hlto >output
 # @TEST-EXEC: echo 2234567890 | spicy-driver %INPUT.hlto >>output
 # @TEST-EXEC: echo 3234567890 | spicy-driver %INPUT.hlto >>output

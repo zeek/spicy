@@ -1,4 +1,4 @@
-# @TEST-EXEC: ${SPICYC} %INPUT -j -o switch.hlto
+# @TEST-EXEC: ${SPICYC} -d %INPUT -j -o switch.hlto
 # @TEST-EXEC: ${SCRIPTS}/printf '\xff\xff' | spicy-driver switch.hlto >>output 2>&1
 # @TEST-EXEC: ${SCRIPTS}/printf A | spicy-driver switch.hlto >>output 2>&1
 # @TEST-EXEC: btest-diff output

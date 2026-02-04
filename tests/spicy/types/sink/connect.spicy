@@ -1,4 +1,4 @@
-# @TEST-EXEC:  printf '1234567890abcde' | spicy-driver -p Mini::Main %INPUT >output 2>&1
+# @TEST-EXEC:  printf '1234567890abcde' | spicy-driver -d -p Mini::Main %INPUT >output 2>&1
 # @TEST-EXEC:  btest-diff output
 
 module Mini;
