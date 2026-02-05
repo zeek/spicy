@@ -1,4 +1,4 @@
-# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: ${SPICYC} -d %INPUT -j -o %INPUT.hlto
 # @TEST-EXEC: printf 'abcdefghij' | spicy-driver -p Mini::Main %INPUT.hlto >output
 # @TEST-EXEC: printf 'abcdefghij' | spicy-driver -p Mini::Main -i 1 %INPUT.hlto >>output
 # @TEST-EXEC: btest-diff output

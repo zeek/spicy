@@ -1,6 +1,6 @@
 # @TEST-DOC: Check that &size with side effects only gets evaluated once
 #
-# @TEST-EXEC: printf "\001123" | spicy-driver %INPUT > output
+# @TEST-EXEC: printf "\001123" | spicy-driver -d %INPUT > output
 # @TEST-EXEC: btest-diff output
 
 module Test;

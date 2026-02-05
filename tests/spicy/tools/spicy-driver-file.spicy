@@ -1,5 +1,5 @@
-# @TEST-EXEC: spicy-driver -f input.dat %INPUT >>output
-# @TEST-EXEC: spicy-build %INPUT
+# @TEST-EXEC: spicy-driver -d -f input.dat %INPUT >>output
+# @TEST-EXEC: spicy-build -d %INPUT
 # @TEST-EXEC: ./a.out -f input.dat >>output
 # @TEST-EXEC: btest-diff output
 

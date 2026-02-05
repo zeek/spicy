@@ -2,8 +2,11 @@
 Test::X {
   a1: a
   a2: a
+  b: (unset)
 }
 Test::X {
+  a1: (unset)
+  a2: (unset)
   b: b
 }
 [error] spicy-dump: processing failed with exception of type spicy::rt::ParseError: no expected look-ahead token found (<...>/switch-blocks-with-laheads.spicy:17:9-17:19)

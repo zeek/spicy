@@ -1,4 +1,4 @@
-# @TEST-EXEC: spicyc %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: spicyc -d %INPUT -j -o %INPUT.hlto
 # @TEST-EXEC: ${SCRIPTS}/printf a | spicy-dump %INPUT.hlto >>output 2>&1
 # @TEST-EXEC: ${SCRIPTS}/printf b | spicy-dump %INPUT.hlto >>output 2>&1
 # @TEST-EXEC: ${SCRIPTS}/printf c | spicy-dump %INPUT.hlto >>output 2>&1

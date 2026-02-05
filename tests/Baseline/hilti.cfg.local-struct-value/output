@@ -36,8 +36,8 @@ digraph {
 [debug/cfg-initial] Module 'hilti'
 digraph {
     0 [label=start shape=Mdiamond xlabel="in: [] out: []"];
-    1 [label="end <...>/hilti.hlt:3:1-68:1" shape=triangle xlabel="in: [] out: []"];
-    2 [label="end <...>/hilti.hlt:3:1-68:1" shape=triangle xlabel="in: [] out: []"];
+    1 [label="end <...>/hilti.hlt:3:1-71:1" shape=triangle xlabel="in: [] out: []"];
+    2 [label="end <...>/hilti.hlt:3:1-71:1" shape=triangle xlabel="in: [] out: []"];
     0 -> 2 [label="0"];
     2 -> 1 [label="1"];
 }
@@ -49,6 +49,7 @@ digraph {
 [debug/optimizer] pass: constant-propagation (round 1, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 1, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 1, pass iteration 1)
+[debug/optimizer] pass: remove-unused-fields (round 1, pass iteration 1)
 0
 1
 2

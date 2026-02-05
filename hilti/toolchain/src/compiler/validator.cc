@@ -511,6 +511,11 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         }
     }
 
+    void operator()(expression::Grouping* n) final {
+        if ( n->expressions().empty() )
+            error("group cannot be empty", n);
+    }
+
     void operator()(expression::ListComprehension* n) final {
         if ( ! n->input()->type()->type()->iteratorType() )
             error("input value not iterable", n);
@@ -846,6 +851,9 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                 if ( ft->parameters().size() )
                     error("~finally cannot take any parameters", n);
             }
+
+            if ( f->isNoEmit() && ! (f->isNoEmitPrivate() || f->isNoEmitOptimized()) )
+                error("&no-emit must have value 'private' or 'optimized'", f);
         }
 
         for ( const auto& param : n->parameters() ) {

@@ -1,4 +1,4 @@
-# @TEST-EXEC: spicyc %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: spicyc -d %INPUT -j -o %INPUT.hlto
 # @TEST-EXEC: echo abc | spicy-driver %INPUT.hlto >output
 # @TEST-EXEC: echo xyz | spicy-driver %INPUT.hlto >>output
 # @TEST-EXEC: echo XYZ | spicy-driver %INPUT.hlto >>output

@@ -195,6 +195,9 @@ struct VisitorPass1 : public visitor::MutatingPostOrder {
             n->attributes()->add(context(), builder()->attribute(hilti::attribute::kind::OnHeap));
         }
 
+        if ( auto* x = u->attributes()->find(attribute::kind::AlwaysEmit) )
+            n->attributes()->add(context(), x);
+
         recordChange(n, "replaced unit type with struct");
     }
 

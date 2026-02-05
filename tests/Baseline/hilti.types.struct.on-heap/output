@@ -11,3 +11,4 @@ s2=[$b=True, $s="NEW", $i=21]
 [debug/optimizer] pass: constant-propagation (round 1, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 1, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 1, pass iteration 1)
+[debug/optimizer] pass: remove-unused-fields (round 1, pass iteration 1)

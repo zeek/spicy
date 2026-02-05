@@ -5,10 +5,12 @@ test::A {
   c: C
 }
 test::A {
+  a: (unset)
   b: B
   c: C
 }
 test::A {
+  a: (unset)
   b: B
   c: C
 }

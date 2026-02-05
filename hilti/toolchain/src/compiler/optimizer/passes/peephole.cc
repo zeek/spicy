@@ -42,8 +42,9 @@ struct Mutator : public optimizer::visitor::Mutator {
                 deref0 = x;
                 break;
             }
-            else if ( const auto* x = op0->tryAs<expression::Grouping>() ) {
-                op0 = x->expression();
+            else if ( const auto* x = op0->tryAs<expression::Grouping>();
+                      x && x->expressions().size() == 1 && ! x->local() ) {
+                op0 = x->expressions().front();
                 continue;
             }
 
@@ -88,8 +89,9 @@ struct Mutator : public optimizer::visitor::Mutator {
                 deref0 = x;
                 break;
             }
-            else if ( const auto* x = op0->tryAs<expression::Grouping>() ) {
-                op0 = x->expression();
+            else if ( const auto* x = op0->tryAs<expression::Grouping>();
+                      x && x->expressions().size() == 1 && ! x->local() ) {
+                op0 = x->expressions().front();
                 continue;
             }
 

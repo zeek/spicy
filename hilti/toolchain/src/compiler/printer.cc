@@ -492,7 +492,7 @@ struct Printer : visitor::PreOrder {
         if ( auto* local = n->local() )
             _out << "{" << local << ";} ";
 
-        _out << n->expression() << ')';
+        _out << std::make_pair(n->expressions(), " ,") << ')';
     }
 
     void operator()(expression::Keyword* n) final {
@@ -1163,6 +1163,11 @@ void printer::print(std::ostream& out, Node* root, bool compact, bool user_visib
 
 void printer::Stream::_print(Node* root) {
     util::timing::Collector _("hilti/printer");
+
+    if ( ! root ) {
+        (*this) << "<null>";
+        return;
+    }
 
     for ( const auto& p : plugin::registry().plugins() ) {
         if ( ! p.ast_print )

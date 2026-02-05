@@ -1,4 +1,4 @@
-# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: ${SPICYC} -d %INPUT -j -o %INPUT.hlto
 # @TEST-EXEC: echo "H4sIAOVzEV0CA/NIzcnJ11EILshMrlQEACp6Q+YNAAAA" | spicy-driver -p Test::X  %INPUT.hlto >output
 # @TEST-EXEC: echo "H4sIAOVzEV0CA/NIzcnJ11EILshMrlQEACp6Q+YNAAAA" | spicy-driver -i 1 -p Test::X %INPUT.hlto >>output
 # @TEST-EXEC: btest-diff output
