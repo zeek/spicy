@@ -1359,7 +1359,7 @@ struct VisitorPass3 : visitor::MutatingPostOrder {
         if ( n->op0()->isResolved() && n->op1()->isResolved() ) {
             auto* lhs = n->op0()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>();
 
-            if ( ! type::same(lhs->type(), n->op1()->type()) ) {
+            if ( ! type::sameExceptForConstness(lhs->type(), n->op1()->type()) ) {
                 auto* lhs_type = lhs->type()->type()->as<type::Tuple>();
                 auto* rhs_type = n->op1()->type()->type()->tryAs<type::Tuple>();
 
@@ -1387,8 +1387,12 @@ struct VisitorPass3 : visitor::MutatingPostOrder {
 
                         if ( auto* x = coerceTo(n, rhs_elem, lhs_elem_type, false, true) )
                             new_elems.push_back(x);
-                        else
+                        else {
+                            if ( n->hasErrors() )
+                                return;
+
                             new_elems.push_back(rhs_elem);
+                        }
                     }
 
                     new_rhs->setExpressions(context(), {builder()->tuple(new_elems)});
