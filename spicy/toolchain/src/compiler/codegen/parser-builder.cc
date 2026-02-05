@@ -577,6 +577,8 @@ struct ProductionVisitor : public production::Visitor {
 
         // Push destination for parsed value onto stack.
 
+        Expression* need_copy_from = nullptr;
+
         if ( auto* c = meta.container() ) {
             pushTmpDestination("elem", c->parseType()->type()->elementType());
             pb->saveParsePosition(); // need to update position for container elements in case input is redirected
@@ -598,8 +600,18 @@ struct ProductionVisitor : public production::Visitor {
             // We won't have a field to store the value in, create a temporary.
             pushTmpDestination(fmt("transient_%s", field->id()), field->itemType());
 
+        else if ( ! field->itemType()->type()->isMutable() ) {
+            // For non-mutable types we use a temporary, rather than storing
+            // directly into the struct field, to facilitate potential
+            // optimizations. We cannot do that for mutable values because they
+            // may be modified in-place during parsing, and we need to ensure
+            // that any partial modifications are visible in the struct field.
+            pushTmpDestination(fmt("v_%s", field->id()), field->itemType());
+            need_copy_from = destination();
+        }
+
         else {
-            // Can store parsed value directly in struct field.
+            // Store parsed value directly in struct field.
             auto* dst = builder()->member(pb->state().self, field->id());
             pushDestination(dst);
         }
@@ -709,7 +721,7 @@ struct ProductionVisitor : public production::Visitor {
         endProduction(*p);
 
         if ( is_field_owner )
-            postParseField(*p, meta, pre_container_offset, ncur, ncur_max_size);
+            postParseField(*p, meta, pre_container_offset, ncur, ncur_max_size, need_copy_from);
 
         if ( try_ ) {
             popBuilder(); // per-field try-block
@@ -917,7 +929,7 @@ struct ProductionVisitor : public production::Visitor {
 
 
     void postParseField(const Production& p, const production::Meta& meta, Expression* pre_container_offset,
-                        Expression* ncur, Expression* ncur_max_size) {
+                        Expression* ncur, Expression* ncur_max_size, Expression* need_copy_from) {
         const auto& field = meta.field();
         assert(field); // Must only be called if we have a field.
 
@@ -971,6 +983,12 @@ struct ProductionVisitor : public production::Visitor {
 
         if ( ncur )
             builder()->addAssign(state().cur, ncur);
+
+        if ( need_copy_from ) {
+            // Copy parsed value from temporary into user-visible struct field.
+            auto* dst = builder()->member(state().self, field->id());
+            builder()->addAssign(dst, need_copy_from);
+        }
 
         if ( ! meta.container() ) {
             if ( pb->isEnabledDefaultNewValueForField() && state().literal_mode == LiteralMode::Default )
