@@ -214,7 +214,8 @@ struct CollectorPlacements : public optimizer::visitor::Collector {
             return;
 
         // Make sure this only happens on tuple returns
-        if ( ! fn->ftype()->result()->type()->isA<type::Tuple>() )
+        auto* ret_tup_ty = fn->ftype()->result()->type()->tryAs<type::Tuple>();
+        if ( ! ret_tup_ty )
             return;
 
         const auto* uses_of_op = collector_callers.uses(op);
@@ -279,6 +280,15 @@ struct CollectorPlacements : public optimizer::visitor::Collector {
         // that one.
         if ( ! placements.tail_caller && placements.placements.size() == 0 )
             placements.placements = calculatePlacements(*uses_of_op, fn->ftype()->parameters());
+
+        // Only propagate if we have a placement for each tuple value.
+        // This both ensures all uses assign only the same values and
+        // ensures that we don't erroneously change a return type
+        // from a tuple later.
+        if ( placements.placements.size() != ret_tup_ty->elements().size() ) {
+            placements.placements.clear();
+            return;
+        }
 
         // Now put placements into its tail callee, if any.
         if ( placements.tail_callee ) {

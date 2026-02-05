@@ -30,6 +30,11 @@ function tuple<uint<64>, uint<64>> inout_param(inout uint<64> p1, inout uint<64>
     return (p1, p2);
 }
 
+# Ensure not assigning all parameters means no propagation
+function tuple<uint<64>, uint<64>> incomplete_assign(uint<64> p1, uint<64> p2) {
+    return (p1, p2);
+}
+
 function void test() {
     local uint<64> x = 1;
     local uint<64> y = 1;
@@ -42,6 +47,8 @@ function void test() {
     (y, y) = same_param(y, y);
     # CHECK: y ={{.*}}inout_param(y)
     (x, y) = inout_param(x, y);
+    # CHECK: (x) ={{.*}}incomplete_assign(x, y)
+    (x, ) = ({ local tup = incomplete_assign(x, y); } (tup[0], ) );
 
     # Use the variables again so nothing funky happens
     hilti::print(x);

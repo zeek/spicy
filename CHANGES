@@ -1,3 +1,13 @@
+1.16.0-dev.35 | 2026-02-05 14:42:05 -0500
+
+  * GH-2260: Fix regression with propagating tuple returns. (Evan Typanski, Corelight)
+
+    Fixes #2260
+
+    With groupings, you can assign to a tuple without assigning all values.
+    Since this would break parts of the placements mechanism when
+    propagating returns, just disallow this for safety.
+
 1.16.0-dev.33 | 2026-02-02 13:25:18 +0100
 
   * GH-2251: Actually implement `enum` coercion to `bool`. (Benjamin Bannier, Corelight)
