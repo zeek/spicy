@@ -147,13 +147,12 @@ method view<stream> foo::Pub2::parse1(inout value_ref<stream> _t_data, optional<
     # "<...>/unused-types.spicy:16:20-16:26"
     local value_ref<Pub2> _t_unit = default<Pub2>();
     local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data));
-    local int<64> _t_lahead = 0;
     local iterator<stream> _t_lahead_end;
     local optional<hilti::RecoverableFailure> _t_error = Null;
     # "<...>/unused-types.spicy:16:20-16:26"
 
     # Begin parsing production: Unit: foo__Pub2 ->
-    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, 0, _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__Pub2 ->
 
     if ( _t_error ) 
@@ -167,13 +166,12 @@ method view<stream> foo::Pub2::parse3(inout value_ref<spicy_rt::ParsedUnit> _t_g
     local value_ref<Pub2> _t_unit = default<Pub2>();
     spicy_rt::initializeParsedUnit((*_t_gunit), _t_unit);
     local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data));
-    local int<64> _t_lahead = 0;
     local iterator<stream> _t_lahead_end;
     local optional<hilti::RecoverableFailure> _t_error = Null;
     # "<...>/unused-types.spicy:16:20-16:26"
 
     # Begin parsing production: Unit: foo__Pub2 ->
-    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, 0, _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__Pub2 ->
 
     if ( _t_error ) 
@@ -185,13 +183,12 @@ method view<stream> foo::Pub2::parse3(inout value_ref<spicy_rt::ParsedUnit> _t_g
 method view<stream> foo::Pub2::parse2(inout value_ref<Pub2> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
     # "<...>/unused-types.spicy:16:20-16:26"
     local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data));
-    local int<64> _t_lahead = 0;
     local iterator<stream> _t_lahead_end;
     local optional<hilti::RecoverableFailure> _t_error = Null;
     # "<...>/unused-types.spicy:16:20-16:26"
 
     # Begin parsing production: Unit: foo__Pub2 ->
-    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, 0, _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__Pub2 ->
 
     if ( _t_error ) 
@@ -276,13 +273,12 @@ method view<stream> foo::Pub3::parse1(inout value_ref<stream> _t_data, optional<
     # "<...>/unused-types.spicy:29:20-32:1"
     local value_ref<Pub3> _t_unit = default<Pub3>();
     local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data));
-    local int<64> _t_lahead = 0;
     local iterator<stream> _t_lahead_end;
     local optional<hilti::RecoverableFailure> _t_error = Null;
     # "<...>/unused-types.spicy:29:20-32:1"
 
     # Begin parsing production: Unit: foo__Pub3 -> Resolved_11 Resolved_12
-    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, 0, _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__Pub3 -> Resolved_11 Resolved_12
 
     if ( _t_error ) 
@@ -296,13 +292,12 @@ method view<stream> foo::Pub3::parse3(inout value_ref<spicy_rt::ParsedUnit> _t_g
     local value_ref<Pub3> _t_unit = default<Pub3>();
     spicy_rt::initializeParsedUnit((*_t_gunit), _t_unit);
     local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data));
-    local int<64> _t_lahead = 0;
     local iterator<stream> _t_lahead_end;
     local optional<hilti::RecoverableFailure> _t_error = Null;
     # "<...>/unused-types.spicy:29:20-32:1"
 
     # Begin parsing production: Unit: foo__Pub3 -> Resolved_11 Resolved_12
-    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, 0, _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__Pub3 -> Resolved_11 Resolved_12
 
     if ( _t_error ) 
@@ -314,13 +309,12 @@ method view<stream> foo::Pub3::parse3(inout value_ref<spicy_rt::ParsedUnit> _t_g
 method view<stream> foo::Pub3::parse2(inout value_ref<Pub3> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
     # "<...>/unused-types.spicy:29:20-32:1"
     local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data));
-    local int<64> _t_lahead = 0;
     local iterator<stream> _t_lahead_end;
     local optional<hilti::RecoverableFailure> _t_error = Null;
     # "<...>/unused-types.spicy:29:20-32:1"
 
     # Begin parsing production: Unit: foo__Pub3 -> Resolved_11 Resolved_12
-    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, 0, _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__Pub3 -> Resolved_11 Resolved_12
 
     if ( _t_error ) 
@@ -351,13 +345,12 @@ method view<stream> foo::Priv10::parse1(inout value_ref<stream> _t_data, optiona
     # "<...>/unused-types.spicy:43:22-46:1"
     local value_ref<Priv10> _t_unit = default<Priv10>();
     local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data));
-    local int<64> _t_lahead = 0;
     local iterator<stream> _t_lahead_end;
     local optional<hilti::RecoverableFailure> _t_error = Null;
     # "<...>/unused-types.spicy:43:22-46:1"
 
     # Begin parsing production: Unit: foo__Priv10 ->
-    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, 0, _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__Priv10 ->
 
     if ( _t_error ) 
@@ -371,13 +364,12 @@ method view<stream> foo::Priv10::parse3(inout value_ref<spicy_rt::ParsedUnit> _t
     local value_ref<Priv10> _t_unit = default<Priv10>();
     spicy_rt::initializeParsedUnit((*_t_gunit), _t_unit);
     local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data));
-    local int<64> _t_lahead = 0;
     local iterator<stream> _t_lahead_end;
     local optional<hilti::RecoverableFailure> _t_error = Null;
     # "<...>/unused-types.spicy:43:22-46:1"
 
     # Begin parsing production: Unit: foo__Priv10 ->
-    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, 0, _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__Priv10 ->
 
     if ( _t_error ) 
@@ -389,13 +381,12 @@ method view<stream> foo::Priv10::parse3(inout value_ref<spicy_rt::ParsedUnit> _t
 method view<stream> foo::Priv10::parse2(inout value_ref<Priv10> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public {
     # "<...>/unused-types.spicy:43:22-46:1"
     local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data));
-    local int<64> _t_lahead = 0;
     local iterator<stream> _t_lahead_end;
     local optional<hilti::RecoverableFailure> _t_error = Null;
     # "<...>/unused-types.spicy:43:22-46:1"
 
     # Begin parsing production: Unit: foo__Priv10 ->
-    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    _t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, 0, _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__Priv10 ->
 
     if ( _t_error ) 
