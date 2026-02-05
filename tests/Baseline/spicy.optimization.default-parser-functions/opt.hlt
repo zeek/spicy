@@ -15,7 +15,7 @@ public type P1 = struct {
 };
 public type P2 = struct {
     uint<8> x &optional &no-emit="optimized";
-    uint<8> y &optional;
+    uint<8> y &optional &no-emit="optimized";
     spicy_rt::Parser _t_parser &static &internal &needed-by-feature="supports_filters" &always-emit;
     optional<hilti::RecoverableFailure> _t_error &always-emit &internal;
     hook void _t_on_y(uint<8> _t_dd);
@@ -154,22 +154,24 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::P2::_t_parse_foo__P2_stage2(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error) {
     # "<...>/default-parser-functions.spicy:16:18-21:1"
+    local uint<8> _t_v_x;
     # "<...>/default-parser-functions.spicy:17:8-17:12"
 
     # Begin parsing production: Variable: x   -> uint<8>
     spicy_rt::waitForInput(_t_data, _t_cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:17:8-17:12", Null);
-    (_t_cur) = ({local tuple<uint<8>, view<stream>> _t_elem = (*unpack<uint<8>>((_t_cur, hilti::ByteOrder::Network)));} (_t_elem[1]));
+    (_t_v_x, _t_cur) = (*unpack<uint<8>>((_t_cur, hilti::ByteOrder::Network)));
 
     if ( _t_trim ) 
         (*_t_data).trim(begin(_t_cur));
 
     # End parsing production: Variable: x   -> uint<8>
 
+    local uint<8> _t_v_y;
     # "<...>/default-parser-functions.spicy:18:8-18:12"
 
     # Begin parsing production: Variable: y   -> uint<8>
     spicy_rt::waitForInput(_t_data, _t_cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:18:8-18:12", Null);
-    ((*self).y, _t_cur) = (*unpack<uint<8>>((_t_cur, hilti::ByteOrder::Network)));
+    (_t_v_y, _t_cur) = (*unpack<uint<8>>((_t_cur, hilti::ByteOrder::Network)));
 
     if ( _t_trim ) 
         (*_t_data).trim(begin(_t_cur));
@@ -177,7 +179,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
     # End parsing production: Variable: y   -> uint<8>
 
     (*self)._t_error = _t_error;
-    (*self)._t_on_y((*self).y);
+    (*self)._t_on_y(_t_v_y);
     _t_error = (*self)._t_error;
     hilti::debugDedent("spicy");
     return (_t_cur, _t_lah, _t_lahe, _t_error);

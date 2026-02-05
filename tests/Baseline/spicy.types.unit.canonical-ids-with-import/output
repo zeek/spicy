@@ -520,6 +520,7 @@
 [debug/ast-declarations]             - Parameter "_t_lahe" (a::_t_lahe_4)
 [debug/ast-declarations]             - Parameter "_t_error" (a::_t_error_5)
 [debug/ast-declarations]             - LocalVariable "_t_result" (a::_t_result_2)
+[debug/ast-declarations]             - LocalVariable "_t_v_x" (a::_t_v_x)
 [debug/ast-declarations]               - Parameter "_t_except" (a::_t_except_4)
 [debug/ast-declarations]     - Function "a::X::parse1" (a::a::X::parse1)
 [debug/ast-declarations]             - Parameter "_t_data" (a::_t_data_8)

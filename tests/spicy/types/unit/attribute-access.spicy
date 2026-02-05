@@ -1,6 +1,6 @@
 #
-# @TEST-EXEC:       ${SCRIPTS}/printf '\x10\x20\x30\x40' | spicy-driver %INPUT >>output 2>&1
-# @TEST-EXEC-FAIL:  ${SCRIPTS}/printf '\x10\x20\x30\x40' | spicy-driver fail.spicy >>output 2>&1
+# @TEST-EXEC:       ${SCRIPTS}/printf '\x10\x20\x30\x40' | spicy-driver -d %INPUT >>output 2>&1
+# @TEST-EXEC-FAIL:  ${SCRIPTS}/printf '\x10\x20\x30\x40' | spicy-driver -d fail.spicy >>output 2>&1
 # @TEST-EXEC:  btest-diff output
 #
 

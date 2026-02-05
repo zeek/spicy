@@ -121,6 +121,13 @@ struct Mutator : public optimizer::visitor::Mutator {
         return false;
     }
 
+    void operator()(expression::Move* n) final {
+        // A top-level move is a no-op and can be replaced by the inside
+        // expression.
+        if ( n->parent()->isA<statement::Expression>() )
+            replaceNode(n, n->expression(), "removing no-op move");
+    }
+
     void operator()(statement::Expression* n) final {
         // Remove expression statements of the form `default<void>`.
         if ( isDefaultVoid(n) ) {
