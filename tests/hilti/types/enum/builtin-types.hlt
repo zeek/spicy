@@ -12,6 +12,13 @@ import hilti;
 }
 
 {
+    local hilti::Side e;
+    assert ! e;
+    assert e == hilti::Side::Undef;
+    assert ! e.has_label();
+}
+
+{
     local hilti::BitOrder e;
     assert ! e;
     assert e == hilti::BitOrder::Undef;
@@ -29,6 +36,13 @@ import hilti;
     local hilti::RealType e;
     assert ! e;
     assert e == hilti::RealType::Undef;
+    assert ! e.has_label();
+}
+
+{
+    local hilti::DecodeErrorStrategy e;
+    assert ! e;
+    assert e == hilti::DecodeErrorStrategy::Undef;
     assert ! e.has_label();
 }
 
