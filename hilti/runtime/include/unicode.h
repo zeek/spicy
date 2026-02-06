@@ -16,10 +16,10 @@ HILTI_RT_ENUM(DecodeErrorStrategy,
               IGNORE,  // skip data
               REPLACE, // replace with a place-holder
               STRICT,  // throw a runtime error
-              Undef = -1);
+);
 
 /** For bytes decoding, which character set to use. */
-HILTI_RT_ENUM(Charset, UTF8, UTF16LE, UTF16BE, ASCII, Undef = -1);
+HILTI_RT_ENUM(Charset, UTF8, UTF16LE, UTF16BE, ASCII);
 
 constexpr uint32_t REPLACEMENT_CHARACTER = 0x0000FFFD;
 

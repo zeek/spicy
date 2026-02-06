@@ -10,7 +10,7 @@ using namespace hilti::rt;
 
 TEST_SUITE_BEGIN("Enum");
 
-HILTI_RT_ENUM(X, A1 = 1, A2 = 2, A3 = -2, Undef);
+HILTI_RT_ENUM(X, A1 = 1, A2 = 2, A3 = -2);
 
 TEST_CASE("from_int") {
     CHECK_EQ(enum_::from_int<X>(1), X::A1);

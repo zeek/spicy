@@ -48,12 +48,11 @@
  *
  * @param name name of the type to create.
  * @param __VA_ARGS__ comma-separated list of enumerator definitions, either
- *        identifier or identifier with initializer. This list should contain
- *        an enumerator `Undef`.
+ *        identifier or identifier with initializer.
  */
 #define HILTI_RT_ENUM(name, ...)                                                                                       \
     struct name {                                                                                                      \
-        enum Value : int64_t { __VA_ARGS__ };                                                                          \
+        enum Value : int64_t { Undef = -1, __VA_ARGS__ };                                                              \
         constexpr name(int64_t value = Undef) noexcept : _value(value) {}                                              \
         friend name Enum(Value value) { return name(value); }                                                          \
         friend constexpr bool operator==(const name& a, const name& b) noexcept { return a.value() == b.value(); }     \
@@ -543,7 +542,7 @@ constexpr auto map_tuple(T&& tup, F f) {
 }
 
 /** Available byte orders. */
-HILTI_RT_ENUM(ByteOrder, Little, Big, Network, Host, Undef = -1);
+HILTI_RT_ENUM(ByteOrder, Little, Big, Network, Host);
 
 /**
  * Returns the byte order of the system we're running on. The result is

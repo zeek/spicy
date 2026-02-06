@@ -35,8 +35,8 @@ namespace bytes {
 HILTI_RT_ENUM(Side,
               Left,  // left side
               Right, // right side
-              Both,  // left and right side
-              Undef = -1);
+              Both   // left and right side
+);
 
 /**
  * Safe bytes iterator traversing the content of an instance.

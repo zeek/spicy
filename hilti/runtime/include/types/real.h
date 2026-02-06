@@ -13,7 +13,7 @@ namespace hilti::rt {
 
 namespace real {
 /** Available formats for (un-)packing a binary floating point value. */
-HILTI_RT_ENUM(Type, IEEE754_Single, IEEE754_Double, Undef = -1);
+HILTI_RT_ENUM(Type, IEEE754_Single, IEEE754_Double);
 
 /** Packs a floating point value into a binary representation, following the protocol for `pack` operator. */
 extern Bytes pack(double d, Type type, ByteOrder fmt);
