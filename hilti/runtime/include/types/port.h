@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <arpa/inet.h>
-
 #include <string>
 
 #include <hilti/rt/extension-points.h>
@@ -13,7 +11,7 @@
 namespace hilti::rt {
 
 /** Protocols that can be associated with a `Port`. */
-HILTI_RT_ENUM(Protocol, Undef = 0, TCP, UDP, ICMP);
+HILTI_RT_ENUM(Protocol, TCP = 1, UDP, ICMP);
 
 /**
  * Represents HILTI's port type. A port is pair of port number and protocol.

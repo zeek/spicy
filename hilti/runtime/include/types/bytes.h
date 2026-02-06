@@ -32,10 +32,10 @@ class View;
 namespace bytes {
 
 /** For Bytes::Strip, which side to strip from. */
-HILTI_RT_ENUM_WITH_DEFAULT(Side, Left,
-                           Left,  // left side
-                           Right, // right side
-                           Both   // left and right side
+HILTI_RT_ENUM(Side,
+              Left,  // left side
+              Right, // right side
+              Both   // left and right side
 );
 
 /**

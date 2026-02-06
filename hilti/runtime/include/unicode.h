@@ -12,14 +12,14 @@ namespace hilti::rt {
 namespace unicode {
 
 /* When processing unicode, how to handle invalid data not representing unicode codepoints. */
-HILTI_RT_ENUM_WITH_DEFAULT(DecodeErrorStrategy, IGNORE,
-                           IGNORE,  // skip data
-                           REPLACE, // replace with a place-holder
-                           STRICT   // throw a runtime error
+HILTI_RT_ENUM(DecodeErrorStrategy,
+              IGNORE,  // skip data
+              REPLACE, // replace with a place-holder
+              STRICT,  // throw a runtime error
 );
 
 /** For bytes decoding, which character set to use. */
-HILTI_RT_ENUM(Charset, Undef, UTF8, UTF16LE, UTF16BE, ASCII);
+HILTI_RT_ENUM(Charset, UTF8, UTF16LE, UTF16BE, ASCII);
 
 constexpr uint32_t REPLACEMENT_CHARACTER = 0x0000FFFD;
 

@@ -617,11 +617,11 @@ std::string cxx::type::Union::str() const {
 }
 
 std::string cxx::type::Enum::str() const {
-    auto vals =
-        util::join(labels | std::views::transform([](const auto& l) { return fmt("%s = %d", l.first, l.second); }),
-                   ", ");
+    auto vals = util::join(labels | std::views::filter([](const auto& l) { return l.first != "Undef"; }) |
+                               std::views::transform([](const auto& l) { return fmt("%s = %d", l.first, l.second); }),
+                           ", ");
 
-    return fmt("HILTI_RT_ENUM_WITH_DEFAULT(%s, Undef, %s);", type_name, vals);
+    return fmt("HILTI_RT_ENUM(%s, %s)", type_name, vals);
 }
 
 cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::Block& x) {
