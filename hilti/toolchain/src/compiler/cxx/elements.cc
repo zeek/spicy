@@ -621,7 +621,7 @@ std::string cxx::type::Enum::str() const {
         util::join(labels | std::views::transform([](const auto& l) { return fmt("%s = %d", l.first, l.second); }),
                    ", ");
 
-    return fmt("HILTI_RT_ENUM_WITH_DEFAULT(%s, Undef, %s);", type_name, vals);
+    return fmt("HILTI_RT_ENUM(%s, %s)", type_name, vals);
 }
 
 cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::Block& x) {
