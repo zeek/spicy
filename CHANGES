@@ -1,3 +1,37 @@
+1.16.0-dev.42 | 2026-02-09 13:36:59 +0100
+
+  * Implicitly declare `Undef` for C++ enum like we do already in HILTI. (Benjamin Bannier, Corelight)
+
+  * Remove macro to create enums with non-`Undef` default value. (Benjamin Bannier, Corelight)
+
+  * GH-2259: Require that all runtime enums have an explicit `Undef` variant. (Benjamin Bannier, Corelight)
+
+    We previously would not require that C++ runtime enums had an `Undef`
+    variant. Instead we override the "default" entry which changed the
+    default variant such an enum value would take. This worked in C++ code,
+    but never in HILTI.
+
+    This patch adds an `Undef` variant for all C++ runtime enums.
+
+    Closes #2259
+
+  * Fix runtime enums implemented in C++. (Benjamin Bannier, Corelight)
+
+    Enums which we declare in C++ but expose to HILTI code we currently
+    declare twice: in C++, and again in HILTI (with a `&cxxname`). The way
+    we did that was inconsistent in that HILTI would implicitly add an
+    `Undef = -1` variant while many of our C++ declarations with
+    `HILTI_RT_ENUM` would declare `Undef` first and without value, leading
+    to `Undef = 0`; this likely also lead to all other enum variants being
+    inconsistently numbered. The most visible effect of this was that `Undef`
+    values of such enums were often truthy.
+
+    This patch cleans this up:
+
+    - C++ enums now declare `Undef` as last entry to ensure consistent
+      numbering
+    - C++ enums now explicitly set `Undef = -1`
+
 1.16.0-dev.37 | 2026-02-09 13:36:44 +0100
 
   * Bump CodSpeedHQ/action from 4.8.2 to 4.10.4 (dependabot[bot])
