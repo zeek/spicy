@@ -1,3 +1,7 @@
+1.16.0-dev.37 | 2026-02-09 13:36:44 +0100
+
+  * Bump CodSpeedHQ/action from 4.8.2 to 4.10.4 (dependabot[bot])
+
 1.16.0-dev.35 | 2026-02-05 14:42:05 -0500
 
   * GH-2260: Fix regression with propagating tuple returns. (Evan Typanski, Corelight)
