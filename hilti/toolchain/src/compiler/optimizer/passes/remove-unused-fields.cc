@@ -114,26 +114,6 @@ struct Collector : public optimizer::visitor::Collector {
             return nullptr;
     }
 
-    // Returns the dataflow transfer object for an expression.
-    //
-    // TODO: We actually don't have these at the expression level, so for now
-    // we pessimistically approximate it by returning the dataflow for the
-    // statement the expression is part of. Me may get the expression-level
-    // dataflow in the future, at which point we can update this function.
-    const cfg::Transfer* dataflowForExpression(Expression* expr) {
-        auto* stmt = expr->parent<Statement>();
-        if ( ! stmt )
-            return nullptr;
-
-        auto* block = stmt->parent<statement::Block>();
-        const auto* cfg = state()->cfgCache()->get(block);
-        assert(cfg);
-        if ( const auto* node = cfg->graph().getNode(stmt->identity()) )
-            return &cfg->dataflow().at(*node);
-        else
-            return nullptr;
-    }
-
     void operator()(ctor::struct_::Field* n) final {
         auto* struct_ = n->parent()->as<ctor::Struct>()->stype();
         auto* sfield = struct_->field(n->id());
@@ -182,7 +162,7 @@ struct Collector : public optimizer::visitor::Collector {
             else {
                 field->reads.push_back(n);
 
-                if ( const auto* transfer = dataflowForExpression(n); ! transfer || ! transfer->write.empty() )
+                if ( const auto* transfer = state()->cfgCache()->dataflow(n); ! transfer || ! transfer->write.empty() )
                     field->writes.push_back(n);
             }
         }
@@ -276,7 +256,7 @@ struct Mutator : public optimizer::visitor::Mutator {
                 // expression we'd need to move the initialization value to
                 // some other place to evaluate, which doesn't seem worth  the
                 // effort.
-                if ( const auto* expr = n->expression(); expr->isConstant() && expr->isA<expression::Ctor>() ) {
+                if ( const auto* expr = n->expression(); ! state()->cfgCache()->mayHaveSideEffects(expr) ) {
                     auto* ctor = n->parent()->as<ctor::Struct>();
                     ctor->removeField(n->id());
 

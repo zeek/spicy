@@ -303,6 +303,34 @@ public:
     CFG* get(statement::Block* block);
 
     /**
+     * Returns the dataflow transfer object for an expression.
+     *
+     * TODO: We actually don't have these at the expression level currently, so
+     * for now this function pessimistically approximates by returning the
+     * dataflow for the statement that the expression is part of. We may get
+     * the expression-level dataflow in the future, at which point we can
+     * update this function.
+     *
+     * @param expr the expression to get the dataflow for
+     * @return the dataflow transfer object for the expression, or null if not
+     * available
+     */
+    const cfg::Transfer* dataflow(const Expression* expr);
+
+    /**
+     * Returns true if an expression may have side effects. This includes
+     * situations where we cannot prove that it doesn't.
+     *
+     * TODO: This relies partially on `dataflow()`, so comes with the same
+     * caveat about expression-level dataflows for now.
+     *
+     * @param expr the expression to check
+     * @return true if the expression may have side effects, false if it is
+     * guaranteed to have no side effects
+     */
+    bool mayHaveSideEffects(const Expression* expr);
+
+    /**
      * Removes any cached CFG for the function or module containing a given
      * block. The CFG will then be re-computed next time it's requested.
      *

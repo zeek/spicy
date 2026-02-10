@@ -1195,6 +1195,41 @@ CFG* cfg::Cache::get(statement::Block* block_) {
     return it->second.second.get();
 }
 
+const cfg::Transfer* cfg::Cache::dataflow(const Expression* expr) {
+    // TODO: For now, appromixate dataflow for expressions by looking at the
+    // statement they are part of.
+    auto* stmt = expr->parent<Statement>();
+    if ( ! stmt )
+        return nullptr;
+
+    auto* block = stmt->parent<statement::Block>();
+    if ( ! block )
+        return nullptr;
+
+    const auto* cfg = get(block);
+    if ( ! cfg )
+        return nullptr;
+
+    const auto* node = cfg->graph().getNode(stmt->identity());
+    if ( ! node )
+        return nullptr;
+
+    return &cfg->dataflow().at(*node);
+}
+
+bool cfg::Cache::mayHaveSideEffects(const Expression* expr) {
+    // Test statically for some expressions we know do not have side effects.
+    // Once dataflow() is more precise, we can revisit if we want to keep the
+    // static checks as well or rely entirely on dataflow information.
+    if ( expr->isConstant() && expr->isA<expression::Ctor>() )
+        return false;
+
+    if ( const auto* transfer = dataflow(expr); transfer && transfer->write.empty() && transfer->gen.empty() )
+        return false;
+
+    return true;
+}
+
 bool cfg::Cache::invalidate(statement::Block* block_) {
     const auto& [block, module] = outerBlockAndModule(block_);
     assert(block);
