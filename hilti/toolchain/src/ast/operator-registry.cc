@@ -107,7 +107,7 @@ std::pair<bool, std::optional<std::vector<const Operator*>>> Registry::functionC
                     // expressions.
                     continue;
 
-                if ( r.external && d->linkage() != declaration::Linkage::Public )
+                if ( r.external && ! d->isPublic() )
                     return std::make_pair(false, std::nullopt);
 
                 if ( d->operator_() && d->operator_()->isInitialized() ) // not necessarily initialized yet

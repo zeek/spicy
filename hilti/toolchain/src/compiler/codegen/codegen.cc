@@ -240,8 +240,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
         auto init = n->init() ? cg->compile(n->init()) : cg->typeDefaultValue(n->type());
         auto x =
             cxx::declaration::Global({cxxNamespace(), n->id()}, cg->compile(n->type(), codegen::TypeUsage::Storage),
-                                     util::toVector(args), std::move(init),
-                                     (n->linkage() == declaration::Linkage::Public ? "" : "static"));
+                                     util::toVector(args), std::move(init), (n->isPublic() ? "" : "static"));
 
         // Record the global for now, final declarations will be added later
         // once the visitor knows all globals.
@@ -264,7 +263,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
 
         auto t = cg->compile(n->type(), codegen::TypeUsage::Storage);
         if ( auto dt = cg->typeDeclaration(n->type()) ) {
-            if ( n->linkage() == declaration::Linkage::Public )
+            if ( n->isPublic() )
                 dt->public_ = true;
 
             unit->add(*dt);
@@ -664,6 +663,7 @@ cxx::declaration::Function CodeGen::compile(Declaration* decl, type::Function* f
         switch ( linkage ) {
             case declaration::Linkage::Init:
             case declaration::Linkage::PreInit:
+            case declaration::Linkage::Export:
             case declaration::Linkage::Public: return "extern";
             case declaration::Linkage::Private: return "static";
             case declaration::Linkage::Struct: return "";

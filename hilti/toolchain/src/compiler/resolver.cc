@@ -565,6 +565,31 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
     }
 
+    void operator()(declaration::Export* n) final {
+        if ( ! n->resolvedDeclarationIndex() ) {
+            // If the expression has received a fully qualified ID, we look
+            // that up directly at the root if it's scoped, otherwise the
+            // original ID at the current location.
+            Node* scope_node = n;
+            auto id = n->fullyQualifiedID();
+            if ( id && id.namespace_() )
+                scope_node = builder()->context()->root();
+            else
+                id = n->id();
+
+            if ( auto resolved = scope::lookupID<Declaration>(std::move(id), scope_node, "declaration") ) {
+                auto index = context()->register_(resolved->first);
+                n->setResolvedDeclarationIndex(context(), index);
+                recordChange(n, util::fmt("set resolved declaration to %s", index));
+
+                if ( auto* type = resolved->first->tryAs<declaration::Type>() ) {
+                    recordChange(type, util::fmt("setting linkage to export"));
+                    type->setLinkage(declaration::Linkage::Export);
+                }
+            }
+        }
+    }
+
     void operator()(declaration::Expression* n) final {
         if ( ! n->fullyQualifiedID() ) {
             if ( n->id() == ID("self") || n->id() == ID(HILTI_INTERNAL_ID("dd")) )

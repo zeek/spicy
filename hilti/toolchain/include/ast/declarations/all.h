@@ -3,6 +3,7 @@
 #pragma once
 
 #include <hilti/ast/declarations/constant.h>
+#include <hilti/ast/declarations/export.h>
 #include <hilti/ast/declarations/expression.h>
 #include <hilti/ast/declarations/field.h>
 #include <hilti/ast/declarations/function.h>

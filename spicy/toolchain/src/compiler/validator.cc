@@ -477,9 +477,8 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     void operator()(hilti::declaration::Type* n) final {
         checkNodeAttributes(n, n->attributes(), "type declaration");
 
-        if ( n->linkage() == hilti::declaration::Linkage::Public && n->type()->alias() ) {
-            if ( auto* resolved = n->type()->alias()->resolvedDeclaration();
-                 resolved && resolved->linkage() != hilti::declaration::Linkage::Public )
+        if ( n->isPublic() && n->type()->alias() ) {
+            if ( auto* resolved = n->type()->alias()->resolvedDeclaration(); resolved && ! resolved->isPublic() )
                 error("public unit alias cannot refer to a non-public type", n);
         }
     }
@@ -545,7 +544,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                 error("%context requires a type", n);
 
             auto* decl = n->parent<hilti::declaration::Type>();
-            if ( decl && decl->linkage() != hilti::declaration::Linkage::Public )
+            if ( decl && ! decl->isPublic() )
                 error("only public units can have %context", n);
         }
 
@@ -641,7 +640,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         if ( ! unit )
             return;
 
-        checkHook(unit, n->hook(), decl->linkage() == hilti::declaration::Linkage::Public, false, n);
+        checkHook(unit, n->hook(), decl->isPublic(), false, n);
     }
 
     void operator()(hilti::Attribute* n) final {

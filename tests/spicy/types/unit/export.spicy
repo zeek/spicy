@@ -1,0 +1,10 @@
+# @TEST-EXEC: spicyc -d -p %INPUT | grep ^export >output
+# @TEST-EXEC: btest-diff output
+
+module Foo;
+
+export S1;
+export S2;
+
+type S1 = unit { };
+public type S2 = unit { };

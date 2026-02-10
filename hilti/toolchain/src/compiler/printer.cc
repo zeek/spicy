@@ -74,6 +74,7 @@ struct Printer : visitor::PreOrder {
             case declaration::Linkage::Init: return "init ";
             case declaration::Linkage::PreInit: return "preinit ";
             case declaration::Linkage::Public: return "public ";
+            case declaration::Linkage::Export: [[fallthrough]]; // there must be a separate 'export' declaration
             case declaration::Linkage::Struct: [[fallthrough]];
             case declaration::Linkage::Private: return ""; // That's the default.
             default: util::cannotBeReached();
@@ -160,6 +161,8 @@ struct Printer : visitor::PreOrder {
                     std::views::filter([](const auto& d) { return d->template isA<declaration::ImportedModule>(); }));
         print_decls(n->declarations() |
                     std::views::filter([](const auto& d) { return d->template isA<declaration::Type>(); }));
+        print_decls(n->declarations() |
+                    std::views::filter([](const auto& d) { return d->template isA<declaration::Export>(); }));
         print_decls(n->declarations() |
                     std::views::filter([](const auto& d) { return d->template isA<declaration::Constant>(); }));
         print_decls(n->declarations() |
@@ -332,6 +335,11 @@ struct Printer : visitor::PreOrder {
         _out << linkage(n->linkage()) << "const ";
         _out << n->type();
         _out << ' ' << n->id() << " = " << n->value() << ';';
+        _out.endLine();
+    }
+
+    void operator()(declaration::Export* n) final {
+        _out << "export " << n->id() << ';';
         _out.endLine();
     }
 
