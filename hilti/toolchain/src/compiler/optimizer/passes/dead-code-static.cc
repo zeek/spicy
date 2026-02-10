@@ -511,7 +511,7 @@ struct Mutator : public optimizer::visitor::Mutator {
 
     void operator()(statement::Expression* n) final {
         // Remove expression statements without side effects.
-        if ( const auto* expr = n->expression(); expr->isConstant() && expr->isA<expression::Ctor>() )
+        if ( const auto* expr = n->expression(); ! state()->cfgCache()->mayHaveSideEffects(expr) )
             removeNode(n, "removing unused expression result");
     }
 };

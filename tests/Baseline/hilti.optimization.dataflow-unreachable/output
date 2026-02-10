@@ -31,13 +31,21 @@
 [debug/optimizer] pass: propagate-function-returns (round 1, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 2, pass iteration 1)
+[debug/optimizer]     * function changed: fn
+[debug/optimizer]   [dataflow-unreachable.hlt:8:31-16:1] statement::Expression "a;" -> null (removing unused expression result)
+[debug/optimizer]     -> modified
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]     * resolver
+[debug/optimizer]       - updating function: fn
+[debug/optimizer]     * computed CFGs
+[debug/optimizer]       - deleting function state: fn
 [debug/optimizer] pass: peephole (round 2, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 2, pass iteration 1)
 [debug/optimizer]     * function changed: fn
 [debug/optimizer]   [dataflow-unreachable.hlt:10:5-10:9] statement::Expression "a = 1;" -> statement::Expression "1;" (statement result unused)
 [debug/optimizer]   [dataflow-unreachable.hlt:12:5-12:9] statement::Expression "b = 1;" -> statement::Expression "1;" (statement result unused)
-[debug/optimizer]   [dataflow-unreachable.hlt:8:31-16:1] statement::Expression "a;" -> null (statement result unused)
 [debug/optimizer]     -> modified
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-processing AST, round 1

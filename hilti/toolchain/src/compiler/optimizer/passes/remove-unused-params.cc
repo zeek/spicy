@@ -26,6 +26,10 @@ struct CollectorUnusedParameters : public optimizer::visitor::Collector {
      * Determines if the uses of this operator contain any side effects.
      * Currently, this means a function call that contains another function
      * call as an argument.
+     *
+     * TODO: Eventually we should be able to just call
+     * cfgCache()->mayHaveSideEffects() on the operator itself, but that
+     * currently doesn't provide the resolution we need.
      */
     bool usesContainSideEffects(const Operator* op) {
         const auto* uses_of_op = collector_callers->uses(op);
