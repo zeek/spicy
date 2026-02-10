@@ -41,24 +41,30 @@ public function bool fn() {
 module test {
 
 # A setup where variables are shadowed and each instances has slightly different usage patterns.
+function void use(inout bool x) { x = True; }
 
 public function void fn(bool flag) {
     local bool x = False;
+    use(x);
 
     # CHECK: local bool c = flag;
     local bool c = flag;
+    use(c);
     if ( c )
         return;
 
     {
         # CHECK: local bool [[C2:c_]] = flag;
         local bool c = flag;
+        use(c);
         # CHECK: x = [[C2]];
         x = c;
+        use(x);
 
         {
             # CHECK: local bool [[C3:c__]] = x;
             local bool c = x;
+            use(c);
             # CHECK: if ( [[C3]] )
             if ( c )
                 return;

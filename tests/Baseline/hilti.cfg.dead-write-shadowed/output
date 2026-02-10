@@ -24,6 +24,19 @@
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]       - deleting function state: f
 [debug/optimizer] pass: constant-propagation (round 1, pass iteration 1)
+[debug/optimizer]     * function changed: f
+[debug/optimizer]   [dead-write-shadowed.hlt:17:18-17:18] expression::Name "x" -> expression::Ctor "5" (propagating constant value)
+[debug/optimizer]   [dead-write-shadowed.hlt:10:19-18:1] statement::Block "{ local uint<64> x = 1; x = 5; local uint<64> x_ = 10; 2; hilti::print(5, True); }" -> constant propagation
+[debug/optimizer]     -> modified
+[debug/optimizer]   re-resolving AST assuming guarantees <none>
+[debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]     * resolver
+[debug/optimizer]       - updating function: f
+[debug/optimizer]     * constant-folder
+[debug/optimizer]       - updating function: f
+[debug/optimizer]     * computed CFGs
+[debug/optimizer]       - deleting function state: f
+[debug/optimizer] pass: constant-propagation (round 1, pass iteration 2)
 [debug/optimizer] pass: remove-unused-parameters (round 1, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 2, pass iteration 1)
@@ -40,6 +53,7 @@
 [debug/optimizer] pass: flatten-blocks (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 2, pass iteration 1)
 [debug/optimizer]     * function changed: f
+[debug/optimizer]   [dead-write-shadowed.hlt:13:9-13:13] statement::Expression "x = 5;" -> statement::Expression "5;" (statement result unused)
 [debug/optimizer]   [dead-write-shadowed.hlt:14:9-14:30] statement::Declaration "local uint<64> x_ = 10;" -> statement::Expression "10;" (statement result unused)
 [debug/optimizer]     -> modified
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
@@ -51,6 +65,7 @@
 [debug/optimizer] pass: propagate-function-returns (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 3, pass iteration 1)
 [debug/optimizer]     * function changed: f
+[debug/optimizer]   [dead-write-shadowed.hlt:10:19-18:1] statement::Expression "5;" -> null (removing unused expression result)
 [debug/optimizer]   [dead-write-shadowed.hlt:10:19-18:1] statement::Expression "10;" -> null (removing unused expression result)
 [debug/optimizer]     -> modified
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
@@ -62,16 +77,39 @@
 [debug/optimizer] pass: peephole (round 3, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 3, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 3, pass iteration 1)
+[debug/optimizer]     * function changed: f
+[debug/optimizer]   [dead-write-shadowed.hlt:11:5-11:25] statement::Declaration "local uint<64> x = 1;" -> statement::Expression "1;" (statement result unused)
+[debug/optimizer]     -> modified
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]     * computed CFGs
+[debug/optimizer]       - deleting function state: f
 [debug/optimizer] pass: constant-propagation (round 3, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 3, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 3, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 4, pass iteration 1)
+[debug/optimizer]     * function changed: f
+[debug/optimizer]   [dead-write-shadowed.hlt:10:19-18:1] statement::Expression "1;" -> null (removing unused expression result)
+[debug/optimizer]     -> modified
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]     * resolver
+[debug/optimizer]       - updating function: f
+[debug/optimizer]     * computed CFGs
+[debug/optimizer]       - deleting function state: f
 [debug/optimizer] pass: peephole (round 4, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 4, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 4, pass iteration 1)
 [debug/optimizer] pass: constant-propagation (round 4, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 4, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 4, pass iteration 1)
+[debug/optimizer] pass: dead-code-static (round 5, pass iteration 1)
+[debug/optimizer] pass: peephole (round 5, pass iteration 1)
+[debug/optimizer] pass: flatten-blocks (round 5, pass iteration 1)
+[debug/optimizer] pass: dead-code-cfg (round 5, pass iteration 1)
+[debug/optimizer] pass: constant-propagation (round 5, pass iteration 1)
+[debug/optimizer] pass: remove-unused-parameters (round 5, pass iteration 1)
+[debug/optimizer] pass: propagate-function-returns (round 5, pass iteration 1)
 [debug/cfg-final] Module 'Test'
 digraph {
     0 [label="f();" xlabel="in: [] out: [] keep"];
@@ -84,17 +122,13 @@ digraph {
 }
 [debug/cfg-final] Function 'f'
 digraph {
-    0 [label="local uint<64> x = 1" xlabel="gen: [x: local uint<64> x = 1] in: [] out: [x: local uint<64> x = 1]"];
-    1 [label="x = 5;" xlabel="write: [x] gen: [x: x = 5;] kill: [x: local uint<64> x = 1] in: [x: local uint<64> x = 1] out: [x: x = 5;]"];
-    2 [label="hilti::print(x, True);" xlabel="read: [x] in: [x: x = 5;] out: [x: x = 5;] keep"];
-    3 [label=start shape=Mdiamond xlabel="in: [] out: []"];
-    4 [label="end <...>/dead-write-shadowed.hlt:10:19-18:1" shape=triangle xlabel="in: [] out: []"];
-    5 [label="end <...>/dead-write-shadowed.hlt:10:19-18:1" shape=triangle xlabel="kill: [x: x = 5;] in: [x: x = 5;] out: []"];
-    3 -> 0 [label="0"];
-    0 -> 1 [label="1"];
-    1 -> 2 [label="2"];
-    2 -> 5 [label="3"];
-    5 -> 4 [label="4"];
+    0 [label="hilti::print(5, True);" xlabel="in: [] out: [] keep"];
+    1 [label=start shape=Mdiamond xlabel="in: [] out: []"];
+    2 [label="end <...>/dead-write-shadowed.hlt:10:19-18:1" shape=triangle xlabel="in: [] out: []"];
+    3 [label="end <...>/dead-write-shadowed.hlt:10:19-18:1" shape=triangle xlabel="in: [] out: []"];
+    1 -> 0 [label="0"];
+    0 -> 3 [label="1"];
+    3 -> 2 [label="2"];
 }
 [debug/cfg-final] Module 'hilti'
 digraph {

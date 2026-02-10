@@ -90,7 +90,7 @@ declare public optional<iterator<stream>> unit_find(iterator<stream> begin_, ite
 
 declare public void backtrack() &cxxname="spicy::rt::detail::backtrack" &have_prototype;
 
-declare public void initializeParsedUnit(inout ParsedUnit punit, any unit) &cxxname="spicy::rt::ParsedUnit::initialize" &have_prototype;
+declare public void initializeParsedUnit(inout ParsedUnit punit, inout any unit) &cxxname="spicy::rt::ParsedUnit::initialize" &have_prototype;
 
 declare public bytes extractBytes(inout value_ref<stream> data, view<stream> cur, uint<64> n, bool eod_ok, string location, inout strong_ref<Filters> filters) &cxxname="spicy::rt::detail::extractBytes" &have_prototype;
 declare public void expectBytesLiteral(inout value_ref<stream> data, view<stream> cur, bytes literal, string location, inout strong_ref<Filters> filters) &cxxname="spicy::rt::detail::expectBytesLiteral" &have_prototype;

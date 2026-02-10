@@ -160,12 +160,27 @@ struct Mutator : public optimizer::visitor::Mutator {
         }
 
         else if ( data->isA<Declaration>() ) {
-            if ( auto* stmt = data->parent(); stmt && stmt->isA<statement::Declaration>() )
-                node = stmt;
+            if ( auto* stmt = data->parent() ) {
+                if ( stmt->isA<statement::Declaration>() ) {
+                    node = stmt;
 
-            // Declarations should keep the RHS
-            if ( auto* local = data->tryAs<declaration::LocalVariable>(); local && local->init() )
-                replace_with = builder()->statementExpression(local->init());
+                    // Local declarations should keep the RHS
+                    if ( auto* local = data->tryAs<declaration::LocalVariable>(); local && local->init() )
+                        replace_with = builder()->statementExpression(local->init());
+                }
+
+                // If and while should have their declarations removed, but
+                // they must be constant for now since replacing the
+                // declaration with the initializer may be invalid.
+                declaration::LocalVariable* init = nullptr;
+                if ( auto* if_ = stmt->tryAs<statement::If>() )
+                    init = if_->init();
+                else if ( auto* while_ = stmt->tryAs<statement::While>() )
+                    init = while_->init();
+
+                if ( init == data && init->init() && init->init()->isConstant() )
+                    node = data;
+            }
         }
 
         if ( ! (node && node->hasParent()) )

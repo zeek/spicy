@@ -6,6 +6,10 @@
 module Test {
 import hilti;
 
+function void useval(inout uint<64> x) {
+    x = 5;
+}
+
 # CHECK: function void simple
 function void simple() {
     # We remove the dead store in i after constant propagation
@@ -14,10 +18,9 @@ function void simple() {
     # CHECK: local uint<64> j = 0
     local uint<64> j = i;
 
-    # We don't propagate into function calls, this may change. Other tests will
-    # use print as a side effect to keep variables alive and not propagate.
-    # CHECK: print(j
-    hilti::print(j);
+    # Use the value as an inout parameter so that it won't propagate.
+    # CHECK: useval(j)
+    useval(j);
 }
 
 # CHECK: function void param
@@ -30,7 +33,7 @@ function void param(inout uint<64> x) {
         # Ensure this doesn't get the x = 5 above to propagate
         # CHECK: local uint<64> y = x
         local uint<64> y = x;
-        hilti::print(y, True);
+        useval(y);
         b = False;
     }
 }
@@ -45,13 +48,13 @@ function void branching(bool b) {
         # Indirection through y since function calls don't get propagation
         # CHECK: local uint<64> y = 42;
         local uint<64> y = x;
-        hilti::print(y);
+        useval(y);
         return;
     }
 
     # CHECK: local uint<64> y = 5;
     local uint<64> y = x;
-    hilti::print(y);
+    useval(y);
 
     # This should not propagate
     local a = 50;
@@ -60,7 +63,7 @@ function void branching(bool b) {
     }
     # CHECK: local uint<64> c = a
     local uint<64> c = a;
-    hilti::print(c);
+    useval(c);
 }
 
 # CHECK: function uint<64> switch_controlflow
@@ -89,11 +92,55 @@ function uint<64> propagate_return() {
     return res;
 }
 
+# CHECK: function void propagate_call
+function void propagate_call() {
+    local x = 999;
+    # CHECK: print(999
+    hilti::print(x);
+}
+
+# CHECK: function void copy_prop
+function void copy_prop(uint<64> x) {
+    local y = x;
+    # CHECK: print(x
+    hilti::print(y);
+
+    # Scope should not copy prop
+    local a = 10;
+    # Make it so this scope won't get flattened
+    if ( x == 10 ) {
+        # Branch so that we don't propagate the constant in 'b'
+        local uint<64> b;
+        if ( x == 10 )
+            b = 10;
+        else
+            b = 15;
+
+        # CHECK: a = b
+        a = b;
+    }
+
+    # CHECK: print(a
+    hilti::print(a);
+
+    # We can, however, constant propagate
+    local n = 10;
+    if ( x == 10 ) {
+        local m = 15;
+        # CHECK: n = 15
+        n = m;
+    }
+    # CHECK: print(n
+    hilti::print(n);
+}
+
 simple();
 global uint<64> x = 10;
 param(x);
 branching(True);
 switch_controlflow(2);
 propagate_return();
+propagate_call();
+copy_prop(5);
 
 }

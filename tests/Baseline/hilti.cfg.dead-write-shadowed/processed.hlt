@@ -4,9 +4,7 @@ module Test {
 import hilti;
 
 function void f() {
-    local uint<64> x = 1;
-    x = 5;
-    hilti::print(x, True);
+    hilti::print(5, True);
 }
 
 f();
