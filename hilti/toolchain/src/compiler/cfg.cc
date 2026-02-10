@@ -1179,12 +1179,13 @@ static std::pair<statement::Block*, declaration::Module*> outerBlockAndModule(st
     else if ( auto* module = block->parent<declaration::Module>() )
         return {module->statements(), module};
     else
-        logger().internalError("CFG: outerBlockAndModule(): block is not part of a function or module");
+        return {nullptr, nullptr};
 }
 
 CFG* cfg::Cache::get(statement::Block* block_) {
     const auto& [block, module] = outerBlockAndModule(block_);
-    assert(block && module);
+    if ( ! (block && module) )
+        return nullptr;
 
     auto it = _blocks.find(block);
     if ( it == _blocks.end() ) {
@@ -1224,7 +1225,14 @@ bool cfg::Cache::mayHaveSideEffects(const Expression* expr) {
     if ( expr->isConstant() && expr->isA<expression::Ctor>() )
         return false;
 
-    if ( const auto* transfer = dataflow(expr); transfer && transfer->write.empty() && transfer->gen.empty() )
+    const auto* transfer = dataflow(expr);
+    if ( ! transfer )
+        return true;
+
+    if ( transfer->keep )
+        return true;
+
+    if ( transfer->write.empty() && transfer->gen.empty() )
         return false;
 
     return true;

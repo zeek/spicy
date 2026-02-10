@@ -298,7 +298,7 @@ public:
      * function or module
      * @return the CFG (which will actually be the CFG for the outermost block
      * containing the given block, i.e., for the function or module body
-     * containing it)
+     * containing it), or null if the block is not part of a function or module.
      */
     CFG* get(statement::Block* block);
 

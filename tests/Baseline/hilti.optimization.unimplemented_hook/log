@@ -15,6 +15,7 @@
 [debug/optimizer]     * resolver
 [debug/optimizer]       - updating module: Foo
 [debug/optimizer]     * computed CFGs
+[debug/optimizer]       - deleting module state: Foo
 [debug/optimizer] pass: peephole (round 1, pass iteration 1)
 [debug/optimizer]     * module changed: Foo
 [debug/optimizer]   [unimplemented_hook.hlt:29:1-29:27] statement::Expression "default<void>();" -> removing default<void> statement
