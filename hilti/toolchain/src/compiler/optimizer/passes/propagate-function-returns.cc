@@ -205,7 +205,7 @@ struct CollectorPlacements : public optimizer::visitor::Collector {
         fn_placements.insert({function_id, {}});
 
         // Don't change public functions
-        if ( n->linkage() == declaration::Linkage::Public )
+        if ( n->isPublic() )
             return;
 
         auto* fn = n->function();

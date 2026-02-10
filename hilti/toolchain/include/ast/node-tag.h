@@ -109,16 +109,17 @@ constexpr Tag WeakReference = 232;
 
 namespace declaration {
 constexpr Tag Constant = 300;
-constexpr Tag Expression = 301;
-constexpr Tag Field = 302;
-constexpr Tag Function = 303;
-constexpr Tag GlobalVariable = 304;
-constexpr Tag ImportedModule = 305;
-constexpr Tag LocalVariable = 306;
-constexpr Tag Module = 307;
-constexpr Tag Parameter = 308;
-constexpr Tag Property = 309;
-constexpr Tag Type = 310;
+constexpr Tag Export = 301;
+constexpr Tag Expression = 302;
+constexpr Tag Field = 303;
+constexpr Tag Function = 304;
+constexpr Tag GlobalVariable = 305;
+constexpr Tag ImportedModule = 306;
+constexpr Tag LocalVariable = 307;
+constexpr Tag Module = 308;
+constexpr Tag Parameter = 309;
+constexpr Tag Property = 310;
+constexpr Tag Type = 311;
 } // namespace declaration
 
 namespace expression {

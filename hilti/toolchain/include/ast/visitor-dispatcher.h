@@ -77,6 +77,7 @@ public:
     virtual void operator()(hilti::ctor::map::Element*) {}
     virtual void operator()(hilti::ctor::struct_::Field*) {}
     virtual void operator()(hilti::declaration::Constant*) {}
+    virtual void operator()(hilti::declaration::Export*) {}
     virtual void operator()(hilti::declaration::Expression*) {}
     virtual void operator()(hilti::declaration::Field*) {}
     virtual void operator()(hilti::declaration::Function*) {}

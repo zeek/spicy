@@ -1,0 +1,12 @@
+# @TEST-EXEC-FAIL: hiltic -d -p %INPUT 2>output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+export does_not_exist;
+export x;
+
+global string x;
+
+
+}
