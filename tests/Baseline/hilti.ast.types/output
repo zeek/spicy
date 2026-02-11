@@ -15,11 +15,12 @@
 [debug/compiler]   processing ASTs, round 3
 [debug/compiler]     [HILTI] building scopes
 [debug/compiler]     [HILTI] resolving AST
+[debug/compiler]     computing AST dependencies
 [debug/compiler] [HILTI] validating (post)
 [debug/compiler] performing global transformations
 [debug/compiler] [HILTI] validating (post)
 [debug/compiler] finalized AST
-[debug/compiler] computing AST dependencies
+[debug/compiler]   computing AST dependencies
 [debug/ast-final] # [HILTI] Final AST
 [debug/ast-final]   - ASTRoot [no parent] (<root>) [@a:XXX]
 [debug/ast-final]       | Foo -> declaration::Module <canonical-id="Foo" declaration="D1" dependencies="" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/types.hlt" scope="" skip-implementation="false"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
