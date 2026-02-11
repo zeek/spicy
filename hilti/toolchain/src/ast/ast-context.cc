@@ -62,6 +62,9 @@ public:
     // Entry point for computing all of an AST's global dependencies.
     void computeAllDependencies(ASTRoot* root);
 
+    // Dump computed dependency information to a debugging stream.
+    void dumpDependencies(const logging::DebugStream& stream);
+
     // Returns recorded dependencies for a given global declaration.
     // Returns an empty set if the given declaration is not known as having any
     // dependencies.
@@ -111,10 +114,12 @@ public:
     }
 
     void operator()(declaration::Constant* n) final {
-        if ( auto* t = n->type()->type()->tryAs<type::Enum>() )
+        if ( auto* t = n->type()->type()->tryAs<type::Enum>() ) {
             // Special-case: For enum constants, insert a dependency on the
             // enum type instead, because that's the one that will declare it.
-            insert(t->typeDeclaration());
+            if ( auto* decl = t->typeDeclaration() )
+                insert(decl);
+        }
         else
             insert(n);
     }
@@ -149,9 +154,9 @@ public:
     }
 
     void operator()(type::Name* n) final {
-        if ( auto* d = n->resolvedDeclaration() ) {
-            dispatch(d);
-            follow(d);
+        if ( auto* t = n->resolvedType() ) {
+            dispatch(t->typeDeclaration());
+            follow(t->typeDeclaration());
         }
     }
 };
@@ -163,18 +168,21 @@ void DependencyTracker::computeAllDependencies(ASTRoot* root) {
         for ( auto* d : module->childrenOfType<Declaration>() )
             computeSingleDependency(d->as<Declaration>());
     }
+}
 
-    if ( logger().isEnabled(logging::debug::AstDeclarations) ) {
-        HILTI_DEBUG(logging::debug::AstDeclarations, "Declaration dependencies:");
+void DependencyTracker::dumpDependencies(const logging::DebugStream& stream) {
+    if ( ! logger().isEnabled(logging::debug::AstDeclarations) )
+        return;
 
-        for ( const auto& [decl, deps] : dependencies ) {
-            if ( deps.empty() )
-                continue;
+    HILTI_DEBUG(stream, "Declaration dependencies:");
 
-            auto decl_ = fmt("[%s] %s", decl->displayName(), decl->canonicalID());
-            auto deps_ = util::join(deps | std::views::transform([](const auto* d) { return d->canonicalID(); }), ", ");
-            HILTI_DEBUG(logging::debug::AstDeclarations, fmt("- %s -> %s", decl_, deps_));
-        }
+    for ( const auto& [decl, deps] : dependencies ) {
+        if ( deps.empty() )
+            continue;
+
+        auto decl_ = fmt("[%s] %s", decl->displayName(), decl->canonicalID());
+        auto deps_ = util::join(deps | std::views::transform([](const auto* d) { return d->canonicalID(); }), ", ");
+        HILTI_DEBUG(logging::debug::AstDeclarations, fmt("- %s -> %s", decl_, deps_));
     }
 }
 
@@ -766,9 +774,13 @@ Result<Nothing> ASTContext::_resolve(Builder* builder, const Plugin& plugin) {
             logger().internalError("hilti::Unit::compile() didn't terminate, AST keeps changing");
     }
 
+    if ( auto rc = _computeDependencies(); ! rc )
+        return rc;
+
     _dumpAST(logging::debug::AstResolved, plugin, "AST after resolving", _total_rounds);
     _dumpStats(logging::debug::AstStats, plugin.component);
     _dumpDeclarations(logging::debug::AstDeclarations, plugin);
+    _dependency_tracker->dumpDependencies(logging::debug::AstDeclarations);
 
 #ifndef NDEBUG
     checkAST(false);
@@ -834,7 +846,7 @@ Result<Nothing> ASTContext::_validate(Builder* builder, const Plugin& plugin, bo
 
 Result<Nothing> ASTContext::_computeDependencies() {
     util::timing::Collector _("hilti/compiler/ast/compute-dependencies");
-    HILTI_DEBUG(logging::debug::Compiler, "computing AST dependencies");
+    HILTI_DEBUG(logging::debug::Compiler, "  computing AST dependencies");
 
     _dependency_tracker = std::make_unique<ast::detail::DependencyTracker>(this);
     _dependency_tracker->computeAllDependencies(_root.get());
