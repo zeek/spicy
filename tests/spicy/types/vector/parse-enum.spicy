@@ -1,4 +1,4 @@
-# @TEST-EXEC:  printf "\001\002\001\002\001\002\001\002" | spicy-driver %INPUT >output
+# @TEST-EXEC:  printf "\001\002\001\002\001\002\001\002" | spicy-driver -d %INPUT >output
 # @TEST-EXEC:  btest-diff output
 
 module Foo;

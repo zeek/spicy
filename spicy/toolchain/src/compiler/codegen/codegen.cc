@@ -150,7 +150,7 @@ struct VisitorPass1 : public visitor::MutatingPostOrder {
         if ( n->type()->alias() ) {
             // Special case: For an alias, if it's public, we just need to
             // register the unit under the alias name as well.
-            if ( n->linkage() == hilti::declaration::Linkage::Public )
+            if ( n->isPublic() )
                 cg->compilePublicUnitAlias(module, n->fullyQualifiedID(), u);
 
             n->type()->type(false)->as<hilti::type::Name>()->clearResolvedTypeIndex(); // will rebind to new struct

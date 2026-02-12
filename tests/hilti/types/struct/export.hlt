@@ -1,0 +1,12 @@
+# @TEST-EXEC: hiltic -d -p %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Foo {
+
+export S1;
+export S2;
+
+type S1 = struct { };
+public type S2 = struct { };
+
+}

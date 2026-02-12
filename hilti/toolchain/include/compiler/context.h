@@ -51,9 +51,11 @@ struct Options {
     std::vector<std::string> cxx_link; /**< additional static archives or shared libraries to link during JIT */
     bool cxx_enable_dynamic_globals =
         false; /**< if true, allocate globals dynamically at runtime for (future) thread safety */
-    bool global_optimizations = true;    /**< whether to run global HILTI optimizations on the generated code. */
-    bool import_standard_modules = true; /**< automatically import standard modules into the global namespace. this is
-                                           required, turn off only for debugging. */
+    bool global_optimizations = true;      /**< whether to run global HILTI optimizations on the generated code. */
+    bool import_standard_modules = true;   /**< automatically import standard modules into the global namespace. this is
+                                             required, turn off only for debugging. */
+    std::optional<bool> strict_public_api; /**< whether the optimizer may aggressively change the external C++ API of
+                                              the generated code; default depends on build mode */
 
     /**
      * Retrieves the value for an auxiliary option.

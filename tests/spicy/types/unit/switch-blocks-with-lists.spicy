@@ -1,4 +1,4 @@
-# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: ${SPICYC} -d %INPUT -j -o %INPUT.hlto
 # @TEST-EXEC: printf "A\002\003\004\005\006" | spicy-driver %INPUT.hlto >>output
 # @TEST-EXEC: printf "B\002\003\004\005\006" | spicy-driver %INPUT.hlto >>output
 # @TEST-EXEC: btest-diff output

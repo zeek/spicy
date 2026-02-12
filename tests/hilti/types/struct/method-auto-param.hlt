@@ -1,4 +1,4 @@
-# @TEST-EXEC: hiltic -j %INPUT >output
+# @TEST-EXEC: hiltic -d -j %INPUT >output
 # @TEST-EXEC: btest-diff output
 #
 # @TEST-DOC: Check that 'auto' parameters in struct methods get resolved through corresponding calls.

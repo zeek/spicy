@@ -42,8 +42,9 @@ struct Mutator : public optimizer::visitor::Mutator {
                 deref0 = x;
                 break;
             }
-            else if ( const auto* x = op0->tryAs<expression::Grouping>() ) {
-                op0 = x->expression();
+            else if ( const auto* x = op0->tryAs<expression::Grouping>();
+                      x && x->expressions().size() == 1 && ! x->local() ) {
+                op0 = x->expressions().front();
                 continue;
             }
 
@@ -88,8 +89,9 @@ struct Mutator : public optimizer::visitor::Mutator {
                 deref0 = x;
                 break;
             }
-            else if ( const auto* x = op0->tryAs<expression::Grouping>() ) {
-                op0 = x->expression();
+            else if ( const auto* x = op0->tryAs<expression::Grouping>();
+                      x && x->expressions().size() == 1 && ! x->local() ) {
+                op0 = x->expressions().front();
                 continue;
             }
 
@@ -117,6 +119,13 @@ struct Mutator : public optimizer::visitor::Mutator {
         }
 
         return false;
+    }
+
+    void operator()(expression::Move* n) final {
+        // A top-level move is a no-op and can be replaced by the inside
+        // expression.
+        if ( n->parent()->isA<statement::Expression>() )
+            replaceNode(n, n->expression(), "removing no-op move");
     }
 
     void operator()(statement::Expression* n) final {

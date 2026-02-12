@@ -1,4 +1,4 @@
-# @TEST-EXEC: hiltic -j %INPUT >output
+# @TEST-EXEC: hiltic -d -j %INPUT >output
 # @TEST-EXEC: btest-diff output
 #
 # @TEST-DOC: A struct where parameters and fields end up having the same C++ type; ensures constructors aren't ambiguous.

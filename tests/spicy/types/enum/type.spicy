@@ -1,4 +1,4 @@
-# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: ${SPICYC} -d -j %INPUT >output
 # @TEST-EXEC: btest-diff output
 
 module Test;

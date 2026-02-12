@@ -1,4 +1,4 @@
-# @TEST-EXEC:  printf '\377' | spicy-dump %INPUT >output
+# @TEST-EXEC:  printf '\377' | spicy-dump -d %INPUT >output
 # @TEST-EXEC:  btest-diff output
 
 module foo;

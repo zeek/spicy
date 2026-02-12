@@ -565,6 +565,31 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
     }
 
+    void operator()(declaration::Export* n) final {
+        if ( ! n->resolvedDeclarationIndex() ) {
+            // If the expression has received a fully qualified ID, we look
+            // that up directly at the root if it's scoped, otherwise the
+            // original ID at the current location.
+            Node* scope_node = n;
+            auto id = n->fullyQualifiedID();
+            if ( id && id.namespace_() )
+                scope_node = builder()->context()->root();
+            else
+                id = n->id();
+
+            if ( auto resolved = scope::lookupID<Declaration>(std::move(id), scope_node, "declaration") ) {
+                auto index = context()->register_(resolved->first);
+                n->setResolvedDeclarationIndex(context(), index);
+                recordChange(n, util::fmt("set resolved declaration to %s", index));
+
+                if ( auto* type = resolved->first->tryAs<declaration::Type>() ) {
+                    recordChange(type, util::fmt("setting linkage to export"));
+                    type->setLinkage(declaration::Linkage::Export);
+                }
+            }
+        }
+    }
+
     void operator()(declaration::Expression* n) final {
         if ( ! n->fullyQualifiedID() ) {
             if ( n->id() == ID("self") || n->id() == ID(HILTI_INTERNAL_ID("dd")) )
@@ -1334,7 +1359,7 @@ struct VisitorPass3 : visitor::MutatingPostOrder {
         if ( n->op0()->isResolved() && n->op1()->isResolved() ) {
             auto* lhs = n->op0()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>();
 
-            if ( ! type::same(lhs->type(), n->op1()->type()) ) {
+            if ( ! type::sameExceptForConstness(lhs->type(), n->op1()->type()) ) {
                 auto* lhs_type = lhs->type()->type()->as<type::Tuple>();
                 auto* rhs_type = n->op1()->type()->type()->tryAs<type::Tuple>();
 
@@ -1362,11 +1387,15 @@ struct VisitorPass3 : visitor::MutatingPostOrder {
 
                         if ( auto* x = coerceTo(n, rhs_elem, lhs_elem_type, false, true) )
                             new_elems.push_back(x);
-                        else
+                        else {
+                            if ( n->hasErrors() )
+                                return;
+
                             new_elems.push_back(rhs_elem);
+                        }
                     }
 
-                    new_rhs->setExpression(context(), builder()->tuple(new_elems));
+                    new_rhs->setExpressions(context(), {builder()->tuple(new_elems)});
                     recordChange(n->op1(), new_rhs, "tuple assign");
                     n->setOp1(context(), new_rhs);
                 }

@@ -106,6 +106,7 @@ error                 return token::ERROR;
 exception             return token::EXCEPTION;
 extern                return token::EXTERN;
 extern-no-suspend     return token::EXTERN_NO_SUSPEND;
+export                return token::EXPORT;
 for                   return token::FOR;
 from                  return token::FROM;
 function              return token::FUNCTION;

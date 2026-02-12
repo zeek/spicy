@@ -200,7 +200,7 @@ static std::pair<bool, Result<std::pair<Declaration*, ID>>> lookupIDBackend(cons
         return std::make_pair(true, std::move(err));
     }
 
-    if ( r.external && d->linkage() != declaration::Linkage::Public ) {
+    if ( r.external && ! d->isPublic() ) {
         bool ok = false;
 
         // We allow access to types (and type-derived constants) to

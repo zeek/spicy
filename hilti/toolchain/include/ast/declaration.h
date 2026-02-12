@@ -20,7 +20,9 @@ enum class Linkage {
     PreInit, /// executes automatically at load time, even before the runtime library is fully set up
     Struct,  /// method inside a method
     Private, /// accessible only locally
-    Public,  /// accessible across modules
+    Public,  /// accessible across modules (note: prefer to test for this with `isPublic()` rather than direct
+             /// comparison)
+    Export,  /// accessible across modules and guaranteed not to be modified by the optimizer
 };
 
 namespace detail {
@@ -28,7 +30,8 @@ constexpr util::enum_::Value<Linkage> Linkages[] = {{.value = Linkage::Struct, .
                                                     {.value = Linkage::Public, .name = "public"},
                                                     {.value = Linkage::Private, .name = "private"},
                                                     {.value = Linkage::Init, .name = "init"},
-                                                    {.value = Linkage::PreInit, .name = "preinit"}};
+                                                    {.value = Linkage::PreInit, .name = "preinit"},
+                                                    {.value = Linkage::Export, .name = "exported"}};
 } // namespace detail
 
 /** Returns the HILTI string representation corresponding to a linkage. */
@@ -54,6 +57,11 @@ public:
 
     /** Returns the declaration's linkage. */
     auto linkage() const { return _linkage; }
+
+    /** Returns true if the declaration's linkage is either `Public` or `Exported`. */
+    auto isPublic() const {
+        return _linkage == declaration::Linkage::Public || _linkage == declaration::Linkage::Export;
+    }
 
     /**
      * Returns the declaration's fully qualified ID once it has been set during

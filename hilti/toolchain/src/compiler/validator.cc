@@ -15,6 +15,7 @@
 #include <hilti/ast/ctors/tuple.h>
 #include <hilti/ast/ctors/vector.h>
 #include <hilti/ast/declarations/constant.h>
+#include <hilti/ast/declarations/export.h>
 #include <hilti/ast/declarations/expression.h>
 #include <hilti/ast/declarations/function.h>
 #include <hilti/ast/declarations/global-variable.h>
@@ -300,6 +301,22 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         hilti::visitor::visit(VisitExpressions(this), n);
     }
 
+    void operator()(declaration::Export* n) final {
+        if ( ! n->parent() || ! n->parent()->isA<declaration::Module>() ) {
+            error("export declaration can be used only at module scope", n);
+            return;
+        }
+
+        auto* resolved = n->resolvedDeclaration(context());
+        if ( ! resolved ) {
+            error(fmt("export declaration `%s` does not refer to an ID", n->id()), n);
+            return;
+        }
+
+        if ( ! resolved->isA<declaration::Type>() )
+            error(fmt("export declaration `%s` does not refer to a type", n->id()), n);
+    }
+
     void operator()(declaration::Field* n) final { checkDeclarationType(n, n->type()); }
 
     void operator()(declaration::Function* n) final {
@@ -509,6 +526,11 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                           *n->source()->type()),
                       n);
         }
+    }
+
+    void operator()(expression::Grouping* n) final {
+        if ( n->expressions().empty() )
+            error("group cannot be empty", n);
     }
 
     void operator()(expression::ListComprehension* n) final {
@@ -846,6 +868,9 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                 if ( ft->parameters().size() )
                     error("~finally cannot take any parameters", n);
             }
+
+            if ( f->isNoEmit() && ! (f->isNoEmitPrivate() || f->isNoEmitOptimized()) )
+                error("&no-emit must have value 'private' or 'optimized'", f);
         }
 
         for ( const auto& param : n->parameters() ) {

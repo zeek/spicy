@@ -169,10 +169,15 @@ struct Local : public DeclarationBase {
           init(std::move(init)),
           linkage(std::move(linkage)) {}
 
+    struct NotEmittedTag {};
+    Local(cxx::ID id, cxx::Type type, NotEmittedTag /* not used */)
+        : DeclarationBase(std::move(id)), type(std::move(type)), emitted(false) {}
+
     cxx::Type type;
     std::vector<cxx::Expression> args;
     std::optional<cxx::Expression> init;
     Linkage linkage;
+    bool emitted = true; // for struct fields: if false, the field is not emitted into the generated type
     std::optional<cxx::Expression> typeinfo_bitfield; // for rendering anonymous bitfields inside structs
 
     // Returns true if the ID starts with the prefix for internal IDs, which is

@@ -26,6 +26,10 @@ struct CollectorUnusedParameters : public optimizer::visitor::Collector {
      * Determines if the uses of this operator contain any side effects.
      * Currently, this means a function call that contains another function
      * call as an argument.
+     *
+     * TODO: Eventually we should be able to just call
+     * cfgCache()->mayHaveSideEffects() on the operator itself, but that
+     * currently doesn't provide the resolution we need.
      */
     bool usesContainSideEffects(const Operator* op) {
         const auto* uses_of_op = collector_callers->uses(op);
@@ -97,7 +101,7 @@ struct CollectorUnusedParameters : public optimizer::visitor::Collector {
         // Create the unused params
         auto& unused = unused_params[function_id];
 
-        if ( n->linkage() == declaration::Linkage::Public )
+        if ( n->isPublic() )
             return;
 
         auto all_lookups = context()->root()->scope()->lookupAll(n->fullyQualifiedID());
@@ -135,12 +139,12 @@ struct CollectorUnusedParameters : public optimizer::visitor::Collector {
              n->attributes()->find(hilti::attribute::kind::Public) )
             return;
 
-        if ( n->linkage() == declaration::Linkage::Public )
+        if ( n->isPublic() )
             return;
 
         // If the type is public, we cannot change its fields.
         const auto* type_ = n->parent<declaration::Type>();
-        if ( type_ && type_->linkage() == declaration::Linkage::Public )
+        if ( type_ && type_->isPublic() )
             return;
 
         // Don't set if a use may have side effects
