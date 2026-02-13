@@ -47,8 +47,8 @@
     __HILTI_NODE_0(hilti, CLASS, override_)                                                                            \
                                                                                                                        \
     void dispatch(::hilti::visitor::Dispatcher& v) override_ {                                                         \
-        v(static_cast<::hilti::Node*>(this));                                                                          \
         v(this);                                                                                                       \
+        v(static_cast<::hilti::Node*>(this));                                                                          \
     }
 
 #define __HILTI_NODE_1(NS, CLASS, BASE, override_)                                                                     \
@@ -63,9 +63,9 @@
     __HILTI_NODE_1(hilti, CLASS, BASE, override_)                                                                      \
                                                                                                                        \
     void dispatch(::hilti::visitor::Dispatcher& v) override_ {                                                         \
-        v(static_cast<::hilti::Node*>(this));                                                                          \
-        v(static_cast<BASE*>(this));                                                                                   \
         v(this);                                                                                                       \
+        v(static_cast<BASE*>(this));                                                                                   \
+        v(static_cast<::hilti::Node*>(this));                                                                          \
     }
 
 #define __HILTI_NODE_2(NS, CLASS, BASE1, BASE2, override_)                                                             \
@@ -80,10 +80,10 @@
     __HILTI_NODE_2(hilti, CLASS, BASE1, BASE2, override_)                                                              \
                                                                                                                        \
     void dispatch(::hilti::visitor::Dispatcher& v) override_ {                                                         \
-        v(static_cast<::hilti::Node*>(this));                                                                          \
+        v(this);                                                                                                       \
         v(static_cast<BASE1*>(this));                                                                                  \
         v(static_cast<BASE2*>(this));                                                                                  \
-        v(this);                                                                                                       \
+        v(static_cast<::hilti::Node*>(this));                                                                          \
     }
 
 namespace hilti {
