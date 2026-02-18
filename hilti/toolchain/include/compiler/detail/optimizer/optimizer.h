@@ -279,7 +279,6 @@ public:
      *
      * @param id the ID to check
      */
-    // FIXME(bbannier): drop `%`?
     static bool isFeatureFlag(const ID& id) { return util::startsWith(id.local(), HILTI_INTERNAL_ID("feat%")); }
 
     /**

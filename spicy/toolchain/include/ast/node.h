@@ -13,12 +13,12 @@
     void dispatch(::hilti::visitor::Dispatcher& v) override_ {                                                         \
         if ( v.dispatcherTag() == spicy::visitor::Dispatcher::Spicy ) {                                                \
             auto sv = static_cast<spicy::visitor::Dispatcher*>(&v);                                                    \
-            (*sv)(static_cast<::hilti::Node*>(this));                                                                  \
             (*sv)(this);                                                                                               \
+            (*sv)(static_cast<::hilti::Node*>(this));                                                                  \
         }                                                                                                              \
         else {                                                                                                         \
-            v(static_cast<::hilti::Node*>(this));                                                                      \
             v(this);                                                                                                   \
+            v(static_cast<::hilti::Node*>(this));                                                                      \
         }                                                                                                              \
     }
 
@@ -28,14 +28,14 @@
     void dispatch(::hilti::visitor::Dispatcher& v) override_ {                                                         \
         if ( v.dispatcherTag() == spicy::visitor::Dispatcher::Spicy ) {                                                \
             auto sv = static_cast<spicy::visitor::Dispatcher*>(&v);                                                    \
-            (*sv)(static_cast<::hilti::Node*>(this));                                                                  \
-            (*sv)(static_cast<BASE*>(this));                                                                           \
             (*sv)(this);                                                                                               \
+            (*sv)(static_cast<BASE*>(this));                                                                           \
+            (*sv)(static_cast<::hilti::Node*>(this));                                                                  \
         }                                                                                                              \
         else {                                                                                                         \
-            v(static_cast<::hilti::Node*>(this));                                                                      \
-            v(static_cast<BASE*>(this));                                                                               \
             v(this);                                                                                                   \
+            v(static_cast<BASE*>(this));                                                                               \
+            v(static_cast<::hilti::Node*>(this));                                                                      \
         }                                                                                                              \
     }
 
@@ -46,15 +46,15 @@
         using namespace hilti;                                                                                         \
         if ( v.dispatcherTag() == spicy::visitor::Dispatcher::Spicy ) {                                                \
             auto sv = static_cast<spicy::visitor::Dispatcher*>(&v);                                                    \
-            (*sv)(static_cast<::hilti::Node*>(this));                                                                  \
+            (*sv)(this);                                                                                               \
             (*sv)(static_cast<BASE1*>(this));                                                                          \
             (*sv)(static_cast<BASE2*>(this));                                                                          \
-            (*sv)(this);                                                                                               \
+            (*sv)(static_cast<::hilti::Node*>(this));                                                                  \
         }                                                                                                              \
         else {                                                                                                         \
-            v(static_cast<::hilti::Node*>(this));                                                                      \
             v(static_cast<BASE1*>(this));                                                                              \
             v(static_cast<BASE2*>(this));                                                                              \
+            v(static_cast<::hilti::Node*>(this));                                                                      \
         }                                                                                                              \
     }
 
