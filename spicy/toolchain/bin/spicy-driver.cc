@@ -113,7 +113,7 @@ void SpicyDriver::usage() {
            "  -X | --debug-addl <addl>            Implies -d and adds selected additional instrumentation "
            "(comma-separated; see 'help' for list).\n"
            "  -Z | --enable-profiling             Report profiling statistics after execution.\n"
-           "       --strict-public-api            Skip optimizations that the change public C++ API of generated "
+           "       --strict-public-api            Skip optimizations that change the public C++ API of generated "
            "code.\n"
            "       --strict-public-api            Skip optimizations that change the public C++ API of generated code. "
            " [default in debug builds]\n"

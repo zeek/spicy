@@ -1,3 +1,3 @@
-# Automatically generated; do not edit. -- <HASH> printf '\000\001rfc1350.txt\000octet\000' | spicy-driver %INPUT/printf '\000\001rfc1350.txt\000octet\000' | spicy-driver %INPUT/False
-# printf '\000\001rfc1350.txt\000octet\000' | spicy-driver tftp.spicy
+# Automatically generated; do not edit. -- <HASH> printf '\000\001rfc1350.txt\000octet\000' | spicy-driver -d %INPUT/printf '\000\001rfc1350.txt\000octet\000' | spicy-driver -d %INPUT/False
+# printf '\000\001rfc1350.txt\000octet\000' | spicy-driver -d tftp.spicy
 [$opcode=1, $filename=b"rfc1350.txt", $mode=b"octet"]

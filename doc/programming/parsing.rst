@@ -46,7 +46,7 @@ similar to a typical struct/record type:
 This will print:
 
 .. spicy-output:: basic-unit-module.spicy
-    :exec: spicyc -j %INPUT
+    :exec: spicyc -j -d %INPUT
 
 Fields are initially unset, and attempting to read an unset field will
 trigger a :ref:`runtime error <error_handling>`. You may, however,
@@ -69,10 +69,25 @@ been explicitly assigned:
 This will print:
 
 .. spicy-output:: basic-unit-module-with-default.spicy
-    :exec: spicyc -j %INPUT
+    :exec: spicyc -j -d %INPUT
 
 Note how the field remains unset even with the default now specified,
 while the access returns the expected value.
+
+.. note::
+
+    During development, we recommend running `spicy-driver` with the
+    ``--debug`` option (``-d`` for short) to prevent the optimizer
+    from being too aggressive and eliding fields it considers unused.
+    For example, if we had run the first example above without
+    ``-d``, the output would have looked like this:
+
+    .. spicy-output:: basic-unit-module.spicy 2
+        :exec: spicyc -j %INPUT
+
+    In the following, we will generally run with ``-d``. Once a parser
+    is ready for production, you would omit this option to get the
+    best performance. See :ref:`optimization` for more on this topic.
 
 Parsing a Field
 ^^^^^^^^^^^^^^^
@@ -99,7 +114,7 @@ Let's use :ref:`spicy-driver` to parse 4 bytes of input through this
 unit:
 
 .. spicy-output:: basic-unit-parse.spicy
-    :exec: printf '\01\02\03\04' | spicy-driver %INPUT
+    :exec: printf '\01\02\03\04' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 The output comes of course from the ``print`` statement inside the
@@ -131,7 +146,7 @@ attribute for fields that support it:
     };
 
 .. spicy-output:: basic-unit-parse-byte-order.spicy
-    :exec: printf '\01\02\03\04' | spicy-driver %INPUT
+    :exec: printf '\01\02\03\04' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 We see that unpacking the value has now flipped the bytes before
@@ -164,11 +179,11 @@ with an error. Example:
     };
 
 .. spicy-output:: constant-field.spicy 1
-    :exec: printf 'bar' | spicy-driver %INPUT
+    :exec: printf 'bar' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 .. spicy-output:: constant-field.spicy 2
-    :exec: printf 'foo' | spicy-driver %INPUT
+    :exec: printf 'foo' | spicy-driver -d %INPUT
     :show-with: foo.spicy
     :expect-failure:
 
@@ -187,7 +202,7 @@ the data that ends up matching the regular expression:
     };
 
 .. spicy-output:: regexp.spicy
-    :exec: printf 'Foo12345Bar' | spicy-driver %INPUT
+    :exec: printf 'Foo12345Bar' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 There's also a programmatic way to change a field's type to something
@@ -217,7 +232,7 @@ position. Example:
     };
 
 .. spicy-output:: size.spicy
-    :exec: printf '\000\001\000\002\000\003xyz' | spicy-driver %INPUT
+    :exec: printf '\000\001\000\002\000\003xyz' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 As you can see, ``x`` receives 6 bytes of input, which it then turns
@@ -262,7 +277,7 @@ attributes that control parsing. Example:
     };
 
 .. spicy-output:: max-size.spicy
-    :exec: printf '\001\002\003\004\005\000' | spicy-driver %INPUT
+    :exec: printf '\001\002\003\004\005\000' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 Here ``x`` will parse a ``NULL``-terminated byte sequence (excluding the
@@ -294,7 +309,7 @@ a corresponding field hook (see :ref:`unit_hooks`) using the reserved
     };
 
 .. spicy-output:: anonymous-field.spicy
-    :exec: printf '\01\02\03' | spicy-driver %INPUT
+    :exec: printf '\01\02\03' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 Anonymous fields can often be more efficient to process because the
@@ -324,7 +339,7 @@ prefix corresponding fields with:
     };
 
 .. spicy-output:: skip.spicy
-    :exec: printf '\01\02\03\04\05\06\07' | spicy-driver %INPUT
+    :exec: printf '\01\02\03\04\05\06\07' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 ``skip`` works for all kinds of fields but is particularly efficient
@@ -401,7 +416,7 @@ following stores an integer parsed in an ASCII representation as a
     };
 
 .. spicy-output:: parse-convert.spicy
-    :exec: printf 12345 | spicy-driver %INPUT
+    :exec: printf 12345 | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 ``&convert`` also works at the unit level to transform a whole
@@ -422,7 +437,7 @@ instance into a different value after it has been parsed:
     };
 
 .. spicy-output:: parse-convert-unit.spicy
-    :exec: printf 12345678 | spicy-driver %INPUT
+    :exec: printf 12345678 | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 Note how the ``Data`` instances have been turned into integers.
@@ -461,11 +476,11 @@ Example:
     };
 
 .. spicy-output:: parse-requires.spicy 1
-    :exec: printf '\001' | spicy-driver %INPUT
+    :exec: printf '\001' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 .. spicy-output:: parse-requires.spicy 2
-    :exec: printf '\010' | spicy-driver %INPUT
+    :exec: printf '\010' | spicy-driver -d %INPUT
     :show-with: foo.spicy
     :expect-failure:
 
@@ -487,7 +502,7 @@ to provide a custom error message when the condition fails. Example:
     };
 
 .. spicy-output:: parse-requires-with-error.spicy
-    :exec: printf '\010' | spicy-driver %INPUT
+    :exec: printf '\010' | spicy-driver -d %INPUT
     :show-with: foo.spicy
     :expect-failure:
 
@@ -513,11 +528,11 @@ Example:
 
 
 .. spicy-output:: parse-requires-property.spicy 1
-    :exec: printf '\001' | spicy-driver %INPUT
+    :exec: printf '\001' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 .. spicy-output:: parse-requires-property.spicy 2
-    :exec: printf '\010' | spicy-driver %INPUT
+    :exec: printf '\010' | spicy-driver -d %INPUT
     :show-with: foo.spicy
     :expect-failure:
 
@@ -677,7 +692,7 @@ variables to a unit type to store arbitrary state:
     };
 
 .. spicy-output:: unit-vars.spicy
-    :exec: printf \05 | spicy-driver %INPUT
+    :exec: printf \05 | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 Here, we assign a string value to ``a`` once we have parsed ``x``. The
@@ -700,7 +715,7 @@ would rather leave a variable unset by default, you can add
     };
 
 .. spicy-output:: unit-vars-optional.spicy
-    :exec: printf \05 | spicy-driver %INPUT
+    :exec: printf \05 | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 You can use the ``?.`` unit operator to test if an optional unit variable
@@ -723,7 +738,7 @@ of the unit itself yet)
     };
 
 .. spicy-output:: unit-vars-init.spicy
-    :exec: printf \05 | spicy-driver %INPUT
+    :exec: printf \05 | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 .. _unit_parameters:
@@ -748,7 +763,7 @@ available to any code inside the type's declaration:
     };
 
 .. spicy-output:: unit-params.spicy
-    :exec: printf '\05' | spicy-driver %INPUT
+    :exec: printf '\05' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 This example shows a typical idiom: We're handing parameters down to a
@@ -777,7 +792,7 @@ This works with subunits inside containers as well:
     };
 
 .. spicy-output:: unit-params-vector.spicy
-    :exec: printf '\05\01\02\03' | spicy-driver %INPUT
+    :exec: printf '\05\01\02\03' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 A common use-case for unit parameters is passing the ``self`` of a
@@ -831,7 +846,7 @@ value, there are two options:
         };
 
     .. spicy-output:: unit-params-string.spicy
-        :exec: printf '\x2a' | spicy-driver %INPUT
+        :exec: printf '\x2a' | spicy-driver -d %INPUT
         :show-with: foo.spicy
 
 .. **
@@ -1017,7 +1032,7 @@ Example:
     };
 
 .. spicy-output:: parse-address.spicy
-    :exec: printf '1234567890123456' | spicy-driver %INPUT
+    :exec: printf '1234567890123456' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 .. _parse_bitfield:
@@ -1050,7 +1065,7 @@ bits 3 to 4 as ``f.x3``, respectively:
     };
 
 .. spicy-output:: parse-bitfield.spicy
-    :exec: printf '\01\02\03\04' | spicy-driver %INPUT
+    :exec: printf '\01\02\03\04' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 Generally, a field ``bitfield(N)`` field is parsed like an
@@ -1189,7 +1204,7 @@ range to an enum, using ``$$`` to access the parsed value:
     };
 
 .. spicy-output:: parse-bitfield-enum.spicy
-    :exec: printf '\x21' | spicy-driver %INPUT
+    :exec: printf '\x21' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 When parsing a bitfield, you can enforce expected values for some
@@ -1340,7 +1355,7 @@ type.
     };
 
 .. spicy-output:: parse-unit-params.spicy
-    :exec: printf '\01\02' | spicy-driver %INPUT
+    :exec: printf '\01\02' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 See :ref:`unit_parameters` for more.
@@ -1376,7 +1391,7 @@ parsing five ``uint8``:
     };
 
 .. spicy-output:: parse-vector.spicy
-    :exec: printf '\01\02\03\04\05' | spicy-driver %INPUT
+    :exec: printf '\01\02\03\04\05' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 It is possible to skip the ``SIZE`` (e.g., ``x: uint8[]``) and instead
@@ -1444,7 +1459,7 @@ Inside that hook, ``$$`` refers to the element's final value:
     };
 
 .. spicy-output:: parse-vector-foreach.spicy
-    :exec: printf '\01\02\03\04\05' | spicy-driver %INPUT
+    :exec: printf '\01\02\03\04\05' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 As you can see, when a ``foreach`` hook executes the element has not yet
@@ -1493,7 +1508,7 @@ time the field is next in line.
     };
 
 .. spicy-output:: parse-if.spicy
-    :exec: printf '\01\02\03\04' | spicy-driver %INPUT; printf '\02\02\03\04' | spicy-driver %INPUT
+    :exec: printf '\01\02\03\04' | spicy-driver -d %INPUT; printf '\02\02\03\04' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 .. versionadded:: 1.12 Conditional blocks
@@ -1577,7 +1592,7 @@ Here's an example:
     };
 
 .. spicy-output:: parse-look-ahead.spicy
-    :exec: printf '\01\02\03EOD\04' | spicy-driver %INPUT
+    :exec: printf '\01\02\03EOD\04' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 For vectors, Spicy attempts look-ahead parsing automatically as a last
@@ -1634,7 +1649,7 @@ switch. Example:
     };
 
 .. spicy-output:: parse-switch.spicy
-    :exec: printf 'A\01' | spicy-driver %INPUT; printf 'B\01\02' | spicy-driver %INPUT
+    :exec: printf 'A\01' | spicy-driver -d %INPUT; printf 'B\01\02' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 We see in the output that all of the alternatives turn into normal
@@ -1687,7 +1702,7 @@ the input stream:
     };
 
 .. spicy-output:: parse-switch-lhead.spicy
-    :exec: printf 'A' | spicy-driver %INPUT
+    :exec: printf 'A' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 While this example is a bit contrived, the mechanism becomes powerful
@@ -1715,7 +1730,7 @@ once you have subunits that are recognizable by how they start:
     };
 
 .. spicy-output:: parse-switch-lhead-2.spicy
-    :exec: printf 'A ' | spicy-driver %INPUT; printf '\377\377' | spicy-driver %INPUT
+    :exec: printf 'A ' | spicy-driver -d %INPUT; printf '\377\377' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 .. rubric:: Switching Over Fields With Common Size
@@ -1741,7 +1756,7 @@ same constraint.
     };
 
 .. spicy-output:: parse-switch-size.spicy
-   :exec: printf '\01ABC' | spicy-driver %INPUT; printf '\02ABC' | spicy-driver %INPUT
+   :exec: printf '\01ABC' | spicy-driver -d %INPUT; printf '\02ABC' | spicy-driver -d %INPUT
    :show-with: foo.spicy
 
 .. _backtracking:
@@ -1789,7 +1804,7 @@ Example:
 
 
 .. spicy-output:: parse-backtrack.spicy
-    :exec: printf '\001\002\003\004' | spicy-driver %INPUT; printf '\003\004' | spicy-driver %INPUT
+    :exec: printf '\001\002\003\004' | spicy-driver -d %INPUT; printf '\003\004' | spicy-driver -d %INPUT
     :show-with: backtrack.spicy
 
 ``backtrack()`` can be called from inside :ref:`%error hooks
@@ -1833,7 +1848,7 @@ can, e.g., be used to reparse previously received input:
     };
 
 .. spicy-output:: parse-parse.spicy
-    :exec: printf '\x01\x02\x03\04' | spicy-driver %INPUT
+    :exec: printf '\x01\x02\x03\04' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 For ``&parse-at``, ``EXPR`` must yield an iterator pointing to (a
@@ -1897,7 +1912,7 @@ example that parses input data twice with different sub units:
 
 
 .. spicy-output:: parse-random-access.spicy
-    :exec: printf '\00\00\00\01' | spicy-driver %INPUT
+    :exec: printf '\00\00\00\01' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 If you look at output, you see that ``start`` iterator remembers its
@@ -1952,7 +1967,7 @@ to see it:
     };
 
 .. spicy-output:: parse-filter.spicy
-    :exec: printf 'aBcDe' | spicy-driver %INPUT
+    :exec: printf 'aBcDe' | spicy-driver -d %INPUT
     :show-with: foo.spicy
 
 There are a couple of predefined filters coming with Spicy that become
@@ -2001,7 +2016,7 @@ Here's a basic example of two units types chained through a sink:
     };
 
 .. spicy-output:: parse-sink.spicy
-    :exec: printf '\13GET /a/b/c\n' | spicy-driver -p Test::A %INPUT
+    :exec: printf '\13GET /a/b/c\n' | spicy-driver -d -p Test::A %INPUT
     :show-with: foo.spicy
 
 Let's see what's going on here. First, there's ``sink b`` inside the
@@ -2169,7 +2184,7 @@ method, which will return a :ref:`reference <type_reference>` to it:
     };
 
 .. spicy-output:: context-empty.spicy
-    :exec: spicy-driver %INPUT </dev/null
+    :exec: spicy-driver -d %INPUT </dev/null
     :show-with: foo.spicy
 
 By itself, this is not very useful. However, host applications can
@@ -2591,5 +2606,5 @@ Since parsing for ``start_a`` was unsuccessful and ``a`` was jumped
 over, their fields remain unset.
 
 .. spicy-output:: parse-synchronized.spicy
-   :exec: printf '\xFFSEC_Babc' | spicy-driver %INPUT
+   :exec: printf '\xFFSEC_Babc' | spicy-driver -d %INPUT
    :show-with: foo.spicy

@@ -33,4 +33,5 @@ Spicy pretty quickly.
     precedence
     packing
     conditional
+    optimization
     appendix

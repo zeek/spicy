@@ -1,6 +1,6 @@
-# Automatically generated; do not edit. -- <HASH> printf '\001\002\003\004' | spicy-driver %INPUT; printf '\003\004' | spicy-driver %INPUT/printf '\001\002\003\004' | spicy-driver %INPUT; printf '\003\004' | spicy-driver %INPUT/False
-# printf '\001\002\003\004' | spicy-driver backtrack.spicy
+# Automatically generated; do not edit. -- <HASH> printf '\001\002\003\004' | spicy-driver -d %INPUT; printf '\003\004' | spicy-driver -d %INPUT/printf '\001\002\003\004' | spicy-driver -d %INPUT; printf '\003\004' | spicy-driver -d %INPUT/False
+# printf '\001\002\003\004' | spicy-driver -d backtrack.spicy
 [$foo=[$a=1, $b=2], $bar=[$a=3, $b=4]]
 
-# printf '\003\004' | spicy-driver backtrack.spicy
+# printf '\003\004' | spicy-driver -d backtrack.spicy
 [$foo=[$a=3, $b=(not set)], $bar=[$a=3, $b=4]]

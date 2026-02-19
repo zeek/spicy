@@ -1,3 +1,3 @@
-# Automatically generated; do not edit. -- <HASH> printf '\x21' | spicy-driver %INPUT/printf '\x21' | spicy-driver %INPUT/False
-# printf '\x21' | spicy-driver foo.spicy
+# Automatically generated; do not edit. -- <HASH> printf '\x21' | spicy-driver -d %INPUT/printf '\x21' | spicy-driver -d %INPUT/False
+# printf '\x21' | spicy-driver -d foo.spicy
 X::A, X::B

@@ -1,3 +1,3 @@
-# Automatically generated; do not edit. -- <HASH> printf '\00\00\00\01' | spicy-driver %INPUT/printf '\00\00\00\01' | spicy-driver %INPUT/False
-# printf '\00\00\00\01' | spicy-driver foo.spicy
+# Automatically generated; do not edit. -- <HASH> printf '\00\00\00\01' | spicy-driver -d %INPUT/printf '\00\00\00\01' | spicy-driver -d %INPUT/False
+# printf '\00\00\00\01' | spicy-driver -d foo.spicy
 [$a=[$x=1], $b=[$y=b"\x00\x00\x00\x01"], $start=<offset=0 data=b"\x00\x00\x00\x01">]

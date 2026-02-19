@@ -116,7 +116,7 @@ simple enough that we can start by faking data with ``printf``
 and pipe that into the Spicy tool :ref:`spicy-driver <spicy-driver>`:
 
 .. spicy-output:: rrq.spicy 1
-    :exec: printf '\000\001rfc1350.txt\000octet\000' | spicy-driver %INPUT
+    :exec: printf '\000\001rfc1350.txt\000octet\000' | spicy-driver -d %INPUT
     :show-with: tftp.spicy
 
 Here, ``spicy-driver`` compiles our ``ReadRequest`` unit into an
@@ -179,8 +179,8 @@ output name is ``batch.dat``).
 Now we can pass that batch file into ``spicy-driver``:
 
 .. spicy-output:: rrq.spicy 2
-    :exec: spicy-driver -F tutorial/examples/tftp_rrq.dat -P 69/udp%orig=TFTP::ReadRequest %INPUT
-    :show-as: spicy-driver -F tftp_rrq.dat -P 69/udp%orig=TFTP::ReadRequest tftp.spicy
+    :exec: spicy-driver -d -F tutorial/examples/tftp_rrq.dat -P 69/udp%orig=TFTP::ReadRequest %INPUT
+    :show-as: spicy-driver -d -F tftp_rrq.dat -P 69/udp%orig=TFTP::ReadRequest tftp.spicy
 
 The one additional piece here is that we need to tell ``spicy-driver``
 on which packets inside the batch file to deploy our parser (because,
@@ -240,8 +240,8 @@ just the opcode:
     };
 
 .. spicy-output:: tftp-1.spicy
-    :exec: spicy-driver -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT
-    :show-as: spicy-driver -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
+    :exec: spicy-driver -d -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT
+    :show-as: spicy-driver -d -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
     :max-lines: 6
 
 As you see, we now use ``-P 69/udp=TFTP::Packet`` because we no longer
@@ -294,8 +294,8 @@ parse it as a sub-unit:
     # %hide-end%
 
 .. spicy-output:: tftp-2.spicy
-    :exec: spicy-driver -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT
-    :show-as: spicy-driver -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
+    :exec: spicy-driver -d -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT
+    :show-as: spicy-driver -d -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
     :max-lines: 6
 
 However, this does not help us much yet: it still resembles our
@@ -332,8 +332,8 @@ such dispatching:
     # %hide-end%
 
 .. spicy-output:: tftp-3.spicy 1
-    :exec: spicy-driver -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT
-    :show-as: spicy-driver -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
+    :exec: spicy-driver -d -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT
+    :show-as: spicy-driver -d -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
     :max-lines: 6
 
 The ``self`` keyword always refers to the unit instance currently
@@ -376,8 +376,8 @@ opcodes. Let's start with acknowledgments:
     # %hide-end%
 
 .. spicy-output:: tftp-4.spicy
-    :exec: spicy-driver -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT
-    :show-as: spicy-driver -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
+    :exec: spicy-driver -d -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT
+    :show-as: spicy-driver -d -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
     :max-lines: 6
 
 As expected, the output shows that for opcode 4, our TFTP parser now
@@ -434,8 +434,8 @@ opcode type):
     };
 
 .. spicy-output:: tftp-complete-1.spicy
-    :exec: spicy-driver -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT
-    :show-as: spicy-driver -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
+    :exec: spicy-driver -d -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT
+    :show-as: spicy-driver -d -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
     :max-lines: 6
 
 Now we are finally error-free.
@@ -539,8 +539,8 @@ and hence can be used with our updated switch statement. You can see
 the new type for ``opcode`` in the output as well:
 
 .. spicy-output:: tftp-enum.spicy
-    :exec: spicy-driver -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT
-    :show-as: spicy-driver -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
+    :exec: spicy-driver -d -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT
+    :show-as: spicy-driver -d -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
     :max-lines: 6
 
 See :ref:`attribute_convert` for more on ``&convert``, and
@@ -624,8 +624,8 @@ statement, so that we can see how that boolean becomes available
 through the ``is_read`` unit parameter:
 
 .. spicy-output:: tftp-unified-request.spicy
-    :exec: spicy-driver -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT
-    :show-as: spicy-driver -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
+    :exec: spicy-driver -d -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT
+    :show-as: spicy-driver -d -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
     :max-lines: 6
 
 Admittedly, the unit parameter is almost overkill in this

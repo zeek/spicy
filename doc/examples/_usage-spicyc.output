@@ -28,6 +28,8 @@ Options controlling code generation:
   -Z | --enable-profiling           Report profiling statistics after execution.
        --cxx-link <lib>             Link specified static archive or shared library during JIT or to produced HLTO file. Can be given multiple times.
        --skip-standard-imports      Do not automatically import standard library modules (for debugging only).
+       --strict-public-api          Skip optimizations that change the public C++ API of generated code.  [default in debug builds]
+       --no-strict-public-api       Allow optimizations that change the public C++ API of generated code. [default in release builds]
 
   -Q | --include-offsets            Include stream offsets of parsed data in output.
 

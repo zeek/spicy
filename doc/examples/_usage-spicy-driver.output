@@ -23,6 +23,10 @@ Options:
   -V | --skip-validation              Don't validate ASTs (for debugging only).
   -X | --debug-addl <addl>            Implies -d and adds selected additional instrumentation (comma-separated; see 'help' for list).
   -Z | --enable-profiling             Report profiling statistics after execution.
+       --strict-public-api            Skip optimizations that change the public C++ API of generated code.
+       --strict-public-api            Skip optimizations that change the public C++ API of generated code.  [default in debug builds]
+       --no-strict-public-api         Allow optimizations that change the public C++ API of generated code. [default in release builds]
+code.
 
 Environment variables:
 
