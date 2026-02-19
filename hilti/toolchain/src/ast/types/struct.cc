@@ -28,7 +28,7 @@ void Struct::_setSelf(ASTContext* ctx) {
                                              QualifiedType::create(ctx, type::ValueReference::create(ctx, qtype),
                                                                    Constness::Mutable));
 
-    auto* decl = declaration::Expression::create(ctx, ID("self"), self, {}, meta());
+    auto* decl = declaration::Expression::create(ctx, ID("self"), self, hilti::declaration::Linkage::Private, meta());
 
     setChild(ctx, 0, decl);
 }

@@ -442,8 +442,8 @@
 [debug/ast-final]       - declaration::Type <canonical-id="hilti::MatchState" declaration="D12" fqid="hilti::MatchState" id="MatchState" linkage="public"> [parent @d:XXX] (hilti.hlt:19:1-21:43) [@d:XXX]
 [debug/ast-final]         - QualifiedType <const="false" extern="false" side="rhs"> [parent @d:XXX] (hilti.hlt:19:26-21:1) [@q:XXX]
 [debug/ast-final]           - type::Struct <declaration="D12" type="T9" unified="name(hilti::MatchState)" wildcard="false"> [parent @q:XXX] (hilti.hlt:19:26-21:1) (resolved) [@t:XXX]
-[debug/ast-final]               | self -> declaration::Expression <canonical-id="hilti::self" declaration="-" fqid="self" id="self" linkage="init"> [parent @t:XXX] [@d:XXX] (type: [@e:XXX] [@t:XXX])
-[debug/ast-final]             - declaration::Expression <canonical-id="hilti::self" declaration="-" fqid="self" id="self" linkage="init"> [parent @t:XXX] (hilti.hlt:19:26-21:1) [@d:XXX]
+[debug/ast-final]               | self -> declaration::Expression <canonical-id="hilti::self" declaration="-" fqid="self" id="self" linkage="private"> [parent @t:XXX] [@d:XXX] (type: [@e:XXX] [@t:XXX])
+[debug/ast-final]             - declaration::Expression <canonical-id="hilti::self" declaration="-" fqid="self" id="self" linkage="private"> [parent @t:XXX] (hilti.hlt:19:26-21:1) [@d:XXX]
 [debug/ast-final]               - expression::Keyword <kind="self"> [parent @d:XXX]  (non-const)  (resolved) [@e:XXX]
 [debug/ast-final]                 - QualifiedType <const="false" extern="false" side="rhs"> [parent @e:XXX] [@q:XXX]
 [debug/ast-final]                   - type::ValueReference <declaration="-" type="-" unified="value_ref(name(hilti::MatchState))" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
@@ -474,8 +474,8 @@
 [debug/ast-final]       - declaration::Type <canonical-id="hilti::StreamStatistics" declaration="D13" fqid="hilti::StreamStatistics" id="StreamStatistics" linkage="public"> [parent @d:XXX] (hilti.hlt:23:1-28:45) [@d:XXX]
 [debug/ast-final]         - QualifiedType <const="false" extern="false" side="rhs"> [parent @d:XXX] (hilti.hlt:23:32-28:1) [@q:XXX]
 [debug/ast-final]           - type::Struct <declaration="D13" type="T10" unified="name(hilti::StreamStatistics)" wildcard="false"> [parent @q:XXX] (hilti.hlt:23:32-28:1) (resolved) [@t:XXX]
-[debug/ast-final]               | self -> declaration::Expression <canonical-id="hilti::self_2" declaration="-" fqid="self" id="self" linkage="init"> [parent @t:XXX] [@d:XXX] (type: [@e:XXX] [@t:XXX])
-[debug/ast-final]             - declaration::Expression <canonical-id="hilti::self_2" declaration="-" fqid="self" id="self" linkage="init"> [parent @t:XXX] (hilti.hlt:23:32-28:1) [@d:XXX]
+[debug/ast-final]               | self -> declaration::Expression <canonical-id="hilti::self_2" declaration="-" fqid="self" id="self" linkage="private"> [parent @t:XXX] [@d:XXX] (type: [@e:XXX] [@t:XXX])
+[debug/ast-final]             - declaration::Expression <canonical-id="hilti::self_2" declaration="-" fqid="self" id="self" linkage="private"> [parent @t:XXX] (hilti.hlt:23:32-28:1) [@d:XXX]
 [debug/ast-final]               - expression::Keyword <kind="self"> [parent @d:XXX]  (non-const)  (resolved) [@e:XXX]
 [debug/ast-final]                 - QualifiedType <const="false" extern="false" side="rhs"> [parent @e:XXX] [@q:XXX]
 [debug/ast-final]                   - type::ValueReference <declaration="-" type="-" unified="value_ref(name(hilti::StreamStatistics))" wildcard="false"> [parent @q:XXX] (resolved) [@t:XXX]
