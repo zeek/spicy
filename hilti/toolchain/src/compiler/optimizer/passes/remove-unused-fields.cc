@@ -288,7 +288,7 @@ struct Mutator : public optimizer::visitor::Mutator {
                             // If the old value can have side effects, we need
                             // to still evaluate it, so create a group
                             // expression.
-                            if ( ! state()->cfgCache()->mayHaveSideEffects(old_element) ) {
+                            if ( state()->cfgCache()->mayHaveSideEffects(old_element) ) {
                                 auto* old_rhs = tuple_assign->removeOp1();
                                 auto* new_rhs = builder()->grouping({old_element, old_rhs});
                                 tuple_assign->setOp1(context(), new_rhs);

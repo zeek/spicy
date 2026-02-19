@@ -30,6 +30,10 @@ global X x = [];
 global uint<64> tmp;
 global ExportedType y;
 
+function string f() {
+    return "f()";
+}
+
 function tuple<uint<64>, string> t() {
     return (42, "t()");
 }
@@ -45,7 +49,7 @@ public function void member_non_const(inout X x) {
 assert "" == "";
 assert True;
 assert "" == "";
-(tmp) = (42);
+(tmp) = (f(), (42));
 (tmp) = ({local tuple<uint<64>, string> _t_elem = t();} (_t_elem[0]));
 try {
     assert (hilti::throw_unset_optional(), default<string>()) == "";
