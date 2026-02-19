@@ -2,5 +2,5 @@
 # printf '\001\002\003\004' | spicy-driver backtrack.spicy
 [$foo=[$a=1, $b=2], $bar=[$a=3, $b=4]]
 
-#  printf '\003\004' | spicy-driver backtrack.spicy
+# printf '\003\004' | spicy-driver backtrack.spicy
 [$foo=[$a=3, $b=(not set)], $bar=[$a=3, $b=4]]

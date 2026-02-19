@@ -29,7 +29,7 @@ Options controlling code generation:
        --cxx-link <lib>             Link specified static archive or shared library during JIT or to produced HLTO file. Can be given multiple times.
        --skip-standard-imports      Do not automatically import standard library modules (for debugging only).
 
-  -Q | --include-offsets          Include stream offsets of parsed data in output.
+  -Q | --include-offsets            Include stream offsets of parsed data in output.
 
 
 Inputs can be .spicy, .hlt, .cc/.cxx, *.hlto.

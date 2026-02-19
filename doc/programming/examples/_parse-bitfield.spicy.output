@@ -1,4 +1,4 @@
 # Automatically generated; do not edit. -- <HASH> printf '\01\02\03\04' | spicy-driver %INPUT/printf '\01\02\03\04' | spicy-driver %INPUT/False
 # printf '\01\02\03\04' | spicy-driver foo.spicy
 0, 2, 0
-[$f=(0, 2, 0)]
+[$f=(x1: 0, x2: 2, x3: 0)]

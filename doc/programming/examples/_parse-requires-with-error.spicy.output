@@ -1,3 +1,3 @@
 # Automatically generated; do not edit. -- <HASH> printf '\010' | spicy-driver %INPUT/printf '\010' | spicy-driver %INPUT/True
 # printf '\010' | spicy-driver foo.spicy
-[error] terminating with uncaught exception of type spicy::rt::ParseError: x is too large (foo.spicy:7:13-7:49)
+[error] processing failed with exception of type spicy::rt::ParseError: x is too large (foo.spicy:7:13-7:49)
