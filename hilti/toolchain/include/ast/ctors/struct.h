@@ -60,6 +60,16 @@ public:
         return nullptr;
     }
 
+    /**
+     * Remove a field of a given name if it exists.
+     *
+     * @param id field ID
+     */
+    void removeField(const ID& id) {
+        if ( auto* f = field(id) )
+            removeChild(f);
+    }
+
     QualifiedType* type() const final { return child<QualifiedType>(0); }
 
     void setType(ASTContext* ctx, QualifiedType* t) {

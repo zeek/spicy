@@ -166,7 +166,8 @@ void Unit::_setSelf(ASTContext* ctx) {
     auto* qtype = QualifiedType::createExternal(ctx, as<UnqualifiedType>(), hilti::Constness::Mutable);
     auto* self = hilti::expression::Keyword::create(ctx, hilti::expression::keyword::Kind::Self, qtype);
 
-    auto* decl = hilti::declaration::Expression::create(ctx, ID("self"), self, {}, meta());
+    auto* decl =
+        hilti::declaration::Expression::create(ctx, ID("self"), self, hilti::declaration::Linkage::Private, meta());
 
     setChild(ctx, 0, decl);
 }

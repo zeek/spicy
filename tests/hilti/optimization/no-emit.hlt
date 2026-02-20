@@ -1,0 +1,23 @@
+# @TEST-EXEC: hiltic -g -j %INPUT >output
+# @TEST-EXEC: hiltic -g -c %INPUT | egrep "std::string X|return.*X" >>output.c++
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: btest-diff output.c++
+#
+# @TEST-DOC: Tests different types of &no-emit fields; disable optimizer to avoid conflicting changes
+
+module Test {
+
+import hilti;
+
+type Foo = struct {
+    string Xstd;
+    string Xpriv &no-emit="private";
+    string Xopt &no-emit="optimized";
+};
+
+global Foo f;
+
+f = [$Xstd="std", $Xpriv="private", $Xopt="optimized"];
+hilti::print(f);
+
+}

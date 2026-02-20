@@ -75,6 +75,7 @@ class Field;
 
 namespace declaration {
 class Constant;
+class Export;
 class Expression;
 class Field;
 class Function;

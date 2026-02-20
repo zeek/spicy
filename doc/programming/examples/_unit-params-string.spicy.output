@@ -1,3 +1,3 @@
-# Automatically generated; do not edit. -- <HASH> printf '\x2a' | spicy-driver %INPUT/printf '\x2a' | spicy-driver %INPUT/False
-# printf '\x2a' | spicy-driver foo.spicy
+# Automatically generated; do not edit. -- <HASH> printf '\x2a' | spicy-driver -d %INPUT/printf '\x2a' | spicy-driver -d %INPUT/False
+# printf '\x2a' | spicy-driver -d foo.spicy
 Hello, world!

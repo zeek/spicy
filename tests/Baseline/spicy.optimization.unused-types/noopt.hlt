@@ -117,7 +117,7 @@ type Priv3 = struct {
     method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_parse_foo__Priv3_stage2(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error);
 };
 type Priv4 = struct {
-    Priv2 _anon &optional &anonymous &no-emit;
+    Priv2 _anon &optional &anonymous &no-emit="private";
     Priv3 x &optional;
     weak_ref<const stream> _t_stream &internal &needed-by-feature="uses_stream";
     iterator<stream> _t_begin &internal &needed-by-feature="uses_random_access";
@@ -205,7 +205,7 @@ type Priv6 = struct {
     method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_parse_foo__Priv6_stage2(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error);
 };
 public type Pub3 = struct {
-    Priv5 _anon_2 &optional &anonymous &no-emit;
+    Priv5 _anon_2 &optional &anonymous &no-emit="private";
     Priv6 x &optional;
     weak_ref<const stream> _t_stream &internal &needed-by-feature="uses_stream";
     iterator<stream> _t_begin &internal &needed-by-feature="uses_random_access";

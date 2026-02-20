@@ -1,4 +1,4 @@
-# Automatically generated; do not edit. -- <HASH> printf \05 | spicy-driver %INPUT/printf \05 | spicy-driver %INPUT/False
-# printf \05 | spicy-driver foo.spicy
+# Automatically generated; do not edit. -- <HASH> printf \05 | spicy-driver -d %INPUT/printf \05 | spicy-driver -d %INPUT/False
+# printf \05 | spicy-driver -d foo.spicy
 [$x=(not set), $a=(not set)]
 [$x=48, $a="Our integer is 48"]

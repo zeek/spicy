@@ -18,6 +18,9 @@
 
 using spicy::rt::fmt;
 
+constexpr int OptStrictPublicAPI = 1000;
+constexpr int OptNoStrictPublicAPI = 1001;
+
 static struct option long_driver_options[] = {
     {.name = "abort-on-exceptions", .has_arg = required_argument, .flag = nullptr, .val = 'A'},
     {.name = "require-accept", .has_arg = no_argument, .flag = nullptr, .val = 'c'},
@@ -39,6 +42,8 @@ static struct option long_driver_options[] = {
     {.name = "skip-dependencies", .has_arg = no_argument, .flag = nullptr, .val = 'S'},
     {.name = "report-resource-usage", .has_arg = no_argument, .flag = nullptr, .val = 'U'},
     {.name = "skip-validation", .has_arg = no_argument, .flag = nullptr, .val = 'V'},
+    {.name = "strict-public-api", .has_arg = no_argument, .flag = nullptr, .val = OptStrictPublicAPI},
+    {.name = "no-strict-public-api", .has_arg = no_argument, .flag = nullptr, .val = OptNoStrictPublicAPI},
     {.name = "version", .has_arg = no_argument, .flag = nullptr, .val = 'v'},
     {.name = nullptr, .has_arg = 0, .flag = nullptr, .val = 0},
 };
@@ -108,6 +113,13 @@ void SpicyDriver::usage() {
            "  -X | --debug-addl <addl>            Implies -d and adds selected additional instrumentation "
            "(comma-separated; see 'help' for list).\n"
            "  -Z | --enable-profiling             Report profiling statistics after execution.\n"
+           "       --strict-public-api            Skip optimizations that change the public C++ API of generated "
+           "code.\n"
+           "       --strict-public-api            Skip optimizations that change the public C++ API of generated code. "
+           " [default in debug builds]\n"
+           "       --no-strict-public-api         Allow optimizations that change the public C++ API of generated "
+           "code. [default in release builds]\n"
+           "code.\n"
            "\n"
            "Environment variables:\n"
            "\n"
@@ -236,6 +248,12 @@ void SpicyDriver::parseOptions(int argc, char** argv) {
             case 'Z':
                 compiler_options.enable_profiling = true;
                 driver_options.enable_profiling = true;
+                break;
+
+            case OptStrictPublicAPI: compiler_options.public_api_mode = hilti::Options::PublicAPIMode::Strict; break;
+
+            case OptNoStrictPublicAPI:
+                compiler_options.public_api_mode = hilti::Options::PublicAPIMode::NonStrict;
                 break;
 
             case 'h': usage(); exit(0);

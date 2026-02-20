@@ -1,3 +1,3 @@
-# Automatically generated; do not edit. -- <HASH> printf '1234567890123456' | spicy-driver %INPUT/printf '1234567890123456' | spicy-driver %INPUT/False
-# printf '1234567890123456' | spicy-driver foo.spicy
+# Automatically generated; do not edit. -- <HASH> printf '1234567890123456' | spicy-driver -d %INPUT/printf '1234567890123456' | spicy-driver -d %INPUT/False
+# printf '1234567890123456' | spicy-driver -d foo.spicy
 [$ip=3635:3433:3231:3039:3837:3635:3433:3231]

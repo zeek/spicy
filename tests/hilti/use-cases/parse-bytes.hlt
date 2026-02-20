@@ -1,4 +1,4 @@
-# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: ${HILTIC} -d -j %INPUT >output
 # @TEST-EXEC: btest-diff output
 
 module Foo {

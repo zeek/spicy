@@ -1,4 +1,4 @@
-# @TEST-EXEC:  echo 123456666677777CC | spicy-driver -p A::tA b.spicy %INPUT | sort >output
+# @TEST-EXEC:  echo 123456666677777CC | spicy-driver -d -p A::tA b.spicy %INPUT | sort >output
 # @TEST-EXEC:  btest-diff output
 
 module A;

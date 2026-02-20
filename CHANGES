@@ -1,3 +1,195 @@
+1.16.0-dev.64 | 2026-02-20 09:41:54 +0100
+
+  * Updating documentation for optimizer changes. (Robin Sommer, Corelight)
+
+  * Compute AST dependencies always right after resolving. (Robin Sommer, Corelight)
+
+    Before, it was pretty inconsistent when exactly the information would
+    be available. In particular it wasn't available to post-compilation
+    hooks, which was unfortunate. With this change, we can now leverage
+    dependencies on the Zeek side.
+
+    Implementation note: We need to make the dependency computation a bit
+    more robust here now because it can potentially run on a not validated
+    (and hence invalid) AST. That can happen if the resolver flags any
+    errors. On the other hand, we can't easily run the validator just
+    before the dependency computation because that would change some
+    assumptions on when exactly validation runs, potentially leading to
+    different results.
+
+  * Use new helper for side effects elsewhere. (Robin Sommer, Corelight)
+
+  * Provide two flow-based helpers through the CFG context. (Robin Sommer, Corelight)
+
+    The first provides flow information for a given expression, the second
+    determines if a given expression might contain side effects. Right
+    now, both are approximate, as we don't have expression-level dataflow
+    tracking yet. In the future, these should be able to become more
+    precise.
+
+  * Parse fields into stack variables first. (Robin Sommer, Corelight)
+
+    So far, when parse a standard unit field, we'd immediately store the
+    retrieved value into the corresponding struct member. Now, if we parse
+    a non-mutable value, we instead store it into a local temporary first,
+    finish the field's processing, and only then move the value over from
+    the temporary to the struct field. The advantage is better
+    optimization potential: we have more opportunities to identify the
+    struct field as not (productively) used, and the C++ compiler can
+    likewise work on the stack temporary for most of the time. However, we
+    do this only for non-mutable values, because fields of mutable types
+    need to reflect incremental updates correctly at all times.
+
+  * Add new optimizer pass removing unused struct fields. (Robin Sommer, Corelight)
+
+    Add optimizer pass that removes struct fields with no productive
+    accesses. The pass marks unused fields with `&no-emit="optimized"`,
+    allowing them to remain in the AST through codegen, which then emits
+    code to render them as `(optimized out)`. Fields with `&always-emit`,
+    or inside types with `&always-emit`, are never removed.
+
+    The new optimization is enabled only in `--no-strict-public-api` mode,
+    which means by default it's on release builds, but not in debug
+    builds. (That aligns pretty well with the fact that in debug mode,
+    Spicy generates accesses to *all* parsed fields through the debug
+    messages it emits, which means they wouldn't be optimized out
+    anyways.)
+
+  * Improve tuple assignment. (Robin Sommer, Corelight)
+
+    We would in some cases introduce a temporary where we didn't need to.
+    Also adding a check to catch coercion errors, which could previously
+    end up not being reported.
+
+  * Switch tests to debug builds. (Robin Sommer, Corelight)
+
+    Most, but not all, of our tests are compiling HILTI/Spicy code with
+    `--debug`. This changes some of the remaining tests over, both for
+    consistency and to prepare for upcoming optimizations that would hide
+    the anticipated output in release builds. None of this changes any
+    baselines.
+
+    (This does not touch any tests for optimizations or CFGs in case
+    they explicitly want the release builds.)
+
+  * Fix CFG logic for adding function parameters. (Robin Sommer, Corelight)
+
+    I was getting assertion errors and noticed the logic wasn't making use
+    of the AST information that the resolver computes for types linked to
+    methods. So this switches that over.
+
+    It's a slightly larger change because we need to get the CFG access to
+    the AST context, which is a bit of hassle to get it in place. On the
+    plus side, having the context available seems generally useful for the
+    CFG class, so that seems ok.
+
+  * Extend groupings to support multiple expressions. (Robin Sommer, Corelight)
+
+    The HILTI AST so far did not have a way to express a sequence of
+    expressions (think: `,` operator in C). This adds support for that by
+    extending grouping expressions to contain more than one expression.
+    They will be evaluated in sequence, with all having access to the
+    local tmp if defined; and the grouping will return the value of the
+    final expression as its value. Nor surprisingly, these are codegened
+    to C++ through the `,` operator.
+
+  * Add a couple of AST node editing methods. (Robin Sommer, Corelight)
+
+    Most of the these allow detaching an existing child expression from a
+    node, to then re-use it elsewhere without requiring a deep copy.
+
+  * Expose a couple of helper runtime functions to throw exceptions. (Robin Sommer, Corelight)
+
+    This adds `hilti::throw_unset_optional()` and
+    `hilti::throw_attribute_not_set()` that throw the corresponding
+    exceptions. Having functions will allow us to use throw from inside
+    expressions, which C++' `throw` cannot do. The C++ implementation of
+    the former already existed but wasn't accessible to HILTI code yet.
+
+  * Add null checks to AST printers. (Robin Sommer, Corelight)
+
+    For convenience, to avoid caller-side checks.
+
+  * Add new linkage `export`. (Robin Sommer, Corelight)
+
+    This applies to structs and units, and generally works like `public`, but in addition declares that the
+    HILTI optimizer/codegen may not change the fields of the type. It's
+    like `--strict-public-api` but on a per type basis.
+
+    To export a type, it first needs to declared normally, and can then
+    be exported. In Spicy:
+
+    ``
+    type Foo = unit { ... }
+
+    export Foo;
+    ``
+
+    (`export type Foo` doesn't work for parsing reasons; plus we want to
+    be able to export already existing types.)
+
+  * Add `&always-emit` attribute to Spicy. (Robin Sommer, Corelight)
+
+    This attribute already existed at the HILTI level to express that
+    struct fields are not to be skipped from the emitted code. We allow
+    the same in Spicy now for unit fields, and carry the attribute through
+    to the corresponding Spicy struct.
+
+  * Extend `&no-emit` attribute with string argument support. (Robin Sommer, Corelight)
+
+    The existing (purely internal) `&no-emit` attribute now requires a
+    string argument to distinguish between 'private' fields (never visible
+    to user) and 'optimized' fields (removed by optimizer, but still
+    included in type information and type rendering; in the latter case,
+    they will be printed as `(optimized out)`.
+
+    `optimized` isn't in actual use yet. The corresponding optimizer pass
+    adding it will come in a subsequent change. However, we do already
+    include a test that adds `&no-emit` manually to exercise the code
+    generation and rendering. We already adapt `spicy-dump` as well, but
+    can't test it yet.
+
+    This comes with two slightly backwards-incompatible changes:
+
+    - Before, we used to include private struct fields into the type
+      information, even though we weren't using them anywhere (our tools
+      using type information were just skipping over them already). For
+      simplicity, we now directly skip them when emitting type
+      information. That means that host application can assume that any
+      fields included into the type information but marked as
+      not-emitted, are fields that would normally be visible to the user
+      but have been optimized out.
+
+    - spicy-dump output now includes struct fields that don't have a value
+      set. In text output, they are rendered as `(unset)`, in JSON output
+      with `null` values. The reason is that, because we want to have
+      optimized fields rendered as "(optimized out)" in text output, it
+      would seem surprising to have any non-optimized fields not appear at
+      all. Similarly for JSON, where we render optimized fields as `null`
+      (although one could debate whether they should be included in JSON
+      at all).
+
+  * Add new options `--[no-]strict-public-api` to toolchain commands. (Robin Sommer, Corelight)
+
+    If active, this disallows any optimizations that affect the external
+    C++ API of the generated code. By default, this is on when generating
+    debug code and off when generating release code.
+
+  * Add environment variable `HILTI_DISABLE_OPTIMIZER_PASSES`. (Robin Sommer, Corelight)
+
+    We used to have an environment variable to specify which optimizer
+    passes to run. This brings it back in inverse: a colon-separated list
+    of passes to disable. Leaving out individual passes seems more useful
+    than having to list all passes that one wants to run.
+
+    Not documenting the names of passes as this is primarily for
+    development purposes.
+
+  * Catch up on docs. (Robin Sommer, Corelight)
+
+    We had some changes that weren't reflected in the auto-generated docs
+    yet.
+
 1.16.0-dev.42 | 2026-02-09 13:36:59 +0100
 
   * Implicitly declare `Undef` for C++ enum like we do already in HILTI. (Benjamin Bannier, Corelight)

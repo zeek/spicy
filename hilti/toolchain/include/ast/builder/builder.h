@@ -75,6 +75,8 @@ public:
 
     //////// Declarations
 
+    auto export_(ID id, const Meta& m = Meta()) { return declarationExport(std::move(id), m); }
+
     auto import(const std::string& module, const Meta& m = Meta()) {
         return declarationImportedModule(hilti::ID(module), std::string(".hlt"), m);
     }
@@ -440,6 +442,7 @@ public:
 
     auto grouping(Expression* e, const Meta& m = Meta()) { return expressionGrouping(e, m); }
 
+    auto grouping(Expressions exprs, const Meta& m = Meta()) { return expressionGrouping(std::move(exprs), m); }
 
     /**
      * Creates a grouping expression that declares a temporary variable that

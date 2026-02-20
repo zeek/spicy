@@ -1,4 +1,4 @@
-# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: ${SPICYC} -d %INPUT -j -o %INPUT.hlto
 # @TEST-EXEC: ${SCRIPTS}/printf '\01\02\03' | spicy-dump -p Mini::X %INPUT.hlto >>output
 # @TEST-EXEC: ${SCRIPTS}/printf '\01\02\03' | spicy-dump -p Mini::Y %INPUT.hlto >>output
 # @TEST-EXEC: btest-diff output

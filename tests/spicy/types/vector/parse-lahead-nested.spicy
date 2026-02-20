@@ -1,4 +1,4 @@
-# @TEST-EXEC: printf 'yz1z2z3yyz1x' | spicy-dump  %INPUT >output
+# @TEST-EXEC: printf 'yz1z2z3yyz1x' | spicy-dump -d %INPUT >output
 # @TEST-EXEC: btest-diff output
 #
 # @TEST-DOC: Parse two nested vectors each using look-ahead; regression test for #1844.

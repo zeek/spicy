@@ -1,5 +1,5 @@
-# Automatically generated; do not edit. -- <HASH> spicy-driver -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT/spicy-driver -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy/False
-# spicy-driver -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
+# Automatically generated; do not edit. -- <HASH> spicy-driver -d -F tutorial/examples/tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet %INPUT/spicy-driver -d -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy/False
+# spicy-driver -d -F tftp_rrq.dat -P 69/udp=TFTP::Packet -P 50618/udp=TFTP::Packet tftp.spicy
 [$opcode=1, $rrq=[$filename=b"rfc1350.txt", $mode=b"octet"]]
 error for ID 192.168.0.10-3445-192.168.0.253-50618-udp-orig: no matching case in switch statement for value '3' (:7:5-9:6)
 error for ID 192.168.0.10-3445-192.168.0.253-50618-udp-resp: no matching case in switch statement for value '4' (:7:5-9:6)

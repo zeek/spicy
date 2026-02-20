@@ -22,6 +22,9 @@
 
 using spicy::rt::fmt;
 
+constexpr int OptStrictPublicAPI = 1000;
+constexpr int OptNoStrictPublicAPI = 1001;
+
 static struct option long_options[] = {
 
     {.name = "abort-on-exceptions", .has_arg = required_argument, .flag = nullptr, .val = 'A'},
@@ -40,6 +43,8 @@ static struct option long_options[] = {
     {.name = "show-backtraces", .has_arg = required_argument, .flag = nullptr, .val = 'B'},
     {.name = "skip-dependencies", .has_arg = no_argument, .flag = nullptr, .val = 'S'},
     {.name = "version", .has_arg = no_argument, .flag = nullptr, .val = 'v'},
+    {.name = "strict-public-api", .has_arg = no_argument, .flag = nullptr, .val = OptStrictPublicAPI},
+    {.name = "no-strict-public-api", .has_arg = no_argument, .flag = nullptr, .val = OptNoStrictPublicAPI},
     {.name = nullptr, .has_arg = 0, .flag = nullptr, .val = 0},
 
 };
@@ -100,6 +105,8 @@ void SpicyDump::usage() {
            "  -X | --debug-addl <addl>        Implies -d and adds selected additional instrumentation "
            "(comma-separated; see 'help' for list).\n"
            "  -Z | --enable-profiling         Report profiling statistics after execution.\n"
+           "       --strict-public-api        Skip optimizations that change the public C++ API of generated code.\n"
+           "       --no-strict-public-api     Allow optimizations that change the public C++ API of generated code.\n"
            "\n"
            "Environment variables:\n"
            "\n"
@@ -206,6 +213,14 @@ void SpicyDump::parseOptions(int argc, char** argv) {
             case 'Z':
                 hilti_compiler_options.enable_profiling = true;
                 driver_options.enable_profiling = true;
+                break;
+
+            case OptStrictPublicAPI:
+                hilti_compiler_options.public_api_mode = hilti::Options::PublicAPIMode::Strict;
+                break;
+
+            case OptNoStrictPublicAPI:
+                hilti_compiler_options.public_api_mode = hilti::Options::PublicAPIMode::NonStrict;
                 break;
 
             case 'h': usage(); exit(0);

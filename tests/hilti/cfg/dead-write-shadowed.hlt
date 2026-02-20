@@ -1,5 +1,5 @@
-# @TEST-EXEC: hiltic -p -o foo.hlt -D cfg-final %INPUT -D optimizer >output 2>&1
-# @TEST-EXEC: hiltic -p -o processed.hlt %INPUT
+# @TEST-EXEC: hiltic -d -p -o foo.hlt -D cfg-final %INPUT -D optimizer >output 2>&1
+# @TEST-EXEC: hiltic -d -p -o processed.hlt %INPUT
 # @TEST-EXEC: btest-diff processed.hlt
 # @TEST-EXEC: btest-diff output
 

@@ -11,25 +11,39 @@
 namespace hilti::expression {
 
 /**
- * AST node for grouping another expression inside parentheses. Optionally, the
- * grouping may declare a local variable as well that will be valid for usage
- * inside the grouping's contained expression.
+ * AST node for grouping one or more expressions inside parentheses.
+ * Optionally, the grouping may declare a local variable as well that will be
+ * valid for usage inside the grouping's contained expression. If there are
+ * mote than one expression, they will all be evaluated in order, with the
+ * value of the last expression being the value of the grouping.
  */
 class Grouping : public Expression {
 public:
-    auto expression() const { return child<Expression>(0); }
-    auto local() const { return child<declaration::LocalVariable>(1); }
+    auto local() const { return child<declaration::LocalVariable>(0); }
+    auto expressions() const { return children<Expression>(1, {}); }
 
-    QualifiedType* type() const final { return expression()->type(); }
-
-    void setExpression(ASTContext* ctx, Expression* expr) { setChild(ctx, 0, expr); }
-
-    static auto create(ASTContext* ctx, Expression* expr, Meta meta = {}) {
-        return ctx->make<Grouping>(ctx, {expr, nullptr}, std::move(meta));
+    QualifiedType* type() const final {
+        if ( auto* last = child<Expression>(-1) )
+            return last->type();
+        else
+            return nullptr;
     }
 
-    static auto create(ASTContext* ctx, declaration::LocalVariable* local, Expression* expr, Meta meta = {}) {
-        return ctx->make<Grouping>(ctx, {expr, local}, std::move(meta));
+    void setExpressions(ASTContext* ctx, Expressions exprs) {
+        removeChildren(1, {});
+        addChildren(ctx, std::move(exprs));
+    }
+
+    static auto create(ASTContext* ctx, Expressions exprs, Meta meta = {}) {
+        Nodes nodes = {nullptr};
+        nodes.insert(nodes.end(), exprs.begin(), exprs.end());
+        return ctx->make<Grouping>(ctx, std::move(nodes), std::move(meta));
+    }
+
+    static auto create(ASTContext* ctx, declaration::LocalVariable* local, Expressions exprs, Meta meta = {}) {
+        Nodes nodes = {local};
+        nodes.insert(nodes.end(), exprs.begin(), exprs.end());
+        return ctx->make<Grouping>(ctx, std::move(nodes), std::move(meta));
     }
 
 protected:

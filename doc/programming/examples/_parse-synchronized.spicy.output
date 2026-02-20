@@ -1,5 +1,5 @@
-# Automatically generated; do not edit. -- <HASH> printf '\xFFSEC_Babc' | spicy-driver %INPUT/printf '\xFFSEC_Babc' | spicy-driver %INPUT/False
-# printf '\xFFSEC_Babc' | spicy-driver foo.spicy
+# Automatically generated; do not edit. -- <HASH> printf '\xFFSEC_Babc' | spicy-driver -d %INPUT/printf '\xFFSEC_Babc' | spicy-driver -d %INPUT/False
+# printf '\xFFSEC_Babc' | spicy-driver -d foo.spicy
 Synced: [$start_a=(not set), $a=(not set), $start_b=(not set), $b=(not set)]
 Confirmed: [$start_a=(not set), $a=(not set), $start_b=(not set), $b=(not set)]
 Done [$start_a=(not set), $a=(not set), $start_b=b"SEC_B", $b=b"abc"]

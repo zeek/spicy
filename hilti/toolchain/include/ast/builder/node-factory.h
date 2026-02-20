@@ -169,6 +169,9 @@ public:
                              declaration::Linkage linkage = declaration::Linkage::Private, Meta meta = {}) {
         return hilti::declaration::Constant::create(context(), std::move(id), type, value, linkage, std::move(meta));
     }
+    auto declarationExport(ID id, Meta meta = {}) {
+        return hilti::declaration::Export::create(context(), std::move(id), std::move(meta));
+    }
     auto declarationExpression(ID id, Expression* expr, declaration::Linkage linkage, Meta meta = {}) {
         return hilti::declaration::Expression::create(context(), std::move(id), expr, linkage, std::move(meta));
     }
@@ -280,10 +283,16 @@ public:
         return hilti::expression::Ctor::create(context(), ctor, std::move(meta));
     }
     auto expressionGrouping(Expression* expr, Meta meta = {}) {
-        return hilti::expression::Grouping::create(context(), expr, std::move(meta));
+        return hilti::expression::Grouping::create(context(), {expr}, std::move(meta));
+    }
+    auto expressionGrouping(Expressions exprs, Meta meta = {}) {
+        return hilti::expression::Grouping::create(context(), std::move(exprs), std::move(meta));
     }
     auto expressionGrouping(declaration::LocalVariable* local, Expression* expr, Meta meta = {}) {
-        return hilti::expression::Grouping::create(context(), local, expr, std::move(meta));
+        return hilti::expression::Grouping::create(context(), local, {expr}, std::move(meta));
+    }
+    auto expressionGrouping(declaration::LocalVariable* local, Expressions exprs, Meta meta = {}) {
+        return hilti::expression::Grouping::create(context(), local, std::move(exprs), std::move(meta));
     }
     auto expressionKeyword(expression::keyword::Kind kind, const Meta& meta = {}) {
         return hilti::expression::Keyword::create(context(), kind, meta);

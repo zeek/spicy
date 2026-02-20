@@ -84,7 +84,7 @@ namespace {
 // Helper to detect whether `operand` is used as a `const` argument to a given `operator_`.
 bool isConstOperand(const expression::ResolvedOperator* operator_, const Expression* expr) {
     auto get_kind = [&]() -> std::optional<parameter::Kind> {
-        auto kind_from_oplist = [&](Expression* operand, size_t i) -> std::optional<parameter::Kind> {
+        auto kind_from_oplist = [&](Expression* operand, int i) -> std::optional<parameter::Kind> {
             if ( ! operand )
                 return {};
 
@@ -102,7 +102,7 @@ bool isConstOperand(const expression::ResolvedOperator* operator_, const Express
                     const auto& value = tuple->value();
                     if ( auto it = std::ranges::find(value, expr); it != value.end() ) {
                         if ( auto* operands = d->type()->type()->tryAs<type::OperandList>() )
-                            op = operands->operand(std::distance(value.begin(), it));
+                            op = operands->operand(static_cast<int>(std::distance(value.begin(), it)));
                     }
                 }
 
@@ -112,7 +112,7 @@ bool isConstOperand(const expression::ResolvedOperator* operator_, const Express
             return {};
         };
 
-        for ( size_t i = 0; i < operator_->operands().size(); ++i ) {
+        for ( int i = 0; std::cmp_less(i, operator_->operands().size()); ++i ) {
             if ( auto* op = operator_->operands()[i] )
                 if ( auto kind = kind_from_oplist(op, i) )
                     return kind;
@@ -170,8 +170,10 @@ bool cfg::contains(const Node& outer, const Node& inner) {
     return false;
 }
 
-CFG::CFG(const Node* root)
-    : _begin(_getOrAddNode(_createMetaNode<Start>())), _end(_getOrAddNode(_createMetaNode<End>(root))) {
+CFG::CFG(ASTContext* context, const Node* root)
+    : _context(context),
+      _begin(_getOrAddNode(_createMetaNode<Start>())),
+      _end(_getOrAddNode(_createMetaNode<End>(root))) {
     util::timing::Collector _1("hilti/compiler/cfg");
 
     assert(root && root->isA<statement::Block>() && "only building from blocks currently supported");
@@ -253,28 +255,27 @@ GraphNode CFG::_addParameters(GraphNode predecessor, const Node& root) {
 
     switch ( fn->ftype()->flavor() ) {
         case type::function::Flavor::Method: {
-            auto type_name = fn->id().namespace_();
-            assert(! type_name.empty());
+            type::Struct* struct_ = nullptr;
 
-            auto lookup = scope::lookupID<declaration::Type>(type_name, p, "type");
-            if ( ! lookup )
-                util::detail::internalError(
-                    util::fmt("could not find type '%s' for method/hook '%s'", type_name, fn->id()));
+            if ( auto* field = fn->parent()->tryAs<declaration::Field>() )
+                struct_ = field->linkedType(_context)->as<type::Struct>();
+            else {
+                auto* fdecl = fn->parent()->as<declaration::Function>();
+                assert(fdecl);
+                struct_ =
+                    fdecl->linkedDeclaration(_context)->as<declaration::Type>()->type()->type()->as<type::Struct>();
+            }
 
-            const auto& [decl, id] = *lookup;
+            // Add implicit `self` parameter for methods.
+            auto d = _getOrAddNode(struct_->self());
+            _addEdge(predecessor, d);
+            predecessor = d;
 
-            if ( auto* struct_ = decl->type()->type()->tryAs<type::Struct>() ) {
-                // Add implicit `self` parameter for methods.
-                auto d = _getOrAddNode(struct_->self());
-                _addEdge(predecessor, d);
-                predecessor = d;
-
-                // Add unit parameters which are implicitly in scope.
-                for ( auto* p : struct_->parameters() ) {
-                    auto n = _getOrAddNode(p);
-                    _addEdge(predecessor, n);
-                    predecessor = n;
-                }
+            // Add unit parameters which are implicitly in scope.
+            for ( auto* p : struct_->parameters() ) {
+                auto n = _getOrAddNode(p);
+                _addEdge(predecessor, n);
+                predecessor = n;
             }
 
             break;
@@ -1133,8 +1134,8 @@ void CFG::_populateDataflow() {
 }
 
 // Helper function to output control flow graphs for statements.
-static std::string dataflowDot(const hilti::Statement& stmt) {
-    auto cfg = CFG(&stmt);
+static std::string dataflowDot(ASTContext* context, const hilti::Statement& stmt) {
+    auto cfg = CFG(context, &stmt);
 
     auto omit_dataflow = false;
     if ( const auto& env = rt::getenv("HILTI_OPTIMIZER_OMIT_CFG_DATAFLOW") )
@@ -1145,24 +1146,25 @@ static std::string dataflowDot(const hilti::Statement& stmt) {
 
 // Helper class to print CFGs to a debug stream.
 class PrintCfgVisitor : public visitor::PreOrder {
+    ASTContext* _context = nullptr;
     logging::DebugStream _stream;
 
 public:
-    PrintCfgVisitor(logging::DebugStream stream) : _stream(std::move(stream)) {}
+    PrintCfgVisitor(ASTContext* context, logging::DebugStream stream) : _context(context), _stream(std::move(stream)) {}
 
     void operator()(declaration::Function* f) override {
         if ( auto* body = f->function()->body() )
-            HILTI_DEBUG(_stream, util::fmt("Function '%s'\n%s", f->id(), dataflowDot(*body)));
+            HILTI_DEBUG(_stream, util::fmt("Function '%s'\n%s", f->id(), dataflowDot(_context, *body)));
     }
 
     void operator()(declaration::Module* m) override {
         if ( auto* body = m->statements() )
-            HILTI_DEBUG(_stream, util::fmt("Module '%s'\n%s", m->id(), dataflowDot(*body)));
+            HILTI_DEBUG(_stream, util::fmt("Module '%s'\n%s", m->id(), dataflowDot(_context, *body)));
     }
 };
 
-void cfg::dump(logging::DebugStream stream, ASTRoot* root) {
-    auto v = PrintCfgVisitor(std::move(stream));
+void cfg::dump(ASTContext* context, logging::DebugStream stream, ASTRoot* root) {
+    auto v = PrintCfgVisitor(context, std::move(stream));
     visitor::visit(v, root);
 }
 
@@ -1177,20 +1179,63 @@ static std::pair<statement::Block*, declaration::Module*> outerBlockAndModule(st
     else if ( auto* module = block->parent<declaration::Module>() )
         return {module->statements(), module};
     else
-        logger().internalError("CFG: outerBlockAndModule(): block is not part of a function or module");
+        return {nullptr, nullptr};
 }
 
 CFG* cfg::Cache::get(statement::Block* block_) {
     const auto& [block, module] = outerBlockAndModule(block_);
-    assert(block && module);
+    if ( ! (block && module) )
+        return nullptr;
 
     auto it = _blocks.find(block);
     if ( it == _blocks.end() ) {
-        it = _blocks.emplace(block, std::make_pair(module, std::make_unique<CFG>(block))).first;
+        it = _blocks.emplace(block, std::make_pair(module, std::make_unique<CFG>(_context, block))).first;
         _modules[module].insert(block);
     }
 
     return it->second.second.get();
+}
+
+const cfg::Transfer* cfg::Cache::dataflow(const Expression* expr) {
+    // TODO: For now, appromixate dataflow for expressions by looking at the
+    // statement they are part of.
+    auto* stmt = expr->parent<Statement>();
+    if ( ! stmt )
+        return nullptr;
+
+    auto* block = stmt->parent<statement::Block>();
+    if ( ! block )
+        return nullptr;
+
+    const auto* cfg = get(block);
+    if ( ! cfg )
+        return nullptr;
+
+    const auto* node = cfg->graph().getNode(stmt->identity());
+    if ( ! node )
+        return nullptr;
+
+    return &cfg->dataflow().at(*node);
+}
+
+bool cfg::Cache::mayHaveSideEffects(const Expression* expr) {
+    // Test statically for some expressions we know do not have side effects.
+    // Once dataflow() is more precise, we can revisit if we want to keep the
+    // static checks as well or rely entirely on dataflow information.
+    if ( expr->isConstant() && expr->isA<expression::Ctor>() )
+        return false;
+
+    const auto* transfer = dataflow(expr);
+    if ( ! transfer )
+        return true;
+
+    if ( transfer->keep )
+        return true;
+
+    if ( transfer->write.empty() && transfer->gen.empty() )
+        return false;
+
+    return true;
 }
 
 bool cfg::Cache::invalidate(statement::Block* block_) {
@@ -1242,7 +1287,7 @@ void cfg::Cache::checkValidity() const {
         const auto& [module, cfg] = x;
 
         auto actual = cfg->dot(false);
-        auto expected = CFG(block).dot(false);
+        auto expected = CFG(_context, block).dot(false);
 
         if ( actual != expected ) {
             auto* decl = block->parent<Declaration>();

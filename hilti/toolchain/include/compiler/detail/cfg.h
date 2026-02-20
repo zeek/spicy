@@ -126,7 +126,7 @@ namespace cfg {
 bool contains(const Node& outer, const Node& inner);
 
 /** Prints out the dot representation of the CFG to a debug stream. */
-void dump(logging::DebugStream stream, ASTRoot* root);
+void dump(ASTContext* context, logging::DebugStream stream, ASTRoot* root);
 
 /**
  * Dataflow facts about a node.
@@ -185,7 +185,7 @@ public:
      *
      * @param root the node pointing to the AST subtree to work on
      */
-    CFG(const Node* root);
+    CFG(ASTContext* context, const Node* root);
 
     /**
      * Remove a node from the graph.
@@ -262,6 +262,7 @@ private:
         return r;
     }
 
+    ASTContext* _context = nullptr;
     Graph _graph;
 
     std::set<std::unique_ptr<cfg::MetaNode>> _meta_nodes;
@@ -281,6 +282,13 @@ namespace cfg {
 class Cache {
 public:
     /**
+     * Constructs a new, empty cache.
+     *
+     * @param context the AST context
+     */
+    Cache(ASTContext* context) : _context(context) {}
+
+    /**
      * Returns the control flow graph for a given block.
      *
      * The CFG is created on first request and cached for subsequent calls,
@@ -290,9 +298,37 @@ public:
      * function or module
      * @return the CFG (which will actually be the CFG for the outermost block
      * containing the given block, i.e., for the function or module body
-     * containing it)
+     * containing it), or null if the block is not part of a function or module.
      */
     CFG* get(statement::Block* block);
+
+    /**
+     * Returns the dataflow transfer object for an expression.
+     *
+     * TODO: We actually don't have these at the expression level currently, so
+     * for now this function pessimistically approximates by returning the
+     * dataflow for the statement that the expression is part of. We may get
+     * the expression-level dataflow in the future, at which point we can
+     * update this function.
+     *
+     * @param expr the expression to get the dataflow for
+     * @return the dataflow transfer object for the expression, or null if not
+     * available
+     */
+    const cfg::Transfer* dataflow(const Expression* expr);
+
+    /**
+     * Returns true if an expression may have side effects. This includes
+     * situations where we cannot prove that it doesn't.
+     *
+     * TODO: This relies partially on `dataflow()`, so comes with the same
+     * caveat about expression-level dataflows for now.
+     *
+     * @param expr the expression to check
+     * @return true if the expression may have side effects, false if it is
+     * guaranteed to have no side effects
+     */
+    bool mayHaveSideEffects(const Expression* expr);
 
     /**
      * Removes any cached CFG for the function or module containing a given
@@ -337,6 +373,8 @@ public:
     void checkValidity() const;
 
 private:
+    ASTContext* _context = nullptr;
+
     // Maps from blocks to pairs of the blocks containing modules and their
     // computed & cached CFGs. Using retained pointers to ensure the blocks
     // stay valid as long as they're in the cache. The module pointers will

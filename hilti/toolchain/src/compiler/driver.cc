@@ -34,6 +34,8 @@ inline const DebugStream Driver("driver");
 constexpr int OptCxxLink = 1000;
 constexpr int OptCxxEnableDynamicGlobals = 1001;
 constexpr int OptSkipStdImports = 1002;
+constexpr int OptStrictPublicAPI = 1003;
+constexpr int OptNoStrictPublicAPI = 1004;
 
 static struct option long_driver_options[] =
     {{.name = "abort-on-exceptions", .has_arg = required_argument, .flag = nullptr, .val = 'A'},
@@ -62,6 +64,8 @@ static struct option long_driver_options[] =
      {.name = "skip-validation", .has_arg = no_argument, .flag = nullptr, .val = 'V'},
      {.name = "skip-dependencies", .has_arg = no_argument, .flag = nullptr, .val = 'S'},
      {.name = "skip-standard-imports", .has_arg = no_argument, .flag = nullptr, .val = OptSkipStdImports},
+     {.name = "strict-public-api", .has_arg = no_argument, .flag = nullptr, .val = OptStrictPublicAPI},
+     {.name = "no-strict-public-api", .has_arg = no_argument, .flag = nullptr, .val = OptNoStrictPublicAPI},
      {.name = "version", .has_arg = no_argument, .flag = nullptr, .val = 'v'},
      {.name = nullptr, .has_arg = 0, .flag = nullptr, .val = 0}};
 
@@ -133,6 +137,10 @@ void Driver::usage() {
            "produced HLTO file. Can be given multiple times.\n"
            "       --skip-standard-imports      Do not automatically import standard library modules (for debugging "
            "only).\n"
+           "       --strict-public-api          Skip optimizations that change the public C++ API of generated code.  "
+           "[default in debug builds]\n"
+           "       --no-strict-public-api       Allow optimizations that change the public C++ API of generated code. "
+           "[default in release builds]\n"
         << addl_usage
         << "\n"
            "Inputs can be "
@@ -430,6 +438,12 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
 
             case OptSkipStdImports: _compiler_options.import_standard_modules = false; break;
 
+            case OptStrictPublicAPI: _compiler_options.public_api_mode = hilti::Options::PublicAPIMode::Strict; break;
+
+            case OptNoStrictPublicAPI:
+                _compiler_options.public_api_mode = hilti::Options::PublicAPIMode::NonStrict;
+                break;
+
             case 'h': usage(); return Nothing();
 
             case '?':
@@ -485,6 +499,16 @@ Result<Nothing> Driver::initialize() {
 
     if ( getenv("HILTI_PRINT_SETTINGS") )
         _compiler_options.print(std::cerr);
+
+    if ( _compiler_options.public_api_mode == Options::PublicAPIMode::Default ) {
+        if ( const auto& env = rt::getenv("HILTI_OPTIMIZER_STRICT_PUBLIC_API") )
+            _compiler_options.public_api_mode =
+                (*env == "1" ? Options::PublicAPIMode::Strict : Options::PublicAPIMode::NonStrict);
+        else
+            // Be strict in debug builds by default.
+            _compiler_options.public_api_mode =
+                (_compiler_options.debug ? Options::PublicAPIMode::Strict : Options::PublicAPIMode::NonStrict);
+    }
 
     _ctx = std::make_shared<Context>(_compiler_options);
     _builder = createBuilder(_ctx->astContext());

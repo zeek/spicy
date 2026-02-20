@@ -1,4 +1,4 @@
-# @TEST-EXEC: spicyc -j -o x.hlto %INPUT
+# @TEST-EXEC: spicyc -d -j -o x.hlto %INPUT
 # @TEST-EXEC: printf abc | spicy-driver -p 80/tcp x.hlto >>output
 # @TEST-EXEC: printf abc | spicy-driver -p 100/tcp%orig x.hlto >>output
 # @TEST-EXEC: printf abc | spicy-driver -p 100/tcp%resp x.hlto >>output

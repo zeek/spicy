@@ -220,8 +220,7 @@ public:
 
     /**
      * Returns direct & indirect dependencies that a module imports. This
-     * information will be available only once the AST has been processed
-     * successfully through `processAST()`.
+     * information will be available only once the AST has been resolved.
      *
      * @param uid UID of module to return dependencies for; the module must be
      * known, otherwise an internal error is reported
@@ -237,9 +236,8 @@ public:
      * either the root or the module level (i.e., node depth <= 2). The result
      * will likewise include only such global declarations.
      *
-     * This information will be available only once the AST has been processed
-     * successfully through `processAST()`. If called before that, the method
-     * will abort with an internal error.
+     * This information will be available only once the AST has been resolved.
+     * If called before that, the method will abort with an internal error.
      *
      * @param  d declaration to return dependencies for, which must be part of
      * the AST and declared at the root or module level

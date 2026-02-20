@@ -26,6 +26,7 @@
 [debug/optimizer] pass: constant-propagation (round 1, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 1, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 1, pass iteration 1)
+[debug/optimizer] pass: remove-unused-fields (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 2, pass iteration 1)
 [debug/optimizer]     * function changed: f
 [debug/optimizer]   [dead-write-shadowed.hlt:10:19-18:1] statement::Expression "2;" -> null (removing unused expression result)
@@ -49,6 +50,7 @@
 [debug/optimizer] pass: constant-propagation (round 2, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 2, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 2, pass iteration 1)
+[debug/optimizer] pass: remove-unused-fields (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 3, pass iteration 1)
 [debug/optimizer]     * function changed: f
 [debug/optimizer]   [dead-write-shadowed.hlt:10:19-18:1] statement::Expression "10;" -> null (removing unused expression result)
@@ -65,6 +67,7 @@
 [debug/optimizer] pass: constant-propagation (round 3, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 3, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 3, pass iteration 1)
+[debug/optimizer] pass: remove-unused-fields (round 3, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 4, pass iteration 1)
 [debug/optimizer] pass: peephole (round 4, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 4, pass iteration 1)
@@ -72,6 +75,7 @@
 [debug/optimizer] pass: constant-propagation (round 4, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 4, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 4, pass iteration 1)
+[debug/optimizer] pass: remove-unused-fields (round 4, pass iteration 1)
 [debug/cfg-final] Module 'Test'
 digraph {
     0 [label="f();" xlabel="in: [] out: [] keep"];
@@ -99,8 +103,8 @@ digraph {
 [debug/cfg-final] Module 'hilti'
 digraph {
     0 [label=start shape=Mdiamond xlabel="in: [] out: []"];
-    1 [label="end <...>/hilti.hlt:3:1-68:1" shape=triangle xlabel="in: [] out: []"];
-    2 [label="end <...>/hilti.hlt:3:1-68:1" shape=triangle xlabel="in: [] out: []"];
+    1 [label="end <...>/hilti.hlt:3:1-71:1" shape=triangle xlabel="in: [] out: []"];
+    2 [label="end <...>/hilti.hlt:3:1-71:1" shape=triangle xlabel="in: [] out: []"];
     0 -> 2 [label="0"];
     2 -> 1 [label="1"];
 }

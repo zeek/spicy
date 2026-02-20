@@ -1,5 +1,5 @@
-# @TEST-EXEC:  printf "A\012\013A\014\015AAA\005" | spicy-driver %INPUT >output
-# @TEST-EXEC:  printf "AAA\005" | spicy-driver %INPUT >>output
+# @TEST-EXEC:  printf "A\012\013A\014\015AAA\005" | spicy-driver -d %INPUT >output
+# @TEST-EXEC:  printf "AAA\005" | spicy-driver -d %INPUT >>output
 # @TEST-EXEC:  btest-diff output
 
 module HTTP;

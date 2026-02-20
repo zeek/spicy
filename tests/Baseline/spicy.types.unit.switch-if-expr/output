@@ -2,7 +2,10 @@
 Mini::test {
   a: 1
   b1: 2345
+  b2: (unset)
 }
 Mini::test {
   a: 2
+  b1: (unset)
+  b2: (unset)
 }

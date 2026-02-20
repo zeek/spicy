@@ -1,7 +1,7 @@
-# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
-# @TEST-EXEC: ${SCRIPTS}/printf '\x01\x02\x03' | spicy-dump %INPUT.hlto >> output
-# @TEST-EXEC-FAIL: ${SCRIPTS}/printf '\x01\x02' | spicy-dump %INPUT.hlto >> output 2>&1
-# @TEST-EXEC-FAIL: ${SCRIPTS}/printf '\x01' | spicy-dump %INPUT.hlto >> output 2>&1
+# @TEST-EXEC: ${SPICYC} -d %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: ${SCRIPTS}/printf '\x01\x02\x03' | spicy-dump -d %INPUT.hlto >> output
+# @TEST-EXEC-FAIL: ${SCRIPTS}/printf '\x01\x02' | spicy-dump -d %INPUT.hlto >> output 2>&1
+# @TEST-EXEC-FAIL: ${SCRIPTS}/printf '\x01' | spicy-dump -d %INPUT.hlto >> output 2>&1
 # @TEST-EXEC: btest-diff output
 #
 # @TEST-DOC: Test deprecated `void` parsing while we still support it.

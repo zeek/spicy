@@ -383,12 +383,16 @@ public:
      * Returns a child.
      *
      * @tparam T type that the child nodes are assumed to (and must) have
-     * @param i zero-based index of the child, in the order they were passed into the constructor and/or added
+     * @param i zero-based index of the child, in the order they were passed into the constructor and/or added; a
+     * negative index counts Python-style from the end
      * @return child casted to type `T`, or null if there's no child node at that index
      */
     template<typename T>
-    T* child(unsigned int i) const {
-        if ( i >= _children.size() )
+    T* child(int i) const {
+        if ( i < 0 )
+            i = static_cast<int>(_children.size()) + i;
+
+        if ( std::cmp_greater_equal(i, _children.size()) )
             return nullptr;
 
         return _children[i] ? _children[i]->as<T>() : nullptr;
@@ -398,12 +402,16 @@ public:
      * Returns a child.
      *
      * @tparam T type that the child nodes are assumed to (and must) have
-     * @param i zero-based index of the child, in the order they were passed into the constructor and/or added
+     * @param i zero-based index of the child, in the order they were passed into the constructor and/or added; a
+     * negative index counts Python-style from the end
      * @return child casted to type `T`, or null if there's no child node at that index
      */
     template<typename T>
-    T* childTryAs(unsigned int i) const {
-        if ( i >= _children.size() )
+    T* childTryAs(int i) const {
+        if ( i < 0 )
+            i = static_cast<int>(_children.size()) + i;
+
+        if ( std::cmp_greater_equal(i, _children.size()) )
             return nullptr;
 
         return _children[i] ? _children[i]->tryAs<T>() : nullptr;
@@ -413,11 +421,14 @@ public:
      * Returns a child at given index inside the vector of all children. The order in that vector is determined  by
      * the order in which the children were passed into the constructor and/or added.
      *
-     * @param i index of the child, with zero being the first
+     * @param i index of the child, with zero being the first; a negative index counts Python-style from the end
      * @return child at given index, or null if there's no child at that index
      **/
-    Node* child(unsigned int i) const {
-        if ( i >= _children.size() )
+    Node* child(int i) const {
+        if ( i < 0 )
+            i = static_cast<int>(_children.size()) + i;
+
+        if ( std::cmp_greater_equal(i, _children.size()) )
             return nullptr;
 
         return _children[i];
@@ -634,6 +645,30 @@ public:
             n->_meta = _meta;
 
         _children[idx] = n;
+    }
+
+    /**
+     * Clears the child at a given index. The child pointer at that index will
+     * be set to null.
+     *
+     * @param i zero-based index of the child, in the order they were passed
+     * into the constructor and/or added; a negative index counts Python-style
+     * from the end
+     * @return the old child that was cleared, which will be detached from the
+     * AST; will return null if the child was out of range.
+     */
+    Node* clearChild(int i) {
+        if ( i < 0 )
+            i = static_cast<int>(_children.size()) + i;
+
+        if ( std::cmp_greater_equal(i, _children.size()) )
+            return nullptr;
+
+        auto* old = _children[i];
+        old->_parent = nullptr;
+        old->release();
+        _children[i] = nullptr;
+        return old;
     }
 
     /**

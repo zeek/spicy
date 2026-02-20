@@ -1,4 +1,4 @@
-# @TEST-EXEC: spicyc %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: spicyc -d %INPUT -j -o %INPUT.hlto
 # @TEST-EXEC: echo x1Y | spicy-dump %INPUT.hlto >output
 # @TEST-EXEC: btest-diff output
 

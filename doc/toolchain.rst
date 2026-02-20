@@ -72,6 +72,9 @@ control the compilation process:
         ``HILTI_CXX_INCLUDE_DIRS`` will be searched for headers before any
         header search paths implicit in Spicy C++ compilation.
 
+    ``HILTI_DISABLE_OPTIMIZER_PASSES``
+        Colon-separated list of optimizer passes to disable.
+
     ``HILTI_JIT_PARALLELISM``
         Set to specify the maximum number of background compilation jobs to run
         during JIT. Defaults to number of cores.
@@ -90,6 +93,17 @@ control the compilation process:
     ``HILTI_OPTIMIZER_OMIT_CFG_DATAFLOW``
         Set to `1` to omit dataflow facts from the control-flow graph debug
         streams.
+
+    ``HILTI_OPTIMIZER_STRICT_PUBLIC_API``
+        Set to `1` to disallow any changes to the public C++ API of
+        generated code by the optimizer. Set to `0` to allow such
+        changes, which may, for example, remove storage for parsed
+        fields that are never accessed by any Spicy code.
+
+        If not set, the default is `0` for release builds and `1` for
+        debug builds. There are also command line options
+        ``--(no-)strict-public-api`` that override this environment
+        variable as well as any default.
 
 .. _spicy-driver:
 

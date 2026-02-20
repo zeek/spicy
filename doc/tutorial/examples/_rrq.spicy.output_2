@@ -1,3 +1,3 @@
-# Automatically generated; do not edit. -- <HASH> spicy-driver -F tutorial/examples/tftp_rrq.dat -P 69/udp%orig=TFTP::ReadRequest %INPUT/spicy-driver -F tftp_rrq.dat -P 69/udp%orig=TFTP::ReadRequest tftp.spicy/False
-# spicy-driver -F tftp_rrq.dat -P 69/udp%orig=TFTP::ReadRequest tftp.spicy
+# Automatically generated; do not edit. -- <HASH> spicy-driver -d -F tutorial/examples/tftp_rrq.dat -P 69/udp%orig=TFTP::ReadRequest %INPUT/spicy-driver -d -F tftp_rrq.dat -P 69/udp%orig=TFTP::ReadRequest tftp.spicy/False
+# spicy-driver -d -F tftp_rrq.dat -P 69/udp%orig=TFTP::ReadRequest tftp.spicy
 [$opcode=1, $filename=b"rfc1350.txt", $mode=b"octet"]

@@ -1,3 +1,0 @@
-# Automatically generated; do not edit. -- <HASH> printf "1234567890" | spicy-driver %INPUT/printf "1234567890" | spicy-driver %INPUT/False
-# printf "1234567890" | spicy-driver debugging.spicy
-

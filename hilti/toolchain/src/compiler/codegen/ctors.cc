@@ -301,7 +301,7 @@ struct Visitor : hilti::visitor::PreOrder {
         auto id = cg->compile(n->type(), codegen::TypeUsage::Ctor);
 
         auto is_public_field = [&](auto f) {
-            return ! f->type()->type()->template isA<type::Function>() && ! f->isInternal();
+            return ! f->type()->type()->template isA<type::Function>() && ! f->isNoEmit() && ! f->isInternal();
         };
 
         auto convert_field = [&](auto f) {

@@ -1,4 +1,4 @@
-# Automatically generated; do not edit. -- <HASH> printf '\13GET /a/b/c\n' | spicy-driver -p Test::A %INPUT/printf '\13GET /a/b/c\n' | spicy-driver -p Test::A %INPUT/False
-# printf '\13GET /a/b/c\n' | spicy-driver -p Test::A foo.spicy
+# Automatically generated; do not edit. -- <HASH> printf '\13GET /a/b/c\n' | spicy-driver -d -p Test::A %INPUT/printf '\13GET /a/b/c\n' | spicy-driver -d -p Test::A %INPUT/False
+# printf '\13GET /a/b/c\n' | spicy-driver -d -p Test::A foo.spicy
 B, [$path=b"/a/b/c"]
 A, [$length=11, $data=b"GET /a/b/c\x0a", $b=<sink>]

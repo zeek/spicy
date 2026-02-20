@@ -1,4 +1,4 @@
-# @TEST-EXEC: ${SPICYC} %INPUT -j -o %INPUT.hlto
+# @TEST-EXEC: ${SPICYC} -d %INPUT -j -o %INPUT.hlto
 # @TEST-EXEC: ${SCRIPTS}/printf '\x00\x10\x20\xff' | spicy-driver %INPUT.hlto >>output
 # @TEST-EXEC: ${SCRIPTS}/printf '\x01a1a2\x10\x20\xff' | spicy-driver %INPUT.hlto >>output
 # @TEST-EXEC: ${SCRIPTS}/printf '\x02\x10b2b3\x10\x20\xff' | spicy-driver %INPUT.hlto >>output

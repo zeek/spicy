@@ -153,7 +153,7 @@ struct Collector : public optimizer::visitor::Collector {
             usage.referenced = true;
 
         // If the function is public mark is as referenced.
-        if ( n->linkage() == declaration::Linkage::Public )
+        if ( n->isPublic() )
             usage.referenced = true;
 
         const auto* decl = n->linkedDeclaration(context());
@@ -191,7 +191,7 @@ struct Collector : public optimizer::visitor::Collector {
                 // If the declaration is `extern` and the unit is `public`, the function
                 // is part of an externally visible API and potentially used elsewhere.
                 if ( decl )
-                    usage.referenced |= (decl->linkage() == declaration::Linkage::Public);
+                    usage.referenced |= decl->isPublic();
                 else
                     usage.referenced = true;
 
@@ -212,6 +212,7 @@ struct Collector : public optimizer::visitor::Collector {
                 break;
 
             case declaration::Linkage::Private:
+            case declaration::Linkage::Export:
             case declaration::Linkage::Public:
                 // Nothing.
                 break;
@@ -242,7 +243,7 @@ struct Collector : public optimizer::visitor::Collector {
             return;
 
         // Record the type if not already known. If the type is part of an external API record it as used.
-        used.insert({type_id, n->linkage() == declaration::Linkage::Public});
+        used.insert({type_id, n->isPublic()});
     }
 
     void operator()(expression::Member* n) final {
@@ -510,7 +511,7 @@ struct Mutator : public optimizer::visitor::Mutator {
 
     void operator()(statement::Expression* n) final {
         // Remove expression statements without side effects.
-        if ( const auto* expr = n->expression(); expr->isConstant() && expr->isA<expression::Ctor>() )
+        if ( const auto* expr = n->expression(); ! state()->cfgCache()->mayHaveSideEffects(expr) )
             removeNode(n, "removing unused expression result");
     }
 };

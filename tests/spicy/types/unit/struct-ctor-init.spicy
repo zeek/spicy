@@ -1,4 +1,4 @@
-# @TEST-EXEC:  spicyc -j %INPUT >output
+# @TEST-EXEC:  spicyc -d -j %INPUT >output
 # @TEST-EXEC:  btest-diff output
 #
 # @TEST-DOC: Initialize a unit variable with a struct field constructor.

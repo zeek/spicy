@@ -1,6 +1,6 @@
-# Automatically generated; do not edit. -- <HASH> printf '\01ABC' | spicy-driver %INPUT; printf '\02ABC' | spicy-driver %INPUT/printf '\01ABC' | spicy-driver %INPUT; printf '\02ABC' | spicy-driver %INPUT/False
-# printf '\01ABC' | spicy-driver foo.spicy
+# Automatically generated; do not edit. -- <HASH> printf '\01ABC' | spicy-driver -d %INPUT; printf '\02ABC' | spicy-driver -d %INPUT/printf '\01ABC' | spicy-driver -d %INPUT; printf '\02ABC' | spicy-driver -d %INPUT/False
+# printf '\01ABC' | spicy-driver -d foo.spicy
 [$tag=1, $b1=b"ABC", $b2=(not set)]
 
-# printf '\02ABC' | spicy-driver foo.spicy
+# printf '\02ABC' | spicy-driver -d foo.spicy
 [$tag=2, $b1=(not set), $b2=b"abc"]

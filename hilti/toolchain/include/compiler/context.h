@@ -55,6 +55,17 @@ struct Options {
     bool import_standard_modules = true; /**< automatically import standard modules into the global namespace. this is
                                            required, turn off only for debugging. */
 
+    /** Option choices controlling whether to skip optimizations that change the public C++ API of generated code. */
+    enum class PublicAPIMode {
+        Strict, /**< skip optimizations that change the public C++ API of generated code.  [default in debug builds] */
+        NonStrict, /**< allow optimizations that change the public C++ API of generated code. [default in release
+                      builds] */
+        Default,   /**< will be replaced automatically before AST processing starts with either strict/non-strict, based
+                      on build mode */
+    };
+
+    PublicAPIMode public_api_mode = PublicAPIMode::Default;
+
     /**
      * Retrieves the value for an auxiliary option.
      *

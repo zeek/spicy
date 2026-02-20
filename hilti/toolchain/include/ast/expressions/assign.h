@@ -20,6 +20,14 @@ public:
 
     void setSource(ASTContext* ctx, Expression* src) { setChild(ctx, 1, src); }
 
+    /**
+     * Removes the source of the assignment. The source expression will be null
+     * afterwards.
+     *
+     * @return the previous target expression, now detached from the AST
+     */
+    Expression* removeSource() { return clearChild(1)->as<Expression>(); }
+
     static auto create(ASTContext* ctx, Expression* target, Expression* src, Meta meta = {}) {
         return ctx->make<Assign>(ctx, {target, src}, std::move(meta));
     }

@@ -8,12 +8,14 @@ test::Y {
 }
 test::Y {
   x: test::X {
+    a: (unset)
     b: B
     c: C
   }
 }
 test::Y {
   x: test::X {
+    a: (unset)
     b: B
     c: C
   }

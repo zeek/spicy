@@ -203,6 +203,18 @@ Spicy arguments translate into C++ arguments, look at the C++
 prototype that's included for the callback function in the output of
 ``-P``.
 
+When interfacing with Spicy-generated parsers from custom C++ code,
+keep in mind that by default the Spicy optimizer may apply aggressive
+optimizations that modify externally visible types and functions based
+on their actual use inside the Spicy code. If you want to rely on a
+stable C++ API for the generated parser, you can disable these
+optimizations by passing ``--strict-public-api`` to the compiler.
+Alternatively (and preferably), you can leverage the generic runtime
+introspection facilities described in the next section, which will
+always reflect the parser's functionality after any optimizations. See
+:ref:`optimization` for more details on Spicy's optimizations and how
+they affect the public API.
+
 .. _host_applications_generic:
 
 Supporting Arbitrary Parsers

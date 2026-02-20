@@ -1,6 +1,6 @@
-# Automatically generated; do not edit. -- <HASH> printf 'A\01' | spicy-driver %INPUT; printf 'B\01\02' | spicy-driver %INPUT/printf 'A\01' | spicy-driver %INPUT; printf 'B\01\02' | spicy-driver %INPUT/False
-# printf 'A\01' | spicy-driver foo.spicy
+# Automatically generated; do not edit. -- <HASH> printf 'A\01' | spicy-driver -d %INPUT; printf 'B\01\02' | spicy-driver -d %INPUT/printf 'A\01' | spicy-driver -d %INPUT; printf 'B\01\02' | spicy-driver -d %INPUT/False
+# printf 'A\01' | spicy-driver -d foo.spicy
 [$x=b"A", $a8=1, $a16=(not set), $a32=(not set)]
 
-# printf 'B\01\02' | spicy-driver foo.spicy
+# printf 'B\01\02' | spicy-driver -d foo.spicy
 [$x=b"B", $a8=(not set), $a16=258, $a32=(not set)]

@@ -109,6 +109,20 @@ causes the remaining portion of the enclosing loop body to be skipped.
 
 .. include:: /autogen/types/generic-end.rst
 
+.. _statement_export:
+
+``export``
+----------
+
+::
+
+    export TYPE_ID;
+
+Prohibits the Spicy optimizer from applying certain aggressive
+optimizations to the given type that might change its externally
+visible properties, such as which fields are actually stored in the
+type's values. See :ref:`optimization` for more.
+
 .. _statement_for:
 
 ``for``

@@ -1020,19 +1020,22 @@ public:
      *
      * @param v the value referring to the struct to iterate over
      * @param include_internal include internal fields
+     * @param include_not_emitted include fields removed by the optimizer; they
+     * will not have a value
      *
      * @return a vector of pairs ``(field, value)`` where *field* is the
      * current ``struct_::Field` and *value* is the field's value.
      */
-    auto iterate(const Value& v, bool include_internal = false) const {
+    auto iterate(const Value& v, bool include_internal = false, bool include_not_emitted = false) const {
         std::vector<std::pair<const struct_::Field&, Value>> values;
 
         for ( const auto& f : fields(include_internal) ) {
-            if ( ! f.get().emitted )
-                continue;
-
-            auto x = Value(static_cast<const char*>(v.pointer()) + f.get().offset, f.get().type, v);
-            values.emplace_back(f.get(), f.get().value(x));
+            if ( f.get().isEmitted() ) {
+                auto x = Value(static_cast<const char*>(v.pointer()) + f.get().offset, f.get().type, v);
+                values.emplace_back(f.get(), f.get().value(x));
+            }
+            else if ( include_not_emitted )
+                values.emplace_back(f.get(), Value());
         }
 
         return values;
