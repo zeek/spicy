@@ -61,7 +61,7 @@ TEST_CASE("assign") {
 
     SUBCASE("from null reference") {
         ValueReference<int> ref1(42);
-        ValueReference<int> ref2((std::shared_ptr<int>()));
+        ValueReference<int> ref2((counted_ptr<int>()));
 
         CHECK(ref1);
         CHECK(ref2.isNull());
@@ -89,7 +89,7 @@ TEST_CASE("asSharedPtr") {
     }
 
     SUBCASE("non-owning") {
-        auto ptr = std::make_shared<T>(42);
+        auto ptr = hilti::rt::make_counted<T>(42);
 
         REQUIRE(ValueReference<T>::self(ptr.get()).asSharedPtr());
         CHECK_EQ(*ValueReference<T>::self(ptr.get()).asSharedPtr(), *ptr);
@@ -98,6 +98,25 @@ TEST_CASE("asSharedPtr") {
         CHECK_THROWS_WITH_AS(ValueReference<T>::self(&x).asSharedPtr(), "reference to non-heap instance",
                              const IllegalReference&);
     }
+}
+
+TEST_CASE("self-weak-string-expired") {
+    auto ptr = hilti::rt::make_counted<T>(42);
+    auto vr = ValueReference<T>::self(ptr.get());
+
+    WeakReference<T> wr(vr);
+    StrongReference<T> sr(vr);
+
+    REQUIRE(wr.get() == ptr.get());
+    REQUIRE(sr.get() == ptr.get());
+
+    vr.reset();
+    REQUIRE(wr.get() == ptr.get());
+
+    sr.reset();
+
+    REQUIRE(wr.isExpired());
+    REQUIRE(wr.get() == nullptr);
 }
 
 TEST_CASE_TEMPLATE("construct", U, int, T) {
@@ -114,7 +133,7 @@ TEST_CASE_TEMPLATE("construct", U, int, T) {
     }
 
     SUBCASE("from ptr") {
-        const auto ptr = std::make_shared<U>(x);
+        const auto ptr = make_counted<U>(x);
         ValueReference<U> ref(ptr);
         CHECK_EQ(*ref, x);
     }
@@ -376,8 +395,8 @@ TEST_CASE("isNull") {
     CHECK(StrongReference<int>().isNull());
     CHECK_FALSE(StrongReference<int>(42).isNull());
 
-    CHECK(StrongReference<int>(ValueReference<int>(std::shared_ptr<int>())).isNull());
-    CHECK_FALSE(StrongReference<int>(ValueReference<int>(std::make_shared<int>(42))).isNull());
+    CHECK(StrongReference<int>(ValueReference<int>(counted_ptr<int>())).isNull());
+    CHECK_FALSE(StrongReference<int>(ValueReference<int>(make_counted<int>(42))).isNull());
 }
 
 TEST_CASE("reset") {

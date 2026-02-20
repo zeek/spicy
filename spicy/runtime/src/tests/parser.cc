@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 
+#include <hilti/rt/counted-ptr.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/fiber.h>
 #include <hilti/rt/fmt.h>
@@ -105,7 +106,7 @@ TEST_CASE("atEod") {
     }
 }
 
-struct UnitWithSinkSupport : std::enable_shared_from_this<UnitWithSinkSupport> {
+struct UnitWithSinkSupport : hilti::rt::enable_counted_from_this<UnitWithSinkSupport> {
     static Parser HILTI_INTERNAL(parser);
     sink::detail::State* HILTI_INTERNAL(sink) = nullptr;
     hilti::rt::Optional<hilti::rt::RecoverableFailure> HILTI_INTERNAL(error);

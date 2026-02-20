@@ -9,6 +9,7 @@
 #include <variant>
 
 #include <hilti/rt/any.h>
+#include <hilti/rt/counted-ptr.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/string.h>
@@ -23,7 +24,7 @@ void __attribute__((noreturn)) throw_null();
 
 /** Base for classes that `ValueReference::self` can receive.  */
 template<typename T>
-using Controllable = std::enable_shared_from_this<T>;
+using Controllable = enable_counted_from_this<T>;
 
 /**
  * Class representing HILTI's `value_ref<T>` type. This class stores an value
@@ -56,7 +57,7 @@ public:
      * Instantiates a reference containing a new value of `T` initialized to
      * its default value.
      */
-    ValueReference() : _ptr(std::make_shared<T>()) {}
+    ValueReference() : _ptr(make_counted<T>()) {}
 
     /**
      * Instantiates a reference containing a new value of `T` initialized to
@@ -64,7 +65,7 @@ public:
      *
      * @param t value to initialize new instance with
      */
-    ValueReference(T t) : _ptr(std::make_shared<T>(std::move(t))) {}
+    ValueReference(T t) : _ptr(make_counted<T>(std::move(t))) {}
 
     /**
      * Instantiates a new reference from an existing `std::shared_ptr` to a
@@ -76,7 +77,7 @@ public:
      *
      * @param t shared pointer to link to
      */
-    explicit ValueReference(std::shared_ptr<T> t) : _ptr(std::move(t)) {}
+    explicit ValueReference(counted_ptr<T> t) : _ptr(std::move(t)) {}
 
     /**
      * Copy constructor. The new instance will refer to a copy of the
@@ -84,9 +85,9 @@ public:
      */
     ValueReference(const ValueReference& other) {
         if ( auto ptr = other._get() )
-            _ptr = std::make_shared<T>(*ptr);
+            _ptr = make_counted<T>(*ptr);
         else
-            _ptr = std::shared_ptr<T>();
+            _ptr = counted_ptr<T>();
     }
 
     /** Move constructor. */
@@ -138,10 +139,10 @@ public:
      * @throws IllegalReference if no shared pointer can be constructed for
      * the contained instance.
      */
-    std::shared_ptr<T> asSharedPtr() const {
+    counted_ptr<T> asSharedPtr() const {
         assert(_ptr.index() != std::variant_npos);
 
-        if ( auto x = std::get_if<std::shared_ptr<T>>(&_ptr) )
+        if ( auto x = std::get_if<counted_ptr<T>>(&_ptr) )
             return *x;
 
         try {
@@ -162,7 +163,7 @@ public:
      * Resets the contained value to a fresh copy of a `T` value initialized
      * to its default.
      */
-    void reset() { _ptr = std::shared_ptr<T>(); }
+    void reset() { _ptr = counted_ptr<T>(); }
 
     /**
      * Returns a reference to the contained value.
@@ -239,7 +240,7 @@ public:
         if ( auto* ptr = _get() )
             *ptr = std::move(other);
         else
-            _ptr = std::make_shared<T>(std::move(other));
+            _ptr = make_counted<T>(std::move(other));
 
         return *this;
     }
@@ -263,7 +264,7 @@ public:
             if ( auto* ptr = _get() )
                 *ptr = *other._get();
             else
-                _ptr = std::make_shared<T>(*other._get());
+                _ptr = make_counted<T>(*other._get());
 
             return *this;
         } catch ( ... ) {
@@ -294,7 +295,7 @@ public:
                 other._ptr = nullptr;
             }
             else
-                _ptr = std::make_shared<T>(*other._get());
+                _ptr = make_counted<T>(*other._get());
 
             return *this;
         } catch ( ... ) {
@@ -307,7 +308,7 @@ public:
      * does *not* copy the pointer's target value; we will store a pointer to
      * the same value.
      */
-    ValueReference& operator=(std::shared_ptr<T> other) noexcept {
+    ValueReference& operator=(counted_ptr<T> other) noexcept {
         if ( _get() != other.get() )
             _ptr = std::move(other);
 
@@ -346,16 +347,16 @@ private:
         if ( auto ptr = std::get_if<T*>(&_ptr) )
             return *ptr;
 
-        assert(std::holds_alternative<std::shared_ptr<T>>(_ptr));
-        return std::get_if<std::shared_ptr<T>>(&_ptr)->get();
+        assert(std::holds_alternative<counted_ptr<T>>(_ptr));
+        return std::get_if<counted_ptr<T>>(&_ptr)->get();
     }
 
     T* _get() noexcept {
         if ( auto ptr = std::get_if<T*>(&_ptr) )
             return *ptr;
 
-        assert(std::holds_alternative<std::shared_ptr<T>>(_ptr));
-        return std::get_if<std::shared_ptr<T>>(&_ptr)->get();
+        assert(std::holds_alternative<counted_ptr<T>>(_ptr));
+        return std::get_if<counted_ptr<T>>(&_ptr)->get();
     }
 
     const T* _safeGet() const {
@@ -364,7 +365,7 @@ private:
         if ( auto ptr = std::get_if<T*>(&_ptr); ptr && *ptr )
             return *ptr;
 
-        if ( auto ptr = std::get_if<std::shared_ptr<T>>(&_ptr); ptr && *ptr )
+        if ( auto ptr = std::get_if<counted_ptr<T>>(&_ptr); ptr && *ptr )
             return ptr->get();
 
         reference::detail::throw_null();
@@ -376,7 +377,7 @@ private:
         if ( auto ptr = std::get_if<T*>(&_ptr); ptr && *ptr )
             return *ptr;
 
-        if ( auto ptr = std::get_if<std::shared_ptr<T>>(&_ptr); ptr && *ptr )
+        if ( auto ptr = std::get_if<counted_ptr<T>>(&_ptr); ptr && *ptr )
             return ptr->get();
 
         reference::detail::throw_null();
@@ -385,7 +386,7 @@ private:
     // In `_safeGet` above we rely on the fact that a default-constructed
     // `ValueReference` always contains a `shared_ptr`, so it is listed as the
     // first variant.
-    std::variant<std::shared_ptr<T>, T*> _ptr;
+    std::variant<counted_ptr<T>, T*> _ptr;
 };
 
 /**
@@ -396,9 +397,9 @@ private:
  * explicitly be null.
  */
 template<typename T>
-class StrongReference : public std::shared_ptr<T> {
+class StrongReference : public counted_ptr<T> {
 public:
-    using Base = std::shared_ptr<T>;
+    using Base = counted_ptr<T>;
 
     /** Default constructor creating a null reference. */
     StrongReference() : Base() {}
@@ -415,7 +416,7 @@ public:
      *
      * @param t initialization value
      */
-    explicit StrongReference(T t) : Base(std::make_shared<T>(std::move(t))) {}
+    explicit StrongReference(T t) : Base(make_counted<T>(std::move(t))) {}
 
     /** Instantiate an unset reference. */
     explicit StrongReference(std::nullptr_t) {}
@@ -496,7 +497,7 @@ public:
      * @param t value to allocate and then refer to
      */
     StrongReference& operator=(T other) {
-        Base::operator=(std::make_shared<T>(std::move(other)));
+        Base::operator=(make_counted<T>(std::move(other)));
         return *this;
     }
 
@@ -548,9 +549,9 @@ private:
  * be null.
  */
 template<typename T>
-class WeakReference : public std::weak_ptr<T> {
+class WeakReference : public counted_weak_ptr<T> {
 public:
-    using Base = std::weak_ptr<T>;
+    using Base = counted_weak_ptr<T>;
 
     /** Default constructor creating a null reference. */
     WeakReference() = default;
