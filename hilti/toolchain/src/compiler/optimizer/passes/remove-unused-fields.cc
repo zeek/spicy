@@ -74,21 +74,7 @@ struct Collector : public optimizer::visitor::Collector {
         if ( field->attributes()->find(hilti::attribute::kind::NeededByFeature) )
             return false; // features are handled by other passes
 
-        if ( field->attributes()->find(hilti::attribute::kind::AlwaysEmit) )
-            return false; // somebody definitely wants this
-
-        auto* struct_ = field->parent()->as<type::Struct>();
-        auto* sdecl = struct_->typeDeclaration();
-        if ( ! sdecl )
-            return false; // some anonymous struct
-
-        if ( sdecl->linkage() == declaration::Linkage::Export )
-            return false; // don't change fields defined in exported type
-
-        if ( sdecl->attributes()->find(hilti::attribute::kind::Cxxname) )
-            return false; // don't change fields defined in external C++ structs
-
-        return true;
+        return optimizer()->mayModify(field);
     }
 
     // Given a struct field access operator, returns the corresponding field
