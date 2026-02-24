@@ -5,7 +5,7 @@
 
 module Test {
 
-public function void foo() {
+public function extern void foo() {
     default<void>();
 }
 
