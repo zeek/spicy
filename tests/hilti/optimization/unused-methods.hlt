@@ -1,0 +1,36 @@
+# @TEST-EXEC: hiltic -d --no-strict-public-api -p %INPUT  >output
+# @TEST-EXEC: hiltic -d --no-strict-public-api -j %INPUT  >>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Ensure the optimizer removes unused methods.
+
+module Test {
+
+public function void discard() {
+    assert True;
+}
+
+public type X = struct {
+    method void discard1() &static { assert False; }
+    method void discard2() &static;
+    method void discard3() { assert False; }
+    method void discard4();
+
+    method void retain1() &static { assert True; }
+    method void retain2() &static;
+    method void retain3() &always-emit { assert True; }
+    method void retain4() &static &always-emit { assert True; }
+};
+
+method void X::retain2()  &static { assert True; }
+method void X::discard2() &static { assert False; }
+method void X::discard4()         { assert False; }
+
+public type Y = struct {
+    any callback;
+};
+
+global Y y1 = [$callback = X::retain1];
+global Y y2 = [$callback = X::retain2];
+
+}

@@ -70,9 +70,6 @@ const bool _t_feat%foo@@F%supports_filters = False;
 const bool _t_feat%foo@@F%supports_sinks = False;
 const bool _t_feat%foo@@F%synchronization = False;
 
-public function void f2() {
-}
-
 init function void _t_register_foo_A() {
 }
 

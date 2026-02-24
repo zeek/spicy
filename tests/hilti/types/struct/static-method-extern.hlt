@@ -10,6 +10,8 @@ public type T = struct {
     method extern int<64> test(int<64> v) &static;
 };
 
+export T;
+
 global T t;
 
 method extern int<64> T::test(int<64> v) &static {
