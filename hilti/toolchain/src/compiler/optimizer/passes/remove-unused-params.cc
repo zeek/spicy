@@ -101,7 +101,7 @@ struct CollectorUnusedParameters : public optimizer::visitor::Collector {
         // Create the unused params
         auto& unused = unused_params[function_id];
 
-        if ( n->isPublic() )
+        if ( ! optimizer()->mayModify(n) )
             return;
 
         auto all_lookups = context()->root()->scope()->lookupAll(n->fullyQualifiedID());
@@ -134,17 +134,7 @@ struct CollectorUnusedParameters : public optimizer::visitor::Collector {
         // Create the unused params
         auto& unused = unused_params[function_id];
 
-        if ( n->attributes()->find(hilti::attribute::kind::Cxxname) ||
-             n->attributes()->find(hilti::attribute::kind::AlwaysEmit) ||
-             n->attributes()->find(hilti::attribute::kind::Public) )
-            return;
-
-        if ( n->isPublic() )
-            return;
-
-        // If the type is public, we cannot change its fields.
-        const auto* type_ = n->parent<declaration::Type>();
-        if ( type_ && type_->isPublic() )
+        if ( ! optimizer()->mayModify(n) )
             return;
 
         // Don't set if a use may have side effects

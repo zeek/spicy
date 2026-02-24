@@ -3,13 +3,13 @@ module bla {
 
 import hilti;
 
-public function void foo() {
+public function extern void foo() {
     return;
     hilti::print("after1", True);
     hilti::print("after2", True);
 }
 
-public function void bar(bool x) {
+public function extern void bar(bool x) {
     return;
 
     if ( x ) 

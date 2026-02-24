@@ -3,11 +3,11 @@ module bla {
 
 import hilti;
 
-public function void foo() {
+public function extern void foo() {
     return;
 }
 
-public function void bar(bool x) {
+public function extern void bar(bool x) {
     return;
 }
 
