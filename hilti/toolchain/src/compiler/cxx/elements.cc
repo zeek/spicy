@@ -394,7 +394,10 @@ std::string cxx::type::Struct::str() const {
                         if ( x->emitted )
                             to_string_fields.emplace_back(fmt(R"("$%s=" + hilti::rt::to_string(%s))", id, x->id));
                         else
-                            to_string_fields.emplace_back(fmt(R"#("$%s=(optimized out)")#", id));
+                            to_string_fields.emplace_back(
+                                fmt(R"#(hilti::rt::to_string_for_print("$%s=(optimized out)"))#",
+                                    id)); // generate explicit to_string_for_print() to avoid
+                                          // GCC buffer check false positive
                     }
                 }
             }
