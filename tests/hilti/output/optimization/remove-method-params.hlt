@@ -58,7 +58,7 @@ module Test {
 
 import hilti;
 
-# Ensure public structs don't get parameters removed
+# Ensure exported structs don't get parameters removed
 public type P = struct {
     # CHECK: method void method_inline(uint<64> y)
     # CHECK-NOT: method void method_inline()
@@ -70,6 +70,8 @@ public type P = struct {
     # CHECK-NOT: hook void hook_one();
     hook void hook_one(uint<64> y);
 };
+
+export P;
 
 # CHECK: method void P::method_stubbed(uint<64> y) {
 # CHECK-NOT: method void P::method_stubbed() {

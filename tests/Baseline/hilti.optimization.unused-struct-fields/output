@@ -38,11 +38,11 @@ function tuple<uint<64>, string> t() {
     return (42, "t()");
 }
 
-public function void member_const(X x) {
+public function void member_const() {
     assert "" == "";
 }
 
-public function void member_non_const(inout X x) {
+public function void member_non_const() {
     assert "" == "";
 }
 

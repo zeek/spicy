@@ -7,7 +7,7 @@ public function void foo() {
     return;
 }
 
-public function void bar(bool x) {
+public function void bar() {
     return;
 }
 
