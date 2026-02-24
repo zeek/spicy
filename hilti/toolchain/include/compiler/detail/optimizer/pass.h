@@ -42,6 +42,9 @@ public:
     /** Returns the current optimizer state for use by the pass. */
     auto* state() const { return _optimizer->state(); }
 
+    /** Returns the optimizer instance passes into the constructor. */
+    auto* optimizer() const { return _optimizer; }
+
     /**
      * Method that will execute before the visitor traverses the AST via
      * `run()`. The default implementation does nothing, but can be overridden
