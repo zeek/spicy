@@ -1,3 +1,9 @@
+1.16.0-dev.66 | 2026-02-25 12:55:28 +0100
+
+  * Fix a GCC false positive on CI. (Robin Sommer, Corelight)
+
+    The `validate_release_tarball` task was failing.
+
 1.16.0-dev.64 | 2026-02-20 09:41:54 +0100
 
   * Updating documentation for optimizer changes. (Robin Sommer, Corelight)
