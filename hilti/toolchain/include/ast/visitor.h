@@ -226,15 +226,40 @@ public:
     auto clearModified() { _modified = false; }
 
     /**
-     * Replace a child node with a new node.
+     * Replaces an AST node with a different node. If the new node does not
+     * have a parent yet (i.e., it's not part of the AST), it'll directly
+     * replace the old node in the AST, taking over its position and parent. If
+     * the new node already has a parent (i.e., it's currently used somewhere
+     * else inside the AST), it'll be deep-copied first and the *copy* will
+     * then replace the old node and take over its position and parent.
      *
      * When overriding, the parent's implementation should be called.
      *
-     * @param old child node to replace
-     * @param new_ new node to replace it with
+     * @param old child node to replace; it must be part of the AST and hence have a parent
+     * @param new_ new node to replace *old* with; if null, this will have the same effect as `removeNode()`
      * @param msg debug message describing the change
      */
     virtual void replaceNode(Node* old, Node* new_, const std::string& msg = "");
+
+    /**
+     * Replaces a node with a child of itself. This is a special case of
+     * `replaceNode()` that replaces a given node with one of its children but
+     * guarantees to avoid a deep-copy of the new node.
+     *
+     * This works because replacing the original node also implicitly removes
+     * all of its children from the AST as well. That means we can treat the
+     * child as if it didn't have a parent yet and hence re-insert it at the
+     * original position without needing a copy. This makes the operation more
+     * efficient and also ensures that any existing resolver state remains in
+     * place.
+     *
+     * When overriding, the parent's implementation should be called.
+     *
+     * @param old child node to replace; it must be part of the AST and hence have a parent
+     * @param new_ new node to replace *old* with; it must be an existing child * of *old*
+     * @param msg debug message describing the change
+     */
+    virtual void replaceNodeWithChild(Node* old, Node* new_, const std::string& msg = "");
 
     /**
      * Remove a node from the AST.

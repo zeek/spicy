@@ -63,6 +63,11 @@ void optimizer::visitor::Mutator::replaceNode(Node* old, Node* new_, const std::
     hilti::visitor::MutatingVisitorBase::replaceNode(old, new_, msg);
 }
 
+void optimizer::visitor::Mutator::replaceNodeWithChild(Node* old, Node* new_, const std::string& msg) {
+    _trackASTChange(old);
+    hilti::visitor::MutatingVisitorBase::replaceNodeWithChild(old, new_, msg);
+}
+
 void optimizer::visitor::Mutator::removeNode(Node* old, const std::string& msg) {
     _trackASTChange(old);
     hilti::visitor::MutatingVisitorBase::removeNode(old, msg);

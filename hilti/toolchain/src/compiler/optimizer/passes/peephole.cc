@@ -125,7 +125,7 @@ struct Mutator : public optimizer::visitor::Mutator {
         // A top-level move is a no-op and can be replaced by the inside
         // expression.
         if ( n->parent()->isA<statement::Expression>() )
-            replaceNode(n, n->expression(), "removing no-op move");
+            replaceNodeWithChild(n, n->expression(), "removing no-op move");
     }
 
     void operator()(statement::Expression* n) final {
@@ -167,7 +167,7 @@ struct Mutator : public optimizer::visitor::Mutator {
                  catch_body->statements().size() == 1 ) {
                 if ( const auto* throw_ = catch_body->statements().front()->tryAs<statement::Throw>();
                      throw_ && ! throw_->expression() )
-                    replaceNode(n, n->body(), "replacing rethrowing try/catch with just the block");
+                    replaceNodeWithChild(n, n->body(), "replacing rethrowing try/catch with just the block");
             }
         }
     }
