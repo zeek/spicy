@@ -204,8 +204,8 @@ struct CollectorPlacements : public optimizer::visitor::Collector {
 
         fn_placements.insert({function_id, {}});
 
-        // Don't change public functions
-        if ( n->isPublic() )
+        // Don't change anything we are not allowed to.
+        if ( ! optimizer()->mayModify(n) )
             return;
 
         auto* fn = n->function();

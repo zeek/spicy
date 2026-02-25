@@ -5,9 +5,9 @@
 [$not_accessed_at_all_but_type_is_exported=""]
 ----
 [debug/optimizer-passes]     Test::X::not_accessed_at_all  #reads=0 #writes=0 #unsets=0
-[debug/optimizer-passes]     Test::X::only_reads  #reads=5 #writes=0 #unsets=1
+[debug/optimizer-passes]     Test::X::only_reads  #reads=3 #writes=0 #unsets=1
 [debug/optimizer-passes]     Test::X::only_reads_no_default  #reads=2 #writes=0 #unsets=0
-[debug/optimizer-passes]     Test::X::only_writes  #reads=0 #writes=7 #unsets=1
+[debug/optimizer-passes]     Test::X::only_writes  #reads=0 #writes=6 #unsets=1
 ----
 module Test {
 
@@ -36,14 +36,6 @@ function string f() {
 
 function tuple<uint<64>, string> t() {
     return (42, "t()");
-}
-
-public function void member_const(X x) {
-    assert "" == "";
-}
-
-public function void member_non_const(inout X x) {
-    assert "" == "";
 }
 
 assert "" == "";

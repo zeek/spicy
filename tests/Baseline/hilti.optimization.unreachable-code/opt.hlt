@@ -3,12 +3,4 @@ module bla {
 
 import hilti;
 
-public function void foo() {
-    return;
-}
-
-public function void bar(bool x) {
-    return;
-}
-
 }

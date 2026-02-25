@@ -4,11 +4,13 @@
 
 #include <utility>
 
+#include <hilti/ast/attribute.h>
 #include <hilti/ast/builder/builder.h>
 #include <hilti/ast/forward.h>
 #include <hilti/ast/visitor.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
+#include <hilti/compiler/context.h>
 #include <hilti/compiler/detail/cfg.h>
 #include <hilti/compiler/detail/optimizer/pass-id.h>
 
@@ -240,10 +242,13 @@ public:
     hilti::Result<Nothing> run();
 
     /** Returns the AST context being optimized. */
-    auto* context() { return _builder->context(); }
+    auto* context() const { return _builder->context(); }
 
     /** Returns the AST builder to use for AST changes by optimization passes. */
-    auto* builder() { return _builder; }
+    auto* builder() const { return _builder; }
+
+    /** Returns the current compiler options. */
+    const auto& options() const { return context()->compilerContext()->options(); }
 
     /**
      * Returns the current AST state.
@@ -252,6 +257,95 @@ public:
      * reflects, and records, the progress of the optimization so far.
      */
     optimizer::ASTState* state() { return &_state; }
+
+    /**
+     * Returns true if the optimizer may modify a given type in ways that
+     * are externally visible.
+     *
+     * @param t the type declaration to check
+     */
+    bool mayModify(const declaration::Type* t) const {
+        if ( t->linkage() == declaration::Linkage::Export )
+            return false;
+
+        if ( t->attributes()->find(attribute::kind::AlwaysEmit) )
+            return false;
+
+        if ( t->attributes()->find(attribute::kind::Cxxname) )
+            return false;
+
+        if ( t->isPublic() && options().public_api_mode == Options::PublicAPIMode::Strict )
+            return false;
+
+        return true;
+    }
+
+    /**
+     * Returns true if the optimizer may modify a given function in ways that
+     * are externally visible.
+     *
+     * @param f the function declaration to check
+     */
+    bool mayModify(const declaration::Function* f) const {
+        if ( f->function()->attributes()->find(attribute::kind::AlwaysEmit) )
+            return false;
+
+        if ( f->function()->attributes()->find(attribute::kind::Cxxname) )
+            return false;
+
+        if ( f->linkage() == declaration::Linkage::PreInit || f->linkage() == declaration::Linkage::Init ||
+             f->linkage() == declaration::Linkage::Export ) {
+            return false;
+        }
+
+        if ( ! f->linkedDeclarationIndex() ) {
+            if ( const auto* ftype = f->function()->ftype();
+                 ftype->callingConvention() == type::function::CallingConvention::Extern ||
+                 ftype->callingConvention() == type::function::CallingConvention::ExternNoSuspend )
+                return false;
+        }
+
+        if ( f->isPublic() && options().public_api_mode == Options::PublicAPIMode::Strict )
+            return false;
+
+        if ( const auto* type_decl = f->linkedDeclaration(context()); type_decl && ! mayModify(type_decl) )
+            return false;
+
+        return true;
+    }
+
+    /**
+     * Returns true if the optimizer may modify a given struct field in ways that
+     * are externally visible.
+     *
+     * @param f the field declaration to check
+     */
+    bool mayModify(const declaration::Field* f) const {
+        const auto* struct_ = f->linkedType(context())->tryAs<type::Struct>();
+        if ( ! struct_ )
+            // Do not modify fields of non-struct types.
+            return false;
+
+        const auto* struct_decl = struct_->typeDeclaration();
+        if ( ! struct_decl )
+            return false; // some anonymous struct
+
+        if ( ! mayModify(struct_decl) )
+            return false;
+
+        if ( f->attributes()->find(attribute::kind::AlwaysEmit) )
+            return false;
+
+        if ( const auto* ftype = f->type()->type()->tryAs<type::Function>();
+             ftype && (ftype->callingConvention() == type::function::CallingConvention::Extern ||
+                       ftype->callingConvention() == type::function::CallingConvention::ExternNoSuspend) )
+            return false;
+
+        if ( f->isPublic() && options().public_api_mode == Options::PublicAPIMode::Strict )
+            return false;
+
+        return true;
+    }
 
     // Static helper functions that optimization passes may find useful.
 

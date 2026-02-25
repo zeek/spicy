@@ -27,7 +27,7 @@ public type P2 = unit {
     y: uint8 {}
 
 # CHECK: (*self)._t_error = _t_error;
-# CHECK-NEXT: (*self)._t_on_y(_t_v_y);
+# CHECK-NEXT: (*self)._t_on_y();
 # CHECK-NEXT: _t_error = (*self)._t_error;
     on %error {}
 };

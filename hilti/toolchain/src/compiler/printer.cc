@@ -47,10 +47,8 @@ struct Printer : visitor::PreOrder {
 
         _out << to_string(ftype.flavor()) << ' ';
 
-        if ( ftype.flavor() == type::function::Flavor::Function ) {
-            if ( ftype.callingConvention() != type::function::CallingConvention::Standard )
-                _out << to_string(ftype.callingConvention()) << ' ';
-        }
+        if ( ftype.callingConvention() != type::function::CallingConvention::Standard )
+            _out << to_string(ftype.callingConvention()) << ' ';
 
         _out << ftype.result() << ' ';
 
@@ -351,10 +349,8 @@ struct Printer : visitor::PreOrder {
         if ( auto* ft = n->type()->type()->tryAs<type::Function>() ) {
             _out << to_string(ft->flavor()) << " ";
 
-            if ( ft->flavor() == type::function::Flavor::Function ) {
-                if ( auto cc = ft->callingConvention(); cc != type::function::CallingConvention::Standard )
-                    _out << to_string(cc) << ' ';
-            }
+            if ( auto cc = ft->callingConvention(); cc != type::function::CallingConvention::Standard )
+                _out << to_string(cc) << ' ';
 
             _out << ft->result() << " " << n->id() << "(" << std::make_pair(ft->parameters(), ", ") << ")";
         }

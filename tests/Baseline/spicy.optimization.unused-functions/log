@@ -5,15 +5,37 @@
 [debug/optimizer]       - deleting function state: foo::A::_t_parse_foo__A_stage2
 [debug/optimizer]       - deleting function state: foo::A::_t_parse_foo__A_stage2
 [debug/optimizer]       - deleting function state: foo::A::_t_parse_foo__A_stage2
+[debug/optimizer]       - deleting function state: foo::A::_t_parse_foo__A_stage2
+[debug/optimizer]       - deleting function state: foo::A::_t_parse_foo__A_stage2
 [debug/optimizer]       - deleting function state: foo::A::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::A::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::A::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::A::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::A::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::A::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::A::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::A::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::A::parse1
+[debug/optimizer]       - deleting function state: foo::A::parse1
+[debug/optimizer]       - deleting function state: foo::A::parse2
+[debug/optimizer]       - deleting function state: foo::A::parse2
+[debug/optimizer]       - deleting function state: foo::A::parse3
+[debug/optimizer]       - deleting function state: foo::A::parse3
 [debug/optimizer]       - deleting function state: foo::B::_t_parse_foo__B_stage2
 [debug/optimizer]       - deleting function state: foo::B::_t_parse_foo__B_stage2
 [debug/optimizer]       - deleting function state: foo::B::_t_parse_foo__B_stage2
 [debug/optimizer]       - deleting function state: foo::B::_t_parse_foo__B_stage2
 [debug/optimizer]       - deleting function state: foo::B::_t_parse_foo__B_stage2
 [debug/optimizer]       - deleting function state: foo::B::_t_parse_foo__B_stage2
+[debug/optimizer]       - deleting function state: foo::B::_t_parse_foo__B_stage2
+[debug/optimizer]       - deleting function state: foo::B::_t_parse_foo__B_stage2
+[debug/optimizer]       - deleting function state: foo::B::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::B::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::B::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::B::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::B::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::B::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::B::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::B::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::B::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::B::_t_parse_stage1
@@ -24,7 +46,25 @@
 [debug/optimizer]       - deleting function state: foo::B::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::B::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::B::parse1
+[debug/optimizer]       - deleting function state: foo::B::parse1
+[debug/optimizer]       - deleting function state: foo::B::parse1
+[debug/optimizer]       - deleting function state: foo::B::parse1
+[debug/optimizer]       - deleting function state: foo::B::parse1
+[debug/optimizer]       - deleting function state: foo::B::parse1
+[debug/optimizer]       - deleting function state: foo::B::parse1
 [debug/optimizer]       - deleting function state: foo::B::parse2
+[debug/optimizer]       - deleting function state: foo::B::parse2
+[debug/optimizer]       - deleting function state: foo::B::parse2
+[debug/optimizer]       - deleting function state: foo::B::parse2
+[debug/optimizer]       - deleting function state: foo::B::parse2
+[debug/optimizer]       - deleting function state: foo::B::parse2
+[debug/optimizer]       - deleting function state: foo::B::parse2
+[debug/optimizer]       - deleting function state: foo::B::parse3
+[debug/optimizer]       - deleting function state: foo::B::parse3
+[debug/optimizer]       - deleting function state: foo::B::parse3
+[debug/optimizer]       - deleting function state: foo::B::parse3
+[debug/optimizer]       - deleting function state: foo::B::parse3
+[debug/optimizer]       - deleting function state: foo::B::parse3
 [debug/optimizer]       - deleting function state: foo::B::parse3
 [debug/optimizer]       - deleting function state: foo::C::_t_parse_foo__C_stage2
 [debug/optimizer]       - deleting function state: foo::C::_t_parse_foo__C_stage2
@@ -50,6 +90,12 @@
 [debug/optimizer]       - deleting function state: foo::C::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::C::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::C::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::C::parse1
+[debug/optimizer]       - deleting function state: foo::C::parse1
+[debug/optimizer]       - deleting function state: foo::C::parse2
+[debug/optimizer]       - deleting function state: foo::C::parse2
+[debug/optimizer]       - deleting function state: foo::C::parse3
+[debug/optimizer]       - deleting function state: foo::C::parse3
 [debug/optimizer]       - deleting function state: foo::D::_t_parse_foo__D_stage2
 [debug/optimizer]       - deleting function state: foo::D::_t_parse_foo__D_stage2
 [debug/optimizer]       - deleting function state: foo::D::_t_parse_foo__D_stage2
@@ -60,6 +106,17 @@
 [debug/optimizer]       - deleting function state: foo::D::_t_parse_foo__D_stage2
 [debug/optimizer]       - deleting function state: foo::D::_t_parse_foo__D_stage2
 [debug/optimizer]       - deleting function state: foo::D::_t_parse_foo__D_stage2
+[debug/optimizer]       - deleting function state: foo::D::_t_parse_foo__D_stage2
+[debug/optimizer]       - deleting function state: foo::D::_t_parse_foo__D_stage2
+[debug/optimizer]       - deleting function state: foo::D::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::D::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::D::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::D::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::D::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::D::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::D::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::D::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::D::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::D::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::D::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::D::_t_parse_stage1
@@ -70,15 +127,49 @@
 [debug/optimizer]       - deleting function state: foo::D::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::D::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::D::parse1
+[debug/optimizer]       - deleting function state: foo::D::parse1
+[debug/optimizer]       - deleting function state: foo::D::parse1
+[debug/optimizer]       - deleting function state: foo::D::parse1
+[debug/optimizer]       - deleting function state: foo::D::parse1
+[debug/optimizer]       - deleting function state: foo::D::parse1
+[debug/optimizer]       - deleting function state: foo::D::parse1
 [debug/optimizer]       - deleting function state: foo::D::parse2
+[debug/optimizer]       - deleting function state: foo::D::parse2
+[debug/optimizer]       - deleting function state: foo::D::parse2
+[debug/optimizer]       - deleting function state: foo::D::parse2
+[debug/optimizer]       - deleting function state: foo::D::parse2
+[debug/optimizer]       - deleting function state: foo::D::parse2
+[debug/optimizer]       - deleting function state: foo::D::parse2
+[debug/optimizer]       - deleting function state: foo::D::parse3
+[debug/optimizer]       - deleting function state: foo::D::parse3
+[debug/optimizer]       - deleting function state: foo::D::parse3
+[debug/optimizer]       - deleting function state: foo::D::parse3
+[debug/optimizer]       - deleting function state: foo::D::parse3
+[debug/optimizer]       - deleting function state: foo::D::parse3
 [debug/optimizer]       - deleting function state: foo::D::parse3
 [debug/optimizer]       - deleting function state: foo::F::_t_parse_foo__F_stage2
 [debug/optimizer]       - deleting function state: foo::F::_t_parse_foo__F_stage2
 [debug/optimizer]       - deleting function state: foo::F::_t_parse_foo__F_stage2
 [debug/optimizer]       - deleting function state: foo::F::_t_parse_foo__F_stage2
+[debug/optimizer]       - deleting function state: foo::F::_t_parse_foo__F_stage2
+[debug/optimizer]       - deleting function state: foo::F::_t_parse_foo__F_stage2
 [debug/optimizer]       - deleting function state: foo::F::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::F::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::F::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::F::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::F::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::F::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::F::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::F::_t_parse_stage1
+[debug/optimizer]       - deleting function state: foo::F::parse1
+[debug/optimizer]       - deleting function state: foo::F::parse1
+[debug/optimizer]       - deleting function state: foo::F::parse2
+[debug/optimizer]       - deleting function state: foo::F::parse2
+[debug/optimizer]       - deleting function state: foo::F::parse3
+[debug/optimizer]       - deleting function state: foo::F::parse3
+[debug/optimizer]       - deleting module state: foo
+[debug/optimizer]       - deleting module state: foo
+[debug/optimizer]       - deleting module state: foo
 [debug/optimizer]       - deleting module state: foo
 [debug/optimizer]       - deleting module state: foo
 [debug/optimizer]       - deleting module state: foo
@@ -93,6 +184,9 @@
 [debug/optimizer]       - updating function: foo::A::_t_parse_foo__A_stage2
 [debug/optimizer]       - updating function: foo::A::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::A::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::A::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::A::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::A::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::B::_t_parse_foo__B_stage2
 [debug/optimizer]       - updating function: foo::B::_t_parse_foo__B_stage2
 [debug/optimizer]       - updating function: foo::B::_t_parse_stage1
@@ -100,6 +194,10 @@
 [debug/optimizer]       - updating function: foo::B::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::B::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::B::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::B::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::B::parse1
+[debug/optimizer]       - updating function: foo::B::parse2
+[debug/optimizer]       - updating function: foo::B::parse3
 [debug/optimizer]       - updating function: foo::C::_t_parse_foo__C_stage2
 [debug/optimizer]       - updating function: foo::C::_t_parse_foo__C_stage2
 [debug/optimizer]       - updating function: foo::C::_t_parse_stage1
@@ -115,10 +213,17 @@
 [debug/optimizer]       - updating function: foo::D::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::D::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::D::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::D::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::D::parse1
+[debug/optimizer]       - updating function: foo::D::parse2
+[debug/optimizer]       - updating function: foo::D::parse3
 [debug/optimizer]       - updating function: foo::F::_t_parse_foo__F_stage2
 [debug/optimizer]       - updating function: foo::F::_t_parse_foo__F_stage2
 [debug/optimizer]       - updating function: foo::F::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::F::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::F::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::F::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::F::_t_parse_stage1
 [debug/optimizer]       - updating module: foo
 [debug/optimizer]       - updating module: foo
 [debug/optimizer]       - updating module: foo
@@ -132,7 +237,16 @@
 [debug/optimizer]       - updating module: foo
 [debug/optimizer]       - updating module: foo
 [debug/optimizer]       - updating module: foo
-[debug/optimizer]       - updating module: spicy_rt
+[debug/optimizer]       - updating module: foo
+[debug/optimizer]       - updating module: foo
+[debug/optimizer]       - updating module: foo
+[debug/optimizer]     * computed CFGs
+[debug/optimizer]     * computed CFGs
+[debug/optimizer]     * computed CFGs
+[debug/optimizer]     * computed CFGs
+[debug/optimizer]     * computed CFGs
+[debug/optimizer]     * computed CFGs
+[debug/optimizer]     * computed CFGs
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]     * computed CFGs
@@ -169,13 +283,23 @@
 [debug/optimizer]     * function changed: foo::A::_t_parse_foo__A_stage2
 [debug/optimizer]     * function changed: foo::A::_t_parse_foo__A_stage2
 [debug/optimizer]     * function changed: foo::A::_t_parse_foo__A_stage2
+[debug/optimizer]     * function changed: foo::A::_t_parse_foo__A_stage2
+[debug/optimizer]     * function changed: foo::A::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::A::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::A::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::A::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::A::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::A::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::A::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::A::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::A::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::A::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::A::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::A::parse1
+[debug/optimizer]     * function changed: foo::A::parse1
 [debug/optimizer]     * function changed: foo::A::parse2
+[debug/optimizer]     * function changed: foo::A::parse2
+[debug/optimizer]     * function changed: foo::A::parse3
 [debug/optimizer]     * function changed: foo::A::parse3
 [debug/optimizer]     * function changed: foo::B::_t_parse_foo__B_stage2
 [debug/optimizer]     * function changed: foo::B::_t_parse_foo__B_stage2
@@ -185,6 +309,15 @@
 [debug/optimizer]     * function changed: foo::B::_t_parse_foo__B_stage2
 [debug/optimizer]     * function changed: foo::B::_t_parse_foo__B_stage2
 [debug/optimizer]     * function changed: foo::B::_t_parse_foo__B_stage2
+[debug/optimizer]     * function changed: foo::B::_t_parse_foo__B_stage2
+[debug/optimizer]     * function changed: foo::B::_t_parse_foo__B_stage2
+[debug/optimizer]     * function changed: foo::B::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::B::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::B::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::B::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::B::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::B::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::B::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::B::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::B::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::B::_t_parse_stage1
@@ -199,8 +332,26 @@
 [debug/optimizer]     * function changed: foo::B::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::B::parse1
 [debug/optimizer]     * function changed: foo::B::parse1
+[debug/optimizer]     * function changed: foo::B::parse1
+[debug/optimizer]     * function changed: foo::B::parse1
+[debug/optimizer]     * function changed: foo::B::parse1
+[debug/optimizer]     * function changed: foo::B::parse1
+[debug/optimizer]     * function changed: foo::B::parse1
+[debug/optimizer]     * function changed: foo::B::parse1
 [debug/optimizer]     * function changed: foo::B::parse2
 [debug/optimizer]     * function changed: foo::B::parse2
+[debug/optimizer]     * function changed: foo::B::parse2
+[debug/optimizer]     * function changed: foo::B::parse2
+[debug/optimizer]     * function changed: foo::B::parse2
+[debug/optimizer]     * function changed: foo::B::parse2
+[debug/optimizer]     * function changed: foo::B::parse2
+[debug/optimizer]     * function changed: foo::B::parse2
+[debug/optimizer]     * function changed: foo::B::parse3
+[debug/optimizer]     * function changed: foo::B::parse3
+[debug/optimizer]     * function changed: foo::B::parse3
+[debug/optimizer]     * function changed: foo::B::parse3
+[debug/optimizer]     * function changed: foo::B::parse3
+[debug/optimizer]     * function changed: foo::B::parse3
 [debug/optimizer]     * function changed: foo::B::parse3
 [debug/optimizer]     * function changed: foo::B::parse3
 [debug/optimizer]     * function changed: foo::C::_t_parse_foo__C_stage2
@@ -233,7 +384,10 @@
 [debug/optimizer]     * function changed: foo::C::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::C::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::C::parse1
+[debug/optimizer]     * function changed: foo::C::parse1
 [debug/optimizer]     * function changed: foo::C::parse2
+[debug/optimizer]     * function changed: foo::C::parse2
+[debug/optimizer]     * function changed: foo::C::parse3
 [debug/optimizer]     * function changed: foo::C::parse3
 [debug/optimizer]     * function changed: foo::D::_t_parse_foo__D_stage2
 [debug/optimizer]     * function changed: foo::D::_t_parse_foo__D_stage2
@@ -248,6 +402,17 @@
 [debug/optimizer]     * function changed: foo::D::_t_parse_foo__D_stage2
 [debug/optimizer]     * function changed: foo::D::_t_parse_foo__D_stage2
 [debug/optimizer]     * function changed: foo::D::_t_parse_foo__D_stage2
+[debug/optimizer]     * function changed: foo::D::_t_parse_foo__D_stage2
+[debug/optimizer]     * function changed: foo::D::_t_parse_foo__D_stage2
+[debug/optimizer]     * function changed: foo::D::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::D::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::D::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::D::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::D::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::D::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::D::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::D::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::D::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::D::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::D::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::D::_t_parse_stage1
@@ -262,8 +427,26 @@
 [debug/optimizer]     * function changed: foo::D::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::D::parse1
 [debug/optimizer]     * function changed: foo::D::parse1
+[debug/optimizer]     * function changed: foo::D::parse1
+[debug/optimizer]     * function changed: foo::D::parse1
+[debug/optimizer]     * function changed: foo::D::parse1
+[debug/optimizer]     * function changed: foo::D::parse1
+[debug/optimizer]     * function changed: foo::D::parse1
+[debug/optimizer]     * function changed: foo::D::parse1
 [debug/optimizer]     * function changed: foo::D::parse2
 [debug/optimizer]     * function changed: foo::D::parse2
+[debug/optimizer]     * function changed: foo::D::parse2
+[debug/optimizer]     * function changed: foo::D::parse2
+[debug/optimizer]     * function changed: foo::D::parse2
+[debug/optimizer]     * function changed: foo::D::parse2
+[debug/optimizer]     * function changed: foo::D::parse2
+[debug/optimizer]     * function changed: foo::D::parse2
+[debug/optimizer]     * function changed: foo::D::parse3
+[debug/optimizer]     * function changed: foo::D::parse3
+[debug/optimizer]     * function changed: foo::D::parse3
+[debug/optimizer]     * function changed: foo::D::parse3
+[debug/optimizer]     * function changed: foo::D::parse3
+[debug/optimizer]     * function changed: foo::D::parse3
 [debug/optimizer]     * function changed: foo::D::parse3
 [debug/optimizer]     * function changed: foo::D::parse3
 [debug/optimizer]     * function changed: foo::F::_t_parse_foo__F_stage2
@@ -272,13 +455,23 @@
 [debug/optimizer]     * function changed: foo::F::_t_parse_foo__F_stage2
 [debug/optimizer]     * function changed: foo::F::_t_parse_foo__F_stage2
 [debug/optimizer]     * function changed: foo::F::_t_parse_foo__F_stage2
+[debug/optimizer]     * function changed: foo::F::_t_parse_foo__F_stage2
+[debug/optimizer]     * function changed: foo::F::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::F::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::F::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::F::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::F::_t_parse_stage1
+[debug/optimizer]     * function changed: foo::F::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::F::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::F::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::F::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::F::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::F::_t_parse_stage1
 [debug/optimizer]     * function changed: foo::F::parse1
+[debug/optimizer]     * function changed: foo::F::parse1
 [debug/optimizer]     * function changed: foo::F::parse2
+[debug/optimizer]     * function changed: foo::F::parse2
+[debug/optimizer]     * function changed: foo::F::parse3
 [debug/optimizer]     * function changed: foo::F::parse3
 [debug/optimizer]     * module changed: foo
 [debug/optimizer]     * module changed: foo
@@ -293,7 +486,9 @@
 [debug/optimizer]     * module changed: foo
 [debug/optimizer]     * module changed: foo
 [debug/optimizer]     * module changed: foo
-[debug/optimizer]     * module changed: spicy_rt
+[debug/optimizer]     * module changed: foo
+[debug/optimizer]     * module changed: foo
+[debug/optimizer]     * module changed: foo
 [debug/optimizer]     * resolver
 [debug/optimizer]     * resolver
 [debug/optimizer]     * resolver
@@ -310,6 +505,18 @@
 [debug/optimizer]     * resolver
 [debug/optimizer]     * resolver
 [debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
+[debug/optimizer]     -> modified
+[debug/optimizer]     -> modified
+[debug/optimizer]     -> modified
+[debug/optimizer]     -> modified
+[debug/optimizer]     -> modified
+[debug/optimizer]     -> modified
+[debug/optimizer]     -> modified
 [debug/optimizer]     -> modified
 [debug/optimizer]     -> modified
 [debug/optimizer]     -> modified
@@ -353,19 +560,19 @@
 [debug/optimizer]   [<no location>] declaration::Field "iterator<stream> _t_begin &internal &needed-by-feature="uses_random_access";" -> null (removing unused member)
 [debug/optimizer]   [<no location>] declaration::Field "iterator<stream> _t_begin &internal &needed-by-feature="uses_random_access";" -> null (removing unused member)
 [debug/optimizer]   [<no location>] declaration::Field "iterator<stream> _t_begin &internal &needed-by-feature="uses_random_access";" -> null (removing unused member)
-[debug/optimizer]   [<no location>] declaration::Field "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_parse_foo__A_stage2();" -> null (removing declaration for unused method)
-[debug/optimizer]   [<no location>] declaration::Field "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_parse_foo__F_stage2();" -> null (removing declaration for unused method)
-[debug/optimizer]   [<no location>] declaration::Field "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_parse_stage1();" -> null (removing declaration for unused method)
-[debug/optimizer]   [<no location>] declaration::Field "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_parse_stage1();" -> null (removing declaration for unused method)
-[debug/optimizer]   [<no location>] declaration::Field "method view<stream> parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;" -> null (removing declaration for unused method)
-[debug/optimizer]   [<no location>] declaration::Field "method view<stream> parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;" -> null (removing declaration for unused method)
-[debug/optimizer]   [<no location>] declaration::Field "method view<stream> parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;" -> null (removing declaration for unused method)
-[debug/optimizer]   [<no location>] declaration::Field "method view<stream> parse2(inout value_ref<foo::A> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;" -> null (removing declaration for unused method)
-[debug/optimizer]   [<no location>] declaration::Field "method view<stream> parse2(inout value_ref<foo::C> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;" -> null (removing declaration for unused method)
-[debug/optimizer]   [<no location>] declaration::Field "method view<stream> parse2(inout value_ref<foo::F> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;" -> null (removing declaration for unused method)
-[debug/optimizer]   [<no location>] declaration::Field "method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;" -> null (removing declaration for unused method)
-[debug/optimizer]   [<no location>] declaration::Field "method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;" -> null (removing declaration for unused method)
-[debug/optimizer]   [<no location>] declaration::Field "method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;" -> null (removing declaration for unused method)
+[debug/optimizer]   [<no location>] declaration::Field "method extern view<stream> parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;" -> null (removing unused member)
+[debug/optimizer]   [<no location>] declaration::Field "method extern view<stream> parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;" -> null (removing unused member)
+[debug/optimizer]   [<no location>] declaration::Field "method extern view<stream> parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;" -> null (removing unused member)
+[debug/optimizer]   [<no location>] declaration::Field "method extern view<stream> parse2(inout value_ref<foo::A> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;" -> null (removing unused member)
+[debug/optimizer]   [<no location>] declaration::Field "method extern view<stream> parse2(inout value_ref<foo::C> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;" -> null (removing unused member)
+[debug/optimizer]   [<no location>] declaration::Field "method extern view<stream> parse2(inout value_ref<foo::F> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;" -> null (removing unused member)
+[debug/optimizer]   [<no location>] declaration::Field "method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;" -> null (removing unused member)
+[debug/optimizer]   [<no location>] declaration::Field "method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;" -> null (removing unused member)
+[debug/optimizer]   [<no location>] declaration::Field "method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public;" -> null (removing unused member)
+[debug/optimizer]   [<no location>] declaration::Field "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_parse_foo__A_stage2(copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error);" -> null (removing unused member)
+[debug/optimizer]   [<no location>] declaration::Field "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_parse_foo__F_stage2(copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error);" -> null (removing unused member)
+[debug/optimizer]   [<no location>] declaration::Field "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_parse_stage1(copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error);" -> null (removing unused member)
+[debug/optimizer]   [<no location>] declaration::Field "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_parse_stage1(copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error);" -> null (removing unused member)
 [debug/optimizer]   [<no location>] declaration::Field "optional<iterator<stream>> _t_position_update &internal &needed-by-feature="uses_random_access";" -> null (removing unused member)
 [debug/optimizer]   [<no location>] declaration::Field "optional<iterator<stream>> _t_position_update &internal &needed-by-feature="uses_random_access";" -> null (removing unused member)
 [debug/optimizer]   [<no location>] declaration::Field "optional<iterator<stream>> _t_position_update &internal &needed-by-feature="uses_random_access";" -> null (removing unused member)
@@ -398,21 +605,28 @@
 [debug/optimizer]   [<no location>] declaration::LocalVariable "local iterator<stream> _t_begin = begin(_t_cur)" -> renaming declaration "_t_begin" -> "_t_begin_"
 [debug/optimizer]   [<no location>] declaration::LocalVariable "local iterator<stream> _t_begin = begin(_t_cur)" -> renaming declaration "_t_begin" -> "_t_begin_"
 [debug/optimizer]   [<no location>] declaration::LocalVariable "local iterator<stream> _t_begin = begin(_t_cur)" -> renaming declaration "_t_begin" -> "_t_begin_"
+[debug/optimizer]   [<no location>] declaration::LocalVariable "local iterator<stream> _t_begin = begin(_t_cur)" -> renaming declaration "_t_begin" -> "_t_begin_"
+[debug/optimizer]   [<no location>] declaration::LocalVariable "local iterator<stream> _t_begin = begin(_t_cur)" -> renaming declaration "_t_begin" -> "_t_begin_"
 [debug/optimizer]   [<no location>] expression::Coerced "_t_result" -> expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" (propagating constant value)
 [debug/optimizer]   [<no location>] expression::Coerced "_t_result" -> expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" (propagating constant value)
 [debug/optimizer]   [<no location>] expression::Coerced "_t_result" -> expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" (propagating constant value)
 [debug/optimizer]   [<no location>] expression::Coerced "_t_result" -> expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" (propagating constant value)
 [debug/optimizer]   [<no location>] expression::Coerced "_t_result" -> expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" (propagating constant value)
-[debug/optimizer]   [<no location>] expression::Coerced "_t_result" -> operator_::struct_::MemberCall "(*self)._t_parse_foo__B_stage2(_t_data, _t_begin_, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error)"
+[debug/optimizer]   [<no location>] expression::Coerced "_t_result" -> operator_::struct_::MemberCall "(*self)._t_parse_foo__A_stage2(_t_cur, _t_lah, _t_lahe, _t_error)"
+[debug/optimizer]   [<no location>] expression::Coerced "_t_result" -> operator_::struct_::MemberCall "(*self)._t_parse_foo__B_stage2(_t_cur, _t_lah, _t_lahe, _t_error)"
 [debug/optimizer]   [<no location>] expression::Coerced "_t_result" -> operator_::struct_::MemberCall "(*self)._t_parse_foo__C_stage2(_t_cur, _t_lah, _t_lahe, _t_error)"
 [debug/optimizer]   [<no location>] expression::Coerced "_t_result" -> operator_::struct_::MemberCall "(*self)._t_parse_foo__D_stage2(_t_data, _t_begin_, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error)"
+[debug/optimizer]   [<no location>] expression::Coerced "_t_result" -> operator_::struct_::MemberCall "(*self)._t_parse_foo__F_stage2(_t_cur, _t_lah, _t_lahe, _t_error)"
 [debug/optimizer]   [<no location>] expression::Coerced "filtered" -> expression::Ctor "Null" (propagating constant value)
 [debug/optimizer]   [<no location>] expression::Coerced "filtered" -> expression::Ctor "Null" (propagating constant value)
 [debug/optimizer]   [<no location>] expression::Coerced "filtered" -> expression::Ctor "Null" (propagating constant value)
 [debug/optimizer]   [<no location>] expression::Coerced "filtered" -> expression::Ctor "Null" (propagating constant value)
 [debug/optimizer]   [<no location>] expression::Coerced "filtered" -> expression::Ctor "Null" (propagating constant value)
 [debug/optimizer]   [<no location>] expression::Ctor "(_t_cur, _t_error)" -> expression::Ctor "(_t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_cur, _t_error)" -> expression::Ctor "(_t_error)" (removing unused arguments from method call)
 [debug/optimizer]   [<no location>] expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" -> expression::Ctor "(_t_cur, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" -> expression::Ctor "(_t_cur, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" -> expression::Ctor "(_t_error)" (removing unused arguments from method call)
 [debug/optimizer]   [<no location>] expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" -> expression::Ctor "(_t_error)" (removing unused arguments from method call)
 [debug/optimizer]   [<no location>] expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" -> expression::Name "_t_error" (propagating return to single element)
 [debug/optimizer]   [<no location>] expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" -> expression::Name "_t_error" (propagating return to single element)
@@ -420,23 +634,60 @@
 [debug/optimizer]   [<no location>] expression::Ctor "(_t_data, _t_begin, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error)" -> expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" (removing unused arguments from method call)
 [debug/optimizer]   [<no location>] expression::Ctor "(_t_data, _t_begin, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error)" -> expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" (removing unused arguments from method call)
 [debug/optimizer]   [<no location>] expression::Ctor "(_t_data, _t_begin, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error)" -> expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, _t_begin, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error)" -> expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" (removing unused arguments from method call)
 [debug/optimizer]   [<no location>] expression::Ctor "(_t_data, _t_begin, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error)" -> expression::Ctor "(_t_data, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, _t_begin_, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error)" -> expression::Ctor "(_t_data, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error)" (removing unused arguments from method call)
 [debug/optimizer]   [<no location>] expression::Ctor "(_t_data, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error)" -> expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" (removing unused arguments from method call)
-[debug/optimizer]   [<no location>] expression::Name "_t_begin" -> renaming reference "_t_begin" -> "_t_begin_"
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error)" -> expression::Ctor "(_t_cur, _t_lah, _t_lahe, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_ncur, _t_error)" -> expression::Ctor "(_t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_ncur, _t_error)" -> expression::Ctor "(_t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_ncur, _t_error)" -> expression::Ctor "(_t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_ncur, _t_error)" -> expression::Ctor "(_t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_ncur, _t_error)" -> expression::Ctor "(_t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_ncur, _t_error)" -> expression::Ctor "(_t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_ncur, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_ncur, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_ncur, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_ncur, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_ncur, _t_error)" (removing unused arguments from method call)
+[debug/optimizer]   [<no location>] expression::Ctor "(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" -> expression::Ctor "(_t_ncur, _t_error)" (removing unused arguments from method call)
 [debug/optimizer]   [<no location>] expression::Name "_t_begin" -> renaming reference "_t_begin" -> "_t_begin_"
 [debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_cur, _t_lah, _t_lahe, _t_error) = _t_transient__anon._t_parse_stage1(_t_cur, _t_lah, _t_lahe, _t_error)" -> expression::Assign "_t_error = _t_transient__anon._t_parse_stage1(_t_cur, _t_lah, _t_lahe, _t_error)" (removing tuple from propagated return)
-[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Assign "_t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing tuple from propagated return)
-[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Assign "_t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing tuple from propagated return)
-[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Assign "_t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing tuple from propagated return)
-[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Assign "_t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing tuple from propagated return)
-[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Assign "_t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing tuple from propagated return)
-[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" -> expression::Assign "_t_error = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error)" (removing tuple from propagated return)
+[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" -> expression::Assign "_t_error = (*_t_unit)._t_parse_stage1(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" (removing tuple from propagated return)
+[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" -> expression::Assign "_t_error = (*_t_unit)._t_parse_stage1(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" (removing tuple from propagated return)
+[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" -> expression::Assign "_t_error = (*_t_unit)._t_parse_stage1(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" (removing tuple from propagated return)
+[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" -> expression::Assign "_t_error = (*_t_unit)._t_parse_stage1(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" (removing tuple from propagated return)
+[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" -> expression::Assign "_t_error = (*_t_unit)._t_parse_stage1(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" (removing tuple from propagated return)
+[debug/optimizer]   [<no location>] operator_::tuple::CustomAssign "(_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" -> expression::Assign "_t_error = (*_t_unit)._t_parse_stage1(_t_ncur, _t_lahead, _t_lahead_end, _t_error)" (removing tuple from propagated return)
 [debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:18:10-18:16" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); hilti::debugDedent("spicy"); _t_result = (_t_cur, _t_lah, _t_lahe, _t_error); return (_t_cur, _t_lah, _t_lahe, _t_error); }" -> constant propagation
+[debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:18:10-18:16" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); hilti::debugIndent("spicy"); local iterator<stream> _t_begin_ = begin(_t_cur); local strong_ref<stream> filtered = Null; _t_result = (*self)._t_parse_foo__A_stage2(_t_cur, _t_lah, _t_lahe, _t_error); return _t_result; }" -> inlining child block
 [debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:18:10-18:16" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); try { hilti::debugIndent("spicy"); local iterator<stream> _t_begin = begin(_t_cur); local strong_ref<stream> filtered = Null; if ( ! Null ) _t_result = (*self)._t_parse_foo__A_stage2(_t_data, _t_begin, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error); } catch ( hilti::SystemException _t_except ) throw; return _t_result; }" -> constant propagation
+[debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:18:10-18:16" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); { hilti::debugIndent("spicy"); local iterator<stream> _t_begin_ = begin(_t_cur); local strong_ref<stream> filtered = Null; _t_result = (*self)._t_parse_foo__A_stage2(_t_cur, _t_lah, _t_lahe, _t_error); } return _t_result; }" -> inlining child block
 [debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:21:17-21:23" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); hilti::debugDedent("spicy"); _t_result = (_t_cur, _t_lah, _t_lahe, _t_error); return (_t_cur, _t_lah, _t_lahe, _t_error); }" -> constant propagation
-[debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:21:17-21:23" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); hilti::debugIndent("spicy"); local iterator<stream> _t_begin_ = begin(_t_cur); local strong_ref<stream> filtered = Null; _t_result = (*self)._t_parse_foo__B_stage2(_t_data, _t_begin_, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error); return _t_result; }" -> inlining child block
+[debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:21:17-21:23" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); hilti::debugIndent("spicy"); local iterator<stream> _t_begin_ = begin(_t_cur); local strong_ref<stream> filtered = Null; _t_result = (*self)._t_parse_foo__B_stage2(_t_cur, _t_lah, _t_lahe, _t_error); return _t_result; }" -> inlining child block
 [debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:21:17-21:23" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); try { hilti::debugIndent("spicy"); local iterator<stream> _t_begin = begin(_t_cur); local strong_ref<stream> filtered = Null; if ( ! Null ) _t_result = (*self)._t_parse_foo__B_stage2(_t_data, _t_begin, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error); } catch ( hilti::SystemException _t_except ) throw; return _t_result; }" -> constant propagation
-[debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:21:17-21:23" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); { hilti::debugIndent("spicy"); local iterator<stream> _t_begin_ = begin(_t_cur); local strong_ref<stream> filtered = Null; _t_result = (*self)._t_parse_foo__B_stage2(_t_data, _t_begin_, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error); } return _t_result; }" -> inlining child block
+[debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:21:17-21:23" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); { hilti::debugIndent("spicy"); local iterator<stream> _t_begin_ = begin(_t_cur); local strong_ref<stream> filtered = Null; _t_result = (*self)._t_parse_foo__B_stage2(_t_cur, _t_lah, _t_lahe, _t_error); } return _t_result; }" -> inlining child block
 [debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:24:10-24:16" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); hilti::debugDedent("spicy"); _t_result = (_t_cur, _t_lah, _t_lahe, _t_error); return (_t_cur, _t_lah, _t_lahe, _t_error); }" -> constant propagation
 [debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:24:10-24:16" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); hilti::debugIndent("spicy"); local iterator<stream> _t_begin_ = begin(_t_cur); local strong_ref<stream> filtered = Null; _t_result = (*self)._t_parse_foo__C_stage2(_t_cur, _t_lah, _t_lahe, _t_error); return _t_result; }" -> inlining child block
 [debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:24:10-24:16" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); try { hilti::debugIndent("spicy"); local iterator<stream> _t_begin = begin(_t_cur); local strong_ref<stream> filtered = Null; if ( ! Null ) _t_result = (*self)._t_parse_foo__C_stage2(_t_data, _t_begin, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error); } catch ( hilti::SystemException _t_except ) throw; return _t_result; }" -> constant propagation
@@ -446,17 +697,41 @@
 [debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:25:17-27:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); try { hilti::debugIndent("spicy"); local iterator<stream> _t_begin = begin(_t_cur); local strong_ref<stream> filtered = Null; if ( ! Null ) _t_result = (*self)._t_parse_foo__D_stage2(_t_data, _t_begin, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error); } catch ( hilti::SystemException _t_except ) throw; return _t_result; }" -> constant propagation
 [debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:25:17-27:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); { hilti::debugIndent("spicy"); local iterator<stream> _t_begin_ = begin(_t_cur); local strong_ref<stream> filtered = Null; _t_result = (*self)._t_parse_foo__D_stage2(_t_data, _t_begin_, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error); } return _t_result; }" -> inlining child block
 [debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:30:10-32:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); hilti::debugDedent("spicy"); _t_result = (_t_cur, _t_lah, _t_lahe, _t_error); return (_t_cur, _t_lah, _t_lahe, _t_error); }" -> constant propagation
+[debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:30:10-32:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); hilti::debugIndent("spicy"); local iterator<stream> _t_begin_ = begin(_t_cur); local strong_ref<stream> filtered = Null; _t_result = (*self)._t_parse_foo__F_stage2(_t_cur, _t_lah, _t_lahe, _t_error); return _t_result; }" -> inlining child block
 [debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:30:10-32:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); try { hilti::debugIndent("spicy"); local iterator<stream> _t_begin = begin(_t_cur); local strong_ref<stream> filtered = Null; if ( ! Null ) _t_result = (*self)._t_parse_foo__F_stage2(_t_data, _t_begin, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error); } catch ( hilti::SystemException _t_except ) throw; return _t_result; }" -> constant propagation
-[debug/optimizer]   [<no location>] statement::Block "{ _t_result = (*self)._t_parse_foo__B_stage2(_t_data, _t_begin_, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error); }" -> inlining block
+[debug/optimizer]   [<no location>] statement::Block "{ # "<...>/unused-functions.spicy:30:10-32:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); { hilti::debugIndent("spicy"); local iterator<stream> _t_begin_ = begin(_t_cur); local strong_ref<stream> filtered = Null; _t_result = (*self)._t_parse_foo__F_stage2(_t_cur, _t_lah, _t_lahe, _t_error); } return _t_result; }" -> inlining child block
+[debug/optimizer]   [<no location>] statement::Block "{ _t_result = (*self)._t_parse_foo__A_stage2(_t_cur, _t_lah, _t_lahe, _t_error); }" -> inlining block
+[debug/optimizer]   [<no location>] statement::Block "{ _t_result = (*self)._t_parse_foo__B_stage2(_t_cur, _t_lah, _t_lahe, _t_error); }" -> inlining block
 [debug/optimizer]   [<no location>] statement::Block "{ _t_result = (*self)._t_parse_foo__C_stage2(_t_cur, _t_lah, _t_lahe, _t_error); }" -> inlining block
 [debug/optimizer]   [<no location>] statement::Block "{ _t_result = (*self)._t_parse_foo__D_stage2(_t_data, _t_begin_, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error); }" -> inlining block
-[debug/optimizer]   [<no location>] statement::Block "{ hilti::debugIndent("spicy"); local iterator<stream> _t_begin_ = begin(_t_cur); local stream& filtered = Null; _t_result = (*self)._t_parse_foo__B_stage2(_t_data, _t_begin_, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error); }" -> inlining block
+[debug/optimizer]   [<no location>] statement::Block "{ _t_result = (*self)._t_parse_foo__F_stage2(_t_cur, _t_lah, _t_lahe, _t_error); }" -> inlining block
+[debug/optimizer]   [<no location>] statement::Block "{ hilti::debugIndent("spicy"); local iterator<stream> _t_begin_ = begin(_t_cur); local stream& filtered = Null; _t_result = (*self)._t_parse_foo__A_stage2(_t_cur, _t_lah, _t_lahe, _t_error); }" -> inlining block
+[debug/optimizer]   [<no location>] statement::Block "{ hilti::debugIndent("spicy"); local iterator<stream> _t_begin_ = begin(_t_cur); local stream& filtered = Null; _t_result = (*self)._t_parse_foo__B_stage2(_t_cur, _t_lah, _t_lahe, _t_error); }" -> inlining block
 [debug/optimizer]   [<no location>] statement::Block "{ hilti::debugIndent("spicy"); local iterator<stream> _t_begin_ = begin(_t_cur); local stream& filtered = Null; _t_result = (*self)._t_parse_foo__C_stage2(_t_cur, _t_lah, _t_lahe, _t_error); }" -> inlining block
 [debug/optimizer]   [<no location>] statement::Block "{ hilti::debugIndent("spicy"); local iterator<stream> _t_begin_ = begin(_t_cur); local stream& filtered = Null; _t_result = (*self)._t_parse_foo__D_stage2(_t_data, _t_begin_, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error); }" -> inlining block
+[debug/optimizer]   [<no location>] statement::Block "{ hilti::debugIndent("spicy"); local iterator<stream> _t_begin_ = begin(_t_cur); local stream& filtered = Null; _t_result = (*self)._t_parse_foo__F_stage2(_t_cur, _t_lah, _t_lahe, _t_error); }" -> inlining block
+[debug/optimizer]   [<no location>] statement::Declaration "local int<64> _t_lahead = 0;" -> statement::Expression "0;" (statement result unused)
+[debug/optimizer]   [<no location>] statement::Declaration "local int<64> _t_lahead = 0;" -> statement::Expression "0;" (statement result unused)
+[debug/optimizer]   [<no location>] statement::Declaration "local int<64> _t_lahead = 0;" -> statement::Expression "0;" (statement result unused)
+[debug/optimizer]   [<no location>] statement::Declaration "local int<64> _t_lahead = 0;" -> statement::Expression "0;" (statement result unused)
+[debug/optimizer]   [<no location>] statement::Declaration "local int<64> _t_lahead = 0;" -> statement::Expression "0;" (statement result unused)
+[debug/optimizer]   [<no location>] statement::Declaration "local int<64> _t_lahead = 0;" -> statement::Expression "0;" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Declaration "local iterator<stream> _t_begin_ = begin(_t_cur);" -> statement::Expression "begin(_t_cur);" (statement result unused)
+[debug/optimizer]   [<no location>] statement::Declaration "local iterator<stream> _t_begin_ = begin(_t_cur);" -> statement::Expression "begin(_t_cur);" (statement result unused)
+[debug/optimizer]   [<no location>] statement::Declaration "local iterator<stream> _t_begin_ = begin(_t_cur);" -> statement::Expression "begin(_t_cur);" (statement result unused)
+[debug/optimizer]   [<no location>] statement::Declaration "local iterator<stream> _t_lahead_end;" -> null (statement result unused)
+[debug/optimizer]   [<no location>] statement::Declaration "local iterator<stream> _t_lahead_end;" -> null (statement result unused)
+[debug/optimizer]   [<no location>] statement::Declaration "local iterator<stream> _t_lahead_end;" -> null (statement result unused)
+[debug/optimizer]   [<no location>] statement::Declaration "local iterator<stream> _t_lahead_end;" -> null (statement result unused)
+[debug/optimizer]   [<no location>] statement::Declaration "local iterator<stream> _t_lahead_end;" -> null (statement result unused)
+[debug/optimizer]   [<no location>] statement::Declaration "local iterator<stream> _t_lahead_end;" -> null (statement result unused)
 [debug/optimizer]   [<no location>] statement::Declaration "local strong_ref<stream> filtered = Null;" -> statement::Expression "Null;" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Declaration "local strong_ref<stream> filtered = Null;" -> statement::Expression "Null;" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Declaration "local strong_ref<stream> filtered = Null;" -> statement::Expression "Null;" (statement result unused)
+[debug/optimizer]   [<no location>] statement::Declaration "local strong_ref<stream> filtered = Null;" -> statement::Expression "Null;" (statement result unused)
+[debug/optimizer]   [<no location>] statement::Declaration "local strong_ref<stream> filtered = Null;" -> statement::Expression "Null;" (statement result unused)
+[debug/optimizer]   [<no location>] statement::Declaration "local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result();" -> statement::Expression "<void expression>;" (statement result unused)
+[debug/optimizer]   [<no location>] statement::Declaration "local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result();" -> statement::Expression "<void expression>;" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Declaration "local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result();" -> statement::Expression "<void expression>;" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Declaration "local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result();" -> statement::Expression "<void expression>;" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Declaration "local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result();" -> statement::Expression "<void expression>;" (statement result unused)
@@ -497,14 +772,20 @@
 [debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (removing unused expression result)
 [debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (removing unused expression result)
 [debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (removing unused expression result)
-[debug/optimizer]   [<no location>] statement::Expression "_t_result = (*self)._t_parse_foo__B_stage2(_t_data, _t_begin_, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error);" -> null (Removing variable propagated to return)
+[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "Null;" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "_t_result = (*self)._t_parse_foo__A_stage2(_t_cur, _t_lah, _t_lahe, _t_error);" -> null (Removing variable propagated to return)
+[debug/optimizer]   [<no location>] statement::Expression "_t_result = (*self)._t_parse_foo__B_stage2(_t_cur, _t_lah, _t_lahe, _t_error);" -> null (Removing variable propagated to return)
 [debug/optimizer]   [<no location>] statement::Expression "_t_result = (*self)._t_parse_foo__C_stage2(_t_cur, _t_lah, _t_lahe, _t_error);" -> null (Removing variable propagated to return)
 [debug/optimizer]   [<no location>] statement::Expression "_t_result = (*self)._t_parse_foo__D_stage2(_t_data, _t_begin_, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error);" -> null (Removing variable propagated to return)
+[debug/optimizer]   [<no location>] statement::Expression "_t_result = (*self)._t_parse_foo__F_stage2(_t_cur, _t_lah, _t_lahe, _t_error);" -> null (Removing variable propagated to return)
 [debug/optimizer]   [<no location>] statement::Expression "_t_result = (_t_cur, _t_lah, _t_lahe, _t_error);" -> statement::Expression "(_t_cur, _t_lah, _t_lahe, _t_error);" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "_t_result = (_t_cur, _t_lah, _t_lahe, _t_error);" -> statement::Expression "(_t_cur, _t_lah, _t_lahe, _t_error);" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "_t_result = (_t_cur, _t_lah, _t_lahe, _t_error);" -> statement::Expression "(_t_cur, _t_lah, _t_lahe, _t_error);" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "_t_result = (_t_cur, _t_lah, _t_lahe, _t_error);" -> statement::Expression "(_t_cur, _t_lah, _t_lahe, _t_error);" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "_t_result = (_t_cur, _t_lah, _t_lahe, _t_error);" -> statement::Expression "(_t_cur, _t_lah, _t_lahe, _t_error);" (statement result unused)
+[debug/optimizer]   [<no location>] statement::Expression "begin(_t_cur);" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "begin(_t_cur);" -> null (removing unused expression result)
 [debug/optimizer]   [<no location>] statement::Expression "begin(_t_cur);" -> null (removing unused expression result)
 [debug/optimizer]   [<no location>] statement::If "if ( False ) { (*_t_unit)._t_begin = begin(_t_ncur); }" -> null (removing if statement with always-false condition)
 [debug/optimizer]   [<no location>] statement::If "if ( False ) { (*_t_unit)._t_begin = begin(_t_ncur); }" -> null (removing if statement with always-false condition)
@@ -649,15 +930,15 @@
 [debug/optimizer]   [<no location>] statement::If "if ( False ) { }" -> null (removing if statement with always-false condition)
 [debug/optimizer]   [<no location>] statement::If "if ( False ) { }" -> null (removing if statement with always-false condition)
 [debug/optimizer]   [<no location>] statement::If "if ( True ) { }" -> statement::Block "{ _t_result = (*self)._t_parse_foo__A_stage2(_t_cur, _t_lah, _t_lahe, _t_error); }" (replacing if statement with true block)
-[debug/optimizer]   [<no location>] statement::If "if ( True ) { }" -> statement::Block "{ _t_result = (*self)._t_parse_foo__B_stage2(_t_data, _t_begin, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error); }" (replacing if statement with true block)
+[debug/optimizer]   [<no location>] statement::If "if ( True ) { }" -> statement::Block "{ _t_result = (*self)._t_parse_foo__B_stage2(_t_cur, _t_lah, _t_lahe, _t_error); }" (replacing if statement with true block)
 [debug/optimizer]   [<no location>] statement::If "if ( True ) { }" -> statement::Block "{ _t_result = (*self)._t_parse_foo__C_stage2(_t_cur, _t_lah, _t_lahe, _t_error); }" (replacing if statement with true block)
 [debug/optimizer]   [<no location>] statement::If "if ( True ) { }" -> statement::Block "{ _t_result = (*self)._t_parse_foo__D_stage2(_t_data, _t_begin, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error); }" (replacing if statement with true block)
 [debug/optimizer]   [<no location>] statement::If "if ( True ) { }" -> statement::Block "{ _t_result = (*self)._t_parse_foo__F_stage2(_t_cur, _t_lah, _t_lahe, _t_error); }" (replacing if statement with true block)
-[debug/optimizer]   [<no location>] statement::Try "try { hilti::debugIndent("spicy"); local iterator<stream> _t_begin = begin(_t_cur); local strong_ref<stream> filtered = Null; _t_result = (*self)._t_parse_foo__B_stage2(_t_data, _t_begin, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error); } catch ( hilti::SystemException _t_except ) { throw; }" -> statement::Block "{ hilti::debugIndent("spicy"); local iterator<stream> _t_begin = begin(_t_cur); local strong_ref<stream> filtered = Null; _t_result = (*self)._t_parse_foo__B_stage2(_t_data, _t_begin, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error); }" (replacing rethrowing try/catch with just the block)
+[debug/optimizer]   [<no location>] statement::Try "try { hilti::debugIndent("spicy"); local iterator<stream> _t_begin = begin(_t_cur); local strong_ref<stream> filtered = Null; _t_result = (*self)._t_parse_foo__A_stage2(_t_cur, _t_lah, _t_lahe, _t_error); } catch ( hilti::SystemException _t_except ) { throw; }" -> statement::Block "{ hilti::debugIndent("spicy"); local iterator<stream> _t_begin = begin(_t_cur); local strong_ref<stream> filtered = Null; _t_result = (*self)._t_parse_foo__A_stage2(_t_cur, _t_lah, _t_lahe, _t_error); }" (replacing rethrowing try/catch with just the block)
+[debug/optimizer]   [<no location>] statement::Try "try { hilti::debugIndent("spicy"); local iterator<stream> _t_begin = begin(_t_cur); local strong_ref<stream> filtered = Null; _t_result = (*self)._t_parse_foo__B_stage2(_t_cur, _t_lah, _t_lahe, _t_error); } catch ( hilti::SystemException _t_except ) { throw; }" -> statement::Block "{ hilti::debugIndent("spicy"); local iterator<stream> _t_begin = begin(_t_cur); local strong_ref<stream> filtered = Null; _t_result = (*self)._t_parse_foo__B_stage2(_t_cur, _t_lah, _t_lahe, _t_error); }" (replacing rethrowing try/catch with just the block)
 [debug/optimizer]   [<no location>] statement::Try "try { hilti::debugIndent("spicy"); local iterator<stream> _t_begin = begin(_t_cur); local strong_ref<stream> filtered = Null; _t_result = (*self)._t_parse_foo__C_stage2(_t_cur, _t_lah, _t_lahe, _t_error); } catch ( hilti::SystemException _t_except ) { throw; }" -> statement::Block "{ hilti::debugIndent("spicy"); local iterator<stream> _t_begin = begin(_t_cur); local strong_ref<stream> filtered = Null; _t_result = (*self)._t_parse_foo__C_stage2(_t_cur, _t_lah, _t_lahe, _t_error); }" (replacing rethrowing try/catch with just the block)
 [debug/optimizer]   [<no location>] statement::Try "try { hilti::debugIndent("spicy"); local iterator<stream> _t_begin = begin(_t_cur); local strong_ref<stream> filtered = Null; _t_result = (*self)._t_parse_foo__D_stage2(_t_data, _t_begin, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error); } catch ( hilti::SystemException _t_except ) { throw; }" -> statement::Block "{ hilti::debugIndent("spicy"); local iterator<stream> _t_begin = begin(_t_cur); local strong_ref<stream> filtered = Null; _t_result = (*self)._t_parse_foo__D_stage2(_t_data, _t_begin, _t_cur, _t_trim, _t_lah, _t_lahe, _t_error); }" (replacing rethrowing try/catch with just the block)
-[debug/optimizer]   [spicy_rt.hlt:27:5-27:78] declaration::Field "method void connect_mime_type(string mime_type, uint<64> scope) &internal;" -> null (removing unused member)
-[debug/optimizer]   [spicy_rt.hlt:28:5-28:77] declaration::Field "method void connect_mime_type(bytes mime_type, uint<64> scope) &internal;" -> null (removing unused member)
+[debug/optimizer]   [<no location>] statement::Try "try { hilti::debugIndent("spicy"); local iterator<stream> _t_begin = begin(_t_cur); local strong_ref<stream> filtered = Null; _t_result = (*self)._t_parse_foo__F_stage2(_t_cur, _t_lah, _t_lahe, _t_error); } catch ( hilti::SystemException _t_except ) { throw; }" -> statement::Block "{ hilti::debugIndent("spicy"); local iterator<stream> _t_begin = begin(_t_cur); local strong_ref<stream> filtered = Null; _t_result = (*self)._t_parse_foo__F_stage2(_t_cur, _t_lah, _t_lahe, _t_error); }" (replacing rethrowing try/catch with just the block)
 [debug/optimizer]   [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool _t_feat%foo@@A%supports_filters = True;" -> disabling feature 'supports_filters' of type 'foo::A' since it is not used
 [debug/optimizer]   [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool _t_feat%foo@@A%supports_sinks = True;" -> disabling feature 'supports_sinks' of type 'foo::A' since it is not used
 [debug/optimizer]   [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool _t_feat%foo@@A%synchronization = True;" -> disabling feature 'synchronization' of type 'foo::A' since it is not used
@@ -695,7 +976,8 @@
 [debug/optimizer]   [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool _t_feat%foo@@F%uses_stream = True;" -> disabling feature 'uses_stream' of type 'foo::F' since it is not used
 [debug/optimizer]   [unused-functions.spicy:10:1-32:2] declaration::Constant "const bool _t_feat%foo@@F%uses_sync_advance = True;" -> disabling feature 'uses_sync_advance' of type 'foo::F' since it is not used
 [debug/optimizer]   [unused-functions.spicy:13:1-13:16] declaration::Function "function void f1() { }" -> null (removing declaration for unused function)
-[debug/optimizer]   [unused-functions.spicy:18:1-18:17] declaration::Type "type A = struct { optional<hilti::RecoverableFailure> _t_error &always-emit &internal; method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_parse_foo__A_stage2(); };" -> null (removing unused type)
+[debug/optimizer]   [unused-functions.spicy:16:1-16:23] declaration::Function "public function void f2() { }" -> null (removing declaration for unused function)
+[debug/optimizer]   [unused-functions.spicy:18:1-18:17] declaration::Type "type A = struct { optional<hilti::RecoverableFailure> _t_error &always-emit &internal; };" -> null (removing unused type)
 [debug/optimizer]   [unused-functions.spicy:18:10-18:16] declaration::Field "hook optional<string> _t_hook_to_string();" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:18:10-18:16] declaration::Field "hook void _t_on_0x25_confirmed() &needed-by-feature="synchronization";" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:18:10-18:16] declaration::Field "hook void _t_on_0x25_done();" -> null (removing declaration for unused method)
@@ -709,14 +991,14 @@
 [debug/optimizer]   [unused-functions.spicy:18:10-18:16] declaration::Field "hook void _t_on_0x25_sync_advance(uint<64> offset) &needed-by-feature="uses_sync_advance";" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:18:10-18:16] declaration::Field "hook void _t_on_0x25_synced() &needed-by-feature="synchronization";" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:18:10-18:16] declaration::Field "hook void _t_on_0x25_undelivered(uint<64> seq, bytes data);" -> null (removing declaration for unused method)
-[debug/optimizer]   [unused-functions.spicy:18:10-18:16] declaration::Field "method view<stream> parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
-[debug/optimizer]   [unused-functions.spicy:18:10-18:16] declaration::Field "method view<stream> parse2(inout value_ref<foo::A> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
-[debug/optimizer]   [unused-functions.spicy:18:10-18:16] declaration::Field "method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
-[debug/optimizer]   [unused-functions.spicy:18:10-18:16] declaration::Function "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::A::_t_parse_foo__A_stage2(copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error) { # "<...>/unused-functions.spicy:18:10-18:16" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); hilti::debugDedent("spicy"); (_t_cur, _t_lah, _t_lahe, _t_error); return (_t_cur, _t_lah, _t_lahe, _t_error); }" -> null (removing declaration for unused function)
-[debug/optimizer]   [unused-functions.spicy:18:10-18:16] declaration::Function "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::A::_t_parse_stage1(inout value_ref<stream> _t_data, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error) { # "<...>/unused-functions.spicy:18:10-18:16" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); try { hilti::debugIndent("spicy"); local iterator<stream> _t_begin = begin(_t_cur); local strong_ref<stream> filtered = Null; if ( True ) _t_result = (*self)._t_parse_foo__A_stage2(_t_cur, _t_lah, _t_lahe, _t_error); } catch ( hilti::SystemException _t_except ) throw; return _t_result; }" -> null (removing declaration for unused function)
-[debug/optimizer]   [unused-functions.spicy:18:10-18:16] declaration::Function "method view<stream> foo::A::parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:18:10-18:16" local value_ref<foo::A> _t_unit = default<foo::A>(); local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data)); local int<64> _t_lahead = 0; local iterator<stream> _t_lahead_end; local optional<hilti::RecoverableFailure> _t_error = Null; # "<...>/unused-functions.spicy:18:10-18:16" # Begin parsing production: Unit: foo__A -> (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error); # End parsing production: Unit: foo__A -> if ( False ) (*_t_unit)._t_begin = begin(_t_ncur); if ( False ) (*_t_unit)._t_offset = cast<uint<64>>(begin(_t_ncur).offset() - begin(_t_ncur).offset()); if ( _t_error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_t_error))); return _t_ncur; }" -> null (removing declaration for unused function)
-[debug/optimizer]   [unused-functions.spicy:18:10-18:16] declaration::Function "method view<stream> foo::A::parse2(inout value_ref<foo::A> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:18:10-18:16" local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data)); local int<64> _t_lahead = 0; local iterator<stream> _t_lahead_end; local optional<hilti::RecoverableFailure> _t_error = Null; # "<...>/unused-functions.spicy:18:10-18:16" # Begin parsing production: Unit: foo__A -> (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error); # End parsing production: Unit: foo__A -> if ( False ) (*_t_unit)._t_begin = begin(_t_ncur); if ( False ) (*_t_unit)._t_offset = cast<uint<64>>(begin(_t_ncur).offset() - begin(_t_ncur).offset()); if ( _t_error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_t_error))); return _t_ncur; }" -> null (removing declaration for unused function)
-[debug/optimizer]   [unused-functions.spicy:18:10-18:16] declaration::Function "method view<stream> foo::A::parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:18:10-18:16" local value_ref<foo::A> _t_unit = default<foo::A>(); spicy_rt::initializeParsedUnit((*_t_gunit), _t_unit); local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data)); local int<64> _t_lahead = 0; local iterator<stream> _t_lahead_end; local optional<hilti::RecoverableFailure> _t_error = Null; # "<...>/unused-functions.spicy:18:10-18:16" # Begin parsing production: Unit: foo__A -> (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error); # End parsing production: Unit: foo__A -> if ( False ) (*_t_unit)._t_begin = begin(_t_ncur); if ( False ) (*_t_unit)._t_offset = cast<uint<64>>(begin(_t_ncur).offset() - begin(_t_ncur).offset()); if ( _t_error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_t_error))); return _t_ncur; }" -> null (removing declaration for unused function)
+[debug/optimizer]   [unused-functions.spicy:18:10-18:16] declaration::Field "method extern view<stream> parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
+[debug/optimizer]   [unused-functions.spicy:18:10-18:16] declaration::Field "method extern view<stream> parse2(inout value_ref<foo::A> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
+[debug/optimizer]   [unused-functions.spicy:18:10-18:16] declaration::Field "method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
+[debug/optimizer]   [unused-functions.spicy:18:10-18:16] declaration::Function "method extern view<stream> foo::A::parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:18:10-18:16" local value_ref<foo::A> _t_unit = default<foo::A>(); local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data)); local int<64> _t_lahead = 0; local iterator<stream> _t_lahead_end; local optional<hilti::RecoverableFailure> _t_error = Null; # "<...>/unused-functions.spicy:18:10-18:16" # Begin parsing production: Unit: foo__A -> (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error); # End parsing production: Unit: foo__A -> if ( _t_error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_t_error))); return _t_ncur; }" -> null (removing declaration for unused function)
+[debug/optimizer]   [unused-functions.spicy:18:10-18:16] declaration::Function "method extern view<stream> foo::A::parse2(inout value_ref<foo::A> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:18:10-18:16" local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data)); local int<64> _t_lahead = 0; local iterator<stream> _t_lahead_end; local optional<hilti::RecoverableFailure> _t_error = Null; # "<...>/unused-functions.spicy:18:10-18:16" # Begin parsing production: Unit: foo__A -> (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error); # End parsing production: Unit: foo__A -> if ( _t_error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_t_error))); return _t_ncur; }" -> null (removing declaration for unused function)
+[debug/optimizer]   [unused-functions.spicy:18:10-18:16] declaration::Function "method extern view<stream> foo::A::parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:18:10-18:16" local value_ref<foo::A> _t_unit = default<foo::A>(); spicy_rt::initializeParsedUnit((*_t_gunit), _t_unit); local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data)); local int<64> _t_lahead = 0; local iterator<stream> _t_lahead_end; local optional<hilti::RecoverableFailure> _t_error = Null; # "<...>/unused-functions.spicy:18:10-18:16" # Begin parsing production: Unit: foo__A -> (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error); # End parsing production: Unit: foo__A -> if ( _t_error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_t_error))); return _t_ncur; }" -> null (removing declaration for unused function)
+[debug/optimizer]   [unused-functions.spicy:18:10-18:16] declaration::Function "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::A::_t_parse_foo__A_stage2(copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error) { # "<...>/unused-functions.spicy:18:10-18:16" <void expression>; hilti::debugDedent("spicy"); return (_t_cur, _t_lah, _t_lahe, _t_error); }" -> null (removing declaration for unused function)
+[debug/optimizer]   [unused-functions.spicy:18:10-18:16] declaration::Function "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::A::_t_parse_stage1(copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error) { # "<...>/unused-functions.spicy:18:10-18:16" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); hilti::debugIndent("spicy"); local iterator<stream> _t_begin_ = begin(_t_cur); Null; return (*self)._t_parse_foo__A_stage2(_t_cur, _t_lah, _t_lahe, _t_error); }" -> null (removing declaration for unused function)
 [debug/optimizer]   [unused-functions.spicy:18:10-18:16] operator_::struct_::MemberCall "(*self)._t_on_0x25_done()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer]   [unused-functions.spicy:18:10-18:16] operator_::struct_::MemberCall "(*self)._t_on_0x25_error(hilti::exception_what(_t_except))" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer]   [unused-functions.spicy:18:10-18:16] operator_::struct_::MemberCall "(*self)._t_on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
@@ -728,7 +1010,7 @@
 [debug/optimizer]   [unused-functions.spicy:18:10-18:16] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [unused-functions.spicy:18:10-18:16] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [unused-functions.spicy:18:10-18:16] type::Function "function hook void (string _t_except)" -> removing unused function parameters
-[debug/optimizer]   [unused-functions.spicy:18:10-18:16] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:18:10-18:16] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [unused-functions.spicy:18:10-18:16] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [unused-functions.spicy:18:10-18:16] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [unused-functions.spicy:18:10-18:16] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
@@ -739,7 +1021,7 @@
 [debug/optimizer]   [unused-functions.spicy:21:17-21:23] declaration::Field "hook optional<string> _t_hook_to_string();" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:21:17-21:23] declaration::Field "hook void _t_on_0x25_confirmed() &needed-by-feature="synchronization";" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:21:17-21:23] declaration::Field "hook void _t_on_0x25_done();" -> null (removing declaration for unused method)
-[debug/optimizer]   [unused-functions.spicy:21:17-21:23] declaration::Field "hook void _t_on_0x25_error(string _t_except);" -> null (removing declaration for unused method)
+[debug/optimizer]   [unused-functions.spicy:21:17-21:23] declaration::Field "hook void _t_on_0x25_error();" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:21:17-21:23] declaration::Field "hook void _t_on_0x25_finally();" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:21:17-21:23] declaration::Field "hook void _t_on_0x25_gap(uint<64> seq, uint<64> len);" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:21:17-21:23] declaration::Field "hook void _t_on_0x25_init();" -> null (removing declaration for unused method)
@@ -749,19 +1031,35 @@
 [debug/optimizer]   [unused-functions.spicy:21:17-21:23] declaration::Field "hook void _t_on_0x25_sync_advance(uint<64> offset) &needed-by-feature="uses_sync_advance";" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:21:17-21:23] declaration::Field "hook void _t_on_0x25_synced() &needed-by-feature="synchronization";" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:21:17-21:23] declaration::Field "hook void _t_on_0x25_undelivered(uint<64> seq, bytes data);" -> null (removing declaration for unused method)
-[debug/optimizer]   [unused-functions.spicy:21:17-21:23] declaration::Field "method view<stream> parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
-[debug/optimizer]   [unused-functions.spicy:21:17-21:23] declaration::Field "method view<stream> parse2(inout value_ref<foo::B> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
-[debug/optimizer]   [unused-functions.spicy:21:17-21:23] declaration::Field "method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
+[debug/optimizer]   [unused-functions.spicy:21:17-21:23] declaration::Field "method extern view<stream> parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
+[debug/optimizer]   [unused-functions.spicy:21:17-21:23] declaration::Field "method extern view<stream> parse2(inout value_ref<foo::B> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
+[debug/optimizer]   [unused-functions.spicy:21:17-21:23] declaration::Field "method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:21:17-21:23] operator_::struct_::MemberCall "(*self)._t_on_0x25_done()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer]   [unused-functions.spicy:21:17-21:23] operator_::struct_::MemberCall "(*self)._t_on_0x25_error(hilti::exception_what(_t_except))" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer]   [unused-functions.spicy:21:17-21:23] operator_::struct_::MemberCall "(*self)._t_on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer]   [unused-functions.spicy:21:17-21:23] operator_::struct_::MemberCall "(*self)._t_on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer]   [unused-functions.spicy:21:17-21:23] operator_::struct_::MemberCall "(*self)._t_on_0x25_init()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
+[debug/optimizer]   [unused-functions.spicy:21:17-21:23] statement::Expression "0;" -> null (removing unused expression result)
+[debug/optimizer]   [unused-functions.spicy:21:17-21:23] statement::Expression "0;" -> null (removing unused expression result)
+[debug/optimizer]   [unused-functions.spicy:21:17-21:23] statement::Expression "0;" -> null (removing unused expression result)
 [debug/optimizer]   [unused-functions.spicy:21:17-21:23] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [unused-functions.spicy:21:17-21:23] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [unused-functions.spicy:21:17-21:23] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [unused-functions.spicy:21:17-21:23] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [unused-functions.spicy:21:17-21:23] statement::Expression "default<void>();" -> removing default<void> statement
+[debug/optimizer]   [unused-functions.spicy:21:17-21:23] type::Function "function hook void (string _t_except)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:21:17-21:23] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:21:17-21:23] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:21:17-21:23] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:21:17-21:23] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:21:17-21:23] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:21:17-21:23] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:21:17-21:23] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:21:17-21:23] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:21:17-21:23] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:21:17-21:23] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:21:17-21:23] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:21:17-21:23] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [unused-functions.spicy:24:10-24:16] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating new return type to corresponding field)
 [debug/optimizer]   [unused-functions.spicy:24:10-24:16] QualifiedType "tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>>" -> QualifiedType "optional<hilti::RecoverableFailure>" (propagating return type to use)
 [debug/optimizer]   [unused-functions.spicy:24:10-24:16] declaration::Field "hook optional<string> _t_hook_to_string();" -> null (removing declaration for unused method)
@@ -777,12 +1075,12 @@
 [debug/optimizer]   [unused-functions.spicy:24:10-24:16] declaration::Field "hook void _t_on_0x25_sync_advance(uint<64> offset) &needed-by-feature="uses_sync_advance";" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:24:10-24:16] declaration::Field "hook void _t_on_0x25_synced() &needed-by-feature="synchronization";" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:24:10-24:16] declaration::Field "hook void _t_on_0x25_undelivered(uint<64> seq, bytes data);" -> null (removing declaration for unused method)
-[debug/optimizer]   [unused-functions.spicy:24:10-24:16] declaration::Field "method view<stream> parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
-[debug/optimizer]   [unused-functions.spicy:24:10-24:16] declaration::Field "method view<stream> parse2(inout value_ref<foo::C> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
-[debug/optimizer]   [unused-functions.spicy:24:10-24:16] declaration::Field "method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
-[debug/optimizer]   [unused-functions.spicy:24:10-24:16] declaration::Function "method view<stream> foo::C::parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:24:10-24:16" local value_ref<foo::C> _t_unit = default<foo::C>(); local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data)); local int<64> _t_lahead = 0; local iterator<stream> _t_lahead_end; local optional<hilti::RecoverableFailure> _t_error = Null; # "<...>/unused-functions.spicy:24:10-24:16" # Begin parsing production: Unit: foo__C -> (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error); # End parsing production: Unit: foo__C -> if ( False ) (*_t_unit)._t_begin = begin(_t_ncur); if ( False ) (*_t_unit)._t_offset = cast<uint<64>>(begin(_t_ncur).offset() - begin(_t_ncur).offset()); if ( _t_error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_t_error))); return _t_ncur; }" -> null (removing declaration for unused function)
-[debug/optimizer]   [unused-functions.spicy:24:10-24:16] declaration::Function "method view<stream> foo::C::parse2(inout value_ref<foo::C> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:24:10-24:16" local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data)); local int<64> _t_lahead = 0; local iterator<stream> _t_lahead_end; local optional<hilti::RecoverableFailure> _t_error = Null; # "<...>/unused-functions.spicy:24:10-24:16" # Begin parsing production: Unit: foo__C -> (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error); # End parsing production: Unit: foo__C -> if ( False ) (*_t_unit)._t_begin = begin(_t_ncur); if ( False ) (*_t_unit)._t_offset = cast<uint<64>>(begin(_t_ncur).offset() - begin(_t_ncur).offset()); if ( _t_error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_t_error))); return _t_ncur; }" -> null (removing declaration for unused function)
-[debug/optimizer]   [unused-functions.spicy:24:10-24:16] declaration::Function "method view<stream> foo::C::parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:24:10-24:16" local value_ref<foo::C> _t_unit = default<foo::C>(); spicy_rt::initializeParsedUnit((*_t_gunit), _t_unit); local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data)); local int<64> _t_lahead = 0; local iterator<stream> _t_lahead_end; local optional<hilti::RecoverableFailure> _t_error = Null; # "<...>/unused-functions.spicy:24:10-24:16" # Begin parsing production: Unit: foo__C -> (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error); # End parsing production: Unit: foo__C -> if ( False ) (*_t_unit)._t_begin = begin(_t_ncur); if ( False ) (*_t_unit)._t_offset = cast<uint<64>>(begin(_t_ncur).offset() - begin(_t_ncur).offset()); if ( _t_error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_t_error))); return _t_ncur; }" -> null (removing declaration for unused function)
+[debug/optimizer]   [unused-functions.spicy:24:10-24:16] declaration::Field "method extern view<stream> parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
+[debug/optimizer]   [unused-functions.spicy:24:10-24:16] declaration::Field "method extern view<stream> parse2(inout value_ref<foo::C> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
+[debug/optimizer]   [unused-functions.spicy:24:10-24:16] declaration::Field "method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
+[debug/optimizer]   [unused-functions.spicy:24:10-24:16] declaration::Function "method extern view<stream> foo::C::parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:24:10-24:16" local value_ref<foo::C> _t_unit = default<foo::C>(); local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data)); local int<64> _t_lahead = 0; local iterator<stream> _t_lahead_end; local optional<hilti::RecoverableFailure> _t_error = Null; # "<...>/unused-functions.spicy:24:10-24:16" # Begin parsing production: Unit: foo__C -> (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error); # End parsing production: Unit: foo__C -> if ( _t_error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_t_error))); return _t_ncur; }" -> null (removing declaration for unused function)
+[debug/optimizer]   [unused-functions.spicy:24:10-24:16] declaration::Function "method extern view<stream> foo::C::parse2(inout value_ref<foo::C> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:24:10-24:16" local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data)); local int<64> _t_lahead = 0; local iterator<stream> _t_lahead_end; local optional<hilti::RecoverableFailure> _t_error = Null; # "<...>/unused-functions.spicy:24:10-24:16" # Begin parsing production: Unit: foo__C -> (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error); # End parsing production: Unit: foo__C -> if ( _t_error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_t_error))); return _t_ncur; }" -> null (removing declaration for unused function)
+[debug/optimizer]   [unused-functions.spicy:24:10-24:16] declaration::Function "method extern view<stream> foo::C::parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:24:10-24:16" local value_ref<foo::C> _t_unit = default<foo::C>(); spicy_rt::initializeParsedUnit((*_t_gunit), _t_unit); local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data)); local int<64> _t_lahead = 0; local iterator<stream> _t_lahead_end; local optional<hilti::RecoverableFailure> _t_error = Null; # "<...>/unused-functions.spicy:24:10-24:16" # Begin parsing production: Unit: foo__C -> (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error); # End parsing production: Unit: foo__C -> if ( _t_error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_t_error))); return _t_ncur; }" -> null (removing declaration for unused function)
 [debug/optimizer]   [unused-functions.spicy:24:10-24:16] operator_::struct_::MemberCall "(*self)._t_on_0x25_done()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer]   [unused-functions.spicy:24:10-24:16] operator_::struct_::MemberCall "(*self)._t_on_0x25_error(hilti::exception_what(_t_except))" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer]   [unused-functions.spicy:24:10-24:16] operator_::struct_::MemberCall "(*self)._t_on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
@@ -811,7 +1109,7 @@
 [debug/optimizer]   [unused-functions.spicy:25:17-27:1] declaration::Field "hook optional<string> _t_hook_to_string();" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:25:17-27:1] declaration::Field "hook void _t_on_0x25_confirmed() &needed-by-feature="synchronization";" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:25:17-27:1] declaration::Field "hook void _t_on_0x25_done();" -> null (removing declaration for unused method)
-[debug/optimizer]   [unused-functions.spicy:25:17-27:1] declaration::Field "hook void _t_on_0x25_error(string _t_except);" -> null (removing declaration for unused method)
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] declaration::Field "hook void _t_on_0x25_error();" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:25:17-27:1] declaration::Field "hook void _t_on_0x25_finally();" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:25:17-27:1] declaration::Field "hook void _t_on_0x25_gap(uint<64> seq, uint<64> len);" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:25:17-27:1] declaration::Field "hook void _t_on_0x25_init();" -> null (removing declaration for unused method)
@@ -821,20 +1119,40 @@
 [debug/optimizer]   [unused-functions.spicy:25:17-27:1] declaration::Field "hook void _t_on_0x25_sync_advance(uint<64> offset) &needed-by-feature="uses_sync_advance";" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:25:17-27:1] declaration::Field "hook void _t_on_0x25_synced() &needed-by-feature="synchronization";" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:25:17-27:1] declaration::Field "hook void _t_on_0x25_undelivered(uint<64> seq, bytes data);" -> null (removing declaration for unused method)
-[debug/optimizer]   [unused-functions.spicy:25:17-27:1] declaration::Field "method view<stream> parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
-[debug/optimizer]   [unused-functions.spicy:25:17-27:1] declaration::Field "method view<stream> parse2(inout value_ref<foo::D> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
-[debug/optimizer]   [unused-functions.spicy:25:17-27:1] declaration::Field "method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] declaration::Field "method extern view<stream> parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] declaration::Field "method extern view<stream> parse2(inout value_ref<foo::D> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] declaration::Field "method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:25:17-27:1] operator_::struct_::MemberCall "(*self)._t_on_0x25_done()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer]   [unused-functions.spicy:25:17-27:1] operator_::struct_::MemberCall "(*self)._t_on_0x25_error(hilti::exception_what(_t_except))" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer]   [unused-functions.spicy:25:17-27:1] operator_::struct_::MemberCall "(*self)._t_on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer]   [unused-functions.spicy:25:17-27:1] operator_::struct_::MemberCall "(*self)._t_on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer]   [unused-functions.spicy:25:17-27:1] operator_::struct_::MemberCall "(*self)._t_on_0x25_init()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] statement::Expression "0;" -> null (removing unused expression result)
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] statement::Expression "0;" -> null (removing unused expression result)
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] statement::Expression "0;" -> null (removing unused expression result)
 [debug/optimizer]   [unused-functions.spicy:25:17-27:1] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [unused-functions.spicy:25:17-27:1] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [unused-functions.spicy:25:17-27:1] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [unused-functions.spicy:25:17-27:1] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [unused-functions.spicy:25:17-27:1] statement::Expression "default<void>();" -> removing default<void> statement
-[debug/optimizer]   [unused-functions.spicy:30:1-32:2] declaration::Type "type F = struct { optional<hilti::RecoverableFailure> _t_error &always-emit &internal; method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_parse_foo__F_stage2(); };" -> null (removing unused type)
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] type::Function "function hook void (string _t_except)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] type::Function "function method optional<hilti::RecoverableFailure> (copy view<stream> _t_cur, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:25:17-27:1] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:30:1-32:2] declaration::Type "type F = struct { optional<hilti::RecoverableFailure> _t_error &always-emit &internal; };" -> null (removing unused type)
 [debug/optimizer]   [unused-functions.spicy:30:10-32:1] declaration::Field "hook optional<string> _t_hook_to_string();" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:30:10-32:1] declaration::Field "hook void _t_on_0x25_confirmed() &needed-by-feature="synchronization";" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:30:10-32:1] declaration::Field "hook void _t_on_0x25_done();" -> null (removing declaration for unused method)
@@ -848,14 +1166,14 @@
 [debug/optimizer]   [unused-functions.spicy:30:10-32:1] declaration::Field "hook void _t_on_0x25_sync_advance(uint<64> offset) &needed-by-feature="uses_sync_advance";" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:30:10-32:1] declaration::Field "hook void _t_on_0x25_synced() &needed-by-feature="synchronization";" -> null (removing declaration for unused method)
 [debug/optimizer]   [unused-functions.spicy:30:10-32:1] declaration::Field "hook void _t_on_0x25_undelivered(uint<64> seq, bytes data);" -> null (removing declaration for unused method)
-[debug/optimizer]   [unused-functions.spicy:30:10-32:1] declaration::Field "method view<stream> parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
-[debug/optimizer]   [unused-functions.spicy:30:10-32:1] declaration::Field "method view<stream> parse2(inout value_ref<foo::F> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
-[debug/optimizer]   [unused-functions.spicy:30:10-32:1] declaration::Field "method view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
-[debug/optimizer]   [unused-functions.spicy:30:10-32:1] declaration::Function "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::F::_t_parse_foo__F_stage2(copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error) { # "<...>/unused-functions.spicy:30:10-32:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); hilti::debugDedent("spicy"); (_t_cur, _t_lah, _t_lahe, _t_error); return (_t_cur, _t_lah, _t_lahe, _t_error); }" -> null (removing declaration for unused function)
-[debug/optimizer]   [unused-functions.spicy:30:10-32:1] declaration::Function "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::F::_t_parse_stage1(inout value_ref<stream> _t_data, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error) { # "<...>/unused-functions.spicy:30:10-32:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); try { hilti::debugIndent("spicy"); local iterator<stream> _t_begin = begin(_t_cur); local strong_ref<stream> filtered = Null; if ( True ) _t_result = (*self)._t_parse_foo__F_stage2(_t_cur, _t_lah, _t_lahe, _t_error); } catch ( hilti::SystemException _t_except ) throw; return _t_result; }" -> null (removing declaration for unused function)
-[debug/optimizer]   [unused-functions.spicy:30:10-32:1] declaration::Function "method view<stream> foo::F::parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:30:10-32:1" local value_ref<foo::F> _t_unit = default<foo::F>(); local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data)); local int<64> _t_lahead = 0; local iterator<stream> _t_lahead_end; local optional<hilti::RecoverableFailure> _t_error = Null; # "<...>/unused-functions.spicy:30:10-32:1" # Begin parsing production: Unit: foo__F -> (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error); # End parsing production: Unit: foo__F -> if ( False ) (*_t_unit)._t_begin = begin(_t_ncur); if ( False ) (*_t_unit)._t_offset = cast<uint<64>>(begin(_t_ncur).offset() - begin(_t_ncur).offset()); if ( _t_error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_t_error))); return _t_ncur; }" -> null (removing declaration for unused function)
-[debug/optimizer]   [unused-functions.spicy:30:10-32:1] declaration::Function "method view<stream> foo::F::parse2(inout value_ref<foo::F> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:30:10-32:1" local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data)); local int<64> _t_lahead = 0; local iterator<stream> _t_lahead_end; local optional<hilti::RecoverableFailure> _t_error = Null; # "<...>/unused-functions.spicy:30:10-32:1" # Begin parsing production: Unit: foo__F -> (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error); # End parsing production: Unit: foo__F -> if ( False ) (*_t_unit)._t_begin = begin(_t_ncur); if ( False ) (*_t_unit)._t_offset = cast<uint<64>>(begin(_t_ncur).offset() - begin(_t_ncur).offset()); if ( _t_error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_t_error))); return _t_ncur; }" -> null (removing declaration for unused function)
-[debug/optimizer]   [unused-functions.spicy:30:10-32:1] declaration::Function "method view<stream> foo::F::parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:30:10-32:1" local value_ref<foo::F> _t_unit = default<foo::F>(); spicy_rt::initializeParsedUnit((*_t_gunit), _t_unit); local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data)); local int<64> _t_lahead = 0; local iterator<stream> _t_lahead_end; local optional<hilti::RecoverableFailure> _t_error = Null; # "<...>/unused-functions.spicy:30:10-32:1" # Begin parsing production: Unit: foo__F -> (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error); # End parsing production: Unit: foo__F -> if ( False ) (*_t_unit)._t_begin = begin(_t_ncur); if ( False ) (*_t_unit)._t_offset = cast<uint<64>>(begin(_t_ncur).offset() - begin(_t_ncur).offset()); if ( _t_error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_t_error))); return _t_ncur; }" -> null (removing declaration for unused function)
+[debug/optimizer]   [unused-functions.spicy:30:10-32:1] declaration::Field "method extern view<stream> parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
+[debug/optimizer]   [unused-functions.spicy:30:10-32:1] declaration::Field "method extern view<stream> parse2(inout value_ref<foo::F> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
+[debug/optimizer]   [unused-functions.spicy:30:10-32:1] declaration::Field "method extern view<stream> parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context);" -> null (removing declaration for unused method)
+[debug/optimizer]   [unused-functions.spicy:30:10-32:1] declaration::Function "method extern view<stream> foo::F::parse1(inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:30:10-32:1" local value_ref<foo::F> _t_unit = default<foo::F>(); local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data)); local int<64> _t_lahead = 0; local iterator<stream> _t_lahead_end; local optional<hilti::RecoverableFailure> _t_error = Null; # "<...>/unused-functions.spicy:30:10-32:1" # Begin parsing production: Unit: foo__F -> (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error); # End parsing production: Unit: foo__F -> if ( _t_error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_t_error))); return _t_ncur; }" -> null (removing declaration for unused function)
+[debug/optimizer]   [unused-functions.spicy:30:10-32:1] declaration::Function "method extern view<stream> foo::F::parse2(inout value_ref<foo::F> _t_unit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:30:10-32:1" local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data)); local int<64> _t_lahead = 0; local iterator<stream> _t_lahead_end; local optional<hilti::RecoverableFailure> _t_error = Null; # "<...>/unused-functions.spicy:30:10-32:1" # Begin parsing production: Unit: foo__F -> (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error); # End parsing production: Unit: foo__F -> if ( _t_error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_t_error))); return _t_ncur; }" -> null (removing declaration for unused function)
+[debug/optimizer]   [unused-functions.spicy:30:10-32:1] declaration::Function "method extern view<stream> foo::F::parse3(inout value_ref<spicy_rt::ParsedUnit> _t_gunit, inout value_ref<stream> _t_data, optional<view<stream>> _t_cur = Null, optional<spicy_rt::UnitContext> _t_context) &needed-by-feature="is_filter" &needed-by-feature="supports_sinks" &static &public { # "<...>/unused-functions.spicy:30:10-32:1" local value_ref<foo::F> _t_unit = default<foo::F>(); spicy_rt::initializeParsedUnit((*_t_gunit), _t_unit); local view<stream> _t_ncur = _t_cur ? (*_t_cur) : cast<view<stream>>((*_t_data)); local int<64> _t_lahead = 0; local iterator<stream> _t_lahead_end; local optional<hilti::RecoverableFailure> _t_error = Null; # "<...>/unused-functions.spicy:30:10-32:1" # Begin parsing production: Unit: foo__F -> (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, _t_ncur, True, _t_lahead, _t_lahead_end, _t_error); # End parsing production: Unit: foo__F -> if ( _t_error ) throw "successful synchronization never confirmed: %s" % (hilti::exception_what((*_t_error))); return _t_ncur; }" -> null (removing declaration for unused function)
+[debug/optimizer]   [unused-functions.spicy:30:10-32:1] declaration::Function "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::F::_t_parse_foo__F_stage2(copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error) { # "<...>/unused-functions.spicy:30:10-32:1" <void expression>; hilti::debugDedent("spicy"); return (_t_cur, _t_lah, _t_lahe, _t_error); }" -> null (removing declaration for unused function)
+[debug/optimizer]   [unused-functions.spicy:30:10-32:1] declaration::Function "method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::F::_t_parse_stage1(copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error) { # "<...>/unused-functions.spicy:30:10-32:1" local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result(); hilti::debugIndent("spicy"); local iterator<stream> _t_begin_ = begin(_t_cur); Null; return (*self)._t_parse_foo__F_stage2(_t_cur, _t_lah, _t_lahe, _t_error); }" -> null (removing declaration for unused function)
 [debug/optimizer]   [unused-functions.spicy:30:10-32:1] operator_::struct_::MemberCall "(*self)._t_on_0x25_done()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer]   [unused-functions.spicy:30:10-32:1] operator_::struct_::MemberCall "(*self)._t_on_0x25_error(hilti::exception_what(_t_except))" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
 [debug/optimizer]   [unused-functions.spicy:30:10-32:1] operator_::struct_::MemberCall "(*self)._t_on_0x25_finally()" -> expression::Ctor "default<void>()" (replacing call to unimplemented method with default value)
@@ -867,7 +1185,7 @@
 [debug/optimizer]   [unused-functions.spicy:30:10-32:1] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [unused-functions.spicy:30:10-32:1] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [unused-functions.spicy:30:10-32:1] type::Function "function hook void (string _t_except)" -> removing unused function parameters
-[debug/optimizer]   [unused-functions.spicy:30:10-32:1] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (copy view<stream> _t_cur, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
+[debug/optimizer]   [unused-functions.spicy:30:10-32:1] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [unused-functions.spicy:30:10-32:1] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [unused-functions.spicy:30:10-32:1] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
 [debug/optimizer]   [unused-functions.spicy:30:10-32:1] type::Function "function method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> (inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error)" -> removing unused function parameters
@@ -895,11 +1213,25 @@
 [debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
@@ -919,6 +1251,7 @@
 [debug/optimizer]   re-resolving AST assuming guarantees <resolved>
 [debug/optimizer] pass: constant-propagation (round 1, pass iteration 1)
 [debug/optimizer] pass: constant-propagation (round 1, pass iteration 2)
+[debug/optimizer] pass: constant-propagation (round 10, pass iteration 1)
 [debug/optimizer] pass: constant-propagation (round 2, pass iteration 1)
 [debug/optimizer] pass: constant-propagation (round 2, pass iteration 2)
 [debug/optimizer] pass: constant-propagation (round 3, pass iteration 1)
@@ -926,53 +1259,76 @@
 [debug/optimizer] pass: constant-propagation (round 5, pass iteration 1)
 [debug/optimizer] pass: constant-propagation (round 6, pass iteration 1)
 [debug/optimizer] pass: constant-propagation (round 7, pass iteration 1)
+[debug/optimizer] pass: constant-propagation (round 8, pass iteration 1)
+[debug/optimizer] pass: constant-propagation (round 9, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 1, pass iteration 1)
+[debug/optimizer] pass: dead-code-cfg (round 10, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 3, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 4, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 5, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 6, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 7, pass iteration 1)
+[debug/optimizer] pass: dead-code-cfg (round 8, pass iteration 1)
+[debug/optimizer] pass: dead-code-cfg (round 9, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 1, pass iteration 1)
+[debug/optimizer] pass: dead-code-static (round 10, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 3, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 4, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 5, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 6, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 7, pass iteration 1)
+[debug/optimizer] pass: dead-code-static (round 8, pass iteration 1)
+[debug/optimizer] pass: dead-code-static (round 9, pass iteration 1)
 [debug/optimizer] pass: feature-requirements (round 1, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 1, pass iteration 1)
+[debug/optimizer] pass: flatten-blocks (round 10, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 2, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 3, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 4, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 5, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 6, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 7, pass iteration 1)
+[debug/optimizer] pass: flatten-blocks (round 8, pass iteration 1)
+[debug/optimizer] pass: flatten-blocks (round 9, pass iteration 1)
 [debug/optimizer] pass: peephole (round 1, pass iteration 1)
+[debug/optimizer] pass: peephole (round 10, pass iteration 1)
 [debug/optimizer] pass: peephole (round 2, pass iteration 1)
 [debug/optimizer] pass: peephole (round 3, pass iteration 1)
 [debug/optimizer] pass: peephole (round 4, pass iteration 1)
 [debug/optimizer] pass: peephole (round 5, pass iteration 1)
 [debug/optimizer] pass: peephole (round 6, pass iteration 1)
 [debug/optimizer] pass: peephole (round 7, pass iteration 1)
+[debug/optimizer] pass: peephole (round 8, pass iteration 1)
+[debug/optimizer] pass: peephole (round 9, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 1, pass iteration 1)
+[debug/optimizer] pass: propagate-function-returns (round 10, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 2, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 3, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 4, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 5, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 6, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 7, pass iteration 1)
+[debug/optimizer] pass: propagate-function-returns (round 8, pass iteration 1)
+[debug/optimizer] pass: propagate-function-returns (round 9, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 1, pass iteration 1)
+[debug/optimizer] pass: remove-unused-fields (round 10, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 2, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 3, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 4, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 5, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 6, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 7, pass iteration 1)
+[debug/optimizer] pass: remove-unused-fields (round 8, pass iteration 1)
+[debug/optimizer] pass: remove-unused-fields (round 9, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 1, pass iteration 1)
+[debug/optimizer] pass: remove-unused-parameters (round 10, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 2, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 3, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 4, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 5, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 6, pass iteration 1)
 [debug/optimizer] pass: remove-unused-parameters (round 7, pass iteration 1)
+[debug/optimizer] pass: remove-unused-parameters (round 8, pass iteration 1)
+[debug/optimizer] pass: remove-unused-parameters (round 9, pass iteration 1)

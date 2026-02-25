@@ -16,6 +16,7 @@
 [debug/optimizer] pass: dead-code-static (round 3, pass iteration 1)
 [debug/optimizer]   [unused_function.hlt:14:1-14:48] declaration::Function "function bool private_unused() { return False; }" -> null (removing declaration for unused function)
 [debug/optimizer]   [unused_function.hlt:15:1-15:60] declaration::Function "function bool private_unused1() { return private_unused(); }" -> null (removing declaration for unused function)
+[debug/optimizer]   [unused_function.hlt:22:1-22:54] declaration::Function "public function bool public_unused() { return False; }" -> null (removing declaration for unused function)
 [debug/optimizer]       - deleting module state: Foo
 [debug/optimizer] pass: feature-requirements (round 1, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 1, pass iteration 1)

@@ -35,6 +35,16 @@ function tuple<uint<64>, uint<64>> incomplete_assign(uint<64> p1, uint<64> p2) {
     return (p1, p2);
 }
 
+public type S = struct {
+    method tuple<uint<64>> use_none(uint<64> p1);
+};
+
+export S;
+
+method tuple<uint<64>> S::use_none(uint<64> p1) {
+    return (p1,);
+}
+
 function void test() {
     local uint<64> x = 1;
     local uint<64> y = 1;
@@ -49,6 +59,10 @@ function void test() {
     (x, y) = inout_param(x, y);
     # CHECK: (x) ={{.*}}incomplete_assign(x, y)
     (x, ) = ({ local tup = incomplete_assign(x, y); } (tup[0], ) );
+
+    local S s;
+    # CHECK: s.use_none(x)
+    (x, ) = s.use_none(x);
 
     # Use the variables again so nothing funky happens
     hilti::print(x);
