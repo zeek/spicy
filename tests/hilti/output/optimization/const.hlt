@@ -1,8 +1,10 @@
 # @TEST-DOC: Tests optimizations performing constant folding.
 #
 # @TEST-REQUIRES: which FileCheck
-# @TEST-EXEC: hiltic %INPUT -pg | FileCheck %INPUT -check-prefix=NOOPT
-# @TEST-EXEC: hiltic %INPUT -p | FileCheck %INPUT -check-prefix=OPT
+# @TEST-EXEC: hiltic %INPUT -pg -o noopt.hlt
+# @TEST-EXEC: FileCheck %INPUT -check-prefix=NOOPT < noopt.hlt
+# @TEST-EXEC: hiltic %INPUT -p -o opt.hlt
+# @TEST-EXEC: FileCheck %INPUT -check-prefix=OPT < opt.hlt
 
 module Foo {
 import hilti;
