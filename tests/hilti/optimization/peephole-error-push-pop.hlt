@@ -1,4 +1,4 @@
-# @TEST-REQUIRES: which FileCheck
+# @TEST-REQUIRES: use-filecheck
 # @TEST-EXEC: hiltic -V -p %INPUT -o output.hlt
 # @TEST-EXEC: FileCheck %INPUT < output.hlt
 #

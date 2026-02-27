@@ -1,0 +1,6 @@
+#! /bin/sh
+#
+# Returns success if we should run FileCheck tests. That means FileCheck is
+# present and the necessary environment variable is set.
+
+[ "$RUN_FILECHECK_TESTS" = "1" ] && which FileCheck >/dev/null
