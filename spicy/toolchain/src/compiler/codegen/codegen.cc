@@ -211,7 +211,7 @@ struct VisitorPass1 : public visitor::MutatingPostOrder {
             // during HILTI compilation where needed for their value_refs.
             auto* sref = n->op0()->type()->type()->as<hilti::type::StrongReference>();
             if ( auto* dtype = sref->dereferencedType()->type(); dtype->isA<type::Unit>() || dtype->isOnHeap() )
-                replaceNode(n, n->op0(), "reverting strong_ref deref coercion");
+                replaceNodeWithChild(n, n->op0(), "reverting strong_ref deref coercion");
         }
     }
 };
@@ -542,7 +542,7 @@ struct VisitorPass3 : public visitor::MutatingPostOrder {
         // Replace coercions with their final result, so that HILTI will not
         // see them (because if it did, it wouldn't apply further HILTI-side
         // coercions to the result anymore).
-        replaceNode(n, n->coercedCtor(), "removed coercion");
+        replaceNodeWithChild(n, n->coercedCtor(), "removed coercion");
     }
 
     void operator()(hilti::expression::Name* n) final {

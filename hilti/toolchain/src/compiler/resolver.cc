@@ -1260,7 +1260,7 @@ struct VisitorPass3 : visitor::MutatingPostOrder {
                 // A coercion expression was created, use it.
                 replaceNode(n, ner.nexpr);
             else
-                replaceNode(n, n->expression());
+                replaceNodeWithChild(n, n->expression());
         }
         else
             n->addError(util::fmt("cannot coerce expression '%s' to type '%s'", *n->expression(), *n->type()));
