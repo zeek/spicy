@@ -1,6 +1,6 @@
 # @TEST-DOC: Tests optimizations performing constant folding.
 #
-# @TEST-REQUIRES: which FileCheck
+# @TEST-REQUIRES: use-filecheck
 # @TEST-EXEC: hiltic %INPUT -pg -o noopt.hlt
 # @TEST-EXEC: FileCheck %INPUT -check-prefix=NOOPT < noopt.hlt
 # @TEST-EXEC: hiltic %INPUT -p -o opt.hlt

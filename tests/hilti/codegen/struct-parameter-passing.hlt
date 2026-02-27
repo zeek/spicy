@@ -1,6 +1,6 @@
 # @TEST-DOC: Validate generated C++ argument passing of struct parameters.
 #
-# @TEST-REQUIRES: which FileCheck
+# @TEST-REQUIRES: use-filecheck
 # @TEST-EXEC: hiltic -c %INPUT -o output.cc
 # @TEST-EXEC: FileCheck %INPUT < output.cc
 

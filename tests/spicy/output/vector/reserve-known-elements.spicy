@@ -1,6 +1,6 @@
 # @TEST-DOC: Checks that a reserve call gets generated for vectors of known size
 #
-# @TEST-REQUIRES: which FileCheck
+# @TEST-REQUIRES: use-filecheck
 # @TEST-EXEC: spicyc -p %INPUT -o output.hlt
 # @TEST-EXEC: FileCheck %INPUT < output.hlt
 

@@ -1,6 +1,6 @@
 # @TEST-DOC: Tests removing unused method parameters optimizations
 #
-# @TEST-REQUIRES: which FileCheck
+# @TEST-REQUIRES: use-filecheck
 # @TEST-EXEC: hiltic %INPUT -p -o output.hlt
 # @TEST-EXEC: FileCheck %INPUT < output.hlt
 # @TEST-EXEC: hiltic %INPUT -dj
