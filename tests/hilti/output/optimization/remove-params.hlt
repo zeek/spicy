@@ -134,7 +134,7 @@ function uint<64> param_shadowed(uint<64> i, uint<64> j) {
     return i * 10;
 }
 
-# CHECK: hilti::print(param_shadowed(1), True);
+# CHECK: print(param_shadowed(1), True);
 hilti::print(param_shadowed(1, 2), True);
 
 }

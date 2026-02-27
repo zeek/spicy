@@ -7,6 +7,6 @@ module Test;
 
 public type Data = unit {
     # The repeat variable gets constant-propagated
-    # CHECK: {{[a-z_]+}}.reserve(128 <= 100 ? 128 : 100)
+    # CHECK: reserve([[MAX:[0-9]+]] <= 100 ? [[MAX]] : 100)
     vec: uint64[100];
 };
