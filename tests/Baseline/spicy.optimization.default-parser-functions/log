@@ -52,10 +52,15 @@
 [debug/optimizer]       - deleting module state: foo
 [debug/optimizer]       - updating function: foo::P0::_t_parse_foo__P0_stage2
 [debug/optimizer]       - updating function: foo::P0::_t_parse_foo__P0_stage2
+[debug/optimizer]       - updating function: foo::P0::_t_parse_foo__P0_stage2
+[debug/optimizer]       - updating function: foo::P0::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::P0::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::P0::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::P1::_t_parse_foo__P1_stage2
 [debug/optimizer]       - updating function: foo::P1::_t_parse_foo__P1_stage2
+[debug/optimizer]       - updating function: foo::P1::_t_parse_foo__P1_stage2
+[debug/optimizer]       - updating function: foo::P1::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::P1::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::P1::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::P1::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::P1::_t_parse_stage1
@@ -66,6 +71,9 @@
 [debug/optimizer]       - updating function: foo::P2::_t_parse_foo__P2_stage2
 [debug/optimizer]       - updating function: foo::P2::_t_parse_foo__P2_stage2
 [debug/optimizer]       - updating function: foo::P2::_t_parse_foo__P2_stage2
+[debug/optimizer]       - updating function: foo::P2::_t_parse_foo__P2_stage2
+[debug/optimizer]       - updating function: foo::P2::_t_parse_foo__P2_stage2
+[debug/optimizer]       - updating function: foo::P2::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::P2::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::P2::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::P2::_t_parse_stage1
@@ -179,6 +187,8 @@
 [debug/optimizer]     * module changed: foo
 [debug/optimizer]     * module changed: foo
 [debug/optimizer]     * module changed: spicy_rt
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
 [debug/optimizer]     * resolver
 [debug/optimizer]     * resolver
 [debug/optimizer]     * resolver
@@ -546,8 +556,8 @@
 [debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
