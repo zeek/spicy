@@ -16,7 +16,7 @@ public function bool fn() {
     x = x + 1;
 
     {
-        # CHECK: local uint<8> [[X2:x_]] = 1;
+        # CHECK: local uint<8> [[X2:.*x.*]] = 1;
         local uint<8> x = 1;
         x = x + 1;
 
@@ -24,7 +24,7 @@ public function bool fn() {
         local uint<8> y = x + 1;
 
         {
-            # CHECK: local uint<8> [[Y2:y_]] = [[X2]] + 2;
+            # CHECK: local uint<8> [[Y2:.*y.*]] = [[X2]] + 2;
             local uint<8> y = x + 2;
             hilti::print(y, True);
         }
@@ -51,13 +51,13 @@ public function void fn(bool flag) {
         return;
 
     {
-        # CHECK: local bool [[C2:c_]] = flag;
+        # CHECK: local bool [[C2:.*c.*]] = flag;
         local bool c = flag;
         # CHECK: x = [[C2]];
         x = c;
 
         {
-            # CHECK: local bool [[C3:c__]] = x;
+            # CHECK: local bool [[C3:.*c.*]] = x;
             local bool c = x;
             # CHECK: if ( [[C3]] )
             if ( c )
