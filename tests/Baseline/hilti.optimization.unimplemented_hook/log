@@ -21,8 +21,10 @@
 [debug/optimizer]   [unimplemented_hook.hlt:29:1-29:27] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [unimplemented_hook.hlt:35:1-35:22] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]     -> modified
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]     * resolver
+[debug/optimizer]       - updating module: Foo
 [debug/optimizer]     * computed CFGs
 [debug/optimizer] pass: flatten-blocks (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 1, pass iteration 1)

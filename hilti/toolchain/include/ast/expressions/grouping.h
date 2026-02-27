@@ -34,6 +34,8 @@ public:
         addChildren(ctx, std::move(exprs));
     }
 
+    void removeLocal(ASTContext* ctx) { setChild(ctx, 0, nullptr); }
+
     static auto create(ASTContext* ctx, Expressions exprs, Meta meta = {}) {
         Nodes nodes = {nullptr};
         nodes.insert(nodes.end(), exprs.begin(), exprs.end());

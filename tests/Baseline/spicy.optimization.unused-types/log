@@ -176,6 +176,9 @@
 [debug/optimizer]       - deleting module state: foo
 [debug/optimizer]       - updating function: foo::Priv10::_t_parse_foo__Priv10_stage2
 [debug/optimizer]       - updating function: foo::Priv10::_t_parse_foo__Priv10_stage2
+[debug/optimizer]       - updating function: foo::Priv10::_t_parse_foo__Priv10_stage2
+[debug/optimizer]       - updating function: foo::Priv10::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::Priv10::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv10::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv10::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv10::_t_parse_stage1
@@ -183,10 +186,15 @@
 [debug/optimizer]       - updating function: foo::Priv10::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv1::_t_parse_foo__Priv1_stage2
 [debug/optimizer]       - updating function: foo::Priv1::_t_parse_foo__Priv1_stage2
+[debug/optimizer]       - updating function: foo::Priv1::_t_parse_foo__Priv1_stage2
+[debug/optimizer]       - updating function: foo::Priv1::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv1::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv1::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv2::_t_parse_foo__Priv2_stage2
 [debug/optimizer]       - updating function: foo::Priv2::_t_parse_foo__Priv2_stage2
+[debug/optimizer]       - updating function: foo::Priv2::_t_parse_foo__Priv2_stage2
+[debug/optimizer]       - updating function: foo::Priv2::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::Priv2::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv2::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv2::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv2::_t_parse_stage1
@@ -194,18 +202,27 @@
 [debug/optimizer]       - updating function: foo::Priv2::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv3::_t_parse_foo__Priv3_stage2
 [debug/optimizer]       - updating function: foo::Priv3::_t_parse_foo__Priv3_stage2
+[debug/optimizer]       - updating function: foo::Priv3::_t_parse_foo__Priv3_stage2
 [debug/optimizer]       - updating function: foo::Priv3::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv3::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv3::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv3::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv3::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::Priv3::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::Priv3::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::Priv4::_t_parse_foo__Priv4_stage2
+[debug/optimizer]       - updating function: foo::Priv4::_t_parse_foo__Priv4_stage2
 [debug/optimizer]       - updating function: foo::Priv4::_t_parse_foo__Priv4_stage2
 [debug/optimizer]       - updating function: foo::Priv4::_t_parse_foo__Priv4_stage2
 [debug/optimizer]       - updating function: foo::Priv4::_t_parse_foo__Priv4_stage2
 [debug/optimizer]       - updating function: foo::Priv4::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv4::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::Priv4::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv5::_t_parse_foo__Priv5_stage2
 [debug/optimizer]       - updating function: foo::Priv5::_t_parse_foo__Priv5_stage2
+[debug/optimizer]       - updating function: foo::Priv5::_t_parse_foo__Priv5_stage2
+[debug/optimizer]       - updating function: foo::Priv5::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::Priv5::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv5::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv5::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv5::_t_parse_stage1
@@ -213,6 +230,9 @@
 [debug/optimizer]       - updating function: foo::Priv5::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv6::_t_parse_foo__Priv6_stage2
 [debug/optimizer]       - updating function: foo::Priv6::_t_parse_foo__Priv6_stage2
+[debug/optimizer]       - updating function: foo::Priv6::_t_parse_foo__Priv6_stage2
+[debug/optimizer]       - updating function: foo::Priv6::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::Priv6::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv6::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv6::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv6::_t_parse_stage1
@@ -220,6 +240,9 @@
 [debug/optimizer]       - updating function: foo::Priv6::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Pub2::_t_parse_foo__Pub2_stage2
 [debug/optimizer]       - updating function: foo::Pub2::_t_parse_foo__Pub2_stage2
+[debug/optimizer]       - updating function: foo::Pub2::_t_parse_foo__Pub2_stage2
+[debug/optimizer]       - updating function: foo::Pub2::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::Pub2::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Pub2::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Pub2::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Pub2::_t_parse_stage1
@@ -228,6 +251,10 @@
 [debug/optimizer]       - updating function: foo::Pub3::_t_parse_foo__Pub3_stage2
 [debug/optimizer]       - updating function: foo::Pub3::_t_parse_foo__Pub3_stage2
 [debug/optimizer]       - updating function: foo::Pub3::_t_parse_foo__Pub3_stage2
+[debug/optimizer]       - updating function: foo::Pub3::_t_parse_foo__Pub3_stage2
+[debug/optimizer]       - updating function: foo::Pub3::_t_parse_foo__Pub3_stage2
+[debug/optimizer]       - updating function: foo::Pub3::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::Pub3::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Pub3::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Pub3::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Pub3::_t_parse_stage1
@@ -541,6 +568,8 @@
 [debug/optimizer]     * module changed: foo
 [debug/optimizer]     * module changed: foo
 [debug/optimizer]     * module changed: spicy_rt
+[debug/optimizer]     * resolver
+[debug/optimizer]     * resolver
 [debug/optimizer]     * resolver
 [debug/optimizer]     * resolver
 [debug/optimizer]     * resolver
@@ -1650,8 +1679,8 @@
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>

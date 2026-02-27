@@ -125,43 +125,59 @@
 [debug/optimizer]       - updating function: foo::X0::_t_parse_foo__X0_stage2
 [debug/optimizer]       - updating function: foo::X0::_t_parse_foo__X0_stage2
 [debug/optimizer]       - updating function: foo::X0::_t_parse_foo__X0_stage2
+[debug/optimizer]       - updating function: foo::X0::_t_parse_foo__X0_stage2
+[debug/optimizer]       - updating function: foo::X0::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X0::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X0::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X0::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X1::_t_parse_foo__X1_stage2
 [debug/optimizer]       - updating function: foo::X1::_t_parse_foo__X1_stage2
 [debug/optimizer]       - updating function: foo::X1::_t_parse_foo__X1_stage2
+[debug/optimizer]       - updating function: foo::X1::_t_parse_foo__X1_stage2
+[debug/optimizer]       - updating function: foo::X1::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X1::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X1::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X1::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X2::_t_parse_foo__X2_stage2
 [debug/optimizer]       - updating function: foo::X2::_t_parse_foo__X2_stage2
+[debug/optimizer]       - updating function: foo::X2::_t_parse_foo__X2_stage2
+[debug/optimizer]       - updating function: foo::X2::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X2::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X2::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X3::_t_parse_foo__X3_stage2
 [debug/optimizer]       - updating function: foo::X3::_t_parse_foo__X3_stage2
+[debug/optimizer]       - updating function: foo::X3::_t_parse_foo__X3_stage2
 [debug/optimizer]       - updating function: foo::X3::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X3::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::X3::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X4::_t_parse_foo__X4_stage2
 [debug/optimizer]       - updating function: foo::X4::_t_parse_foo__X4_stage2
 [debug/optimizer]       - updating function: foo::X4::_t_parse_foo__X4_stage2
+[debug/optimizer]       - updating function: foo::X4::_t_parse_foo__X4_stage2
 [debug/optimizer]       - updating function: foo::X4::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X4::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X4::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X4::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::X4::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::X5::_t_parse_foo__X5_stage2
 [debug/optimizer]       - updating function: foo::X5::_t_parse_foo__X5_stage2
 [debug/optimizer]       - updating function: foo::X5::_t_parse_foo__X5_stage2
 [debug/optimizer]       - updating function: foo::X5::_t_parse_foo__X5_stage2
 [debug/optimizer]       - updating function: foo::X5::_t_parse_stage1
+[debug/optimizer]       - updating function: foo::X5::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X6::_t_parse_foo__X6_stage2
 [debug/optimizer]       - updating function: foo::X6::_t_parse_foo__X6_stage2
 [debug/optimizer]       - updating function: foo::X6::_t_parse_foo__X6_stage2
+[debug/optimizer]       - updating function: foo::X6::_t_parse_foo__X6_stage2
+[debug/optimizer]       - updating function: foo::X6::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X6::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X6::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X6::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X6::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X7::_t_parse_foo__X7_stage2
 [debug/optimizer]       - updating function: foo::X7::_t_parse_foo__X7_stage2
+[debug/optimizer]       - updating function: foo::X7::_t_parse_foo__X7_stage2
+[debug/optimizer]       - updating function: foo::X7::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X7::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::X7::_t_parse_stage1
 [debug/optimizer]       - updating module: foo
@@ -361,6 +377,7 @@
 [debug/optimizer]     * module changed: foo
 [debug/optimizer]     * module changed: foo
 [debug/optimizer]     * module changed: spicy_rt
+[debug/optimizer]     * resolver
 [debug/optimizer]     * resolver
 [debug/optimizer]     * resolver
 [debug/optimizer]     * resolver
@@ -1210,7 +1227,7 @@
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
