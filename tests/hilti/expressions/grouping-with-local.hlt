@@ -1,12 +1,21 @@
 # @TEST-EXEC: hiltic -p %INPUT >>output
 # @TEST-EXEC: hiltic -j %INPUT >>output
 # @TEST-EXEC: btest-diff output
+# @TEST-DOC: Exercise construction and optimization of grouping expressions with local variables.
 
 module Foo {
 
+global int<64> g = 1;
+
 assert ({local string x = "abc"; } x) == "abc";
 assert ({local string x = "abc"; } 1, 2, 3, x) == "abc";
-assert ({local i = 2; } i * i) == 4;
+assert ({local string x = "abc"; } 1, 2, 3, "xyz") == "xyz";
+assert ({local i = 2; } i * i) == 4; # not optimized away currently because out approximate dataflow analysis isn't good enough
 assert ({local int<64> i; } i) == 0;
+
+const x = (0, 1, 2);
+assert ({local auto t = x;} (t[0], t[2])) == (0, 2);
+
+assert ({local int<64> i = ++g; } i * i) == 4; # init expression has side effect, local cannot be optimized away
 
 }

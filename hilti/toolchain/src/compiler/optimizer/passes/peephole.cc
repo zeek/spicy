@@ -1,8 +1,10 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <string_view>
+#include <utility>
 
 #include <hilti/ast/builder/builder.h>
+#include <hilti/ast/node.h>
 #include <hilti/base/logger.h>
 #include <hilti/compiler/detail/optimizer/optimizer.h>
 #include <hilti/compiler/detail/optimizer/pass.h>
@@ -121,6 +123,47 @@ struct Mutator : public optimizer::visitor::Mutator {
         return false;
     }
 
+    // Mutator replacing all uses of an ID referring to a given declaration
+    // with a specified expression.
+    struct NameReplacer : public optimizer::visitor::Mutator {
+        NameReplacer(Optimizer* optimizer, const Declaration* declaration, Expression* expression)
+            : optimizer::visitor::Mutator(optimizer), declaration(declaration), expression(expression) {}
+
+        const Declaration* declaration;
+        Expression* expression;
+
+        void operator()(expression::Name* n) final {
+            if ( n->resolvedDeclaration()->fullyQualifiedID() == declaration->fullyQualifiedID() )
+                replaceNode(n, node::deepcopy(context(), expression), "replacing local with expression");
+        }
+    };
+
+    void operator()(expression::Grouping* n) final {
+        if ( const auto* local = n->local() ) {
+            // If a grouping has a local variable that is initialized with an
+            // expression that does not have any side effects, and none of the
+            // groupings expression has any side effects either, then replace any
+            // use of the local with the expression itself.
+            auto* init = local->init();
+            if ( ! init )
+                init = builder()->default_(local->type()->type());
+
+            auto may_have_side_effects = state()->cfgCache()->mayHaveSideEffects(init);
+
+            for ( const auto* e : n->expressions() ) {
+                if ( state()->cfgCache()->mayHaveSideEffects(e) )
+                    may_have_side_effects = true;
+            }
+
+
+            if ( ! may_have_side_effects ) {
+                recordChange(n, "removing local variable from grouping");
+                NameReplacer(optimizer(), local, init).run(n);
+                n->removeLocal(context());
+            }
+        }
+    }
+
     void operator()(expression::Move* n) final {
         // A top-level move is a no-op and can be replaced by the inside
         // expression.
@@ -175,9 +218,7 @@ struct Mutator : public optimizer::visitor::Mutator {
 
 bool run(Optimizer* optimizer) { return Mutator(optimizer).run(); }
 
-optimizer::RegisterPass peephole({.id = PassID::Peephole,
-                                  .iterate = false,
-                                  .guarantees = Guarantees::Resolved | Guarantees::ConstantsFolded,
-                                  .run = run});
+optimizer::RegisterPass peephole(
+    {.id = PassID::Peephole, .iterate = false, .guarantees = Guarantees::ConstantsFolded, .run = run});
 
 } // namespace
