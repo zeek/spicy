@@ -1222,7 +1222,15 @@ bool cfg::Cache::mayHaveSideEffects(const Expression* expr) {
     // Test statically for some expressions we know do not have side effects.
     // Once dataflow() is more precise, we can revisit if we want to keep the
     // static checks as well or rely entirely on dataflow information.
-    if ( expr->isConstant() && expr->isA<expression::Ctor>() )
+    if ( const auto* ctor = expr->tryAs<expression::Ctor>() ) {
+        if ( expr->isConstant() )
+            return false;
+
+        if ( ctor->ctor()->isA<ctor::Default>() && ! ctor->type()->type()->isMutable() )
+            return false;
+    }
+
+    if ( expr->isA<expression::Name>() )
         return false;
 
     const auto* transfer = dataflow(expr);
