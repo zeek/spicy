@@ -1,5 +1,6 @@
 # @TEST-REQUIRES: which FileCheck
-# @TEST-EXEC: spicyc -p %INPUT | FileCheck %INPUT
+# @TEST-EXEC: spicyc -p %INPUT -o output.hlt
+# @TEST-EXEC: FileCheck %INPUT < output.hlt
 # @TEST-EXEC: spicyc -dj %INPUT
 
 # @TEST-DOC: Ensures captures are not removed from non-public units
