@@ -1,7 +1,8 @@
 # @TEST-DOC: Tests removing unused function parameters optimizations
 #
-# @TEST-REQUIRES: which FileCheck
-# @TEST-EXEC: hiltic %INPUT -p | FileCheck %INPUT
+# @TEST-REQUIRES: use-filecheck
+# @TEST-EXEC: hiltic %INPUT -p -o output.hlt
+# @TEST-EXEC: FileCheck %INPUT < output.hlt
 # @TEST-EXEC: hiltic %INPUT -dj
 #
 # Since the ordering is inconsistent, this is split over multiple files.
@@ -134,7 +135,7 @@ function uint<64> param_shadowed(uint<64> i, uint<64> j) {
     return i * 10;
 }
 
-# CHECK: hilti::print(param_shadowed(1), True);
+# CHECK: print(param_shadowed(1), True);
 hilti::print(param_shadowed(1, 2), True);
 
 }

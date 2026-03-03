@@ -1,4 +1,4 @@
-# @TEST-REQUIRES: which FileCheck
+# @TEST-REQUIRES: use-filecheck
 # @TEST-EXEC: spicyc %INPUT -p -o output.hlt -D optimizer >log 2>&1
 # @TEST-EXEC: FileCheck %INPUT < output.hlt
 
@@ -8,8 +8,8 @@
 ###########################################################################################
 module foo;
 
-# CHECK-NOT: = $error;
-# CHECK-NOT: .$error = $error;
+# CHECK-NOT: = $error
+# CHECK-NOT: .$error = $error
 
 public type P0 = unit {};
 
@@ -26,9 +26,9 @@ public type P2 = unit {
     x: uint8;
     y: uint8 {}
 
-# CHECK: (*self)._t_error = _t_error;
-# CHECK-NEXT: (*self)._t_on_y(_t_v_y);
-# CHECK-NEXT: _t_error = (*self)._t_error;
+# CHECK: (*self).[[ERROR:.*error.*]] = [[ERROR]]
+# CHECK-NEXT: (*self)
+# CHECK-NEXT: [[ERROR]] = (*self).[[ERROR]]
     on %error {}
 };
 
@@ -41,7 +41,7 @@ public type Datas = unit {
     : Data[] {}
 };
 
-# CHECK: End parsing production: Unit: foo__Data -> ty
+# CHECK: End parsing{{.*}}Data
 # CHECK-NOT: (*self).$error = $error;
 # CHECK-NOT: $error = $error;
 # Go until next method

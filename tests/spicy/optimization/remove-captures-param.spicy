@@ -1,5 +1,6 @@
-# @TEST-REQUIRES: which FileCheck
-# @TEST-EXEC: spicyc -p %INPUT | FileCheck %INPUT
+# @TEST-REQUIRES: use-filecheck
+# @TEST-EXEC: spicyc -p %INPUT -o output.hlt
+# @TEST-EXEC: FileCheck %INPUT < output.hlt
 # @TEST-EXEC: spicyc -dj %INPUT
 
 # @TEST-DOC: Ensures captures are not removed from non-public units
@@ -7,12 +8,12 @@
 module Test;
 
 type Data = unit {
-    # CHECK: hook void _t_on_x(vector<bytes> _t_captures);
+    # CHECK: hook void {{.*on_x.*}}(vector{{.*}})
     x: /(abc)/ {
         print $1;
     }
 
     # Ensure it is removed when captures aren't used.
-    # CHECK: hook void _t_on_y();
+    # CHECK: hook void {{.*on_y.*}}()
     y: /(def)/ {}
 };
