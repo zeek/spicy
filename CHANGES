@@ -1,3 +1,46 @@
+1.16.0-dev.73 | 2026-03-03 10:39:20 +0100
+
+  * Optimize grouping with side-effect free local variables. (Robin Sommer, Corelight)
+
+    Our resolver can sometimes leave new groupings behind that are more
+    complex than necessary because they introduce local temporary
+    variables even though their value is constant and side-effect free.
+    The problem is that the resolver can't tell if something is
+    side-effect free (that needs data flow analysis) and hence it needs to
+    remain conservative.
+
+    This commit adds a peephole optimization that removes local variables
+    from groupings if they aren't necessary. We generally prefer repeating
+    the side-effect expressions for readability and further optimizations
+    down the line.
+
+  * Extend analysis of side effects. (Robin Sommer, Corelight)
+
+    Hardcode a couple of additional cases. Just like the existing code,
+    this is temporary until we gain expression-level data flow analysis.
+    This had no effect on any existing tests.
+
+  * Make the visitors' `replaceNode()` safe. (Robin Sommer, Corelight)
+
+    The existing `replaceNode()` method was impossible to use safely: if
+    it was passed a replacement node that was already part of the AST
+    somewhere, the method would disconnect that node from its original
+    position first. That, however, is generally not safe because AST nodes
+    do not give any guarantees about their internal child layout, so that
+    simply removing one can lead to trouble. Plus, one always had to keep
+    mind that the replacement node would now disappear from its original
+    place, which is error-prone even in safe cases.
+
+    This changes `replaceNode()` to instead use our standard semantics
+    when making AST modifications: If a node is being inserted that
+    already has a parent, we deep-copy it first. That way, the caller
+    doesn't need to worry about safe memory management. In addition, we
+    add a new method `replaceNodeWithChild()` that optimizes the operation
+    for a special case: If an existing child is taking the position of a
+    parent of itself, then we can always safely move it over into its new
+    place without copying. We now use that for cases across the code base
+    that match this special case.
+
 1.16.0-dev.68 | 2026-03-03 10:27:41 +0100
 
   * Fix printer for functions. (Benjamin Bannier, Corelight)
