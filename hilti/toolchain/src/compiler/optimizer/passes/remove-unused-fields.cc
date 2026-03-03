@@ -241,6 +241,8 @@ struct Mutator : public optimizer::visitor::Mutator {
                 // some other place to evaluate, which doesn't seem worth  the
                 // effort.
                 if ( const auto* expr = n->expression(); ! state()->cfgCache()->mayHaveSideEffects(expr) ) {
+                    recordChange(n, "removing initialization of field never read");
+
                     auto* ctor = n->parent()->as<ctor::Struct>();
                     ctor->removeField(n->id());
 
@@ -249,8 +251,6 @@ struct Mutator : public optimizer::visitor::Mutator {
                         // ctor as well as that's what's being rendered
                         // when printing the AST.
                         coerced->originalCtor()->as<ctor::Struct>()->removeField(n->id());
-
-                    recordChange(n, "removing initialization of field never read");
                 }
             }
 
