@@ -880,10 +880,7 @@ struct Printer : visitor::PreOrder {
             _out << "exception";
     }
 
-    void operator()(type::Function* n) final {
-        _out << "function ";
-        printFunctionType(*n, {});
-    }
+    void operator()(type::Function* n) final { printFunctionType(*n, {}); }
 
     void operator()(type::Interval* n) final { _out << "interval"; }
 
