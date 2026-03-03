@@ -185,7 +185,7 @@ struct Replacer : optimizer::visitor::Mutator {
             if ( auto* coerced = n->parent()->tryAs<expression::Coerced>() )
                 to_replace = coerced;
 
-            replaceNode(to_replace, node::deepcopy(context(), const_val.expr), "propagating constant value");
+            replaceNode(to_replace, const_val.expr, "propagating constant value");
         }
     }
 };
@@ -309,7 +309,7 @@ struct Mutator : public optimizer::visitor::Mutator {
             return;
 
         auto* assign = stmt->expression()->as<expression::Assign>();
-        replaceNode(ret->expression(), node::deepcopy(context(), assign->source()));
+        replaceNode(ret->expression(), assign->source());
         removeNode(prev_node->get(), "Removing variable propagated to return");
     }
 

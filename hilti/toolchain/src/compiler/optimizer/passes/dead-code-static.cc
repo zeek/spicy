@@ -471,9 +471,9 @@ struct Mutator : public optimizer::visitor::Mutator {
             return;
 
         if ( bool_.value() )
-            replaceNode(n, n->true_()->removeFromParent(), "replacing if statement with true block");
+            replaceNodeWithChild(n, n->true_(), "replacing if statement with true block");
         else if ( n->false_() )
-            replaceNode(n, n->false_()->removeFromParent(), "replacing if statement with else block");
+            replaceNodeWithChild(n, n->false_(), "replacing if statement with else block");
         else
             removeNode(n, "removing if statement with always-false condition");
     }
@@ -501,7 +501,7 @@ struct Mutator : public optimizer::visitor::Mutator {
         // run either the `else` block if it is present or nothing.
         else if ( ! *bool_ ) {
             if ( n->else_() )
-                replaceNode(n, n->else_()->removeFromParent(), "replacing while loop with its else block");
+                replaceNodeWithChild(n, n->else_(), "replacing while loop with its else block");
             else {
                 recordChange(n, "removing while loop with false condition");
                 n->parent()->removeChild(n);

@@ -105,13 +105,18 @@ public:
     auto* builder() const { return _optimizer->builder(); }
 
     /**
-     * Replaces a node in the AST with a different one, tracking the change for the optimizer.
-     *
-     * @param old the node to be replaced
-     * @param new_ the new node to insert in place of the old one
-     * @param msg debug message describing the change
+     * Replaces an AST node with a different node. This works like
+     * `visitor::MutatingVisitorBase::replaceNode()` (see there for semantics)
+     * but also tracks the change for the optimizer.
      */
     void replaceNode(Node* old, Node* new_, const std::string& msg = "") override;
+
+    /**
+     * Replaces an AST node with a different node. This works like
+     * `visitor::MutatingVisitorBase::replaceNodeWithChild()` (see there for
+     * semantics) but also tracks the change for the optimizer.
+     */
+    void replaceNodeWithChild(Node* old, Node* new_, const std::string& msg = "") override;
 
     /**
      * Removes a node from the AST, tracking the change for the optimizer.

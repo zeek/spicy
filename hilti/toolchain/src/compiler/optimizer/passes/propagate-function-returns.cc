@@ -479,17 +479,16 @@ struct Mutator : public optimizer::visitor::Mutator {
         if ( ! tup_ty || tup_ty->elements().size() != placement_ids.size() )
             return;
 
-        auto* new_ret = newRet(node::deepcopy(context(), tup_ty), placement_ids);
+        auto* new_ret = newRet(tup_ty, placement_ids);
         assert(new_ret);
-        replaceNode(fn->ftype()->result(), node::deepcopy(context(), new_ret), "propagating new return type");
+        replaceNode(fn->ftype()->result(), new_ret, "propagating new return type");
         // Also need to change field's type
         if ( field ) {
             auto* ftype = field->type()->type()->tryAs<type::Function>();
             if ( ! ftype )
                 return;
 
-            replaceNode(ftype->result(), node::deepcopy(context(), new_ret),
-                        "propagating new return type to corresponding field");
+            replaceNode(ftype->result(), new_ret, "propagating new return type to corresponding field");
         }
 
         const auto* uses_of_op = collector_callers.uses(op);
@@ -497,7 +496,7 @@ struct Mutator : public optimizer::visitor::Mutator {
             return;
 
         for ( auto* use : *uses_of_op ) {
-            replaceNode(use->type(), node::deepcopy(context(), new_ret), "propagating return type to use");
+            replaceNode(use->type(), new_ret, "propagating return type to use");
 
             // If this function is tail called, only its type gets changed.
             // We do not need to change a tuple assign here.
@@ -548,10 +547,7 @@ struct Mutator : public optimizer::visitor::Mutator {
 
             switch ( new_tup_assign_exprs.size() ) {
                 // Replace void return with just the call
-                case 0:
-                    replaceNode(tup_assign, node::deepcopy(context(), use),
-                                "removing assignment from propagated return");
-                    break;
+                case 0: replaceNode(tup_assign, use, "removing assignment from propagated return"); break;
                 case 1:
                     replaceNode(tup_assign, builder()->assign(new_tup_assign_exprs[0], use),
                                 "removing tuple from propagated return");

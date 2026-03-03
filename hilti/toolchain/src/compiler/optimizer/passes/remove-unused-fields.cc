@@ -203,8 +203,7 @@ struct Mutator : public optimizer::visitor::Mutator {
                 if ( field.decl->isOptional() ) {
                     Expression* default_ = field.decl->default_();
                     if ( default_ )
-                        replaceNode(read, node::deepcopy(context(), default_),
-                                    "replacing read of unwritten optional field with default");
+                        replaceNode(read, default_, "replacing read of unwritten optional field with default");
 
                     else {
                         Expression* throw_;
@@ -223,8 +222,7 @@ struct Mutator : public optimizer::visitor::Mutator {
                     if ( ! default_ )
                         default_ = builder()->default_(field.decl->type()->type());
 
-                    replaceNode(read, node::deepcopy(context(), default_),
-                                "replacing read of unwritten field with default");
+                    replaceNode(read, default_, "replacing read of unwritten field with default");
                 }
             }
 
