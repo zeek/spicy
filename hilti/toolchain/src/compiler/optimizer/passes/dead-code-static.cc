@@ -135,30 +135,27 @@ struct Collector : public optimizer::visitor::Collector {
     }
 
     void operator()(declaration::Function* n) final {
+        const auto& function = n->function();
+
         // Record the function if not already known.
         auto& usage = function_usage[n->functionID(context())];
-
-        const auto& function = n->function();
 
         // If the declaration contains a function with a body mark the function as defined.
         if ( function->body() )
             usage.defined = true;
 
-        // If the declaration has a `&cxxname` it is defined in C++.
-        else if ( function->attributes()->find(hilti::attribute::kind::Cxxname) )
-            usage.defined = true;
-
-        // If the member declaration is marked `&always-emit` mark it as referenced.
-        if ( function->attributes()->find(hilti::attribute::kind::AlwaysEmit) )
+        // If the function cannot be modified, mark it as referenced.
+        if ( ! optimizer()->mayModify(n) )
             usage.referenced = true;
 
-        // If the function is public mark is as referenced.
-        if ( n->isPublic() )
-            usage.referenced = true;
+        if ( function->ftype()->flavor() == type::function::Flavor::Hook )
+            usage.hook = true;
 
-        const auto* decl = n->linkedDeclaration(context());
+        if ( const auto* decl = n->linkedDeclaration(context()) ) {
+            // Mark it a referenced if the declaration must not be modified, so
+            // that we don't remove it.
+            usage.referenced |= (! optimizer()->mayModify(decl));
 
-        if ( decl ) {
             // As this type is referenced by a function declaration it is used.
             used[decl->fullyQualifiedID()] = true;
 
@@ -181,52 +178,14 @@ struct Collector : public optimizer::visitor::Collector {
                 usage.referenced |= it->second.at(feature);
             }
         }
-
-        if ( function->ftype()->flavor() == type::function::Flavor::Hook )
-            usage.hook = true;
-
-        switch ( function->ftype()->callingConvention() ) {
-            case type::function::CallingConvention::ExternNoSuspend:
-            case type::function::CallingConvention::Extern: {
-                // If the declaration is `extern` and the unit is `public`, the function
-                // is part of an externally visible API and potentially used elsewhere.
-                if ( decl )
-                    usage.referenced |= decl->isPublic();
-                else
-                    usage.referenced = true;
-
-                break;
-            }
-
-            case type::function::CallingConvention::Standard:
-                // Nothing.
-                break;
-        }
-
-        switch ( n->linkage() ) {
-            case declaration::Linkage::PreInit:
-            case declaration::Linkage::Init:
-                // If the function is pre-init or init it could get
-                // invoked by the driver and should not be removed.
-                usage.referenced = true;
-                break;
-
-            case declaration::Linkage::Private:
-            case declaration::Linkage::Export:
-            case declaration::Linkage::Public:
-                // Nothing.
-                break;
-
-            case declaration::Linkage::Struct: {
-                // If this is a method declaration check whether the type it referred
-                // to is still around; if not mark the function as an unreferenced
-                // non-hook so it gets removed for both plain methods and hooks.
-                if ( ! decl ) {
-                    usage.referenced = false;
-                    usage.hook = false;
-                }
-
-                break;
+        else {
+            if ( n->linkage() == declaration::Linkage::Struct ) {
+                // If this is a method declaration and the type it referred to
+                // is not longer around, mark the function as an unreferenced
+                // and non-hook so it gets removed for both plain methods and
+                // hooks.
+                usage.referenced = false;
+                usage.hook = false;
             }
         }
     }
@@ -242,8 +201,9 @@ struct Collector : public optimizer::visitor::Collector {
         if ( ! type_id )
             return;
 
-        // Record the type if not already known. If the type is part of an external API record it as used.
-        used.insert({type_id, n->isPublic()});
+        // Record the type if not already known. If the type is not modifiable,
+        // record it as used.
+        used.insert({type_id, (! optimizer()->mayModify(n))});
     }
 
     void operator()(expression::Member* n) final {
@@ -266,8 +226,23 @@ struct Collector : public optimizer::visitor::Collector {
         if ( const auto& type_id = n->type()->type()->typeID() )
             used[type_id] = true;
 
-        if ( const auto* decl = n->resolvedDeclaration(); decl && decl->isA<declaration::Field>() )
-            used[n->id()] = true;
+        if ( const auto* field = n->resolvedDeclaration()->tryAs<declaration::Field>() ) {
+            auto type_id = field->linkedType(context())->typeID();
+            auto member_id = ID(type_id, field->id());
+            used[member_id] = true;
+
+            if ( field->type()->type()->tryAs<type::Function>() ) {
+                const auto& function_id = field->fullyQualifiedID();
+                assert(function_id);
+                function_usage[function_id].referenced = true;
+            }
+        }
+
+        if ( const auto* function = n->resolvedDeclaration()->tryAs<declaration::Function>() ) {
+            const auto& function_id = function->fullyQualifiedID();
+            assert(function_id);
+            function_usage[function_id].referenced = true;
+        }
     }
 
     void operator()(expression::Type_* n) final {
@@ -366,13 +341,22 @@ struct Mutator : public optimizer::visitor::Mutator {
             }
         }
 
-        // We never remove members marked `&always-emit`.
-        if ( n->attributes()->find(hilti::attribute::kind::AlwaysEmit) )
+        if ( ! optimizer()->mayModify(n) )
             remove = false;
 
         // We only remove members marked `&internal`.
         if ( ! n->attributes()->find(hilti::attribute::kind::Internal) )
             remove = false;
+
+        if ( n->type()->type()->tryAs<type::Function>() && parent_type->typeDeclaration() ) {
+            // We can remove any fully unreferenced member functions if the
+            // parent type declaration is modifiable, even if the member itself
+            // isn't marked `&internal` (but not if marked `&always-emit`).
+            const auto& used = collector->function_usage.at(n->fullyQualifiedID());
+            if ( ! used.referenced && ! used.hook && optimizer()->mayModify(parent_type->typeDeclaration()) &&
+                 ! n->attributes()->find(hilti::attribute::kind::AlwaysEmit) )
+                remove = true;
+        }
 
         if ( remove ) {
             removeNode(n, "removing unused member");

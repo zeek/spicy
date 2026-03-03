@@ -183,11 +183,20 @@ struct Visitor : hilti::visitor::PreOrder {
             }
         }
 
-        if ( auto* f = decl->tryAs<declaration::Field>(); f && f->type()->type()->isA<type::Function>() ) {
-            // If we're referring to, but not calling, a method,
-            // or static method, bind to the externally visible name for the type.
-            result = {cxx::ID(cg->options().cxx_namespace_extern, fqid), Side::LHS};
-            return;
+        if ( auto* f = decl->tryAs<declaration::Field>() ) {
+            if ( auto* fn = f->type()->type()->tryAs<type::Function>() ) {
+                // If we're referring to, but not calling, a method, bind to the
+                // type's fully-qualified name.
+                switch ( fn->callingConvention() ) {
+                    case type::function::CallingConvention::Extern: [[fallthrough]];
+                    case type::function::CallingConvention::ExternNoSuspend:
+                        result = {cxx::ID(cg->options().cxx_namespace_extern, fqid), Side::LHS};
+                        return;
+                    case type::function::CallingConvention::Standard:
+                        result = {cxx::ID(cg->options().cxx_namespace_intern, fqid), Side::LHS};
+                        return;
+                }
+            }
         }
 
         if ( auto* param = decl->tryAs<declaration::Parameter>(); param && param->isTypeParameter() ) {

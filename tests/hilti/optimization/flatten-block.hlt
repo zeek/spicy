@@ -1,7 +1,7 @@
 # @TEST-DOC: Validates identifier renaming when flattening blocks.
 #
 # @TEST-REQUIRES: which FileCheck
-# @TEST-EXEC: hiltic %INPUT -p >>output 2>&1
+# @TEST-EXEC: hiltic -d %INPUT -p >>output 2>&1
 # @TEST-EXEC: FileCheck %INPUT < output
 
 # CHECK: module foo {

@@ -1,3 +1,34 @@
+1.16.0-dev.81 | 2026-03-03 15:43:56 +0100
+
+  * Fix change tracking in `remove-unused-fields` pass. (Robin Sommer, Corelight)
+
+    This is necessary with the recent `replaceNode()` changes.
+
+  * Let the `dead-code-static` pass honor `--no-strict-public-api`. (Robin Sommer, Corelight)
+
+    There were also a couple of places either not quite working as
+    intended or not (any longer) needed, so tweaking things a bit. Also
+    adding one extension for removing not needed member functions.
+
+  * Let the `propagate-function-returns` pass honor `--no-strict-public-api`. (Robin Sommer, Corelight)
+
+  * Let the `remove-unused-params` pass honor `--no-strict-public-api`. (Robin Sommer, Corelight)
+
+  * Add optimizer helpers to determine if AST entities can be modified. (Robin Sommer, Corelight)
+
+    These honor ``--no-strict-public-api` as well as various attributes
+    and other AST properties.
+
+    Also port the `remove-unused-fields` pass over to use one of them,
+    more to come.
+
+  * Codegen fix for wrong qualification of non-extern struct members. (Robin Sommer, Corelight)
+
+  * Extend printer to always output functions' calling conventions. (Robin Sommer, Corelight)
+
+    This was missing for some function types, so that one wasn't able to
+    see what their calling convention was.
+
 1.16.0-dev.73 | 2026-03-03 10:39:20 +0100
 
   * Optimize grouping with side-effect free local variables. (Robin Sommer, Corelight)
