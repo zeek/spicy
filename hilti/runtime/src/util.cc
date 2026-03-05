@@ -68,13 +68,6 @@ hilti::rt::ResourceUsage hilti::rt::resource_usage() {
     return stats;
 }
 
-hilti::rt::Optional<std::string> hilti::rt::getenv(const std::string& name) {
-    if ( auto* x = ::getenv(name.c_str()) )
-        return {std::string(x)};
-    else
-        return {};
-}
-
 hilti::rt::Result<hilti::rt::filesystem::path> hilti::rt::createTemporaryFile(const std::string& prefix) {
     std::error_code ec;
     auto tmp_dir = hilti::rt::filesystem::temp_directory_path(ec);
@@ -416,41 +409,17 @@ std::string hilti::rt::detail::adl::to_string(const hilti::rt::ByteOrder& x, tag
     cannot_be_reached();
 }
 
-std::string hilti::rt::strftime(const std::string& format, const hilti::rt::Time& time) {
-    auto seconds = static_cast<time_t>(time.seconds());
-
-    std::tm tm;
-
-    constexpr size_t size = 128;
-    char mbstr[size];
-
-    // localtime() is required to call tzset() internally, whereas
-    // localtime_r() may or may not do so -- to be portable we have to
-    // call it ourselves:
-    ::tzset();
-
-    auto* localtime = ::localtime_r(&seconds, &tm);
-    if ( ! localtime )
-        throw InvalidArgument(hilti::rt::fmt("cannot convert timestamp to local time: %s", std::strerror(errno)));
-
-
-    auto n = std::strftime(mbstr, size, format.c_str(), localtime);
-
-    if ( ! n )
-        throw InvalidArgument("could not format timestamp");
-
-    return mbstr;
-}
-
-hilti::rt::Time hilti::rt::strptime(const std::string& buf, const std::string& format) {
+hilti::rt::Time hilti::rt::strptime(std::string_view buf, std::string_view format) {
     tm time;
-    const char* end = ::strptime(buf.data(), format.c_str(), &time);
+    const std::string buf_(buf);
+    const std::string format_(format);
+    const char* end = ::strptime(buf_.c_str(), format_.c_str(), &time);
 
     if ( ! end )
         throw InvalidArgument("could not parse time string");
 
-    auto consumed = std::distance(buf.data(), end);
-    if ( static_cast<decltype(buf.size())>(consumed) != buf.size() )
+    auto consumed = std::distance(buf_.c_str(), end);
+    if ( static_cast<decltype(buf_.size())>(consumed) != buf_.size() )
         throw InvalidArgument(hilti::rt::fmt("unparsed remainder after parsing time string: %s", end));
 
     // If the struct tm object was obtained from POSIX strptime or equivalent

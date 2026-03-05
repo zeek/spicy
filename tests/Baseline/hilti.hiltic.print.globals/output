@@ -11,7 +11,7 @@ extern uint64_t hlt_internal_hlto_scope;
 namespace hlt_internal::Foo {
     struct _t_globals_t;
     struct _t_globals_t : ::hilti::rt::trait::isStruct, ::hilti::rt::Controllable<_t_globals_t> {
-        std::string X{};
+        ::hilti::rt::String X{};
 
         std::string __to_string() const {
             return "["s + "$X=" + hilti::rt::to_string(X) + "]";
@@ -29,7 +29,7 @@ HILTI_PRE_INIT(hlt_internal::Foo::_t_register_module)
 
 extern void hlt_internal::Foo::_t_init_globals(::hilti::rt::Context* ctx) {
     ::hilti::rt::detail::initModuleGlobals<_t_globals_t>(_t_globals_index);
-    _t_globals()->X = {"Hello, world!"s};
+    _t_globals()->X = {"Hello, world!"_hs};
 }
 
 extern void hlt_internal::Foo::_t_init_module() {

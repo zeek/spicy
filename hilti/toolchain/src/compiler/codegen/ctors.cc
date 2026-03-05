@@ -280,7 +280,7 @@ struct Visitor : hilti::visitor::PreOrder {
         if ( n->isLiteral() )
             result = fmt("\"%s\"sv", util::escapeUTF8(n->value(), hilti::rt::render_style::UTF8::EscapeQuotes));
         else
-            result = fmt("\"%s\"s", util::escapeUTF8(n->value(), hilti::rt::render_style::UTF8::EscapeQuotes));
+            result = fmt("\"%s\"_hs", util::escapeUTF8(n->value(), hilti::rt::render_style::UTF8::EscapeQuotes));
     }
 
     void operator()(ctor::Tuple* n) final {

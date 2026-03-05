@@ -15,6 +15,7 @@
 #include <spicy/rt/typedefs.h>
 
 using namespace spicy::rt;
+using namespace hilti::rt::string::literals;
 
 TEST_SUITE_BEGIN("Init");
 
@@ -40,8 +41,9 @@ TEST_CASE("init") {
     }
 
     SUBCASE("single parser") {
-        const Parser parser(hilti::rt::struct_::tag::Inits(), "Parser", true, Parse1Function(), Parse2Function<int>(),
-                            Parse3Function(), nullptr, nullptr, "Parser: description", {MIMEType("foo/bar")},
+        const Parser parser(hilti::rt::struct_::tag::Inits(), "Parser"_hs, true, Parse1Function(),
+                            Parse2Function<int>(), Parse3Function(), nullptr, nullptr, "Parser: description"_hs,
+                            {MIMEType("foo/bar"_hs)},
                             {ParserPort{hilti::rt::tuple::make(hilti::rt::Port(4040, hilti::rt::Protocol::TCP),
                                                                Direction::Both)}});
         detail::globalState()->parsers.emplace_back(&parser);
@@ -63,12 +65,14 @@ TEST_CASE("init") {
     }
 
     SUBCASE("multiple parsers, all 'public'") {
-        const Parser parser1(hilti::rt::struct_::tag::Inits(), "Parser1", true, Parse1Function(), Parse2Function<int>(),
-                             Parse3Function(), nullptr, nullptr, "Parser1: description", {MIMEType("foo/bar")},
+        const Parser parser1(hilti::rt::struct_::tag::Inits(), "Parser1"_hs, true, Parse1Function(),
+                             Parse2Function<int>(), Parse3Function(), nullptr, nullptr, "Parser1: description"_hs,
+                             {MIMEType("foo/bar"_hs)},
                              {ParserPort{hilti::rt::tuple::make(hilti::rt::Port(4040, hilti::rt::Protocol::TCP),
                                                                 Direction::Originator)}});
-        const Parser parser2(hilti::rt::struct_::tag::Inits(), "Parser2", true, Parse1Function(), Parse2Function<int>(),
-                             Parse3Function(), nullptr, nullptr, "Parser2: description", {MIMEType("foo/*")},
+        const Parser parser2(hilti::rt::struct_::tag::Inits(), "Parser2"_hs, true, Parse1Function(),
+                             Parse2Function<int>(), Parse3Function(), nullptr, nullptr, "Parser2: description"_hs,
+                             {MIMEType("foo/*"_hs)},
                              {ParserPort{hilti::rt::tuple::make(hilti::rt::Port(4040, hilti::rt::Protocol::TCP),
                                                                 Direction::Responder)}});
         detail::globalState()->parsers.emplace_back(&parser1);
@@ -97,12 +101,12 @@ TEST_CASE("init") {
 
     SUBCASE("multiple parsers, just one 'public'") {
         const Parser parser1(hilti::rt::struct_::tag::Inits(), "Parser1", true, Parse1Function(), Parse2Function<int>(),
-                             Parse3Function(), nullptr, nullptr, "Parser1: description", {MIMEType("foo/bar")},
+                             Parse3Function(), nullptr, nullptr, "Parser1: description"_hs, {MIMEType("foo/bar"_hs)},
                              {ParserPort{hilti::rt::tuple::make(hilti::rt::Port(4040, hilti::rt::Protocol::TCP),
                                                                 Direction::Originator)}});
         const Parser parser2(hilti::rt::struct_::tag::Inits(), "Parser2", false, Parse1Function(),
-                             Parse2Function<int>(), Parse3Function(), nullptr, nullptr, "Parser2: description",
-                             {MIMEType("foo/*")},
+                             Parse2Function<int>(), Parse3Function(), nullptr, nullptr, "Parser2: description"_hs,
+                             {MIMEType("foo/*"_hs)},
                              {ParserPort{hilti::rt::tuple::make(hilti::rt::Port(4040, hilti::rt::Protocol::TCP),
                                                                 Direction::Responder)}});
         detail::globalState()->parsers.emplace_back(&parser1);

@@ -15,6 +15,8 @@
 
 namespace hilti::rt {
 
+class String;
+
 /**
  * HILTI's base exception type. All HILTI-side runtime exceptions are derived
  * from this. Instantiate specialized derived classes, not the base class.
@@ -59,10 +61,10 @@ public:
     ~Exception() override;
 
     /** Returns the message associated with the exception. */
-    const auto& description() const { return _description; }
+    std::string_view description() const { return _description; }
 
     /** Returns the location associated with the exception. */
-    const auto& location() const { return _location; }
+    std::string_view location() const { return _location; }
 
     /**
      * Returns a stack backtrace captured at the time the exception was
@@ -268,16 +270,16 @@ void printUncaught(const Exception& e, std::ostream& out);
  * Returns the message associated with an exception. The returned message does
  * not include the location.
  */
-inline std::string what(const Exception& e) { return e.description(); }
+String what(const Exception& e);
 
 /**
  * Returns the message associated with an exception. This is a fallback for
  * standard exceptions that aren't ours.
  */
-inline std::string what(const std::exception& e) { return e.what(); }
+String what(const std::exception& e);
 
 /** Returns the location associated with an exception. */
-inline std::string where(const Exception& e) { return e.location(); }
+String where(const Exception& e);
 
 } // namespace exception
 

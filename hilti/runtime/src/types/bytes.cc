@@ -105,9 +105,9 @@ Tuple<bool, Bytes::const_iterator> Bytes::find(const Bytes& needle, const const_
     }
 }
 
-std::string Bytes::decode(unicode::Charset cs, unicode::DecodeErrorStrategy errors) const try {
+String Bytes::decode(unicode::Charset cs, unicode::DecodeErrorStrategy errors) const try {
     if ( Base::empty() )
-        return "";
+        return {};
 
     switch ( cs.value() ) {
         case unicode::Charset::UTF8: {
@@ -135,7 +135,7 @@ std::string Bytes::decode(unicode::Charset cs, unicode::DecodeErrorStrategy erro
                 }
             }
 
-            return t;
+            return {std::string_view(t)};
         }
 
         case unicode::Charset::UTF16BE: [[fallthrough]];
@@ -149,9 +149,9 @@ std::string Bytes::decode(unicode::Charset cs, unicode::DecodeErrorStrategy erro
                     }
                     case unicode::DecodeErrorStrategy::REPLACE: {
                         // Convert everything but the last byte, and append replacement.
-                        auto dec = Bytes(str().substr(0, Base::size() / 2 * 2)).decode(cs, errors);
+                        std::string dec = std::string(Bytes(str().substr(0, Base::size() / 2 * 2)).decode(cs, errors));
                         utf8::append(unicode::REPLACEMENT_CHARACTER, dec);
-                        return dec;
+                        return {std::string_view(dec)};
                     }
                 }
             }
@@ -189,7 +189,7 @@ std::string Bytes::decode(unicode::Charset cs, unicode::DecodeErrorStrategy erro
                 }
             }
 
-            return {utf8::utf16to8(t)};
+            return {std::string_view(utf8::utf16to8(t))};
         }
 
         case unicode::Charset::ASCII: {
@@ -207,7 +207,7 @@ std::string Bytes::decode(unicode::Charset cs, unicode::DecodeErrorStrategy erro
                 }
             }
 
-            return s;
+            return {std::string_view(s)};
         }
 
         case unicode::Charset::Undef: throw RuntimeError("unknown character set for decoding");

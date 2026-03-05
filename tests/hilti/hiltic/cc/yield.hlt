@@ -36,14 +36,14 @@ function extern string test(string x) {
 #include "Foo.h"
 
 extern "C" int HILTI_EXPORT hilti_main() { // Point of entry for JIT
-    auto r = hlt::Foo::test("argument");
+    auto r = hlt::Foo::test("argument"_hs);
 
     while ( ! r ) {
         std::cout << "suspended, resuming" << std::endl;
         r.resume();
     }
 
-    std::cout << "Done, result: " << r.get<std::string>() << std::endl;
+    std::cout << "Done, result: " << r.get<hilti::rt::String>() << std::endl;
     return 0;
 }
 

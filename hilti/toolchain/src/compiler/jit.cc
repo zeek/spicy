@@ -342,7 +342,7 @@ hilti::Result<Nothing> JIT::_compile() {
         }
 
         if ( auto path = hilti::rt::getenv("HILTI_CXX_INCLUDE_DIRS") ) {
-            for ( auto&& dir : hilti::rt::split(*path, ":") ) {
+            for ( auto&& dir : util::split(*path, ":") ) {
                 if ( ! dir.empty() ) {
                     args.insert(args.begin(), {"-I", std::string(dir)});
                 }
@@ -353,7 +353,8 @@ hilti::Result<Nothing> JIT::_compile() {
             if ( auto flags = util::splitShellUnsafe(*flags_) )
                 args.insert(args.end(), std::make_move_iterator(flags->begin()), std::make_move_iterator(flags->end()));
             else
-                return {util::fmt("invalid HILTI_CXX_FLAGS '%s': %s", *flags_, flags.error().description())};
+                return result::Error(
+                    util::fmt("invalid HILTI_CXX_FLAGS '%s': %s", *flags_, flags.error().description()));
         }
 
         // We explicitly create the object file in the temporary directory.
@@ -559,7 +560,7 @@ Result<Nothing> JIT::JobRunner::_waitForJobs() {
     if ( hilti::rt::getenv("HILTI_JIT_SEQUENTIAL").hasValue() )
         parallelism = 1;
     else if ( auto e = hilti::rt::getenv("HILTI_JIT_PARALLELISM") )
-        parallelism = util::charsToUInt64(e->c_str(), 10, [&]() {
+        parallelism = util::charsToUInt64(std::string(*e).c_str(), 10, [&]() {
             rt::fatalError(util::fmt("expected unsigned integer but received '%s' for HILTI_JIT_PARALLELISM", *e));
         });
     else {

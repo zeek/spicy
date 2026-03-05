@@ -33,9 +33,9 @@ void spicy::rt::accept_input() {
         (*hook)();
 }
 
-void spicy::rt::decline_input(const std::string& reason) {
+void spicy::rt::decline_input(const hilti::rt::String& reason) {
     if ( const auto& hook = configuration::detail::unsafeGet().hook_decline_input )
-        (*hook)(reason);
+        (*hook)(std::string(reason.str()));
 }
 
 hilti::rt::Result<hilti::rt::Nothing> spicy::rt::registerParserAlias(const std::string& parser,

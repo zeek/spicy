@@ -15,6 +15,8 @@
 #include <hilti/rt/logging.h>
 #include <hilti/rt/result.h>
 
+using namespace hilti::rt::string::literals;
+
 class TestDtor { //NOLINT
 public:
     explicit TestDtor(std::string& c) : c(c) { c += "ctor"; } //NOLINT
@@ -293,21 +295,21 @@ TEST_CASE("copy-arg") {
     hilti::rt::init();
 
     // This mimics how the HILTI codegen generator moves fiber arguments to the heap.
-    auto s1 = std::string("string1");
-    auto s2 = hilti::rt::ValueReference<std::string>("string2");
+    auto s1 = "string1"_hs;
+    auto s2 = hilti::rt::ValueReference<hilti::rt::String>("string2"_hs);
 
     auto args = std::make_tuple(hilti::rt::resumable::detail::copyArg(s1), hilti::rt::resumable::detail::copyArg(s2));
     auto args_on_heap = std::make_shared<decltype(args)>(std::move(args));
 
     // Check that the copied values have the expected content.
-    CHECK_EQ(std::get<0>(*args_on_heap), std::string("string1"));
-    CHECK_EQ(std::get<1>(*args_on_heap), std::string("string2"));
+    CHECK_EQ(std::get<0>(*args_on_heap), "string1"_hs);
+    CHECK_EQ(std::get<1>(*args_on_heap), "string2"_hs);
 
     // Check that s1 got actually copied
-    CHECK_NE(std::get<0>(*args_on_heap).data(), s1.data());
+    CHECK_NE(std::get<0>(*args_on_heap).str().data(), s1.str().data());
 
     // Check that s2 is referring to the same instance (because we specialize ValueReference&<T> that way)
-    CHECK_EQ(std::get<1>(*args_on_heap)->data(), s2->data());
+    CHECK_EQ(std::get<1>(*args_on_heap)->str(), s2->str());
 }
 
 void X() {}

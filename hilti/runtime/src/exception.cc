@@ -6,6 +6,7 @@
 #include <hilti/rt/exception.h>
 #include <hilti/rt/logging.h>
 #include <hilti/rt/profiler.h>
+#include <hilti/rt/types/string.h>
 #include <hilti/rt/util.h>
 
 using namespace hilti::rt;
@@ -99,3 +100,9 @@ exception::DisableAbortOnExceptions::~DisableAbortOnExceptions() {
 void exception::printUncaught(const Exception& e) { printException("Uncaught exception", e, std::cerr); }
 
 void exception::printUncaught(const Exception& e, std::ostream& out) { printException("Uncaught exception", e, out); }
+
+String exception::what(const Exception& e) { return String(e.description()); }
+
+String exception::what(const std::exception& e) { return String(e.what()); }
+
+String exception::where(const Exception& e) { return String(e.location()); }

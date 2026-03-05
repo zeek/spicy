@@ -40,7 +40,7 @@ const TypeInfo type_info::stream_iterator{std::nullopt, "iterator<stream>",
                                           new type_info::StreamIterator()};
 const TypeInfo type_info::stream_view{std::nullopt, "view<stream>", TO_STRING(hilti::rt::stream::View),
                                       new type_info::StreamView()};
-const TypeInfo type_info::string{std::nullopt, "string", TO_STRING(std::string), new type_info::String()};
+const TypeInfo type_info::string{std::nullopt, "string", TO_STRING(hilti::rt::String), new type_info::String()};
 const TypeInfo type_info::time{std::nullopt, "time", TO_STRING(hilti::rt::Time), new type_info::Time()};
 const TypeInfo type_info::uint8{std::nullopt, "uint8", TO_STRING(hilti::rt::integer::safe<uint8_t>),
                                 new type_info::UnsignedInteger<uint8_t>()};

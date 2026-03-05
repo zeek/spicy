@@ -14,6 +14,7 @@
 #include <hilti/rt/json-fwd.h>
 #include <hilti/rt/result.h>
 #include <hilti/rt/safe-int.h>
+#include <hilti/rt/types/string.h>
 #include <hilti/rt/types/time.h>
 #include <hilti/rt/types/tuple.h>
 #include <hilti/rt/types/vector.h>
@@ -425,8 +426,8 @@ public:
      * @param errors how to handle errors when decoding the data
      * @return UTF8 string
      */
-    std::string decode(unicode::Charset cs,
-                       unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE) const;
+    String decode(unicode::Charset cs,
+                  unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE) const;
 
     /** Returns true if the data begins with a given, other bytes instance. */
     bool startsWith(const Bytes& prefix) const { return hilti::rt::startsWith(*this, prefix); }

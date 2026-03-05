@@ -29,6 +29,7 @@ using hilti::rt::Protocol;
 using hilti::rt::to_string;
 using hilti::rt::Vector;
 using namespace hilti::rt::bytes::literals;
+using namespace hilti::rt::string::literals;
 using namespace spicy::rt;
 
 TEST_SUITE_BEGIN("Parser");
@@ -139,7 +140,7 @@ TEST_CASE("registerParser") {
         REQUIRE(detail::globalState()->parsers.empty());
 
         Parser parser;
-        parser.mime_types = {MIMEType("foo/bar"), MIMEType("foo/*")};
+        parser.mime_types = {MIMEType("foo/bar"_hs), MIMEType("foo/*"_hs)};
         REQUIRE_FALSE(parser.__parse_sink);
         REQUIRE_FALSE(parser.__hook_gap);
         REQUIRE_FALSE(parser.__hook_overlap);
@@ -164,7 +165,7 @@ TEST_CASE("registerParser") {
         REQUIRE(detail::globalState()->parsers.empty());
 
         Parser parser;
-        parser.mime_types = {MIMEType("foo/bar"), MIMEType("foo/*")};
+        parser.mime_types = {MIMEType("foo/bar"_hs), MIMEType("foo/*"_hs)};
         REQUIRE_FALSE(parser.__parse_sink);
         REQUIRE_FALSE(parser.__hook_gap);
         CHECK_FALSE(parser.__hook_overlap);
@@ -189,7 +190,7 @@ TEST_CASE("registerParser") {
         REQUIRE(detail::globalState()->parsers.empty());
 
         Parser parser;
-        parser.mime_types = {MIMEType("foo/bar"), MIMEType("foo/*")};
+        parser.mime_types = {MIMEType("foo/bar"_hs), MIMEType("foo/*"_hs)};
 
         detail::registerParser(parser, 123, UnitRef<UnitWithSinkSupport>(), nullptr);
 

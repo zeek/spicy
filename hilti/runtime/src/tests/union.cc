@@ -11,6 +11,7 @@
 #include <hilti/rt/types/union.h>
 
 using namespace hilti::rt;
+using namespace hilti::rt::string::literals;
 
 TEST_SUITE_BEGIN("union");
 
@@ -23,27 +24,27 @@ TEST_CASE("get") {
                          const UnsetUnionMember&);
     CHECK_EQ(union_::get<1>(Union<int>(42)), 42);
 
-    CHECK_THROWS_WITH_AS(union_::get<0>(Union<int, std::string, double>("abc")),
+    CHECK_THROWS_WITH_AS(union_::get<0>(Union<int, String, double>("abc"_hs)),
                          "access to union member that does not hold value", const UnsetUnionMember&);
-    CHECK_THROWS_WITH_AS(union_::get<1>(Union<int, std::string, double>("abc")),
+    CHECK_THROWS_WITH_AS(union_::get<1>(Union<int, String, double>("abc"_hs)),
                          "access to union member that does not hold value", const UnsetUnionMember&);
-    CHECK_EQ(union_::get<2>(Union<int, std::string, double>("abc")), "abc");
-    CHECK_THROWS_WITH_AS(union_::get<3>(Union<int, std::string, double>("abc")),
+    CHECK_EQ(union_::get<2>(Union<int, String, double>("abc"_hs)), "abc");
+    CHECK_THROWS_WITH_AS(union_::get<3>(Union<int, String, double>("abc"_hs)),
                          "access to union member that does not hold value", const UnsetUnionMember&);
 }
 
 TEST_CASE("get_proxy") {
-    auto u = Union<int, std::string, double>("abc");
+    auto u = Union<int, String, double>("abc"_hs);
     REQUIRE_EQ(u.index(), 2);
-    REQUIRE_EQ(union_::get<2>(u), "abc");
+    REQUIRE_EQ(union_::get<2>(u), "abc"_hs);
 
     // `get_proxy` is lazy.
     union_::get_proxy<0>(u);
     REQUIRE_EQ(u.index(), 2);
 
     // We can reassign to the set field.
-    union_::get_proxy<2>(u) = "def";
-    CHECK_EQ(union_::get<2>(u), "def");
+    union_::get_proxy<2>(u) = "def"_hs;
+    CHECK_EQ(union_::get<2>(u), "def"_hs);
 
     // We can change which field is set.
     union_::get_proxy<1>(u) = 42;
@@ -57,11 +58,11 @@ TEST_SUITE_BEGIN("Union");
 
 TEST_CASE("assign") {
     SUBCASE("lvalue") {
-        Union<int, std::string> u("abc");
+        Union<int, String> u("abc"_hs);
         REQUIRE_EQ(u.index(), 2U);
 
         // Not changing field.
-        const std::string s = "def";
+        String s("def");
         u = s;
         CHECK_EQ(u.index(), 2U);
 
@@ -85,19 +86,19 @@ TEST_CASE("assign") {
 }
 
 TEST_CASE("construct") {
-    CHECK_EQ(union_::get<0>(Union<int, std::string>()), std::monostate());
-    CHECK_EQ(union_::get<0>(Union<int, std::string>(std::monostate())), std::monostate());
-    CHECK_EQ(union_::get<1>(Union<int, std::string>(42)), 42);
-    CHECK_EQ(union_::get<2>(Union<int, std::string>("abc")), "abc");
+    CHECK_EQ(union_::get<0>(Union<int, String>()), std::monostate());
+    CHECK_EQ(union_::get<0>(Union<int, String>(std::monostate())), std::monostate());
+    CHECK_EQ(union_::get<1>(Union<int, String>(42)), 42);
+    CHECK_EQ(union_::get<2>(Union<int, String>("abc"_hs)), "abc"_hs);
 }
 
 TEST_CASE("index") {
-    CHECK_EQ(Union<int, std::string>().index(), 0U);
-    CHECK_EQ(Union<int, std::string>(42).index(), 1U);
-    CHECK_EQ(Union<int, std::string>("abc").index(), 2U);
+    CHECK_EQ(Union<int, String>().index(), 0U);
+    CHECK_EQ(Union<int, String>(42).index(), 1U);
+    CHECK_EQ(Union<int, String>("abc"_hs).index(), 2U);
 }
 
-struct TestUnion : Union<int, std::string> {
+struct TestUnion : Union<int, String> {
     TestUnion() = default;
 
     template<typename T>
@@ -117,7 +118,7 @@ struct TestUnion : Union<int, std::string> {
 TEST_CASE("to_string") {
     CHECK_EQ(to_string(TestUnion()), "<unset>");
     CHECK_EQ(to_string(TestUnion(42)), "$int=42");
-    CHECK_EQ(to_string(TestUnion("abc")), "$string=\"abc\"");
+    CHECK_EQ(to_string(TestUnion("abc"_hs)), "$string=\"abc\"");
 }
 
 TEST_SUITE_END();

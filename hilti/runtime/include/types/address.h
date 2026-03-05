@@ -30,7 +30,7 @@ public:
      *
      * @throws InvalidArgument if it cannot parse the address into a valid IPv4 or IPv6 address.
      */
-    explicit Address(const std::string& addr) { _parse(addr); }
+    explicit Address(std::string_view addr) { _parse(addr); }
 
     /** Constructs an address from a C `in_addr` struct. */
     explicit Address(struct in_addr addr4) { _init(addr4); }
@@ -104,7 +104,7 @@ private:
     void _init(struct in6_addr addr);
 
     // Throws ``InvalidArgument`` if it cannot parse the address.
-    void _parse(const std::string& addr);
+    void _parse(std::string_view addr);
 
     uint64_t _a1 = 0; // The 8 more significant bytes.
     uint64_t _a2 = 0; // The 8 less significant bytes.
@@ -138,7 +138,16 @@ inline Address parse(const Bytes& data) { return Address(data.str()); }
  *
  * @throws InvalidArgument if it cannot parse the address into a valid IPv4 or IPv6 address.
  */
-inline Address parse(const std::string& data) { return Address(data); }
+inline Address parse(std::string_view data) { return Address(data); }
+
+/**
+ * Parses an address from a IPv4 or IPv6 string representation.
+ *
+ * @param addr string representation, as in ``1.2.3.4`` or ``2001:db8:85a3:8d3:1319:8a2e:370:7348``.
+ *
+ * @throws InvalidArgument if it cannot parse the address into a valid IPv4 or IPv6 address.
+ */
+inline Address parse(const String& data) { return Address(data.str()); }
 
 } // namespace address
 

@@ -23,6 +23,7 @@
 #include <hilti/rt/util.h>
 
 using namespace hilti::rt;
+using namespace hilti::rt::string::literals;
 
 namespace std {
 ostream& operator<<(ostream& stream, const vector<string_view>& xs) {
@@ -309,13 +310,14 @@ TEST_CASE("expandUTF8Escapes") {
 }
 
 TEST_CASE("getenv") {
-    CHECK_EQ(hilti::rt::getenv(""), static_cast<Optional<std::string>>(hilti::rt::Null()));
+    CHECK_EQ(hilti::rt::getenv(""_hs), static_cast<Optional<hilti::rt::String>>(hilti::rt::Null()));
 
     const auto home = hilti::rt::getenv("HOME");
     REQUIRE(home);
     CHECK_FALSE(home->empty());
 
-    CHECK_EQ(hilti::rt::getenv("SPICY_TEST_ENV_DOES_NOT_EXIST"), static_cast<Optional<std::string>>(hilti::rt::Null()));
+    CHECK_EQ(hilti::rt::getenv("SPICY_TEST_ENV_DOES_NOT_EXIST"_hs),
+             static_cast<Optional<hilti::rt::String>>(hilti::rt::Null()));
 }
 
 TEST_CASE("hashCombine") {

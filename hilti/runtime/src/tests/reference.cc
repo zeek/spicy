@@ -17,6 +17,7 @@
 
 using namespace hilti::rt;
 using namespace bytes::literals;
+using namespace string::literals;
 
 struct T : public hilti::rt::trait::isStruct, hilti::rt::Controllable<T> {
     /*implicit*/ T(int x = 0) : _x(x) {}
@@ -233,8 +234,8 @@ TEST_CASE("to_string") {
 
 TEST_CASE("to_string_for_print") {
     SUBCASE("std::string") {
-        CHECK_EQ(to_string_for_print(ValueReference<std::string>()), "");
-        CHECK_EQ(to_string_for_print(ValueReference<std::string>("🤷\r\n")), "🤷\r\n");
+        CHECK_EQ(to_string_for_print(ValueReference<hilti::rt::String>()), "");
+        CHECK_EQ(to_string_for_print(ValueReference<hilti::rt::String>("🤷\r\n"_hs)), "🤷\r\n");
     }
 
     SUBCASE("Bytes") {
@@ -415,8 +416,8 @@ TEST_CASE("to_string") {
 
 TEST_CASE("to_string_for_print") {
     SUBCASE("std::string") {
-        CHECK_EQ(to_string_for_print(StrongReference<std::string>()), "Null");
-        CHECK_EQ(to_string_for_print(StrongReference<std::string>("🤷\r\n")), "🤷\r\n");
+        CHECK_EQ(to_string_for_print(StrongReference<hilti::rt::String>()), "Null");
+        CHECK_EQ(to_string_for_print(StrongReference<hilti::rt::String>("🤷\r\n"_hs)), "🤷\r\n");
     }
 
     SUBCASE("Bytes") {
@@ -742,13 +743,14 @@ TEST_CASE("to_string") {
 
 TEST_CASE("to_string_for_print") {
     SUBCASE("std::string") {
-        CHECK_EQ(to_string_for_print(WeakReference<std::string>()), "Null");
-        CHECK_EQ(to_string_for_print(WeakReference<std::string>(StrongReference<std::string>())), "Null");
-        CHECK_EQ(to_string_for_print(WeakReference<std::string>(StrongReference<std::string>("🤷\r\n"))), "🤷\r\n");
+        CHECK_EQ(to_string_for_print(WeakReference<hilti::rt::String>()), "Null");
+        CHECK_EQ(to_string_for_print(WeakReference<hilti::rt::String>(StrongReference<hilti::rt::String>())), "Null");
+        CHECK_EQ(to_string_for_print(WeakReference<hilti::rt::String>(StrongReference<hilti::rt::String>("🤷\r\n"_hs))),
+                 "🤷\r\n");
 
-        auto wref = WeakReference<std::string>();
+        auto wref = WeakReference<hilti::rt::String>();
         {
-            wref = StrongReference<std::string>("abc");
+            wref = StrongReference<hilti::rt::String>("abc"_hs);
         }
         REQUIRE(wref.isExpired());
         CHECK_EQ(to_string_for_print(wref), "<expired ref>");
