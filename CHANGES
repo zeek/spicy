@@ -1,3 +1,7 @@
+1.16.0-dev.83 | 2026-03-12 16:38:10 +0100
+
+  * Fix signed/unsigned comparison warning (Tim Wojtulewicz, Corelight)
+
 1.16.0-dev.81 | 2026-03-03 15:43:56 +0100
 
   * Fix change tracking in `remove-unused-fields` pass. (Robin Sommer, Corelight)
