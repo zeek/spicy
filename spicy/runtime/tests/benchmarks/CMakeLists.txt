@@ -19,7 +19,9 @@ if (BUILD_TOOLCHAIN)
         COMMENT "Generating C++ code for Benchmark")
 
     add_executable(spicy-rt-parsing-benchmark EXCLUDE_FROM_ALL parsing.cc ${_generated_sources})
-    target_compile_options(spicy-rt-parsing-benchmark PRIVATE -Wall -Wno-error)
+    if (NOT MSVC)
+        target_compile_options(spicy-rt-parsing-benchmark PRIVATE -Wall -Wno-error)
+    endif ()
     target_link_libraries(spicy-rt-parsing-benchmark
                           PRIVATE $<IF:$<CONFIG:Debug>,spicy-rt-debug,spicy-rt>)
     target_link_libraries(spicy-rt-parsing-benchmark

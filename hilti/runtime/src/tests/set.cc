@@ -47,11 +47,13 @@ TEST_CASE("insert") {
         Set<int> s;
         auto begin = s.begin();
 
-        REQUIRE_THROWS_WITH_AS(*begin, "underlying object is invalid", const InvalidIterator&);
+        REQUIRE_THROWS_WITH_AS(*begin, "iterator is invalid", const IndexError&);
 
         s.insert(2);
 
-        REQUIRE_THROWS_WITH_AS(*begin, "underlying object is invalid", const InvalidIterator&);
+        // begin was end() of the empty set, and std::set::insert doesn't
+        // invalidate iterators, so it's still end() = not dereferenceable.
+        REQUIRE_THROWS_WITH_AS(*begin, "iterator is invalid", const IndexError&);
         REQUIRE_THROWS_WITH_AS(++begin, "iterator is invalid", const IndexError&);
         REQUIRE_THROWS_WITH_AS(begin++, "iterator is invalid", const IndexError&);
     }
@@ -62,9 +64,8 @@ TEST_CASE("insert") {
 
         auto it1 = s.insert(hint, 1);
 
-        // For an empty `Set`, `begin` is not a dereferenceable iterator, and it
-        // does not become valid when an element backing it is added to the `Set`.
-        REQUIRE_THROWS_WITH_AS(*hint, "underlying object is invalid", const InvalidIterator&);
+        // For an empty `Set`, `begin` is the end iterator and cannot be dereferenced.
+        REQUIRE_THROWS_WITH_AS(*hint, "iterator is invalid", const IndexError&);
 
         CHECK_EQ(*it1, 1);
 
@@ -122,7 +123,8 @@ TEST_CASE("equal") {
 
     Set<int> e1;
     Set<int> e2;
-    CHECK_NE(e1.begin(), e2.begin());
+    CHECK_THROWS_WITH_AS(operator==(e1.begin(), e2.begin()), "cannot compare iterators into different sets",
+                         const InvalidArgument&);
 }
 
 TEST_CASE("iterator") {

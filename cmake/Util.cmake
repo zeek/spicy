@@ -97,7 +97,7 @@ endfunction ()
 
 # Internal helper to link in all object libraries that libhilti needs.
 function (hilti_link_object_libraries_in_tree lib)
-    if (HAVE_TOOLCHAIN)
+    if (TARGET hilti-objects)
         target_link_libraries(${lib} "${ARGN}" hilti-objects)
     endif ()
 
@@ -112,6 +112,11 @@ function (hilti_link_object_libraries_in_tree lib)
         set(_private "PRIVATE")
     endif ()
 
+    if (WIN32)
+        target_link_libraries(${lib} ${_private} libportable)
+        target_link_libraries(${lib} ${_private} libunistd)
+    endif ()
+
     target_link_libraries(${lib} ${_private} reproc++)
     target_link_libraries(${lib} ${_private} jrx-objects)
     target_link_libraries(${lib} ${_private} fiber)
@@ -120,7 +125,7 @@ endfunction ()
 # Link a library against libhilti. This picks the right version of
 # libhilti (shared or object) based on the build configuration.
 function (hilti_link_libraries_in_tree lib)
-    if (BUILD_SHARED_LIBS)
+    if (BUILD_SHARED_LIBS AND NOT WIN32)
         target_link_libraries(${lib} "${ARGN}" hilti)
     else ()
         hilti_link_object_libraries_in_tree(${lib} "${ARGN}")
@@ -140,7 +145,7 @@ endfunction ()
 
 # Internal helper to link in all object libraries that libspicy needs.
 function (spicy_link_object_libraries_in_tree lib)
-    if (HAVE_TOOLCHAIN)
+    if (TARGET spicy-objects)
         target_link_libraries(${lib} "${ARGN}" spicy-objects)
     endif ()
 
@@ -154,7 +159,7 @@ endfunction ()
 # Link a library against libspicy. This picks the right version of
 # libspicy (shared or object) based on the build configuration.
 function (spicy_link_libraries_in_tree lib)
-    if (BUILD_SHARED_LIBS)
+    if (BUILD_SHARED_LIBS AND NOT WIN32)
         target_link_libraries(${lib} "${ARGN}" spicy)
     else ()
         spicy_link_object_libraries_in_tree(${lib} "${ARGN}")

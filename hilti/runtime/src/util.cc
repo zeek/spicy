@@ -1,17 +1,25 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#ifndef _WIN32
 #include <sys/resource.h>
 #include <unistd.h>
+#endif
 #include <utf8proc/utf8proc.h>
 
 #ifdef __linux__
 #include <endian.h>
 #endif
 
+#include <bit>
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+
+#ifdef _MSC_VER
+#include <iomanip>
+#include <sstream>
+#endif
 
 #include <hilti/rt/autogen/config.h>
 #include <hilti/rt/autogen/version.h>
@@ -75,13 +83,22 @@ hilti::rt::Result<hilti::rt::filesystem::path> hilti::rt::createTemporaryFile(co
     if ( ec )
         return hilti::rt::result::Error(fmt("could not create temporary file: %s", ec.message()));
 
-    auto template_ = (tmp_dir / (prefix + "-XXXXXX")).native();
+    auto template_ = (tmp_dir / (prefix + "-XXXXXX")).string();
 
+#if defined(_WIN32)
+    if ( _mktemp_s(template_.data(), template_.size() + 1) != 0 )
+        return hilti::rt::result::Error(fmt("could not create temporary file in %s", tmp_dir));
+
+    std::ofstream ofs(template_);
+    if ( ! ofs )
+        return hilti::rt::result::Error(fmt("could not create temporary file in %s", tmp_dir));
+#else
     auto handle = ::mkstemp(template_.data());
     if ( handle == -1 )
         return hilti::rt::result::Error(fmt("could not create temporary file in %s: %s", tmp_dir, strerror(errno)));
 
     ::close(handle);
+#endif
 
     return hilti::rt::filesystem::path(template_);
 }
@@ -194,7 +211,7 @@ std::string hilti::rt::expandUTF8Escapes(std::string s) {
 
             case 'b': *d++ = '\b'; break;
 
-            case 'e': *d++ = '\e'; break;
+            case 'e': *d++ = '\x1b'; break; // '\e' is a GCC extension, use hex for portability
 
             case 'f': *d++ = '\f'; break;
 
@@ -207,9 +224,9 @@ std::string hilti::rt::expandUTF8Escapes(std::string s) {
             case 'v': *d++ = '\v'; break;
 
             case 'u': {
-                auto end = c + 4;
-                if ( end > s.end() )
+                if ( s.end() - c < 4 )
                     throw UnicodeError("incomplete unicode \\u");
+                auto end = c + 4;
                 utf8proc_int32_t val = 0;
                 c = atoi_n(c, end, 16, &val);
 
@@ -227,9 +244,9 @@ std::string hilti::rt::expandUTF8Escapes(std::string s) {
             }
 
             case 'U': {
-                auto end = c + 8;
-                if ( end > s.end() )
+                if ( s.end() - c < 8 )
                     throw UnicodeError("incomplete unicode \\U");
+                auto end = c + 8;
                 utf8proc_int32_t val = 0;
                 c = atoi_n(c, end, 16, &val);
 
@@ -247,9 +264,10 @@ std::string hilti::rt::expandUTF8Escapes(std::string s) {
             }
 
             case 'x': {
-                auto end = std::min(c + 2, s.end());
                 if ( c == s.end() )
                     throw FormattingError("\\x used with no following hex digits");
+                auto remaining = s.end() - c;
+                auto end = c + std::min(static_cast<decltype(remaining)>(2), remaining);
                 char val = 0;
                 c = atoi_n(c, end, 16, &val);
 
@@ -309,7 +327,7 @@ std::string hilti::rt::escapeUTF8(std::string_view s, bitmask<render_style::UTF8
         else if ( *p == '\b' )
             esc += escapeControl(*p, "\\b");
 
-        else if ( *p == '\e' )
+        else if ( *p == '\x1b' ) // '\e' is a GCC extension, use hex for portability
             esc += escapeControl(*p, "\\e");
 
         else if ( *p == '\f' )
@@ -388,12 +406,15 @@ bool hilti::rt::endsWith(std::string_view s, std::string_view suffix) {
 }
 
 hilti::rt::ByteOrder hilti::rt::systemByteOrder() {
-#ifdef LITTLE_ENDIAN
-    return ByteOrder::Little;
-#elif BIG_ENDIAN
-    return ByteOrder::Big;
+#if defined(__cpp_lib_endian)
+    if constexpr ( std::endian::native == std::endian::little )
+        return ByteOrder::Little;
+    else if constexpr ( std::endian::native == std::endian::big )
+        return ByteOrder::Big;
+    else
+        throw RuntimeError("cannot determine system byte order");
 #else
-#error Neither LITTLE_ENDIAN nor BIG_ENDIAN defined.
+#error Compiler does not support std::endian
 #endif
 }
 
@@ -411,14 +432,43 @@ std::string hilti::rt::detail::adl::to_string(const hilti::rt::ByteOrder& x, tag
 
 hilti::rt::Time hilti::rt::strptime(std::string_view buf, std::string_view format) {
     tm time;
+    memset(&time, 0, sizeof(time));
+
     const std::string buf_(buf);
-    const std::string format_(format);
-    const char* end = ::strptime(buf_.c_str(), format_.c_str(), &time);
+    std::string format_(format);
+
+#ifdef _MSC_VER
+    // libunistd's strptime uses std::get_time which doesn't properly handle
+    // %c on MSVC. Implement strptime using std::get_time directly with the
+    // C locale and proper %c expansion.
+    std::string::size_type pos;
+    // Expand %c to its POSIX C-locale equivalent. Use %a %b %e %H:%M:%S %Y
+    // (%e = space-padded day) which std::get_time supports on MSVC.
+    while ( (pos = format_.find("%c")) != std::string::npos )
+        format_.replace(pos, 2, "%a %b %e %H:%M:%S %Y");
+
+    std::istringstream input(buf_);
+    input.imbue(std::locale::classic());
+    input >> std::get_time(&time, format_.c_str());
+
+    const char* end = nullptr;
+    if ( ! input.fail() ) {
+        auto pos = input.tellg();
+        if ( pos == std::istringstream::pos_type(-1) )
+            // get_time consumed the entire string.
+            end = buf_.data() + buf_.size();
+        else
+            end = buf_.data() + static_cast<size_t>(pos);
+    }
+#else
+    const char* end = ::strptime(buf_.data(), format_.c_str(), &time);
+#endif
+
 
     if ( ! end )
         throw InvalidArgument("could not parse time string");
 
-    auto consumed = std::distance(buf_.c_str(), end);
+    auto consumed = std::distance(buf_.data(), end);
     if ( static_cast<decltype(buf_.size())>(consumed) != buf_.size() )
         throw InvalidArgument(hilti::rt::fmt("unparsed remainder after parsing time string: %s", end));
 
@@ -429,7 +479,11 @@ hilti::rt::Time hilti::rt::strptime(std::string_view buf, std::string_view forma
 
     auto secs = ::mktime(&time);
     if ( secs == -1 )
+#ifdef _WIN32
+        throw OutOfRange("value cannot be represented as a time");
+#else
         throw OutOfRange(hilti::rt::fmt("value cannot be represented as a time: %s", std::strerror(errno)));
+#endif
 
     return hilti::rt::Time(static_cast<double>(secs), hilti::rt::Time::SecondTag{});
 }

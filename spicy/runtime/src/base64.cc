@@ -18,7 +18,7 @@ struct detail::State {
 };
 
 Stream::Stream() {
-    _state = std::shared_ptr<detail::State>(new detail::State(), [](auto p) {
+    _state = std::shared_ptr<detail::State>(new detail::State(), [](detail::State* p) {
         // Nothing else to clean up.
         delete p; // NOLINT(cppcoreguidelines-owning-memory)
     });

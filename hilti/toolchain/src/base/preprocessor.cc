@@ -74,7 +74,8 @@ hilti::Result<bool> hilti::util::SourceCodePreprocessor::_parseIf(const std::str
         op = std::string(m[1]);
         want = 0;
 
-        if ( const auto* x = hilti::rt::atoi_n(m[2].begin(), m[2].end(), 10, &want); x != m[2].end() )
+        if ( const auto* x = hilti::rt::atoi_n(m[2].data(), m[2].data() + m[2].size(), 10, &want);
+             x != m[2].data() + m[2].size() )
             return result::Error("cannot parse integer value");
     }
     else {

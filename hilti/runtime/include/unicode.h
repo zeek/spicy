@@ -11,6 +11,12 @@ namespace hilti::rt {
 
 namespace unicode {
 
+// On Windows, <windows.h> may define STRICT as a macro, which would conflict
+// with the STRICT enumerator below. Undefine it before the declaration.
+#if defined(_WIN32) && defined(STRICT)
+#undef STRICT
+#endif
+
 /* When processing unicode, how to handle invalid data not representing unicode codepoints. */
 HILTI_RT_ENUM(DecodeErrorStrategy,
               IGNORE,  // skip data

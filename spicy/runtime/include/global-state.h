@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include <hilti/rt/macros.h>
 #include <hilti/rt/types/optional.h>
 
 namespace spicy::rt {
@@ -62,10 +63,10 @@ struct GlobalState {
  * Pointer to the global state singleton. Do not access directly, use
  * `globalState()` instead.
  */
-extern GlobalState* __global_state;
+extern HILTI_JIT_IMPORT GlobalState* __global_state;
 
 /** Creates the global state singleton. */
-extern GlobalState* createGlobalState();
+extern HILTI_JIT_IMPORT GlobalState* createGlobalState();
 
 /**
  * Returns the global state singleton. This creates the state the first time

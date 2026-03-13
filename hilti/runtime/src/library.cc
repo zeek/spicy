@@ -1,7 +1,13 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#ifndef _WIN32
 #include <dlfcn.h>
 #include <sys/stat.h>
+#endif
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 #include <cassert>
 #include <functional>
@@ -50,9 +56,14 @@ hilti::rt::Library::Library(const hilti::rt::filesystem::path& path) : _path(hil
 
 hilti::rt::Library::~Library() {
     if ( _handle ) {
+#if defined(_WIN32)
+        if ( ! ::FreeLibrary(static_cast<HMODULE>(_handle)) )
+            hilti::rt::warning(fmt("failed to unload library %s", _path));
+#else
         int error = ::dlclose(_handle);
         if ( error )
             hilti::rt::warning(fmt("failed to unload library %s: %s", _path, dlerror()));
+#endif
     }
 }
 
@@ -61,19 +72,33 @@ hilti::rt::Result<hilti::rt::library::Version> hilti::rt::Library::open() const 
     auto _ = hilti::rt::scope_exit([&]() { hilti::rt::Library::_current_path.reset(); });
     hilti::rt::Library::_current_path = hilti::rt::filesystem::absolute(_path);
 
-    constexpr auto mode = RTLD_NOW | RTLD_GLOBAL;
-
     if ( ! _handle ) {
-        void* handle = ::dlopen(_path.c_str(), mode);
+        const auto path = _path.string();
+#if defined(_WIN32)
+        HMODULE handle = ::LoadLibraryA(path.c_str());
+
+        if ( ! handle )
+            return result::Error(fmt("failed to load library %s: error code %lu", _path, ::GetLastError()));
+
+        _handle = static_cast<void*>(handle);
+#else
+        constexpr auto mode = RTLD_NOW | RTLD_GLOBAL;
+        void* handle = ::dlopen(path.c_str(), mode);
 
         if ( ! handle )
             return result::Error(fmt("failed to load library %s: %s", _path, dlerror()));
 
         _handle = handle;
+#endif
     }
 
+#if defined(_WIN32)
+    auto* version_string = reinterpret_cast<const char**>(reinterpret_cast<void*>(
+        ::GetProcAddress(static_cast<HMODULE>(_handle), HILTI_INTERNAL_GLOBAL_ID("hlto_library_version"))));
+#else
     auto* version_string =
         reinterpret_cast<const char**>(::dlsym(_handle, HILTI_INTERNAL_GLOBAL_ID("hlto_library_version")));
+#endif
     if ( ! version_string )
         // This could happen if the code was compiled with a custom CXX
         // namespace prefix. But that's not expected for HLTO files; it should
@@ -98,6 +123,14 @@ hilti::rt::Result<void*> hilti::rt::Library::symbol(const char* name) const {
     if ( ! _handle )
         return result::Error(fmt("library %s has not been opened", _path));
 
+#if defined(_WIN32)
+    auto* sym = reinterpret_cast<void*>(::GetProcAddress(static_cast<HMODULE>(_handle), name));
+
+    if ( ! sym )
+        return result::Error(fmt("symbol '%s' not found", name));
+
+    return sym;
+#else
     // Clear any library errors.
     ::dlerror();
 
@@ -107,6 +140,7 @@ hilti::rt::Result<void*> hilti::rt::Library::symbol(const char* name) const {
         return result::Error(fmt("symbol '%s' not found", name));
 
     return symbol;
+#endif
 }
 
 hilti::rt::Result<Nothing> hilti::rt::Library::remove() const {
@@ -135,7 +169,9 @@ hilti::rt::Result<hilti::rt::Nothing> hilti::rt::Library::save(const hilti::rt::
     if ( ec )
         return result::Error(fmt("could not save library to %s: %s", path, ec.message()));
 
+#ifndef _WIN32
     // Query the current umask. This is safe since we always query and set the umask from a single thread.
+    // Windows does not support umasks the same way *nix does.
     auto default_perms = ::umask(::mode_t());
     ::umask(default_perms);
 
@@ -146,6 +182,7 @@ hilti::rt::Result<hilti::rt::Nothing> hilti::rt::Library::save(const hilti::rt::
 
     if ( ec )
         rt::fatalError(fmt("could not preserve permissions of file %s: %s", path, ec.message()));
+#endif
 
     return hilti::rt::Nothing();
 }
@@ -157,7 +194,7 @@ void hilti::rt::Library::setScope(uint64_t* scope) {
 
     // Currently loading a library.
     if ( _current_path )
-        *scope = std::hash<std::string>{}(_current_path->native());
+        *scope = std::hash<hilti::rt::filesystem::path>{}(*_current_path);
 
     // The passed scope is unset.
     else if ( *scope == 0 )

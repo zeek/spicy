@@ -4,6 +4,12 @@
 
 #include <fstream>
 #include <iostream>
+#include <ranges>
+
+#ifdef _WIN32
+#include <fcntl.h>
+#include <io.h>
+#endif
 
 #include <hilti/rt/init.h>
 #include <hilti/rt/libhilti.h>
@@ -78,7 +84,9 @@ private:
 };
 
 void SpicyDump::usage() {
-    auto exts = hilti::util::join(hilti::plugin::registry().supportedExtensions(), ", ");
+    auto exts = hilti::util::join(hilti::plugin::registry().supportedExtensions() |
+                                      std::views::transform([](auto&& ext) { return ext.generic_string(); }),
+                                  ", ");
 
     std::cerr
         << "Usage: cat <data> | spicy-dump [options] <inputs> ...\n"
@@ -231,6 +239,17 @@ void SpicyDump::parseOptions(int argc, char** argv) {
         }
     }
 
+#ifdef _WIN32
+    // On Windows, JIT-compiled DLLs need to link against the host
+    // executable's import library to resolve runtime symbols at load time.
+    {
+        auto lib_path = hilti::util::currentExecutable();
+        lib_path.replace_extension(".lib");
+        if ( hilti::rt::filesystem::exists(lib_path) )
+            hilti_compiler_options.cxx_link.push_back(lib_path.string());
+    }
+#endif
+
     setCompilerOptions(std::move(hilti_compiler_options));
     setSpicyCompilerOptions(spicy_compiler_options);
     setDriverOptions(std::move(driver_options));
@@ -276,12 +295,23 @@ int main(int argc, char** argv) try {
         if ( ! parser )
             fatalError(parser.error());
 
-        std::ifstream in(driver.opt_file, std::ios::in | std::ios::binary);
+        std::ifstream file_in;
+        std::istream* in = nullptr;
 
-        if ( ! in.is_open() )
-            fatalError("cannot open stdin for reading");
+#ifdef _WIN32
+        if ( driver.opt_file == "/dev/stdin" ) {
+            _setmode(_fileno(stdin), _O_BINARY);
+            in = &std::cin;
+        }
+#endif
+        if ( ! in ) {
+            file_in.open(driver.opt_file, std::ios::in | std::ios::binary);
+            if ( ! file_in.is_open() )
+                fatalError("cannot open stdin for reading");
+            in = &file_in;
+        }
 
-        auto unit = driver.processInput(**parser, in);
+        auto unit = driver.processInput(**parser, *in);
         if ( ! unit )
             fatalError(unit.error());
 

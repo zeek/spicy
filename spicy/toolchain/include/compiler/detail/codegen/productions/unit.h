@@ -9,11 +9,11 @@
 #include <utility>
 #include <vector>
 
+#include <hilti/base/util.h>
+
 #include <spicy/ast/types/unit.h>
 #include <spicy/compiler/detail/codegen/production.h>
 #include <spicy/compiler/detail/codegen/productions/visitor.h>
-
-#include "base/util.h"
 
 namespace spicy::detail::codegen {
 class Grammar;

@@ -683,3 +683,20 @@ freebsd14_task:
   packages_artifacts:
     path: build/spicy*.tar.gz
     type: application/gzip
+
+windows_task:
+  timeout_in: 120m
+  windows_container:
+    dockerfile: ci/windows/Dockerfile
+    os_version: 2019
+    cpu: 8
+    # Not allowed to request less than 8GB for an 8 CPU Windows VM.
+    memory: 8GB
+
+  env:
+    CTEST_OUTPUT_ON_FAILURE: 1
+
+  sync_submodules_script: git submodule update --recursive --init
+  prepare_script: ci/windows/prepare.cmd
+  build_script: ci/windows/build.cmd
+  test_script: ci/windows/test.cmd

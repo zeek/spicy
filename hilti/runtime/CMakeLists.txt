@@ -31,7 +31,6 @@ set(SOURCES
     src/init.cc
     src/library.cc
     src/logging.cc
-    src/main.cc
     src/profiler.cc
     src/safe-math.cc
     src/type-info.cc
@@ -52,9 +51,20 @@ set(SOURCES
     src/version.cc
     ${PROJECT_SOURCE_DIR}/3rdparty/utf8proc/utf8proc.c)
 
+# main.cc provides default main() implementations marked as weak on non-MSVC.
+# On MSVC, weak function linkage is not supported, so we add main.cc only to
+# the static library (below) where standard linker semantics (object files
+# override library symbols) provide the same behavior.
+if (NOT MSVC)
+    list(APPEND SOURCES src/main.cc)
+endif ()
+
 foreach (lib hilti-rt hilti-rt-debug)
     add_library(${lib}-objects OBJECT ${SOURCES})
-    target_compile_options(${lib}-objects PRIVATE "-fPIC")
+    if (NOT MSVC)
+        target_compile_options(${lib}-objects PRIVATE "-fPIC")
+    endif ()
+    target_compile_definitions(${lib}-objects PRIVATE UTF8PROC_STATIC)
     target_link_libraries(${lib}-objects PRIVATE ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
     target_include_directories(${lib}-objects BEFORE
                                PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
@@ -76,24 +86,37 @@ foreach (lib hilti-rt hilti-rt-debug)
 
     add_library(${lib} STATIC)
     target_link_libraries(${lib} ${lib}-objects)
+    if (MSVC)
+        target_sources(${lib} PRIVATE src/main.cc)
+    endif ()
     target_link_libraries(${lib} jrx-objects)
     target_link_libraries(${lib} fiber)
+
+    if (WIN32)
+        target_link_libraries(${lib} Ws2_32)
+        target_link_libraries(${lib} libunistd)
+        target_link_libraries(${lib} libportable)
+    endif ()
 endforeach ()
 
 # Build hilti-rt with release flags.
-if (CMAKE_CXX_FLAGS_RELEASE)
-    string(REPLACE " " ";" cxx_flags_release ${CMAKE_CXX_FLAGS_RELEASE})
+if (NOT MSVC)
+    if (CMAKE_CXX_FLAGS_RELEASE)
+        string(REPLACE " " ";" cxx_flags_release ${CMAKE_CXX_FLAGS_RELEASE})
+    endif ()
+    target_compile_options(hilti-rt-objects PRIVATE ${cxx_flags_release})
+    target_compile_options(hilti-rt-objects PRIVATE "-g;-O3;-DNDEBUG;-Wall")
 endif ()
-target_compile_options(hilti-rt-objects PRIVATE ${cxx_flags_release})
-target_compile_options(hilti-rt-objects PRIVATE "-g;-O3;-DNDEBUG;-Wall")
 target_compile_definitions(hilti-rt-objects PRIVATE "HILTI_RT_BUILD_TYPE_RELEASE")
 
 # Build hilti-rt-debug with debug flags.
-if (CMAKE_CXX_FLAGS_DEBUG)
-    string(REPLACE " " ";" cxx_flags_debug ${CMAKE_CXX_FLAGS_DEBUG})
+if (NOT MSVC)
+    if (CMAKE_CXX_FLAGS_DEBUG)
+        string(REPLACE " " ";" cxx_flags_debug ${CMAKE_CXX_FLAGS_DEBUG})
+    endif ()
+    target_compile_options(hilti-rt-debug-objects PRIVATE ${cxx_flags_debug})
+    target_compile_options(hilti-rt-debug-objects PRIVATE "-UNDEBUG;-O0;-Wall")
 endif ()
-target_compile_options(hilti-rt-debug-objects PRIVATE ${cxx_flags_debug})
-target_compile_options(hilti-rt-debug-objects PRIVATE "-UNDEBUG;-O0;-Wall")
 target_compile_definitions(hilti-rt-debug-objects PRIVATE "HILTI_RT_BUILD_TYPE_DEBUG")
 
 add_library(hilti-rt-tests-library-dummy1 EXCLUDE_FROM_ALL SHARED src/tests/library-dummy.cc)
@@ -109,6 +132,14 @@ target_compile_definitions(hilti-rt-tests-library-dummy2 PUBLIC RETURN_VALUE=2)
 ##### Configuration files
 
 configure_file(include/config.h.in ${AUTOGEN_H}/config.h)
+
+# On Windows, shared libraries (DLLs) are placed in the runtime output directory (bin/)
+# rather than the library output directory (lib/).
+if (WIN32)
+    set(TEST_SHARED_LIB_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+else ()
+    set(TEST_SHARED_LIB_DIRECTORY "${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
+endif ()
 configure_file(src/tests/config.h.in ${AUTOGEN_H}/tests/config.h)
 
 ##### Binaries
@@ -175,9 +206,11 @@ add_executable(
     src/tests/union.cc
     src/tests/util.cc
     src/tests/vector.cc)
-target_compile_options(hilti-rt-tests PRIVATE "-Wall")
-target_compile_options(hilti-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
-target_link_options(hilti-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
+if (NOT MSVC)
+    target_compile_options(hilti-rt-tests PRIVATE "-Wall")
+    target_compile_options(hilti-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
+    target_link_options(hilti-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
+endif ()
 target_link_libraries(hilti-rt-tests
                       PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
 target_link_libraries(hilti-rt-tests PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt> doctest)
@@ -185,9 +218,11 @@ add_dependencies(hilti-rt-tests hilti-rt-tests-library-dummy1 hilti-rt-tests-lib
 add_test(NAME hilti-rt-tests COMMAND ${PROJECT_BINARY_DIR}/bin/hilti-rt-tests)
 
 add_executable(hilti-rt-configuration-tests EXCLUDE_FROM_ALL src/tests/configuration.cc)
-target_compile_options(hilti-rt-configuration-tests PRIVATE "-Wall")
-target_compile_options(hilti-rt-configuration-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
-target_link_options(hilti-rt-configuration-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
+if (NOT MSVC)
+    target_compile_options(hilti-rt-configuration-tests PRIVATE "-Wall")
+    target_compile_options(hilti-rt-configuration-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
+    target_link_options(hilti-rt-configuration-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
+endif ()
 target_link_libraries(hilti-rt-configuration-tests
                       PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt> doctest)
 add_test(NAME hilti-rt-configuration-tests

@@ -277,9 +277,10 @@ Result<declaration::module::UID> ASTContext::importModule(
     auto parse_plugin = plugin::registry().pluginForExtension(parse_extension);
 
     if ( ! (parse_plugin && parse_plugin->get().parse) )
-        return result::Error(fmt("no plugin provides support for importing *%s files", parse_extension.native()));
+        return result::Error(
+            fmt("no plugin provides support for importing *%s files", parse_extension.generic_string()));
 
-    auto filename = fmt("%s%s", util::tolower(id), parse_extension.native());
+    auto filename = fmt("%s%s", util::tolower(id), parse_extension.generic_string());
 
     if ( scope )
         filename = fmt("%s/%s", util::replace(scope.str(), ".", "/"), filename);
@@ -300,7 +301,7 @@ Result<declaration::module::UID> ASTContext::importModule(
         return result::Error(fmt("cannot find file"));
     }
 
-    if ( auto m = _modules_by_path.find(util::normalizePath(*path).native()); m != _modules_by_path.end() )
+    if ( auto m = _modules_by_path.find(util::normalizePath(*path).generic_string()); m != _modules_by_path.end() )
         return m->second->uid();
 
     auto uid = _parseSource(builder, *path, scope, process_extension);
@@ -309,7 +310,7 @@ Result<declaration::module::UID> ASTContext::importModule(
 
     if ( uid->id != id )
         return result::Error(
-            util::fmt("file %s does not contain expected module %s (but %s)", path->native(), id, uid->id));
+            util::fmt("file %s does not contain expected module %s (but %s)", path->generic_string(), id, uid->id));
 
     return uid;
 }
@@ -373,7 +374,8 @@ Result<declaration::module::UID> ASTContext::_parseSource(
     auto plugin = plugin::registry().pluginForExtension(path.extension());
 
     if ( ! (plugin && plugin->get().parse) )
-        return result::Error(fmt("no plugin provides support for importing *%s files", path.extension().native()));
+        return result::Error(
+            fmt("no plugin provides support for importing *%s files", path.extension().generic_string()));
 
     auto dbg_message = fmt("parsing file %s as %s code", path, plugin->get().component);
 
@@ -387,7 +389,7 @@ Result<declaration::module::UID> ASTContext::_parseSource(
         return module.error();
 
     if ( module && ! (*module)->id() )
-        return result::Error(fmt("module in %s does not have an ID", path.native()));
+        return result::Error(fmt("module in %s does not have an ID", path.generic_string()));
 
     if ( scope )
         (*module)->setScopePath(scope);
@@ -409,11 +411,11 @@ void ASTContext::updateModuleUID(const declaration::module::UID& old_uid, const 
     module->second->setUID(new_uid);
 
     _modules_by_uid.erase(old_uid);
-    _modules_by_path.erase(old_uid.path.native());
+    _modules_by_path.erase(old_uid.path.generic_string());
     _modules_by_id_and_scope.erase(std::make_pair(old_uid.id, module->second->scopePath()));
 
     _modules_by_uid[new_uid] = module->second;
-    _modules_by_path[new_uid.path.native()] = module->second;
+    _modules_by_path[new_uid.path.generic_string()] = module->second;
     _modules_by_id_and_scope[std::make_pair(new_uid.id, module->second->scopePath())] = module->second;
 }
 
@@ -537,7 +539,7 @@ declaration::module::UID ASTContext::_addModuleToAST(declaration::Module* module
     auto uid = module->uid();
 
     _modules_by_uid[uid] = module;
-    _modules_by_path[uid.path.native()] = module;
+    _modules_by_path[uid.path.generic_string()] = module;
     _modules_by_id_and_scope[std::make_pair(uid.id, module->scopePath())] = module;
 
     _root->addChild(this, module);

@@ -202,7 +202,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
         // Add any standard includes.
         for ( const auto& p : plugin::registry().plugins() ) {
             for ( const auto& i : p.cxx_includes ) {
-                auto include = cxx::declaration::IncludeFile(i);
+                auto include = cxx::declaration::IncludeFile(i.generic_string());
                 unit->add(include);
             }
         }
@@ -656,6 +656,13 @@ cxx::declaration::Function CodeGen::compile(Declaration* decl, type::Function* f
     };
 
     auto linkage_ = [&]() {
+        // For struct methods, never emit a linkage specifier regardless of
+        // calling convention. MSVC treats `extern` on an out-of-line static
+        // member function definition as a separate free function, disconnecting
+        // the body from the class member.
+        if ( linkage == declaration::Linkage::Struct )
+            return "";
+
         if ( ft->callingConvention() == type::function::CallingConvention::Extern ||
              ft->callingConvention() == type::function::CallingConvention::ExternNoSuspend )
             return "extern";
@@ -666,7 +673,7 @@ cxx::declaration::Function CodeGen::compile(Declaration* decl, type::Function* f
             case declaration::Linkage::Export:
             case declaration::Linkage::Public: return "extern";
             case declaration::Linkage::Private: return "static";
-            case declaration::Linkage::Struct: return "";
+            case declaration::Linkage::Struct: return ""; // unreachable, handled above
             default: util::cannotBeReached();
         }
     };

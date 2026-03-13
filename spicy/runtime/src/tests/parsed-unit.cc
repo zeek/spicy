@@ -71,7 +71,7 @@ TEST_CASE("value") {
         const auto ref = ValueReference<uint64_t>(42);
         ParsedUnit::initialize(p, ref, &ti_value_ref_uint_64);
 
-        CHECK_EQ(p.value(), type_info::Value(ref.get(), &ti_value_ref_uint_64, p));
+        CHECK_EQ(p.value(), hilti::rt::type_info::Value(ref.get(), &ti_value_ref_uint_64, p));
     }
 }
 

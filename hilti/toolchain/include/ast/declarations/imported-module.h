@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <ranges>
 #include <string>
 #include <utility>
 #include <vector>
@@ -40,11 +41,13 @@ public:
     std::string_view displayName() const final { return "imported module"; }
 
     node::Properties properties() const final {
+        auto dirs = _dirs | std::views::transform([](const auto& d) { return d.generic_string(); });
+
         auto p = node::Properties{
-            {"path", _path.native()},
-            {"ext", _parse_extension.native()},
+            {"path", _path.generic_string()},
+            {"ext", _parse_extension.generic_string()},
             {"scope", _scope ? _scope.str() : std::string("<n/a>")},
-            {"dirs", util::join(_dirs)},
+            {"dirs", util::join(dirs)},
             {"uid", _uid ? _uid->str() : std::string("<n/a>")},
         };
         return Declaration::properties() + std::move(p);
@@ -67,11 +70,11 @@ public:
     }
 
 protected:
-    ImportedModule(ASTContext* ctx, ID id, hilti::rt::filesystem::path path, const std::string& parse_extension,
-                   ID search_scope, Meta meta)
+    ImportedModule(ASTContext* ctx, ID id, hilti::rt::filesystem::path path,
+                   hilti::rt::filesystem::path parse_extension, ID search_scope, Meta meta)
         : Declaration(ctx, NodeTags, {}, std::move(id), Linkage::Private, std::move(meta)),
           _path(std::move(path)),
-          _parse_extension(parse_extension),
+          _parse_extension(std::move(parse_extension)),
           _scope(std::move(search_scope)) {}
 
     HILTI_NODE_1(declaration::ImportedModule, Declaration, final);

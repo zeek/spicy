@@ -8,6 +8,31 @@
 %skeleton "lalr1.cc"                          /*  -*- C++ -*- */
 %defines
 
+%code requires {
+#ifdef _WIN32
+// Windows headers may define these names as macros, conflicting with token
+// identifiers in this grammar.
+#ifdef DELETE
+#undef DELETE
+#endif
+#ifdef ERROR
+#undef ERROR
+#endif
+#ifdef IN
+#undef IN
+#endif
+#ifdef OPTIONAL
+#undef OPTIONAL
+#endif
+#ifdef VOID
+#undef VOID
+#endif
+#ifdef CONSTANT
+#undef CONSTANT
+#endif
+#endif
+}
+
 %{
 namespace spicy { namespace detail { class Parser; } }
 

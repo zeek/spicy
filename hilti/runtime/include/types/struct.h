@@ -42,7 +42,7 @@ inline auto& value_or_exception(const hilti::rt::Optional<T>& t) {
 
 namespace detail {
 // Helper to throw an `AttributeNotSet` exception.
-inline __attribute__((noreturn)) void throw_attribute_not_set() { throw AttributeNotSet("struct attribute not set"); }
+inline HILTI_NORETURN void throw_attribute_not_set() { throw AttributeNotSet("struct attribute not set"); }
 } // namespace detail
 
 } // namespace struct_
