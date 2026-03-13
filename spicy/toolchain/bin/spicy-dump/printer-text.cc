@@ -8,7 +8,7 @@
 
 using namespace hilti::rt;
 
-void TextPrinter::print(const type_info::Value& v) {
+void TextPrinter::print(const hilti::rt::type_info::Value& v) {
     const auto& type = v.type();
 
     switch ( v.type().tag ) {
@@ -269,7 +269,8 @@ void TextPrinter::print(const type_info::Value& v) {
     }
 }
 
-void TextPrinter::printOffsets(const type_info::Struct& ti, const type_info::Value& v, const std::string& field_name) {
+void TextPrinter::printOffsets(const hilti::rt::type_info::Struct& ti, const hilti::rt::type_info::Value& v,
+                               const std::string& field_name) {
     if ( ! _options.include_offsets || field_name.empty() )
         return;
 

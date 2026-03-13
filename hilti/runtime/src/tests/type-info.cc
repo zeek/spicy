@@ -6,6 +6,8 @@
 
 using namespace hilti::rt;
 
+namespace rt_type_info = hilti::rt::type_info;
+
 TEST_SUITE_BEGIN("TypeInfo");
 
 /* HILTI code to generate the type information used in this test:
@@ -59,8 +61,7 @@ const hilti::rt::TypeInfo __ti_Test_X =
                                                true},
           hilti::rt::type_info::struct_::Field{"s", &hilti::rt::type_info::string, offsetof(Test::X, s), false, false,
                                                true},
-          hilti::rt::type_info::struct_::Field{"y", &type_info::__ti_Test_Y, offsetof(Test::X, y), false, false,
-                                               true}}))};
+          hilti::rt::type_info::struct_::Field{"y", &__ti_Test_Y, offsetof(Test::X, y), false, false, true}}))};
 const hilti::rt::TypeInfo __ti_Test_Y =
     {"Test::Y", "Test::Y", nullptr,
      new hilti::rt::type_info::Struct(std::vector<hilti::rt::type_info::struct_::Field>(
@@ -75,28 +76,28 @@ TEST_CASE("traverse structs") {
     // Check that we can traverse the structs and get expected values.
 
     auto sx = StrongReference<Test::X>({42, "foo", Test::Y{true, 3.14}});
-    auto p = type_info::value::Parent(sx);
-    auto v = type_info::Value(&*sx, &HILTI_INTERNAL_NS::type_info::__ti_Test_X, p);
+    auto p = rt_type_info::value::Parent(sx);
+    auto v = rt_type_info::Value(&*sx, &HILTI_INTERNAL_NS::type_info::__ti_Test_X, p);
 
-    auto x = type_info::value::auxType<type_info::Struct>(v)->iterate(v);
+    auto x = rt_type_info::value::auxType<rt_type_info::Struct>(v)->iterate(v);
     auto xi = x.begin();
-    auto xf1 = type_info::value::auxType<type_info::SignedInteger<int32_t>>(xi->second)->get(xi->second);
+    auto xf1 = rt_type_info::value::auxType<rt_type_info::SignedInteger<int32_t>>(xi->second)->get(xi->second);
 
     CHECK(xf1 == 42);
     xi++;
 
-    auto xf2 = type_info::value::auxType<type_info::String>(xi->second)->get(xi->second);
+    auto xf2 = rt_type_info::value::auxType<rt_type_info::String>(xi->second)->get(xi->second);
     CHECK(xf2 == std::string("foo"));
     xi++;
 
-    auto y = type_info::value::auxType<type_info::Struct>(xi->second)->iterate(xi->second);
+    auto y = rt_type_info::value::auxType<rt_type_info::Struct>(xi->second)->iterate(xi->second);
     auto yi = y.begin();
 
-    auto yf1 = type_info::value::auxType<type_info::Bool>(yi->second)->get(yi->second);
+    auto yf1 = rt_type_info::value::auxType<rt_type_info::Bool>(yi->second)->get(yi->second);
     CHECK(yf1 == true);
     yi++;
 
-    auto yf2 = type_info::value::auxType<type_info::Real>(yi->second)->get(yi->second);
+    auto yf2 = rt_type_info::value::auxType<rt_type_info::Real>(yi->second)->get(yi->second);
     CHECK(yf2 == 3.14);
     yi++;
 
@@ -111,13 +112,13 @@ TEST_CASE("life-time") {
     Test::Y y{true, 3.14};
 
     auto x = StrongReference<Test::X>({42, "foo", y});
-    auto p = type_info::value::Parent(x);
-    auto v = type_info::Value(&*x, &HILTI_INTERNAL_NS::type_info::__ti_Test_X, p);
+    auto p = rt_type_info::value::Parent(x);
+    auto v = rt_type_info::Value(&*x, &HILTI_INTERNAL_NS::type_info::__ti_Test_X, p);
 
     // v is valid
     v.pointer();
 
-    p = type_info::value::Parent();
+    p = rt_type_info::value::Parent();
 
     // Now invalid.
     CHECK_THROWS_WITH_AS(v.pointer(), "type info value expired", const InvalidValue&);
@@ -127,8 +128,8 @@ TEST_CASE("no parent") {
     Test::Y y{true, 3.14};
 
     auto x = StrongReference<Test::X>({42, "foo", y});
-    auto p = type_info::value::Parent(x);
-    auto v = type_info::Value(&*x, &HILTI_INTERNAL_NS::type_info::__ti_Test_X); // no parent
+    auto p = rt_type_info::value::Parent(x);
+    auto v = rt_type_info::Value(&*x, &HILTI_INTERNAL_NS::type_info::__ti_Test_X); // no parent
 
     CHECK_EQ(v.pointer(), &*x); // access to the value works even without parent
 }
@@ -140,18 +141,19 @@ TEST_CASE("internal fields") {
         bool __internal;
     };
 
-    const TypeInfo ti = {"A", "A", nullptr,
-                         new type_info::Struct(
-                             {type_info::struct_::Field{"f1", &type_info::int32, offsetof(A, f1), false, false, true},
-                              type_info::struct_::Field{"f2", &type_info::string, offsetof(A, f2), false, false, true},
-                              type_info::struct_::Field{HILTI_INTERNAL_ID("internal"), &type_info::bool_,
-                                                        offsetof(A, __internal), true, false, true}})};
+    const TypeInfo ti =
+        {"A", "A", nullptr,
+         new rt_type_info::Struct(
+             {rt_type_info::struct_::Field{"f1", &rt_type_info::int32, offsetof(A, f1), false, false, true},
+              rt_type_info::struct_::Field{"f2", &rt_type_info::string, offsetof(A, f2), false, false, true},
+              rt_type_info::struct_::Field{HILTI_INTERNAL_ID("internal"), &rt_type_info::bool_, offsetof(A, __internal),
+                                           true, false, true}})};
 
     auto sx = StrongReference<A>({42, "foo", true});
-    auto p = type_info::value::Parent(sx);
-    auto v = type_info::Value(&*sx, &ti, p);
+    auto p = rt_type_info::value::Parent(sx);
+    auto v = rt_type_info::Value(&*sx, &ti, p);
 
-    const auto* const s = type_info::value::auxType<type_info::Struct>(v);
+    const auto* const s = rt_type_info::value::auxType<rt_type_info::Struct>(v);
 
     CHECK_EQ(s->fields().size(), 2U);
     CHECK_EQ(s->fields(false).size(), 2U);
@@ -168,14 +170,14 @@ TEST_CASE("anonymous fields") {
     };
 
     const TypeInfo ti = {"A", "A", nullptr,
-                         new type_info::Struct(
-                             {type_info::struct_::Field{"f1", &type_info::int32, offsetof(A, f1), false, true, true}})};
+                         new rt_type_info::Struct({rt_type_info::struct_::Field{"f1", &rt_type_info::int32,
+                                                                                offsetof(A, f1), false, true, true}})};
 
     auto sx = StrongReference<A>({"foo"});
-    auto p = type_info::value::Parent(sx);
-    auto v = type_info::Value(&*sx, &ti, p);
+    auto p = rt_type_info::value::Parent(sx);
+    auto v = rt_type_info::Value(&*sx, &ti, p);
 
-    const auto* const s = type_info::value::auxType<type_info::Struct>(v);
+    const auto* const s = rt_type_info::value::auxType<rt_type_info::Struct>(v);
 
     CHECK_EQ(s->fields().size(), 1U);
     CHECK(s->fields()[0].get().isAnonymous());
@@ -188,20 +190,21 @@ TEST_CASE("no-emit fields") {
     };
 
     const TypeInfo ti = {"A", "A", nullptr,
-                         new type_info::Struct({type_info::struct_::Field{"f1", &type_info::int32, offsetof(A, f1),
-                                                                          false, false, false}})};
+                         new rt_type_info::Struct(
+                             {rt_type_info::struct_::Field{"f1", &rt_type_info::int32, offsetof(A, f1), false, false,
+                                                           false}})};
 
     auto sx = StrongReference<A>({"foo"});
-    auto p = type_info::value::Parent(sx);
-    auto v = type_info::Value(&*sx, &ti, p);
+    auto p = rt_type_info::value::Parent(sx);
+    auto v = rt_type_info::Value(&*sx, &ti, p);
 
-    const auto* const s = type_info::value::auxType<type_info::Struct>(v);
+    const auto* const s = rt_type_info::value::auxType<rt_type_info::Struct>(v);
 
     CHECK_EQ(s->fields().size(), 1U);
     CHECK(! s->fields()[0].get().isEmitted());
 
     // We shouldn't see this field when iterating.
-    int count = std::ranges::distance(type_info::value::auxType<type_info::Struct>(v)->iterate(v));
+    int count = std::ranges::distance(rt_type_info::value::auxType<rt_type_info::Struct>(v)->iterate(v));
     CHECK_EQ(count, 0);
 }
 

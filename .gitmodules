@@ -31,3 +31,9 @@
 [submodule "3rdparty/utfcpp"]
 	path = 3rdparty/utfcpp
 	url = https://github.com/nemtrif/utfcpp.git
+[submodule "3rdparty/vcpkg"]
+	path = 3rdparty/vcpkg
+	url = https://github.com/microsoft/vcpkg
+[submodule "3rdparty/libunistd"]
+	path = 3rdparty/libunistd
+	url = https://github.com/zeek/libunistd

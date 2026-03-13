@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <iterator>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -168,18 +169,18 @@ std::string Bytes::decode(unicode::Charset cs, unicode::DecodeErrorStrategy erro
             if ( ! startsWith("\xFF\xFE") && ! startsWith("\xFE\xFF") )
                 order = (cs.value() == unicode::Charset::UTF16LE ? U16Iterator::LE : U16Iterator::BE);
 
-            auto p = U16Iterator(v16.begin(), order);
-            auto e = U16Iterator(v16.end(), order);
+            auto p = U16Iterator(v16.data(), order); // NOLINT(bugprone-suspicious-stringview-data-usage)
+            auto e = U16Iterator(v16.data() + v16.size(), order);
 
             while ( p != e ) {
                 try {
                     auto cp = utf8::next16(p, e);
-                    utf8::append16(cp, t);
+                    utf8::append16(cp, std::back_inserter(t));
                 } catch ( const utf8::invalid_utf16& ) {
                     switch ( errors.value() ) {
                         case unicode::DecodeErrorStrategy::IGNORE: break;
                         case unicode::DecodeErrorStrategy::REPLACE:
-                            utf8::append16(unicode::REPLACEMENT_CHARACTER, t);
+                            utf8::append16(unicode::REPLACEMENT_CHARACTER, std::back_inserter(t));
                             break;
                         case unicode::DecodeErrorStrategy::STRICT:
                             throw RuntimeError("illegal UTF16 character in string");
@@ -189,7 +190,9 @@ std::string Bytes::decode(unicode::Charset cs, unicode::DecodeErrorStrategy erro
                 }
             }
 
-            return {utf8::utf16to8(t)};
+            std::string t8;
+            utf8::utf16to8(t.begin(), t.end(), std::back_inserter(t8));
+            return t8;
         }
 
         case unicode::Charset::ASCII: {
@@ -315,7 +318,11 @@ double Bytes::toReal() const {
     char* endp = nullptr;
 
     errno = 0;
+#if defined(_WIN32)
+    auto d = _strtod_l(cstr, &endp, *detail::globalState()->c_locale);
+#else
     auto d = strtod_l(cstr, &endp, *detail::globalState()->c_locale);
+#endif
     if ( endp == cstr || *endp != '\0' || (d == HUGE_VAL && errno == ERANGE) ) {
         errno = 0;
         throw InvalidValue(fmt("cannot parse real value: '%s'", cstr));

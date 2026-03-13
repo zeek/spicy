@@ -737,17 +737,17 @@ public:
 
     class TryProxy {
     public:
-        TryProxy(ExtendedBuilderTemplate* b, statement::Try* s) : _builder(b), _try(s) {}
+        TryProxy(ExtendedBuilderTemplate* b, statement::Try* s) : _builder(b), _try_stmt(s) {}
 
         auto addCatch(declaration::Parameter* p, const Meta& m = Meta()) {
             auto body = _builder->statementBlock(m);
-            _try->addCatch(_builder->context(), _builder->statementTryCatch(p, body, m));
+            _try_stmt->addCatch(_builder->context(), _builder->statementTryCatch(p, body, m));
             return _builder->_newBuilder(body);
         }
 
         auto addCatch(const Meta& m = Meta()) {
             auto body = _builder->statementBlock(m);
-            _try->addCatch(_builder->context(), _builder->statementTryCatch(body, m));
+            _try_stmt->addCatch(_builder->context(), _builder->statementTryCatch(body, m));
             return _builder->_newBuilder(body);
         }
 
@@ -760,7 +760,7 @@ public:
 
     private:
         ExtendedBuilderTemplate* _builder;
-        statement::Try* _try = nullptr;
+        statement::Try* _try_stmt = nullptr;
     };
 
     auto addTry(Meta m = Meta()) {

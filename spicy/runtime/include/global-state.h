@@ -62,10 +62,18 @@ struct GlobalState {
  * Pointer to the global state singleton. Do not access directly, use
  * `globalState()` instead.
  */
+#if defined(_MSC_VER) && defined(HILTI_JIT_DLL)
+extern __declspec(dllimport) GlobalState* __global_state;
+#else
 extern GlobalState* __global_state;
+#endif
 
 /** Creates the global state singleton. */
+#if defined(_MSC_VER) && defined(HILTI_JIT_DLL)
+extern __declspec(dllimport) GlobalState* createGlobalState();
+#else
 extern GlobalState* createGlobalState();
+#endif
 
 /**
  * Returns the global state singleton. This creates the state the first time

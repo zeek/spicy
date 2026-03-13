@@ -8,6 +8,28 @@
 %skeleton "lalr1.cc"                          /*  -*- C++ -*- */
 %defines
 
+%code requires {
+#ifdef _WIN32
+// Windows headers may define these names as macros, conflicting with token
+// identifiers in this grammar.
+#ifdef DELETE
+#undef DELETE
+#endif
+#ifdef ERROR
+#undef ERROR
+#endif
+#ifdef IN
+#undef IN
+#endif
+#ifdef OPTIONAL
+#undef OPTIONAL
+#endif
+#ifdef VOID
+#undef VOID
+#endif
+#endif
+}
+
 %{
 namespace hilti { namespace detail { class Parser; } }
 

@@ -95,15 +95,18 @@ public:
 
     node::Properties properties() const override {
         auto p = node::Properties{{"id", _uid.id},
-                                  {"path", _uid.path.native()},
-                                  {"ext", _uid.process_extension.native()},
+                                  {"path", _uid.path.generic_string()},
+                                  {"ext", _uid.process_extension.generic_string()},
                                   {"scope", _scope_path},
                                   {"dependencies", util::join(_dependencies, ", ")},
                                   {"skip-implementation", _skip_implementation}};
         return hilti::Declaration::properties() + std::move(p);
     }
 
-    std::string_view branchTag() const final { return _uid.process_extension.native(); }
+    std::string_view branchTag() const final {
+        _branch_tag = _uid.process_extension.generic_string();
+        return _branch_tag;
+    }
 
     static auto create(ASTContext* ctx, const declaration::module::UID& uid, const ID& scope, const Declarations& decls,
                        const Statements& stmts, Meta meta = {}) {
@@ -137,6 +140,7 @@ private:
     declaration::module::UID _uid;
     ID _scope_path;
     std::set<declaration::module::UID> _dependencies;
+    mutable std::string _branch_tag;
     bool _skip_implementation = true;
     std::shared_ptr<::hilti::detail::cxx::Unit> _cxx_unit;
 };

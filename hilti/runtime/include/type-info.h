@@ -1796,33 +1796,39 @@ const Type* auxType(const type_info::Value& v) {
 
 
 // Forward declare static built-in type information objects.
-extern const TypeInfo address;
-extern const TypeInfo any;
-extern const TypeInfo bool_;
-extern const TypeInfo bytes_iterator;
-extern const TypeInfo bytes;
-extern const TypeInfo error;
-extern const TypeInfo int16;
-extern const TypeInfo int32;
-extern const TypeInfo int64;
-extern const TypeInfo int8;
-extern const TypeInfo interval;
-extern const TypeInfo library;
-extern const TypeInfo network;
-extern const TypeInfo null;
-extern const TypeInfo port;
-extern const TypeInfo real;
-extern const TypeInfo regexp;
-extern const TypeInfo stream_iterator;
-extern const TypeInfo stream_view;
-extern const TypeInfo stream;
-extern const TypeInfo string;
-extern const TypeInfo time;
-extern const TypeInfo uint16;
-extern const TypeInfo uint32;
-extern const TypeInfo uint64;
-extern const TypeInfo uint8;
-extern const TypeInfo void_;
+#if defined(_MSC_VER) && defined(HILTI_JIT_DLL)
+#define HILTI_TYPEINFO_EXTERN extern __declspec(dllimport)
+#else
+#define HILTI_TYPEINFO_EXTERN extern
+#endif
+HILTI_TYPEINFO_EXTERN const TypeInfo address;
+HILTI_TYPEINFO_EXTERN const TypeInfo any;
+HILTI_TYPEINFO_EXTERN const TypeInfo bool_;
+HILTI_TYPEINFO_EXTERN const TypeInfo bytes_iterator;
+HILTI_TYPEINFO_EXTERN const TypeInfo bytes;
+HILTI_TYPEINFO_EXTERN const TypeInfo error;
+HILTI_TYPEINFO_EXTERN const TypeInfo int16;
+HILTI_TYPEINFO_EXTERN const TypeInfo int32;
+HILTI_TYPEINFO_EXTERN const TypeInfo int64;
+HILTI_TYPEINFO_EXTERN const TypeInfo int8;
+HILTI_TYPEINFO_EXTERN const TypeInfo interval;
+HILTI_TYPEINFO_EXTERN const TypeInfo library;
+HILTI_TYPEINFO_EXTERN const TypeInfo network;
+HILTI_TYPEINFO_EXTERN const TypeInfo null;
+HILTI_TYPEINFO_EXTERN const TypeInfo port;
+HILTI_TYPEINFO_EXTERN const TypeInfo real;
+HILTI_TYPEINFO_EXTERN const TypeInfo regexp;
+HILTI_TYPEINFO_EXTERN const TypeInfo stream_iterator;
+HILTI_TYPEINFO_EXTERN const TypeInfo stream_view;
+HILTI_TYPEINFO_EXTERN const TypeInfo stream;
+HILTI_TYPEINFO_EXTERN const TypeInfo string;
+HILTI_TYPEINFO_EXTERN const TypeInfo time;
+HILTI_TYPEINFO_EXTERN const TypeInfo uint16;
+HILTI_TYPEINFO_EXTERN const TypeInfo uint32;
+HILTI_TYPEINFO_EXTERN const TypeInfo uint64;
+HILTI_TYPEINFO_EXTERN const TypeInfo uint8;
+HILTI_TYPEINFO_EXTERN const TypeInfo void_;
+#undef HILTI_TYPEINFO_EXTERN
 
 } // namespace type_info
 

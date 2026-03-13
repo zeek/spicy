@@ -78,7 +78,13 @@ private:
 };
 
 void SpicyDriver::usage() {
-    auto exts = hilti::util::join(hilti::plugin::registry().supportedExtensions(), ", ");
+    std::string exts;
+    for ( const auto& ext : hilti::plugin::registry().supportedExtensions() ) {
+        if ( ! exts.empty() )
+            exts += ", ";
+
+        exts += ext.generic_string();
+    }
 
     std::cout
         << "Usage: cat <data> | spicy-driver [options] <inputs> ...\n"

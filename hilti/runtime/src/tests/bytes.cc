@@ -494,6 +494,7 @@ TEST_CASE("toReal") {
 
     // The next test should fail independent of the locale, so let's set one.
 
+#ifndef _WIN32
     auto* de_locale = newlocale(LC_ALL_MASK, "de_DE.UTF-8", nullptr);
     if ( ! de_locale )
         FAIL("failed to create de_DE locale; locales not installed?");
@@ -503,6 +504,7 @@ TEST_CASE("toReal") {
     uselocale(old_locale);
 
     freelocale(de_locale);
+#endif
 }
 
 TEST_CASE("toTime") {

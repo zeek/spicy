@@ -2,8 +2,14 @@
 
 #pragma once
 
+#if ! defined(_MSC_VER)
 #include <cxxabi.h>
+#endif
+#ifndef _WIN32
 #include <unistd.h>
+#else
+#include <process.h>
+#endif
 
 #include <algorithm>
 #include <list>
@@ -50,6 +56,27 @@
  * @param __VA_ARGS__ comma-separated list of enumerator definitions, either
  *        identifier or identifier with initializer.
  */
+#ifdef _MSC_VER
+// On MSVC, `friend name Enum(Value)` causes C2633/C2534 when `name` is literally
+// `Enum` because MSVC confuses the function with a constructor.  We omit the friend
+// Enum() factory from the macro and provide it separately via HILTI_RT_ENUM_FACTORY
+// for built-in enum types (none of which are named `Enum`).  JIT-generated code for
+// user-defined enums does not call Enum() — it uses {}-initialisation instead.
+#define HILTI_RT_ENUM(name, ...)                                                                                       \
+    struct name {                                                                                                      \
+        enum Value : int64_t { Undef = -1, __VA_ARGS__ };                                                              \
+        constexpr name(int64_t value = Undef) noexcept : _value(value) {}                                              \
+        friend constexpr bool operator==(const name& a, const name& b) noexcept { return a.value() == b.value(); }     \
+        friend constexpr bool operator!=(const name& a, const name& b) noexcept { return ! (a == b); }                 \
+        friend constexpr bool operator<(const name& a, const name& b) noexcept { return a.value() < b.value(); }       \
+        constexpr int64_t value() const { return _value; }                                                             \
+        int64_t _value;                                                                                                \
+    }
+// Adds an inline Enum() factory function after a HILTI_RT_ENUM definition.
+// Must not be used when `name` is literally `Enum` (name clash on MSVC).
+#define HILTI_RT_ENUM_FACTORY(name)                                                                                    \
+    inline name Enum(name::Value value) { return name(value); }
+#else
 #define HILTI_RT_ENUM(name, ...)                                                                                       \
     struct name {                                                                                                      \
         enum Value : int64_t { Undef = -1, __VA_ARGS__ };                                                              \
@@ -61,6 +88,9 @@
         constexpr int64_t value() const { return _value; }                                                             \
         int64_t _value;                                                                                                \
     }
+// On non-MSVC, Enum() is already defined as a friend function inside HILTI_RT_ENUM.
+#define HILTI_RT_ENUM_FACTORY(name)
+#endif
 
 
 /**
@@ -543,6 +573,7 @@ constexpr auto map_tuple(T&& tup, F f) {
 
 /** Available byte orders. */
 HILTI_RT_ENUM(ByteOrder, Little, Big, Network, Host);
+HILTI_RT_ENUM_FACTORY(ByteOrder)
 
 /**
  * Returns the byte order of the system we're running on. The result is
@@ -587,12 +618,27 @@ class TemporaryDirectory {
 public:
     TemporaryDirectory() {
         const auto tmpdir = hilti::rt::filesystem::temp_directory_path();
+#if defined(_WIN32)
+        for ( int i = 0; i < 1024; ++i ) {
+            auto path = tmpdir / fmt("hilti-rt-test-%d-%d", static_cast<int>(::getpid()), i);
+
+            std::error_code ec;
+            if ( hilti::rt::filesystem::create_directory(path, ec) ) {
+                _path = std::move(path);
+                break;
+            }
+        }
+
+        if ( _path.empty() )
+            throw RuntimeError("cannot create temporary directory");
+#else
         auto template_ = (tmpdir / "hilti-rt-test-XXXXXX").native();
         auto* path = ::mkdtemp(template_.data());
         if ( ! path )
             throw RuntimeError("cannot create temporary directory");
 
         _path = path;
+#endif
     }
 
     TemporaryDirectory(const TemporaryDirectory& other) = delete;

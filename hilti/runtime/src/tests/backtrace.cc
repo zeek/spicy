@@ -32,6 +32,8 @@ TEST_CASE("backtrace") {
 auto __attribute__((noinline, optnone)) make_backtrace() { return Backtrace(); }
 #elif defined(__GNUC__)
 auto __attribute__((noinline, optimize(0))) make_backtrace() { return Backtrace(); }
+#elif defined(_MSC_VER)
+__declspec(noinline) auto make_backtrace() { return Backtrace(); }
 #else
 #error "unsupported compiler"
 #endif
@@ -53,7 +55,12 @@ TEST_CASE("comparison") {
 }
 
 TEST_CASE("demangle") {
+#ifdef _MSC_VER
+    // MSVC uses different name mangling; "i" is not a valid MSVC mangled name.
+    CHECK_EQ(demangle("i"), "i");
+#else
     CHECK_EQ(demangle("i"), "int");
+#endif
 
     // If the symbol cannot be demangled the input is returned.
     CHECK_EQ(demangle(" foobar"), " foobar");

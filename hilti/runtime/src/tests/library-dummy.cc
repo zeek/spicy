@@ -8,9 +8,10 @@
 #endif
 
 extern "C" {
-int foo() { return RETURN_VALUE; }
-}
+HILTI_EXPORT int foo() { return RETURN_VALUE; }
 
+// Wrap in extern "C" to prevent name mangling so that
+// GetProcAddress can find this symbol by its undecorated name on Windows.
 const char HILTI_EXPORT HILTI_WEAK* HILTI_INTERNAL_GLOBAL(hlto_library_version) = R"({
     "magic": "v1",
     "hilti_version": 400,
@@ -18,3 +19,4 @@ const char HILTI_EXPORT HILTI_WEAK* HILTI_INTERNAL_GLOBAL(hlto_library_version) 
     "debug": false,
     "optimize": false
 })";
+}

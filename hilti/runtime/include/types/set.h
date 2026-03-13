@@ -59,6 +59,9 @@ public:
         if ( ! _control.isValid() )
             throw IndexError("iterator is invalid");
 
+        if ( _iterator == static_cast<const std::set<T>&>(_control.get()).end() )
+            throw IndexError("iterator is invalid");
+
         ++_iterator;
         return *this;
     };
@@ -128,14 +131,27 @@ public:
     using size_type = integer::safe<uint64_t>;
 
     Set() = default;
-    Set(const Set&) = default;
-    Set(Set&&) noexcept = default;
+    Set(const Set& other) : S(other) {}
+    Set(Set&& other) noexcept : S(std::move(other)) {}
     Set(const Vector<T>& l) : std::set<T>(l.begin(), l.end()) {}
     Set(std::initializer_list<T> l) : std::set<T>(std::move(l)) {}
     ~Set() = default;
 
-    Set& operator=(const Set&) = default;
-    Set& operator=(Set&&) noexcept = default;
+    Set& operator=(const Set& other) {
+        if ( this != &other ) {
+            S::operator=(other);
+            _control.Reset();
+        }
+        return *this;
+    }
+
+    Set& operator=(Set&& other) noexcept {
+        if ( this != &other ) {
+            S::operator=(std::move(other));
+            _control.Reset();
+        }
+        return *this;
+    }
 
     /** Checks whether an element is in the set.
      *
@@ -144,13 +160,9 @@ public:
      */
     bool contains(const T& t) const { return this->count(t); }
 
-    auto begin() const {
-        return iterator(static_cast<const S&>(*this).begin(), empty() ? typename Control::Ref() : _control);
-    }
+    auto begin() const { return iterator(static_cast<const S&>(*this).begin(), _control); }
 
-    auto end() const {
-        return iterator(static_cast<const S&>(*this).end(), empty() ? typename Control::Ref() : _control);
-    }
+    auto end() const { return iterator(static_cast<const S&>(*this).end(), _control); }
 
     size_type size() const { return S::size(); }
 

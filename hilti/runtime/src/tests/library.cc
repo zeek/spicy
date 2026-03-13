@@ -1,10 +1,17 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#ifdef _WIN32
+#include <stdlib.h>
+#include <windows.h>
+#else
 #include <dlfcn.h>
-#include <doctest/doctest.h>
 #include <unistd.h>
+#endif
+
+#include <doctest/doctest.h>
 
 #include <cstdlib>
+#include <fstream>
 #include <ostream>
 #include <sstream>
 #include <stdexcept>
@@ -24,11 +31,36 @@
 using namespace hilti::rt;
 using namespace hilti::rt::test;
 
+namespace {
+
+// Returns true if the process is running with elevated privileges
+// (root on Unix, administrator on Windows).
+bool is_elevated_user() {
+#ifdef _WIN32
+    HANDLE token = NULL;
+    if ( ! OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token) )
+        return false;
+
+    TOKEN_ELEVATION elevation;
+    DWORD size;
+    BOOL result = GetTokenInformation(token, TokenElevation, &elevation, sizeof(elevation), &size);
+    CloseHandle(token);
+
+    return result && elevation.TokenIsElevated;
+#else
+    return geteuid() == 0;
+#endif
+}
+
+} // namespace
+
 const hilti::rt::filesystem::path dummy1 =
-    config::lib_directory / ("libhilti-rt-tests-library-dummy1" + config::shared_library_suffix);
+    config::lib_directory /
+    (config::shared_library_prefix + "hilti-rt-tests-library-dummy1" + config::shared_library_suffix);
 
 const hilti::rt::filesystem::path dummy2 =
-    config::lib_directory / ("libhilti-rt-tests-library-dummy2" + config::shared_library_suffix);
+    config::lib_directory /
+    (config::shared_library_prefix + "hilti-rt-tests-library-dummy2" + config::shared_library_suffix);
 
 // RAII helper to set an environment variable.
 class Env {
@@ -39,7 +71,11 @@ public:
         else
             _prev = {k, std::nullopt};
 
+#ifdef _WIN32
+        REQUIRE_EQ(::_putenv_s(k.c_str(), v.data()), 0);
+#else
         REQUIRE_EQ(::setenv(k.c_str(), v.data(), 1), 0);
+#endif
     }
 
     ~Env() {
@@ -47,10 +83,18 @@ public:
         const auto& v = _prev.second;
 
         if ( v ) {
+#ifdef _WIN32
+            REQUIRE_EQ(::_putenv_s(k.c_str(), v->c_str()), 0);
+#else
             REQUIRE_EQ(::setenv(k.c_str(), v->c_str(), 1), 0);
+#endif
         }
         else {
+#ifdef _WIN32
+            REQUIRE_EQ(::_putenv_s(k.c_str(), ""), 0);
+#else
             REQUIRE_EQ(::unsetenv(k.c_str()), 0);
+#endif
         }
     }
 
@@ -60,9 +104,9 @@ private:
 
 TEST_SUITE_BEGIN("Library");
 
-TEST_CASE("construct" * doctest::skip(geteuid() == 0)) {
+TEST_CASE("construct" * doctest::skip(is_elevated_user())) {
     Library _(dummy1); // Does not throw
-    CHECK_THROWS_AS(Library("/does/not/exist"), std::runtime_error);
+    CHECK_THROWS_AS(Library(hilti::rt::filesystem::path("does") / "not" / "exist"), std::runtime_error);
 }
 
 TEST_CASE("open") {
@@ -81,28 +125,36 @@ TEST_CASE("open") {
     }
 
     SUBCASE("invalid library") {
-        // We pick a regular, non-block library file which is not
-        // a library and should be present on most systems here.
-        Library library("/etc/group");
+        // Create a temporary file that is not a valid shared library.
+        hilti::rt::TemporaryDirectory tmp;
+        auto invalid = tmp.path() / "not_a_library.txt";
+        {
+            std::ofstream(invalid) << "not a library";
+        }
+
+        Library library(invalid);
         const auto open = library.open();
         REQUIRE_FALSE(open);
         CHECK_NE(open.error().description().find("failed to load library"), std::string::npos);
     }
 }
 
-// NOTE: The 2nd subcase likely does not work if run as `root` as `root`
+// NOTE: The 2nd subcase likely does not work if run as `root`/`admin` as they
 // can probably create files even in read-only directories.
-TEST_CASE("save" * doctest::skip(geteuid() == 0)) {
+TEST_CASE("save" * doctest::skip(is_elevated_user())) {
     Library library(dummy1);
 
     SUBCASE("success") {
         hilti::rt::TemporaryDirectory tmp;
-        Env _("TMPDIR", tmp.path().c_str());
+        Env _("TMPDIR", tmp.path().string().c_str());
         CHECK_EQ(library.save(tmp.path()), Nothing());
 
         SUBCASE("overwrite existing") { CHECK_EQ(library.save(tmp.path()), Nothing()); }
     }
 
+#ifndef _WIN32
+    // POSIX directory permissions don't prevent file creation on Windows,
+    // so this subcase only works on Unix-like systems.
     SUBCASE("target not writable") {
         TemporaryDirectory tmp;
         Env _("TMPDIR", tmp.path().c_str());
@@ -113,6 +165,7 @@ TEST_CASE("save" * doctest::skip(geteuid() == 0)) {
         // Cannot check exact error text as it depends on e.g., the system locale.
         CHECK_FALSE(save.error().description().empty());
     }
+#endif
 }
 
 TEST_CASE("symbol") {

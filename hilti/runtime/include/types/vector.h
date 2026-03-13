@@ -56,6 +56,10 @@ public:
      */
     Allocator() = default;
 
+    /** Construct from a rebound allocator (required by MSVC's proxy allocator). */
+    template<typename U>
+    Allocator(const Allocator<U>&) noexcept {}
+
     /**
      * Constructs an allocator that initializes elements with a provided
      * default value.

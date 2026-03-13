@@ -21,7 +21,11 @@ namespace tuple {
 namespace detail {
 // Helper to throw `UnsetTupleElement`. Outsourcing this helps the compiler
 // optimize better.
+#ifdef _MSC_VER
+__declspec(noreturn) void throw_unset_tuple_element();
+#else
 __attribute__((noreturn)) void throw_unset_tuple_element();
+#endif
 
 // Tag type to indicate to tuple base class constructor that all elements are set.
 struct AllSetTag {};

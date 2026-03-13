@@ -77,8 +77,8 @@ TEST_CASE("atoi_n") {
 
         SUBCASE("invalid chars") {
             std::string_view s = "abc";
-            const auto* it = atoi_n(s.begin(), s.end(), 10, &x);
-            CHECK_EQ(it, s.begin());
+            const auto it = atoi_n(s.data(), s.data() + s.size(), 10, &x);
+            CHECK_EQ(it, s.data());
         }
 
         CHECK_EQ(x, -42);
@@ -153,7 +153,10 @@ TEST_CASE("createTemporaryFile") {
         CHECK_EQ(status.type(), hilti::rt::filesystem::file_type::regular);
         CHECK_NE(status.permissions() & hilti::rt::filesystem::perms::owner_read, hilti::rt::filesystem::perms::none);
         CHECK_NE(status.permissions() & hilti::rt::filesystem::perms::owner_write, hilti::rt::filesystem::perms::none);
+#ifndef _WIN32
+        // Windows does not have Unix-style execute permissions.
         CHECK_EQ(status.permissions() & hilti::rt::filesystem::perms::owner_exec, hilti::rt::filesystem::perms::none);
+#endif
     }
 
     SUBCASE("failure") {
@@ -239,8 +242,8 @@ TEST_CASE("escapeUTF8") {
         CHECK_EQ(escapeUTF8("\b", hilti::rt::render_style::UTF8::NoEscapeControl), "\b");
         CHECK_EQ(escapeUTF8("\b"), "\\b");
 
-        CHECK_EQ(escapeUTF8("\e", hilti::rt::render_style::UTF8::NoEscapeControl), "\e");
-        CHECK_EQ(escapeUTF8("\e"), "\\e");
+        CHECK_EQ(escapeUTF8("\x1b", hilti::rt::render_style::UTF8::NoEscapeControl), "\x1b");
+        CHECK_EQ(escapeUTF8("\x1b"), "\\e");
 
         CHECK_EQ(escapeUTF8("\f", hilti::rt::render_style::UTF8::NoEscapeControl), "\f");
         CHECK_EQ(escapeUTF8("\f"), "\\f");
@@ -285,7 +288,7 @@ TEST_CASE("expandUTF8Escapes") {
     CHECK_EQ(expandUTF8Escapes("\\b"), "\b");
     CHECK_EQ(expandUTF8Escapes("\\v"), "\v");
     CHECK_EQ(expandUTF8Escapes("\\f"), "\f");
-    CHECK_EQ(expandUTF8Escapes("\\e"), "\e");
+    CHECK_EQ(expandUTF8Escapes("\\e"), "\x1b");
 
     CHECK_THROWS_WITH_AS(expandUTF8Escapes("\\uFOO"), "incomplete unicode \\u", const Exception&);
     CHECK_THROWS_WITH_AS(expandUTF8Escapes("\\uFOOL"), "cannot decode character", const Exception&);
@@ -311,7 +314,11 @@ TEST_CASE("expandUTF8Escapes") {
 TEST_CASE("getenv") {
     CHECK_EQ(hilti::rt::getenv(""), static_cast<Optional<std::string>>(hilti::rt::Null()));
 
+#ifdef _WIN32
+    const auto home = hilti::rt::getenv("USERPROFILE");
+#else
     const auto home = hilti::rt::getenv("HOME");
+#endif
     REQUIRE(home);
     CHECK_FALSE(home->empty());
 
@@ -386,6 +393,7 @@ TEST_CASE("map_tuple") {
 
 TEST_CASE("memory_statistics") {
     // Reset runtime and fiber state.
+    init();
     detail::Fiber::reset();
     done();
     init();
@@ -464,11 +472,13 @@ TEST_CASE("normalizePath") {
     // and similar. This test needs to be updated in that case.
     CHECK_EQ(normalizePath(does_not_exist3), does_not_exist3);
 
+#ifndef _WIN32
     REQUIRE(hilti::rt::filesystem::exists("/dev/null"));
     CHECK_EQ(normalizePath("/dev/null"), "/dev/null");
     CHECK_EQ(normalizePath("/dev//null"), "/dev/null");
     CHECK_EQ(normalizePath("/dev///null"), "/dev/null");
     CHECK_EQ(normalizePath("/dev/.//null"), "/dev/null");
+#endif
 
     const auto cwd = hilti::rt::filesystem::current_path();
     REQUIRE(hilti::rt::filesystem::exists(cwd));

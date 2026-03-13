@@ -45,9 +45,19 @@ Available options:
 )";
 }
 
-template<typename U, typename V>
-static void join(std::vector<U>& a, const std::vector<V>& b) {
-    a.insert(a.end(), b.begin(), b.end());
+template<typename U>
+static std::string toString(const U& x) {
+    return std::string(x);
+}
+
+static std::string toString(const std::string& x) { return x; }
+
+static std::string toString(const hilti::rt::filesystem::path& x) { return x.generic_string(); }
+
+template<typename V>
+static void join(std::vector<std::string>& a, const std::vector<V>& b) {
+    for ( const auto& x : b )
+        a.emplace_back(toString(x));
 }
 
 int main(int argc, char** argv) try {
@@ -88,12 +98,12 @@ int main(int argc, char** argv) try {
 
     for ( const auto& opt : options ) {
         if ( opt == "--distbase" ) {
-            result.emplace_back(hilti::configuration().distbase);
+            result.emplace_back(toString(hilti::configuration().distbase));
             continue;
         }
 
         if ( opt == "--prefix" ) {
-            result.emplace_back(hilti::configuration().install_prefix);
+            result.emplace_back(toString(hilti::configuration().install_prefix));
             continue;
         }
 
@@ -121,19 +131,19 @@ int main(int argc, char** argv) try {
         }
 
         if ( opt == "--cxx" ) {
-            result.emplace_back(hilti::configuration().cxx);
+            result.emplace_back(toString(hilti::configuration().cxx));
             continue;
         }
 
         if ( opt == "--cxx-launcher" ) {
             if ( auto cxx_launcher = hilti::configuration().cxx_launcher )
-                result.emplace_back(*cxx_launcher);
+                result.emplace_back(toString(*cxx_launcher));
 
             continue;
         }
 
         if ( opt == "--hiltic" ) {
-            result.emplace_back(hilti::configuration().hiltic);
+            result.emplace_back(toString(hilti::configuration().hiltic));
             continue;
         }
 

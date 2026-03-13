@@ -24,7 +24,9 @@ set(SOURCES
 
 foreach (lib spicy-rt spicy-rt-debug)
     add_library(${lib}-objects OBJECT ${SOURCES})
-    target_compile_options(${lib}-objects PRIVATE "-fPIC")
+    if (NOT MSVC)
+        target_compile_options(${lib}-objects PRIVATE "-fPIC")
+    endif ()
     target_link_libraries(${lib}-objects PRIVATE ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
     target_link_libraries(${lib}-objects PUBLIC ZLIB::ZLIB)
     target_include_directories(${lib}-objects BEFORE
@@ -40,20 +42,24 @@ foreach (lib spicy-rt spicy-rt-debug)
 endforeach ()
 
 # Build spicy-rt with release flags.
-if (CMAKE_CXX_FLAGS_RELEASE)
-    string(REPLACE " " ";" cxx_flags_release ${CMAKE_CXX_FLAGS_RELEASE})
+if (NOT MSVC)
+    if (CMAKE_CXX_FLAGS_RELEASE)
+        string(REPLACE " " ";" cxx_flags_release ${CMAKE_CXX_FLAGS_RELEASE})
+    endif ()
+    target_compile_options(spicy-rt-objects PRIVATE ${cxx_flags_release})
+    target_compile_options(spicy-rt-objects PRIVATE "-g;-O3;-DNDEBUG;-Wall")
 endif ()
-target_compile_options(spicy-rt-objects PRIVATE ${cxx_flags_release})
-target_compile_options(spicy-rt-objects PRIVATE "-g;-O3;-DNDEBUG;-Wall")
 target_compile_definitions(spicy-rt-objects PRIVATE "HILTI_RT_BUILD_TYPE_RELEASE")
 target_link_libraries(spicy-rt-objects PUBLIC hilti-rt-objects)
 
 # Build spicy-rt-debug with debug flags.
-if (CMAKE_CXX_FLAGS_DEBUG)
-    string(REPLACE " " ";" cxx_flags_debug ${CMAKE_CXX_FLAGS_DEBUG})
+if (NOT MSVC)
+    if (CMAKE_CXX_FLAGS_DEBUG)
+        string(REPLACE " " ";" cxx_flags_debug ${CMAKE_CXX_FLAGS_DEBUG})
+    endif ()
+    target_compile_options(spicy-rt-debug-objects PRIVATE ${cxx_flags_debug})
+    target_compile_options(spicy-rt-debug-objects PRIVATE "-UNDEBUG;-O0;-Wall")
 endif ()
-target_compile_options(spicy-rt-debug-objects PRIVATE ${cxx_flags_debug})
-target_compile_options(spicy-rt-debug-objects PRIVATE "-UNDEBUG;-O0;-Wall")
 target_compile_definitions(spicy-rt-debug-objects PRIVATE "HILTI_RT_BUILD_TYPE_DEBUG")
 target_link_libraries(spicy-rt-debug-objects PUBLIC hilti-rt-debug-objects)
 
@@ -89,9 +95,11 @@ add_executable(
     src/tests/util.cc
     src/tests/zlib.cc)
 
-target_compile_options(spicy-rt-tests PRIVATE "-Wall")
-target_compile_options(spicy-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
-target_link_options(spicy-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
+if (NOT MSVC)
+    target_compile_options(spicy-rt-tests PRIVATE "-Wall")
+    target_compile_options(spicy-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
+    target_link_options(spicy-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
+endif ()
 target_link_libraries(spicy-rt-tests
                       PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
 target_link_libraries(spicy-rt-tests PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt> doctest)

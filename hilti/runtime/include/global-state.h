@@ -1,6 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #pragma once
+#include <locale.h>
 #include <sys/resource.h>
 
 #include <memory>
@@ -32,6 +33,12 @@ class CompiledRegExp;
 } // namespace hilti::rt
 
 namespace hilti::rt::detail {
+
+#if defined(_WIN32)
+using runtime_locale_t = _locale_t;
+#else
+using runtime_locale_t = locale_t;
+#endif
 
 /** Struct capturing all truly global runtime state. */
 struct GlobalState {
@@ -77,17 +84,25 @@ struct GlobalState {
     std::unordered_map<std::string, std::shared_ptr<regexp::detail::CompiledRegExp>> regexp_cache;
 
     /** Cached C locale for use with C library functions. */
-    std::optional<locale_t> c_locale;
+    std::optional<runtime_locale_t> c_locale;
 };
 
 /**
  * Pointer to the global state singleton. Do not access directly, use
  * `globalState()` instead.
  */
+#if defined(_MSC_VER) && defined(HILTI_JIT_DLL)
+extern __declspec(dllimport) GlobalState* __global_state;
+#else
 extern GlobalState* __global_state;
+#endif
 
 /** Creates the global state singleton. */
+#if defined(_MSC_VER) && defined(HILTI_JIT_DLL)
+extern __declspec(dllimport) GlobalState* createGlobalState();
+#else
 extern GlobalState* createGlobalState();
+#endif
 
 /**
  * Returns the global state singleton. This creates the state the first time

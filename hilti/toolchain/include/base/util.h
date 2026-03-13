@@ -2,7 +2,9 @@
 
 #pragma once
 
+#if ! defined(_MSC_VER)
 #include <cxxabi.h>
+#endif
 
 #include <algorithm>
 #include <climits>
@@ -482,7 +484,7 @@ constexpr auto from_string(std::string_view name, const Value<Enum> (&values)[Si
         if ( v.name == name )
             return v.value;
 
-    throw std::out_of_range(std::string(name.begin(), name.size()));
+    throw std::out_of_range(std::string(name));
 };
 
 /**

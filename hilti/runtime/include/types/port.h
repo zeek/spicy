@@ -12,6 +12,7 @@ namespace hilti::rt {
 
 /** Protocols that can be associated with a `Port`. */
 HILTI_RT_ENUM(Protocol, TCP = 1, UDP, ICMP);
+HILTI_RT_ENUM_FACTORY(Protocol)
 
 /**
  * Represents HILTI's port type. A port is pair of port number and protocol.

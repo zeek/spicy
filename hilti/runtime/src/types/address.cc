@@ -74,7 +74,11 @@ Address Address::mask(unsigned int width) const {
 
 std::variant<struct in_addr, struct in6_addr> Address::asInAddr() const {
     switch ( _family.value() ) {
-        case AddressFamily::IPv4: return in_addr{integer::hton32(_a2)};
+        case AddressFamily::IPv4: {
+            in_addr v4{};
+            v4.s_addr = static_cast<decltype(v4.s_addr)>(integer::hton32(_a2));
+            return v4;
+        }
 
         case AddressFamily::IPv6: {
             struct in6_addr v6{};

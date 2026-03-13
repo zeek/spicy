@@ -1,6 +1,11 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#ifdef _WIN32
+#include <sys/time.h> // gmtime_r from libunistd
+#include <windows.h>
+#else
 #include <sys/time.h>
+#endif
 
 #include <ctime>
 
@@ -10,12 +15,27 @@
 using namespace hilti::rt;
 
 Time time::current_time() {
+#ifdef _WIN32
+    // Use Windows native API directly. libunistd's gettimeofday has bugs
+    // (wrong divisor and missing epoch offset).
+    FILETIME ft;
+    GetSystemTimeAsFileTime(&ft);
+    ULARGE_INTEGER li;
+    li.LowPart = ft.dwLowDateTime;
+    li.HighPart = ft.dwHighDateTime;
+    // FILETIME is in 100ns intervals since 1601-01-01.
+    // Subtract offset to Unix epoch (1970-01-01) and convert to seconds.
+    constexpr uint64_t epoch_offset = 116444736000000000ULL;
+    double t = static_cast<double>(li.QuadPart - epoch_offset) / 1e7;
+    return Time(t, Time::SecondTag());
+#else
     struct timeval tv{};
     if ( gettimeofday(&tv, nullptr) < 0 )
         throw RuntimeError("gettimeofday failed in current_time()");
 
     double t = static_cast<double>(tv.tv_sec) + (static_cast<double>(tv.tv_usec) / 1e6);
     return Time(t, Time::SecondTag());
+#endif
 }
 
 Time time::mktime(uint64_t y, uint64_t m, uint64_t d, uint64_t H, uint64_t M, uint64_t S) {
@@ -50,7 +70,7 @@ Time::operator std::string() const {
 
     char buffer[60];
     struct tm tm{};
-    strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H:%M:%S", gmtime_r(&secs, &tm));
+    ::strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H:%M:%S", gmtime_r(&secs, &tm));
     auto sfrac = fmt("%.9fZ", frac);
     return fmt("%s.%s", buffer, sfrac.substr(2));
 }

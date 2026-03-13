@@ -1,7 +1,9 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#ifndef _WIN32
 #include <sys/resource.h>
 #include <unistd.h>
+#endif
 
 #include <array>
 #include <cerrno>
@@ -53,26 +55,25 @@ hilti::rt::filesystem::path save(const CxxCode& code, const hilti::rt::filesyste
     //
     // We create this file in the same location as the final file so we can
     // perform an atomic move below.
-    std::string cc0 = hilti::rt::filesystem::temp_directory_path() / "spicy-jit-cc-XXXXXXXXXXXX";
-    if ( auto fd = ::mkstemp(cc0.data()); fd == -1 )
-        rt::fatalError(util::fmt("could not create temporary file: %s", strerror(errno)));
-    else
-        ::close(fd);
+    auto cc0_result = hilti::rt::createTemporaryFile("spicy-jit-cc");
+    if ( ! cc0_result )
+        rt::fatalError(util::fmt("could not create temporary file: %s", cc0_result.error()));
+    std::string cc0 = cc0_result->string();
 
     auto cc1 = hilti::rt::filesystem::temp_directory_path() /
-               util::fmt("%s_%" PRIx64 "-%" PRIx64 ".cc", id.stem().c_str(), hash, cc_hash);
+               util::fmt("%s_%" PRIx64 "-%" PRIx64 ".cc", id.stem().generic_string(), hash, cc_hash);
 
     std::ofstream out(cc0);
 
     if ( ! out )
-        rt::fatalError(util::fmt("could not open file %s for writing", cc1));
+        rt::fatalError(util::fmt("could not open file %s for writing", cc1.generic_string()));
 
     if ( const auto& content = code.code() )
         out << *content;
 
     out.close();
     if ( out.fail() )
-        rt::fatalError(util::fmt("could not write to temporary file %s", cc1));
+        rt::fatalError(util::fmt("could not write to temporary file %s", cc1.generic_string()));
 
     // Atomically move the temporary file to its final location. With that
     // even with concurrent saves to the same final path other processes should
@@ -80,7 +81,8 @@ hilti::rt::filesystem::path save(const CxxCode& code, const hilti::rt::filesyste
     std::error_code ec;
     hilti::rt::filesystem::rename(cc0, cc1, ec);
     if ( ec )
-        rt::fatalError(util::fmt("could not move file %s to final location %s: %s", cc0, cc1, ec.message()));
+        rt::fatalError(
+            util::fmt("could not move file %s to final location %s: %s", cc0, cc1.generic_string(), ec.message()));
 
     return cc1;
 }
@@ -92,13 +94,14 @@ public:
 
     ~FileGuard() {
         for ( const auto& cc : _paths ) {
-            HILTI_DEBUG(logging::debug::Jit, util::fmt("removing temporary file %s", cc));
+            HILTI_DEBUG(logging::debug::Jit, util::fmt("removing temporary file %s", cc.generic_string()));
 
             std::error_code ec;
             hilti::rt::filesystem::remove(cc, ec);
 
             if ( ec )
-                HILTI_DEBUG(logging::debug::Jit, util::fmt("could not remove temporary file %s: %s", cc, ec.message()));
+                HILTI_DEBUG(logging::debug::Jit,
+                            util::fmt("could not remove temporary file %s: %s", cc.generic_string(), ec.message()));
         }
     }
 
@@ -125,10 +128,10 @@ bool CxxCode::load(const hilti::rt::filesystem::path& path) {
     if ( ! in )
         return false;
 
-    if ( ! load(path, in) )
+    if ( ! load(path.string(), in) )
         return false;
 
-    _id = path;
+    _id = path.string();
     return true;
 }
 
@@ -237,8 +240,13 @@ hilti::Result<Nothing> JIT::_checkCompiler() {
 
     // We ignore the output, just see if running the compiler works. `-dumpversion`
     // works with both GCC and clang, but unlikely to be supported by something
-    // other than a compiler.
+    // other than a compiler. On Windows, MSVC's cl.exe doesn't support
+    // `-dumpversion`; use `/?' which exits cleanly.
+#ifdef _WIN32
+    if ( auto rc = _runner._scheduleJob(cxx, {"/?"}); ! rc )
+#else
     if ( auto rc = _runner._scheduleJob(cxx, {"-dumpversion"}); ! rc )
+#endif
         return result::Error(util::fmt("C++ compiler not available or not functioning (looking for %s)", cxx),
                              rc.error().context());
 
@@ -271,13 +279,14 @@ void JIT::JobRunner::finish() {
 void JIT::_finish() {
     if ( ! options().keep_tmps )
         for ( const auto& object : _objects ) {
-            HILTI_DEBUG(logging::debug::Jit, util::fmt("removing temporary file %s", object));
+            HILTI_DEBUG(logging::debug::Jit, util::fmt("removing temporary file %s", object.generic_string()));
 
             std::error_code ec;
             hilti::rt::filesystem::remove(object, ec);
 
             if ( ec )
-                HILTI_DEBUG(logging::debug::Jit, util::fmt("could not remove temporary file %s", object));
+                HILTI_DEBUG(logging::debug::Jit,
+                            util::fmt("could not remove temporary file %s", object.generic_string()));
         }
 
     _objects.clear();
@@ -299,7 +308,7 @@ hilti::Result<Nothing> JIT::_compile() {
 
     // Write all in-memory code into temporary files.
     for ( const auto& code : _codes ) {
-        std::string id = hilti::rt::filesystem::path(code.id());
+        std::string id = code.id();
         if ( id.empty() )
             id = "code"; // dummy name
 
@@ -307,7 +316,7 @@ hilti::Result<Nothing> JIT::_compile() {
 
         if ( _dump_code ) {
             // Logging to driver because that's where all the other "saving to ..." messages go.
-            auto dbg = util::fmt("dbg.%s", cc.filename().native());
+            auto dbg = util::fmt("dbg.%s", cc.filename().generic_string());
             HILTI_DEBUG(logging::debug::Driver, util::fmt("saving code for %s to %s", id, dbg));
 
             std::error_code ec;
@@ -323,7 +332,7 @@ hilti::Result<Nothing> JIT::_compile() {
     // Compile all C++ files.
     std::vector<result::Error> errors;
     for ( const auto& path : cc_files ) {
-        HILTI_DEBUG(logging::debug::Jit, util::fmt("compiling %s", path.filename().native()));
+        HILTI_DEBUG(logging::debug::Jit, util::fmt("compiling %s", path.filename().generic_string()));
 
         std::vector<std::string> args = {"-c"};
 
@@ -338,11 +347,15 @@ hilti::Result<Nothing> JIT::_compile() {
 
         for ( const auto& i : options().cxx_include_paths ) {
             args.emplace_back("-I");
-            args.push_back(i);
+            args.push_back(i.string());
         }
 
         if ( auto path = hilti::rt::getenv("HILTI_CXX_INCLUDE_DIRS") ) {
+#ifdef _WIN32
+            for ( auto&& dir : hilti::rt::split(*path, ";") ) {
+#else
             for ( auto&& dir : hilti::rt::split(*path, ":") ) {
+#endif
                 if ( ! dir.empty() ) {
                     args.insert(args.begin(), {"-I", std::string(dir)});
                 }
@@ -359,18 +372,25 @@ hilti::Result<Nothing> JIT::_compile() {
         // We explicitly create the object file in the temporary directory.
         // This ensures that we use a temp path for object files created for
         // C++ files added by users as well.
+#ifdef _MSC_VER
         auto obj = hilti::rt::filesystem::temp_directory_path() /
-                   util::fmt("%s_%" PRIx64 ".o", path.filename().c_str(), _hash);
+                   util::fmt("%s_%" PRIx64 ".obj", path.filename().generic_string(), _hash);
+
+        args.emplace_back(util::fmt("/Fo%s", obj.string()));
+#else
+        auto obj = hilti::rt::filesystem::temp_directory_path() /
+                   util::fmt("%s_%" PRIx64 ".o", path.filename().generic_string(), _hash);
 
         args.emplace_back("-o");
-        args.push_back(obj);
+        args.push_back(obj.string());
+#endif
         _objects.push_back(std::move(obj));
 
-        args.push_back(hilti::rt::filesystem::canonical(path));
+        args.push_back(hilti::rt::filesystem::canonical(path).string());
 
         auto cxx = hilti::configuration().cxx;
         if ( const auto& launcher = hilti::configuration().cxx_launcher; launcher && ! launcher->empty() ) {
-            args.insert(args.begin(), cxx);
+            args.insert(args.begin(), cxx.string());
             cxx = *launcher;
         }
 
@@ -407,28 +427,33 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
     //
     // We create this file in the same location as the final file so we can
     // perform an atomic move below.
-    std::string lib0 = hilti::rt::filesystem::temp_directory_path() / "spicy-jit-hlto-XXXXXXXXXXXX";
-    if ( auto fd = ::mkstemp(lib0.data()); fd == -1 )
-        rt::fatalError(util::fmt("could not create temporary file: %s", strerror(errno)));
-    else
-        ::close(fd);
-
+    auto lib0_result = hilti::rt::createTemporaryFile("spicy-jit-hlto");
+    if ( ! lib0_result )
+        rt::fatalError(util::fmt("could not create temporary file: %s", lib0_result.error()));
+#ifdef _MSC_VER
+    // MSVC's cl.exe /LD appends .dll to the /Fe: output path, so we must
+    // account for that when referencing the produced file later.
+    std::string lib0 = lib0_result->string() + ".dll";
+    args.emplace_back(util::fmt("/Fe:%s", lib0_result->string()));
+#else
+    std::string lib0 = lib0_result->string();
     args.emplace_back("-o");
     args.push_back(lib0);
+#endif
 
     for ( const auto& path : _objects ) {
-        HILTI_DEBUG(logging::debug::Jit, util::fmt("  - %s", path.native()));
+        HILTI_DEBUG(logging::debug::Jit, util::fmt("  - %s", path.generic_string()));
 
         // Double check that we really got the file.
         if ( ! hilti::rt::filesystem::exists(path) )
             return result::Error(
-                util::fmt("missing object file %s, C++ compiler is probably not working", path.native()));
+                util::fmt("missing object file %s, C++ compiler is probably not working", path.generic_string()));
 
-        args.push_back(path);
+        args.push_back(path.string());
 
         if ( _dump_code ) {
             // Logging to driver because that's where all the other "saving to ..." messages go.
-            auto dbg = util::fmt("dbg.%s", path.native());
+            auto dbg = util::fmt("dbg.%s", path.generic_string());
             HILTI_DEBUG(logging::debug::Driver, util::fmt("saving object file to %s", dbg));
 
             std::error_code ec;
@@ -442,6 +467,17 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
     for ( const auto& lib : options().cxx_link )
         if ( ! lib.empty() )
             args.emplace_back(lib);
+
+#ifdef _MSC_VER
+    // On MSVC, linker-specific flags must appear after the /link separator.
+    // The JIT DLL links against the host executable's import library
+    // (e.g., zeek_exe.lib) so runtime symbols are properly resolved.
+    args.emplace_back("/link");
+    const auto& ld_flags = options().debug ? hilti::configuration().runtime_ld_flags_debug :
+                                             hilti::configuration().runtime_ld_flags_release;
+    for ( const auto& f : ld_flags )
+        args.push_back(f);
+#endif
 
     // We are using the compiler as a linker here, no need to use a compiler launcher.
     // Since we are writing to a random temporary file non of this would cache anyway.
@@ -459,7 +495,8 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
     std::error_code ec;
     hilti::rt::filesystem::rename(lib0, lib, ec);
     if ( ec )
-        rt::fatalError(util::fmt("could not move file %s to final location %s: %s", lib0, lib, ec.message()));
+        rt::fatalError(
+            util::fmt("could not move file %s to final location %s: %s", lib0, lib.generic_string(), ec.message()));
 
     // Instantiate the library object from the file on disk, and set it up
     // to delete the file & its directory on destruction.
@@ -486,7 +523,7 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
 
 Result<JIT::JobRunner::JobID> JIT::JobRunner::_scheduleJob(const hilti::rt::filesystem::path& cmd,
                                                            std::vector<std::string> args) {
-    CmdLine cmdline = {cmd.native()};
+    CmdLine cmdline = {cmd.string()};
 
     for ( auto&& a : args )
         cmdline.push_back(std::move(a));
@@ -510,7 +547,8 @@ Result<Nothing> JIT::JobRunner::_spawnJob() {
     job.process = std::make_unique<reproc::process>();
 
     if ( auto path = hilti::rt::createTemporaryFile("hilti-jit-output") ) {
-        HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] writing process output to %s", jid, *path));
+        HILTI_DEBUG(logging::debug::Jit,
+                    util::fmt("[job %u] writing process output to %s", jid, path->generic_string()));
         job.output = *path;
     }
     else {
@@ -519,7 +557,8 @@ Result<Nothing> JIT::JobRunner::_spawnJob() {
     }
 
     reproc::options options;
-    options.redirect.path = job.output.c_str();
+    auto output = job.output.string();
+    options.redirect.path = output.c_str();
 
     auto ec = job.process->start(cmdline, options);
 
@@ -639,23 +678,28 @@ void JIT::JobRunner::_recordUserDiagnostics(JobID jid, const Job& job) {
     if ( add_header ) {
         // Record version of C++ compiler.
         reproc::options options;
-        options.redirect.path = UserDiagnosticsFile.c_str();
-        std::array<std::string, 2> cmdline = {hilti::configuration().cxx.c_str(), "--version"};
+        auto diagnostics_file = UserDiagnosticsFile.string();
+        options.redirect.path = diagnostics_file.c_str();
+#ifdef _WIN32
+        std::array<std::string, 2> cmdline = {hilti::configuration().cxx.string(), "/?"};
+#else
+        std::array<std::string, 2> cmdline = {hilti::configuration().cxx.string(), "--version"};
+#endif
         reproc::run(cmdline, options);
     }
 
     std::ofstream out(UserDiagnosticsFile, std::ios::app);
     if ( ! out ) {
-        logger().warning(
-            util::fmt("could not open diagnostics file %s for writing: %s", UserDiagnosticsFile, ::strerror(errno)));
+        logger().warning(util::fmt("could not open diagnostics file %s for writing: %s",
+                                   UserDiagnosticsFile.generic_string(), ::strerror(errno)));
         return;
     }
 
     // Copy the output of the process over into the diagnostics file
     std::ifstream in(job.output);
     if ( ! in ) {
-        logger().warning(
-            util::fmt("could not open process output file %s for reading: %s", job.output, ::strerror(errno)));
+        logger().warning(util::fmt("could not open process output file %s for reading: %s", job.output.generic_string(),
+                                   ::strerror(errno)));
         return;
     }
 
@@ -706,7 +750,7 @@ void JIT::add(const hilti::rt::filesystem::path& p) {
     // Include all added files in the JIT hash. This makes JIT invocations
     // unique and e.g., prevents us from generating the same output file if the
     // same module is seen in different compiler invocations.
-    _hash = rt::hashCombine(_hash, std::hash<std::string>{}(p));
+    _hash = rt::hashCombine(_hash, std::hash<std::string>{}(p.generic_string()));
 
     _files.push_back(p);
 }
