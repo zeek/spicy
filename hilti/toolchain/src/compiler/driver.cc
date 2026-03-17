@@ -220,27 +220,6 @@ Result<Nothing> Driver::writeOutput(std::ifstream& in, const hilti::rt::filesyst
     return Nothing();
 }
 
-Result<hilti::rt::filesystem::path> Driver::writeToTemp(std::ifstream& in, const std::string& name_hint,
-                                                        const std::string& extension) {
-    auto tmp = hilti::rt::createTemporaryFile(name_hint);
-    if ( ! tmp )
-        return error("Cannot open temporary file");
-
-    // Rename to include the correct file extension.
-    auto name = hilti::rt::filesystem::path(tmp->string() + "." + extension);
-    std::error_code ec;
-    hilti::rt::filesystem::rename(*tmp, name, ec);
-    if ( ec )
-        return error(fmt("Cannot rename temporary file: %s", ec.message()));
-
-    std::ofstream out(name);
-
-    if ( ! util::copyStream(in, out) )
-        return error("Error writing to file", {name.string()});
-
-    _tmp_files.insert(name.string());
-    return name;
-}
 
 void Driver::dumpUnit(const Unit& unit) {
     if ( auto* module = unit.module() ) {

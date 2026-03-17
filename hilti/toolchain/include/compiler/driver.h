@@ -384,17 +384,6 @@ protected:
      */
     Result<std::stringstream> readInput(const hilti::rt::filesystem::path& p);
 
-    /**
-     * Copies an input stream into a temporary file on disk
-     *
-     * @param in stream to read from
-     * @param name_hint a string to include into the temporary file's name
-     * @param extension extension for the temporary file's name
-     * @return the path to the temporary file, or an appropriate error result
-     */
-    Result<hilti::rt::filesystem::path> writeToTemp(std::ifstream& in, const std::string& name_hint,
-                                                    const std::string& extension = "tmp");
-
     /** Save a unit's final HILTI and C++ code to disk for debugging. */
     void dumpUnit(const Unit& unit);
 
