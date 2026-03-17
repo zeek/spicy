@@ -684,7 +684,6 @@ freebsd14_task:
     path: build/spicy*.tar.gz
     type: application/gzip
 
-
 windows_task:
   timeout_in: 120m
   windows_container:
