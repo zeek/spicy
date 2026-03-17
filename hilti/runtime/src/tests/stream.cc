@@ -60,9 +60,10 @@ TEST_CASE("construct") {
         CHECK(x.isEmpty());
         CHECK_EQ(x.size().Ref(), 0);
 
-        // Even when not using CHECK_EQ doctest still hijacks == in CHECK enough to require both sides to be printable via operator<<. Work around that by introducing a temporary variable.
+        // Even when not using CHECK_EQ doctest still hijacks == in CHECK enough to require both sides to be printable
+        // via operator<<. Work around that by introducing a temporary variable.
         bool eq = x.statistics() == stream::Statistics();
-        CHECK(eq);        
+        CHECK(eq);
     }
 
     SUBCASE("from small") {
