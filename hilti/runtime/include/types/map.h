@@ -190,7 +190,7 @@ public:
     Map& operator=(const Map& other) {
         if ( this != &other ) {
             M::operator=(other);
-            _control.Reset(); // invalidate existing iterators; _control._data stays as this
+            invalidateIterators();
         }
         return *this;
     }
@@ -198,7 +198,7 @@ public:
     Map& operator=(Map&& other) noexcept {
         if ( this != &other ) {
             M::operator=(std::move(other));
-            _control.Reset();
+            invalidateIterators();
         }
         return *this;
     }
