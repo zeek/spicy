@@ -303,10 +303,8 @@ int main(int argc, char** argv) try {
             _setmode(_fileno(stdin), _O_BINARY);
             in = &std::cin;
         }
-        else {
-#else
-        {
 #endif
+        if ( ! in ) {
             file_in.open(driver.opt_file, std::ios::in | std::ios::binary);
             if ( ! file_in.is_open() )
                 fatalError("cannot open stdin for reading");
