@@ -43,11 +43,11 @@ void setPrecompiledHeader(const hilti::Configuration& config, bool debug, std::v
     if ( ! header )
         return;
 
-    auto header_string = header->generic_string();
+    auto header_name = header->generic_string();
 
     for ( auto& flag : cxxflags )
         if ( flag.find("precompiled_libhilti") != std::string::npos )
-            flag = hilti::rt::fmt("-include%s", header_string);
+            flag = hilti::rt::fmt("-include%s", header_name);
 }
 
 } // namespace
