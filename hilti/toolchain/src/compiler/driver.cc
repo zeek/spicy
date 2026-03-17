@@ -553,10 +553,6 @@ void Driver::_addUnit(const std::shared_ptr<Unit>& unit) {
 }
 
 Result<void*> Driver::_symbol(const std::string& symbol) {
-    // Since `NULL` could be the address of a function, use `::dlerror` to
-    // detect errors. Since `::dlerror` resets the error state when called we
-    // can drive its state explicitly.
-
 #if defined(_MSC_VER)
     auto* sym = reinterpret_cast<void*>(::GetProcAddress(::GetModuleHandleA(nullptr), symbol.c_str()));
 
@@ -565,6 +561,10 @@ Result<void*> Driver::_symbol(const std::string& symbol) {
 
     return sym;
 #else
+    // Since `NULL` could be the address of a function, use `::dlerror` to
+    // detect errors. Since `::dlerror` resets the error state when called we
+    // can drive its state explicitly.
+
     ::dlerror(); // Resets error state.
     // NOLINTNEXTLINE(performance-no-int-to-ptr)
     auto* sym = ::dlsym(RTLD_DEFAULT, symbol.c_str());
