@@ -1,9 +1,9 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #pragma once
-#include <locale.h>
 #include <sys/resource.h>
 
+#include <clocale> // IWYU pragma: keep
 #include <memory>
 #include <optional>
 #include <string>
