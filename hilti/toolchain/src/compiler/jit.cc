@@ -126,10 +126,12 @@ bool CxxCode::load(const hilti::rt::filesystem::path& path) {
     if ( ! in )
         return false;
 
-    if ( ! load(path.string(), in) )
+    auto id = path.string();
+
+    if ( ! load(id, in) )
         return false;
 
-    _id = path.string();
+    _id = std::move(id);
     return true;
 }
 
