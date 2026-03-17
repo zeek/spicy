@@ -171,6 +171,7 @@ hilti::rt::Result<hilti::rt::Nothing> hilti::rt::Library::save(const hilti::rt::
 
 #ifndef _WIN32
     // Query the current umask. This is safe since we always query and set the umask from a single thread.
+    // Windows does not support umasks the same way *nix does.
     auto default_perms = ::umask(::mode_t());
     ::umask(default_perms);
 
