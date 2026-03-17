@@ -47,8 +47,8 @@ void hilti::Configuration::initLocation(const char* argv0) { initLocation(std::s
 void hilti::Configuration::initLocation(const hilti::rt::filesystem::path& argv0) {
     try {
         auto exec = hilti::rt::normalizePath(hilti::rt::filesystem::canonical(argv0)).generic_string();
-        auto prefix = hilti::rt::normalizePath(hilti::rt::filesystem::canonical("${PROJECT_BINARY_DIR}"))
-                          .generic_string();
+        auto prefix =
+            hilti::rt::normalizePath(hilti::rt::filesystem::canonical("${PROJECT_BINARY_DIR}")).generic_string();
         init(util::startsWith(exec, prefix));
     } catch ( const hilti::rt::filesystem::filesystem_error& ) {
         init(false);
