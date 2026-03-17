@@ -4,6 +4,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <ranges>
 
 #ifdef _WIN32
 #include <fcntl.h>
@@ -83,13 +84,9 @@ private:
 };
 
 void SpicyDump::usage() {
-    std::string exts;
-    for ( const auto& ext : hilti::plugin::registry().supportedExtensions() ) {
-        if ( ! exts.empty() )
-            exts += ", ";
-
-        exts += ext.generic_string();
-    }
+    auto exts = hilti::util::join(hilti::plugin::registry().supportedExtensions() |
+                                      std::views::transform([](auto&& ext) { return ext.generic_string(); }),
+                                  ", ");
 
     std::cerr
         << "Usage: cat <data> | spicy-dump [options] <inputs> ...\n"
