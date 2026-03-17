@@ -54,6 +54,11 @@ struct Statistics {
 
     friend bool operator!=(const Statistics& a, const Statistics& b) { return ! (a == b); }
 
+    friend std::ostream& operator<<(std::ostream& os, const Statistics& s) {
+        return os << "Statistics{data_bytes=" << s.num_data_bytes << ", data_chunks=" << s.num_data_chunks
+                  << ", gap_bytes=" << s.num_gap_bytes << ", gap_chunks=" << s.num_gap_chunks << "}";
+    }
+
     Statistics& operator+=(Statistics& other) {
         num_data_bytes += other.num_data_bytes;
         num_data_chunks += other.num_data_chunks;
