@@ -184,8 +184,8 @@ public:
     Map() = default;
     Map(std::initializer_list<value_type> init) : M(std::move(init)) {}
 
-    Map(const Map& other) : M(other) {}
-    Map(Map&& other) noexcept : M(std::move(other)) {}
+    Map(const Map& other) = default;
+    Map(Map&& other) noexcept = default;
 
     Map& operator=(const Map& other) {
         if ( this != &other ) {
