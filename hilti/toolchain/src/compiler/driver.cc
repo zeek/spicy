@@ -638,10 +638,10 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
         HILTI_DEBUG(logging::debug::Driver, fmt("adding precompiled HILTI file %s", path));
 
         try {
-            auto path_key = path.generic_string();
-            if ( ! _libraries.contains(path_key) ) {
-                _libraries.insert({path_key, Library(path)});
-                if ( auto load = _libraries.at(path_key).open(); ! load )
+            const auto& name = path.generic_string();
+            if ( ! _libraries.contains(name) ) {
+                _libraries.insert({name, Library(path)});
+                if ( auto load = _libraries.at(name).open(); ! load )
                     return error(util::fmt("could not load library file %s: %s", path, load.error()));
             }
         } catch ( const hilti::rt::EnvironmentError& e ) {
