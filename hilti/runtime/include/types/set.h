@@ -131,8 +131,8 @@ public:
     using size_type = integer::safe<uint64_t>;
 
     Set() = default;
-    Set(const Set& other) : S(other) {}
-    Set(Set&& other) noexcept : S(std::move(other)) {}
+    Set(const Set& other) = default;
+    Set(Set&& other) noexcept = default;
     Set(const Vector<T>& l) : std::set<T>(l.begin(), l.end()) {}
     Set(std::initializer_list<T> l) : std::set<T>(std::move(l)) {}
     ~Set() = default;
