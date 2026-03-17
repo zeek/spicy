@@ -1,7 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <limits>
-#include <sstream>
 #include <utility>
 
 #include <hilti/rt/exception.h>
@@ -131,15 +130,13 @@ void detail::printParserState(std::string_view unit_id, const hilti::rt::ValueRe
         auto begin_offset = data->begin().offset();
         auto end_offset = data->end().offset();
 
-        std::ostringstream out;
-        out << "- state: type=" << unit_id << " input=\"" << input_data << input_dots << "\""
-            << " stream=" << data.get() << " offsets=" << begin_offset << "/" << begin_ << "/" << cur.begin().offset()
-            << "/" << end_offset << "/" << cur.end().offset() << " chunks=" << data->numberOfChunks()
-            << " frozen=" << (data->isFrozen() ? "yes" : "no") << " mode=" << literal_mode
-            << " trim=" << (trim ? "yes" : "no") << " lah=" << lah_str << " lah_token=\"" << lah_data << lah_dots
-            << "\""
-            << " recovering=" << (error.hasValue() ? "yes" : "no");
-        return out.str();
+        return hilti::rt::fmt("- state: type=%s input=\"%s%s\" stream=%p offsets=%" PRId64 "/%s/%" PRId64 "/%" PRId64
+                              "/%" PRId64 " chunks=%d frozen=%s mode=%s trim=%s lah=%" PRId64
+                              " lah_token=\"%s%s\" recovering=%s",
+                              unit_id, input_data, input_dots, data.get(), begin_offset, begin_, cur.begin().offset(),
+                              end_offset, cur.end().offset(), data->numberOfChunks(), (data->isFrozen() ? "yes" : "no"),
+                              literal_mode, (trim ? "yes" : "no"), lah_str, lah_data, lah_dots,
+                              (error.hasValue() ? "yes" : "no"));
     };
 
     SPICY_RT_DEBUG_VERBOSE(msg());
