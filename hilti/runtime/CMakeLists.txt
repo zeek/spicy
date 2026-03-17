@@ -130,7 +130,7 @@ configure_file(include/config.h.in ${AUTOGEN_H}/config.h)
 # On Windows, shared libraries (DLLs) are placed in the runtime output directory (bin/)
 # rather than the library output directory (lib/).
 if (WIN32)
-    set(TEST_SHARED_LIB_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+    set(TEST_SHARED_LIB_DIRECTORY "${PROJECT_RUNTIME_OUTPUT_DIRECTORY}")
 else ()
     set(TEST_SHARED_LIB_DIRECTORY "${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
 endif ()
