@@ -113,13 +113,8 @@ function (hilti_link_object_libraries_in_tree lib)
     endif ()
 
     if (WIN32)
-        if (TARGET libportable)
-            target_link_libraries(${lib} ${_private} libportable)
-        endif ()
-
-        if (TARGET libunistd)
-            target_link_libraries(${lib} ${_private} libunistd)
-        endif ()
+        target_link_libraries(${lib} ${_private} libportable)
+        target_link_libraries(${lib} ${_private} libunistd)
     endif ()
 
     target_link_libraries(${lib} ${_private} reproc++)
