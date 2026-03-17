@@ -103,11 +103,6 @@ public:
         return hilti::Declaration::properties() + std::move(p);
     }
 
-    std::string_view branchTag() const final {
-        _branch_tag = _uid.process_extension.generic_string();
-        return _branch_tag;
-    }
-
     static auto create(ASTContext* ctx, const declaration::module::UID& uid, const ID& scope, const Declarations& decls,
                        const Statements& stmts, Meta meta = {}) {
         Nodes nodes = {statement::Block::create(ctx, stmts, meta)};
@@ -140,7 +135,6 @@ private:
     declaration::module::UID _uid;
     ID _scope_path;
     std::set<declaration::module::UID> _dependencies;
-    mutable std::string _branch_tag;
     bool _skip_implementation = true;
     std::shared_ptr<::hilti::detail::cxx::Unit> _cxx_unit;
 };
