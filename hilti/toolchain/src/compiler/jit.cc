@@ -55,15 +55,13 @@ hilti::rt::filesystem::path save(const CxxCode& code, const hilti::rt::filesyste
     //
     // We create this file in the same location as the final file so we can
     // perform an atomic move below.
-    auto cc0_result = hilti::rt::createTemporaryFile("spicy-jit-cc");
-    if ( ! cc0_result )
-        rt::fatalError(util::fmt("could not create temporary file: %s", cc0_result.error()));
-    std::string cc0 = cc0_result->string();
+    auto cc0 = hilti::rt::createTemporaryFile("spicy-jit-cc");
+    if ( ! cc0 )
+        rt::fatalError(util::fmt("could not create temporary file: %s", cc0.error()));
+    auto cc1 =
+        cc0->parent_path() / util::fmt("%s_%" PRIx64 "-%" PRIx64 ".cc", id.stem().generic_string(), hash, cc_hash);
 
-    auto cc1 = hilti::rt::filesystem::temp_directory_path() /
-               util::fmt("%s_%" PRIx64 "-%" PRIx64 ".cc", id.stem().generic_string(), hash, cc_hash);
-
-    std::ofstream out(cc0);
+    std::ofstream out(cc0->string());
 
     if ( ! out )
         rt::fatalError(util::fmt("could not open file %s for writing", cc1.generic_string()));
@@ -79,10 +77,10 @@ hilti::rt::filesystem::path save(const CxxCode& code, const hilti::rt::filesyste
     // even with concurrent saves to the same final path other processes should
     // always see a consistent version of the contents of that file.
     std::error_code ec;
-    hilti::rt::filesystem::rename(cc0, cc1, ec);
+    hilti::rt::filesystem::rename(cc0->string(), cc1, ec);
     if ( ec )
-        rt::fatalError(
-            util::fmt("could not move file %s to final location %s: %s", cc0, cc1.generic_string(), ec.message()));
+        rt::fatalError(util::fmt("could not move file %s to final location %s: %s", cc0->string(), cc1.generic_string(),
+                                 ec.message()));
 
     return cc1;
 }
