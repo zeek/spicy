@@ -37,7 +37,6 @@ HILTI_RT_ENUM(Side,
               Right, // right side
               Both   // left and right side
 );
-HILTI_RT_ENUM_FACTORY(Side)
 
 /**
  * Safe bytes iterator traversing the content of an instance.

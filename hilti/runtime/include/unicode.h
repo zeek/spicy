@@ -23,11 +23,9 @@ HILTI_RT_ENUM(DecodeErrorStrategy,
               REPLACE, // replace with a place-holder
               STRICT,  // throw a runtime error
 );
-HILTI_RT_ENUM_FACTORY(DecodeErrorStrategy)
 
 /** For bytes decoding, which character set to use. */
 HILTI_RT_ENUM(Charset, UTF8, UTF16LE, UTF16BE, ASCII);
-HILTI_RT_ENUM_FACTORY(Charset)
 
 constexpr uint32_t REPLACEMENT_CHARACTER = 0x0000FFFD;
 

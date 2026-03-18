@@ -56,13 +56,7 @@
  * @param __VA_ARGS__ comma-separated list of enumerator definitions, either
  *        identifier or identifier with initializer.
  */
-#ifdef _MSC_VER
-// On MSVC, `friend name Enum(Value)` causes C2633/C2534 when `name` is literally
-// `Enum` because MSVC confuses the function with a constructor.  We omit the friend
-// Enum() factory from the macro and provide it separately via HILTI_RT_ENUM_FACTORY
-// for built-in enum types (none of which are named `Enum`).  JIT-generated code for
-// user-defined enums does not call Enum() — it uses {}-initialisation instead.
-#define HILTI_RT_ENUM(name, ...)                                                                                       \
+#define HILTI_RT_ENUM_TYPE(name, ...)                                                                                  \
     struct name {                                                                                                      \
         enum Value : int64_t { Undef = -1, __VA_ARGS__ };                                                              \
         constexpr name(int64_t value = Undef) noexcept : _value(value) {}                                              \
@@ -72,25 +66,18 @@
         constexpr int64_t value() const { return _value; }                                                             \
         int64_t _value;                                                                                                \
     }
-// Adds an inline Enum() factory function after a HILTI_RT_ENUM definition.
-// Must not be used when `name` is literally `Enum` (name clash on MSVC).
-#define HILTI_RT_ENUM_FACTORY(name)                                                                                    \
+
+/**
+ * Like HILTI_RT_ENUM_TYPE, but also defines an inline `Enum()` factory function
+ * that converts a `name::Value` enumerator to the wrapper struct.
+ *
+ * Note: Generated (JIT) code should use HILTI_RT_ENUM_TYPE instead to avoid
+ * potential name clashes between the factory function and a user-defined type
+ * named `Enum`.
+ */
+#define HILTI_RT_ENUM(name, ...)                                                                                       \
+    HILTI_RT_ENUM_TYPE(name, __VA_ARGS__);                                                                             \
     inline name Enum(name::Value value) { return name(value); }
-#else
-#define HILTI_RT_ENUM(name, ...)                                                                                       \
-    struct name {                                                                                                      \
-        enum Value : int64_t { Undef = -1, __VA_ARGS__ };                                                              \
-        constexpr name(int64_t value = Undef) noexcept : _value(value) {}                                              \
-        friend name Enum(Value value) { return name(value); }                                                          \
-        friend constexpr bool operator==(const name& a, const name& b) noexcept { return a.value() == b.value(); }     \
-        friend constexpr bool operator!=(const name& a, const name& b) noexcept { return ! (a == b); }                 \
-        friend constexpr bool operator<(const name& a, const name& b) noexcept { return a.value() < b.value(); }       \
-        constexpr int64_t value() const { return _value; }                                                             \
-        int64_t _value;                                                                                                \
-    }
-// On non-MSVC, Enum() is already defined as a friend function inside HILTI_RT_ENUM.
-#define HILTI_RT_ENUM_FACTORY(name)
-#endif
 
 
 /**
@@ -573,7 +560,6 @@ constexpr auto map_tuple(T&& tup, F f) {
 
 /** Available byte orders. */
 HILTI_RT_ENUM(ByteOrder, Little, Big, Network, Host);
-HILTI_RT_ENUM_FACTORY(ByteOrder)
 
 /**
  * Returns the byte order of the system we're running on. The result is
