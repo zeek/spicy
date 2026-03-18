@@ -1,11 +1,10 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #ifdef _WIN32
-#include <sys/time.h> // gmtime_r from libunistd
 #include <windows.h>
-#else
-#include <sys/time.h>
 #endif
+
+#include <sys/time.h>
 
 #include <ctime>
 
