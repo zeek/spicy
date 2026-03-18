@@ -54,8 +54,11 @@ TEST_CASE("comparison") {
 
 TEST_CASE("demangle") {
 #ifdef _MSC_VER
-    // MSVC uses different name mangling; "i" is not a valid MSVC mangled name.
-    CHECK_EQ(demangle("i"), "i");
+    // MSVC's typeid().name() uses "class X" / "struct X" / "enum X" prefixes;
+    // demangle strips them.
+    CHECK_EQ(demangle("class Foo"), "Foo");
+    CHECK_EQ(demangle("struct Bar"), "Bar");
+    CHECK_EQ(demangle("enum Baz"), "Baz");
 #else
     CHECK_EQ(demangle("i"), "int");
 #endif

@@ -190,9 +190,7 @@ std::string Bytes::decode(unicode::Charset cs, unicode::DecodeErrorStrategy erro
                 }
             }
 
-            std::string t8;
-            utf8::utf16to8(t.begin(), t.end(), std::back_inserter(t8));
-            return t8;
+            return utf8::utf16to8(t);
         }
 
         case unicode::Charset::ASCII: {

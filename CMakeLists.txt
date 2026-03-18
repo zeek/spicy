@@ -65,6 +65,8 @@ if (MSVC)
     # Use conforming preprocessor so that raw string literals inside macros are
     # tokenized correctly (the traditional MSVC preprocessor misparses them).
     add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:/Zc:preprocessor>)
+    # Report the correct C++ standard in __cplusplus (MSVC defaults to 199711L).
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus>)
     # Use UTF-8 for both source and execution character sets.
     add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:/utf-8>)
 endif ()

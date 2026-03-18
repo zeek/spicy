@@ -8,6 +8,7 @@
 #ifndef _WIN32
 #include <unistd.h>
 #else
+#include <io.h>
 #include <process.h>
 #endif
 
@@ -606,17 +607,12 @@ public:
     TemporaryDirectory() {
         const auto tmpdir = hilti::rt::filesystem::temp_directory_path();
 #if defined(_WIN32)
-        for ( int i = 0; i < 1024; ++i ) {
-            auto path = tmpdir / fmt("hilti-rt-test-%d-%d", static_cast<int>(::getpid()), i);
+        auto template_ = (tmpdir / "hilti-rt-test-XXXXXX").string();
+        if ( _mktemp_s(template_.data(), template_.size() + 1) != 0 )
+            throw RuntimeError("cannot create temporary directory");
 
-            std::error_code ec;
-            if ( hilti::rt::filesystem::create_directory(path, ec) ) {
-                _path = std::move(path);
-                break;
-            }
-        }
-
-        if ( _path.empty() )
+        _path = template_;
+        if ( ! hilti::rt::filesystem::create_directory(_path) )
             throw RuntimeError("cannot create temporary directory");
 #else
         auto template_ = (tmpdir / "hilti-rt-test-XXXXXX").native();

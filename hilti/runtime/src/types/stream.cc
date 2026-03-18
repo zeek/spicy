@@ -521,9 +521,6 @@ void Stream::append(const char* data, size_t len, NonOwning) {
 std::string stream::View::dataForPrint() const {
     std::string data;
 
-    if ( ! _begin.chain() )
-        return data;
-
     const auto begin = unsafeBegin();
     const auto end = unsafeEnd();
 

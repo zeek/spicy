@@ -91,18 +91,15 @@ hilti::rt::Result<hilti::rt::filesystem::path> hilti::rt::createTemporaryFile(co
         return hilti::rt::result::Error(fmt("could not create temporary file: %s", ec.message()));
 
 #if defined(_WIN32)
-    for ( int i = 0; i < 1024; ++i ) {
-        auto path = tmp_dir / fmt("%s-%d-%d", prefix, static_cast<int>(::getpid()), i);
+    auto template_ = (tmp_dir / (prefix + "-XXXXXX")).string();
+    if ( _mktemp_s(template_.data(), template_.size() + 1) != 0 )
+        return hilti::rt::result::Error(fmt("could not create temporary file in %s", tmp_dir));
 
-        if ( ! hilti::rt::filesystem::exists(path, ec) ) {
-            // Create the file to reserve it.
-            std::ofstream ofs(path);
-            if ( ofs )
-                return path;
-        }
-    }
+    std::ofstream ofs(template_);
+    if ( ! ofs )
+        return hilti::rt::result::Error(fmt("could not create temporary file in %s", tmp_dir));
 
-    return hilti::rt::result::Error(fmt("could not create temporary file in %s", tmp_dir));
+    return hilti::rt::filesystem::path(template_);
 #else
     auto template_ = (tmp_dir / (prefix + "-XXXXXX")).string();
 
@@ -224,7 +221,7 @@ std::string hilti::rt::expandUTF8Escapes(std::string s) {
 
             case 'b': *d++ = '\b'; break;
 
-            case 'e': *d++ = '\x1b'; break;
+            case 'e': *d++ = '\x1b'; break; // '\e' is a GCC extension, use hex for portability
 
             case 'f': *d++ = '\f'; break;
 
@@ -340,7 +337,7 @@ std::string hilti::rt::escapeUTF8(std::string_view s, bitmask<render_style::UTF8
         else if ( *p == '\b' )
             esc += escapeControl(*p, "\\b");
 
-        else if ( *p == '\x1b' )
+        else if ( *p == '\x1b' ) // '\e' is a GCC extension, use hex for portability
             esc += escapeControl(*p, "\\e");
 
         else if ( *p == '\f' )

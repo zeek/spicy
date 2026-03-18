@@ -1,7 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #ifdef _WIN32
-#include <stdlib.h>
 #include <windows.h>
 #else
 #include <dlfcn.h>
@@ -71,31 +70,17 @@ public:
         else
             _prev = {k, std::nullopt};
 
-#ifdef _WIN32
-        REQUIRE_EQ(::_putenv_s(k.c_str(), v.data()), 0);
-#else
         REQUIRE_EQ(::setenv(k.c_str(), v.data(), 1), 0);
-#endif
     }
 
     ~Env() {
         const auto& k = _prev.first;
         const auto& v = _prev.second;
 
-        if ( v ) {
-#ifdef _WIN32
-            REQUIRE_EQ(::_putenv_s(k.c_str(), v->c_str()), 0);
-#else
+        if ( v )
             REQUIRE_EQ(::setenv(k.c_str(), v->c_str(), 1), 0);
-#endif
-        }
-        else {
-#ifdef _WIN32
-            REQUIRE_EQ(::_putenv_s(k.c_str(), ""), 0);
-#else
+        else
             REQUIRE_EQ(::unsetenv(k.c_str()), 0);
-#endif
-        }
     }
 
 private:

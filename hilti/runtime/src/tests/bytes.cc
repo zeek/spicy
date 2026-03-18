@@ -2,6 +2,7 @@
 
 #include <doctest/doctest.h>
 
+#include <clocale>
 #include <ostream>
 #include <type_traits>
 
@@ -494,7 +495,20 @@ TEST_CASE("toReal") {
 
     // The next test should fail independent of the locale, so let's set one.
 
-#ifndef _WIN32
+#ifdef _WIN32
+    // Enable per-thread locale so we don't affect other threads.
+    int old_mode = _configthreadlocale(_ENABLE_PER_THREAD_LOCALE);
+    auto* saved = std::setlocale(LC_ALL, nullptr);
+    std::string old_locale(saved ? saved : "C");
+
+    if ( ! std::setlocale(LC_ALL, "de-DE") )
+        FAIL("failed to set de-DE locale; locale not installed?");
+
+    CHECK_THROWS_WITH_AS("1,0"_b.toReal(), "cannot parse real value: '1,0'", const InvalidValue&);
+
+    std::setlocale(LC_ALL, old_locale.c_str());
+    _configthreadlocale(old_mode);
+#else
     auto* de_locale = newlocale(LC_ALL_MASK, "de_DE.UTF-8", nullptr);
     if ( ! de_locale )
         FAIL("failed to create de_DE locale; locales not installed?");

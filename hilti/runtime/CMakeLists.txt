@@ -51,8 +51,11 @@ set(SOURCES
     src/version.cc
     ${PROJECT_SOURCE_DIR}/3rdparty/utf8proc/utf8proc.c)
 
-# Windows doesnt support weak links
-if (NOT WIN32)
+# main.cc provides default main() implementations marked as weak on non-MSVC.
+# On MSVC, weak function linkage is not supported, so we add main.cc only to
+# the static library (below) where standard linker semantics (object files
+# override library symbols) provide the same behavior.
+if (NOT MSVC)
     list(APPEND SOURCES src/main.cc)
 endif ()
 
@@ -83,6 +86,9 @@ foreach (lib hilti-rt hilti-rt-debug)
 
     add_library(${lib} STATIC)
     target_link_libraries(${lib} ${lib}-objects)
+    if (MSVC)
+        target_sources(${lib} PRIVATE src/main.cc)
+    endif ()
     target_link_libraries(${lib} jrx-objects)
     target_link_libraries(${lib} fiber)
 

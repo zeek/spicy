@@ -3,7 +3,6 @@
 #include <utf8.h>
 #include <utf8proc/utf8proc.h>
 
-#include <iterator>
 #include <utility>
 
 #include <hilti/rt/exception.h>
@@ -175,8 +174,7 @@ Bytes string::encode(std::string s, unicode::Charset cs, unicode::DecodeErrorStr
             // HILTI `string` is always UTF-8, but we could be invoked with raw bags of bytes here as well, so validate.
             auto t8 = string::encode(std::move(s), unicode::Charset::UTF8, errors).str();
 
-            std::u16string t;
-            utf8::utf8to16(t8.begin(), t8.end(), std::back_inserter(t));
+            auto t = utf8::utf8to16(t8);
 
             std::string result;
             result.reserve(t.size() * 2);
