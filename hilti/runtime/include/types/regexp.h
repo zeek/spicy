@@ -49,11 +49,26 @@ public:
     auto isCaseInsensitive() const { return _case_insensitive; }
     auto matchID() const { return _id; }
 
+    /** Attempts to compile the pattern, returning an error if that fails. */
+    Result<Nothing> validate() const;
+
+    /**
+     * Returns the number of capture groups the pattern defines. Returns an
+     * error result if the number cannot be determined, such as if it cannot be
+     * compiled due to a syntax error.
+     */
+    Result<uint64_t> numberOfCaptures() const;
+
     void setValue(std::string value) { _value = std::move(value); }
     void setCaseInsensitive(bool case_insensitive) { _case_insensitive = case_insensitive; }
     void setMatchID(uint64_t id) { _id = id; }
 
 private:
+    // Checks a pattern for syntactical correctness by trying to compile it.
+    // Returns an error if compilation fails, or the number of capture groups
+    // defined by the pattern if successful.
+    Result<uint64_t> _tryCompile() const;
+
     std::string _value;
     bool _case_insensitive;
     uint64_t _id;
@@ -185,7 +200,7 @@ private:
     };
 
     void _newJrx();
-    void _compileOne(regexp::Pattern pattern, int idx);
+    void _compileOne(regexp::Pattern pattern);
 
     regexp::Flags _flags{};
     regexp::Patterns _patterns;

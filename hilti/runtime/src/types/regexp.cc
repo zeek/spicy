@@ -6,6 +6,7 @@
 #include <ranges>
 #include <utility>
 
+#include <hilti/rt/exception.h>
 #include <hilti/rt/global-state.h>
 #include <hilti/rt/types/regexp.h>
 #include <hilti/rt/util.h>
@@ -18,6 +19,34 @@ using namespace hilti::rt;
 using namespace hilti::rt::bytes;
 
 // #define _DEBUG_MATCHING
+
+Result<uint64_t> regexp::Pattern::_tryCompile() const {
+    int cflags = (REG_EXTENDED | REG_ANCHOR | REG_LAZY);
+
+    if ( _case_insensitive )
+        cflags |= REG_ICASE;
+
+    jrx_regex_t preg;
+    if ( auto rc = jrx_regcomp(&preg, _value.c_str(), cflags); rc == REG_OK ) {
+        auto nsub = preg.re_nsub;
+        jrx_regfree(&preg);
+        return nsub;
+    }
+    else {
+        static char err[256];
+        jrx_regerror(rc, &preg, err, sizeof(err));
+        return result::Error(fmt("error compiling pattern '%s': %s", _value, err));
+    }
+}
+
+Result<Nothing> regexp::Pattern::validate() const {
+    if ( auto rc = _tryCompile() )
+        return Nothing();
+    else
+        return rc.error();
+}
+
+Result<uint64_t> regexp::Pattern::numberOfCaptures() const { return _tryCompile(); }
 
 // Determines which matcher (std vs. min) to use.
 static bool _use_std_matcher(jrx_regex_t* jrx, jrx_match_state* ms) {
@@ -233,9 +262,8 @@ regexp::detail::CompiledRegExp::CompiledRegExp(const regexp::Patterns& patterns,
     if ( patterns.empty() )
         return;
 
-    int idx = 0;
     for ( const auto& p : patterns )
-        _compileOne(p, idx++);
+        _compileOne(p);
 
     jrx_regset_finalize(jrx());
 }
@@ -255,7 +283,7 @@ void regexp::detail::CompiledRegExp::_newJrx() {
     jrx_regset_init(_jrx.get(), -1, cflags);
 }
 
-void regexp::detail::CompiledRegExp::_compileOne(regexp::Pattern pattern, int idx) {
+void regexp::detail::CompiledRegExp::_compileOne(regexp::Pattern pattern) {
     const auto& regexp = pattern.value();
 
     int cflags = (pattern.isCaseInsensitive() ? REG_ICASE : 0);
