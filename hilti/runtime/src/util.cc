@@ -426,12 +426,8 @@ hilti::rt::ByteOrder hilti::rt::systemByteOrder() {
         return ByteOrder::Big;
     else
         throw RuntimeError("cannot determine system byte order");
-#elif defined(LITTLE_ENDIAN)
-    return ByteOrder::Little;
-#elif defined(BIG_ENDIAN)
-    return ByteOrder::Big;
 #else
-#error Neither LITTLE_ENDIAN nor BIG_ENDIAN defined.
+#error Compiler does not support std::endian
 #endif
 }
 
