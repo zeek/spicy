@@ -20,7 +20,7 @@ struct TypeInfo;
  * anything that can happen during "normal" operation (which is almost
  * everything).
  */
-void fatalError(std::string_view msg) __attribute__((noreturn));
+HILTI_NORETURN void fatalError(std::string_view msg);
 
 /** Reports a warning. */
 void warning(std::string_view msg);

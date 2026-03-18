@@ -1796,39 +1796,33 @@ const Type* auxType(const type_info::Value& v) {
 
 
 // Forward declare static built-in type information objects.
-#if defined(_MSC_VER) && defined(HILTI_JIT_DLL)
-#define HILTI_TYPEINFO_EXTERN extern __declspec(dllimport)
-#else
-#define HILTI_TYPEINFO_EXTERN extern
-#endif
-HILTI_TYPEINFO_EXTERN const TypeInfo address;
-HILTI_TYPEINFO_EXTERN const TypeInfo any;
-HILTI_TYPEINFO_EXTERN const TypeInfo bool_;
-HILTI_TYPEINFO_EXTERN const TypeInfo bytes_iterator;
-HILTI_TYPEINFO_EXTERN const TypeInfo bytes;
-HILTI_TYPEINFO_EXTERN const TypeInfo error;
-HILTI_TYPEINFO_EXTERN const TypeInfo int16;
-HILTI_TYPEINFO_EXTERN const TypeInfo int32;
-HILTI_TYPEINFO_EXTERN const TypeInfo int64;
-HILTI_TYPEINFO_EXTERN const TypeInfo int8;
-HILTI_TYPEINFO_EXTERN const TypeInfo interval;
-HILTI_TYPEINFO_EXTERN const TypeInfo library;
-HILTI_TYPEINFO_EXTERN const TypeInfo network;
-HILTI_TYPEINFO_EXTERN const TypeInfo null;
-HILTI_TYPEINFO_EXTERN const TypeInfo port;
-HILTI_TYPEINFO_EXTERN const TypeInfo real;
-HILTI_TYPEINFO_EXTERN const TypeInfo regexp;
-HILTI_TYPEINFO_EXTERN const TypeInfo stream_iterator;
-HILTI_TYPEINFO_EXTERN const TypeInfo stream_view;
-HILTI_TYPEINFO_EXTERN const TypeInfo stream;
-HILTI_TYPEINFO_EXTERN const TypeInfo string;
-HILTI_TYPEINFO_EXTERN const TypeInfo time;
-HILTI_TYPEINFO_EXTERN const TypeInfo uint16;
-HILTI_TYPEINFO_EXTERN const TypeInfo uint32;
-HILTI_TYPEINFO_EXTERN const TypeInfo uint64;
-HILTI_TYPEINFO_EXTERN const TypeInfo uint8;
-HILTI_TYPEINFO_EXTERN const TypeInfo void_;
-#undef HILTI_TYPEINFO_EXTERN
+extern HILTI_JIT_IMPORT const TypeInfo address;
+extern HILTI_JIT_IMPORT const TypeInfo any;
+extern HILTI_JIT_IMPORT const TypeInfo bool_;
+extern HILTI_JIT_IMPORT const TypeInfo bytes_iterator;
+extern HILTI_JIT_IMPORT const TypeInfo bytes;
+extern HILTI_JIT_IMPORT const TypeInfo error;
+extern HILTI_JIT_IMPORT const TypeInfo int16;
+extern HILTI_JIT_IMPORT const TypeInfo int32;
+extern HILTI_JIT_IMPORT const TypeInfo int64;
+extern HILTI_JIT_IMPORT const TypeInfo int8;
+extern HILTI_JIT_IMPORT const TypeInfo interval;
+extern HILTI_JIT_IMPORT const TypeInfo library;
+extern HILTI_JIT_IMPORT const TypeInfo network;
+extern HILTI_JIT_IMPORT const TypeInfo null;
+extern HILTI_JIT_IMPORT const TypeInfo port;
+extern HILTI_JIT_IMPORT const TypeInfo real;
+extern HILTI_JIT_IMPORT const TypeInfo regexp;
+extern HILTI_JIT_IMPORT const TypeInfo stream_iterator;
+extern HILTI_JIT_IMPORT const TypeInfo stream_view;
+extern HILTI_JIT_IMPORT const TypeInfo stream;
+extern HILTI_JIT_IMPORT const TypeInfo string;
+extern HILTI_JIT_IMPORT const TypeInfo time;
+extern HILTI_JIT_IMPORT const TypeInfo uint16;
+extern HILTI_JIT_IMPORT const TypeInfo uint32;
+extern HILTI_JIT_IMPORT const TypeInfo uint64;
+extern HILTI_JIT_IMPORT const TypeInfo uint8;
+extern HILTI_JIT_IMPORT const TypeInfo void_;
 
 } // namespace type_info
 

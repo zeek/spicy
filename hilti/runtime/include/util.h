@@ -26,6 +26,7 @@
 #include <hilti/rt/3rdparty/ArticleEnumClass-v2/EnumClass.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/filesystem.h>
+#include <hilti/rt/macros.h>
 #include <hilti/rt/result.h>
 #include <hilti/rt/types/set_fwd.h>
 #include <hilti/rt/types/time.h>
@@ -94,7 +95,7 @@
 namespace hilti::rt {
 
 /** Reports an internal error and aborts execution. */
-void internalError(std::string_view msg) __attribute__((noreturn));
+HILTI_NORETURN void internalError(std::string_view msg);
 
 } // namespace hilti::rt
 
@@ -110,10 +111,10 @@ namespace hilti::rt {
 extern std::string version();
 
 /** Dumps a backtrack to stderr and then aborts execution. */
-extern void abort_with_backtrace() __attribute__((noreturn));
+extern HILTI_NORETURN void abort_with_backtrace();
 
 /** Aborts with an internal error saying we should not be where we are. */
-extern void cannot_be_reached() __attribute__((noreturn));
+extern HILTI_NORETURN void cannot_be_reached();
 
 /** Statistics about resource usage. */
 struct ResourceUsage {

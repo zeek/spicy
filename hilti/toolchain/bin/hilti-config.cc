@@ -2,6 +2,8 @@
 //
 // Outputs paths and flags for using HILTI.
 
+#include <filesystem.h>
+
 #include <exception>
 #include <iostream>
 #include <list>
@@ -10,8 +12,6 @@
 #include <hilti/autogen/config.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/util.h>
-
-#include <filesystem.h>
 
 using namespace std;
 

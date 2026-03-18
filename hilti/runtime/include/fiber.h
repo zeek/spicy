@@ -292,23 +292,12 @@ private:
 
     // TODO: Usage of these isn't thread-safe. Should become "atomic" and
     // move into global state.
-#if defined(_MSC_VER) && defined(HILTI_JIT_DLL)
-    // In DLL context, import these from the host executable to avoid
-    // MSVC placing inline statics in the .rdata (read-only) section.
-    __declspec(dllimport) static uint64_t _total_fibers;
-    __declspec(dllimport) static uint64_t _current_fibers;
-    __declspec(dllimport) static uint64_t _cached_fibers;
-    __declspec(dllimport) static uint64_t _max_fibers;
-    __declspec(dllimport) static uint64_t _max_stack_size;
-    __declspec(dllimport) static uint64_t _initialized; // number of trampolines run
-#else
-    inline static uint64_t _total_fibers;
-    inline static uint64_t _current_fibers;
-    inline static uint64_t _cached_fibers;
-    inline static uint64_t _max_fibers;
-    inline static uint64_t _max_stack_size;
-    inline static uint64_t _initialized; // number of trampolines run
-#endif
+    HILTI_JIT_IMPORT_OR_INLINE static uint64_t _total_fibers;
+    HILTI_JIT_IMPORT_OR_INLINE static uint64_t _current_fibers;
+    HILTI_JIT_IMPORT_OR_INLINE static uint64_t _cached_fibers;
+    HILTI_JIT_IMPORT_OR_INLINE static uint64_t _max_fibers;
+    HILTI_JIT_IMPORT_OR_INLINE static uint64_t _max_stack_size;
+    HILTI_JIT_IMPORT_OR_INLINE static uint64_t _initialized; // number of trampolines run
 };
 
 std::ostream& operator<<(std::ostream& out, const Fiber& fiber);

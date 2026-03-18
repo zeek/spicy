@@ -29,13 +29,11 @@ TEST_CASE("backtrace") {
 // NOTE: Some compilers remove this function even if `noinline` is given via
 // e.g., constant folding, so we try to completely disable optimization.
 #if defined(__clang__)
-auto __attribute__((noinline, optnone)) make_backtrace() { return Backtrace(); }
+HILTI_NOINLINE __attribute__((optnone)) auto make_backtrace() { return Backtrace(); }
 #elif defined(__GNUC__)
-auto __attribute__((noinline, optimize(0))) make_backtrace() { return Backtrace(); }
-#elif defined(_MSC_VER)
-__declspec(noinline) auto make_backtrace() { return Backtrace(); }
+HILTI_NOINLINE __attribute__((optimize(0))) auto make_backtrace() { return Backtrace(); }
 #else
-#error "unsupported compiler"
+HILTI_NOINLINE auto make_backtrace() { return Backtrace(); }
 #endif
 
 TEST_CASE("comparison") {

@@ -67,11 +67,7 @@ namespace configuration {
 
 namespace detail {
 /** The runtime's configuration singleton. */
-#if defined(_MSC_VER) && defined(HILTI_JIT_DLL)
-extern __declspec(dllimport) std::unique_ptr<hilti::rt::Configuration> __configuration;
-#else
-extern std::unique_ptr<hilti::rt::Configuration> __configuration;
-#endif
+extern HILTI_JIT_IMPORT std::unique_ptr<hilti::rt::Configuration> __configuration;
 
 /**
  * Returns the current global configuration without checking if it's already
