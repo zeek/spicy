@@ -1,6 +1,5 @@
-.. _spicy_addressfamily:
-
 .. rubric:: ``spicy::AddressFamily``
+   :name: spicy_addressfamily
 
 Specifies an address' IP family.
 
@@ -11,15 +10,13 @@ Specifies an address' IP family.
         IPv6  # IPv6 address
     };
 
-.. _spicy_base64stream:
-
 .. rubric:: ``spicy::Base64Stream``
+   :name: spicy_base64stream
 
 Captures the state of base64 encoding/decoding for the corresponding library functions.
 
-.. _spicy_bitorder:
-
 .. rubric:: ``spicy::BitOrder``
+   :name: spicy_bitorder
 
 Specifies the bit order for individual bit ranges inside a bitfield.
 
@@ -30,9 +27,8 @@ Specifies the bit order for individual bit ranges inside a bitfield.
         MSB0      # bits are interpreted as most-significant-bit coming first
     };
 
-.. _spicy_byteorder:
-
 .. rubric:: ``spicy::ByteOrder``
+   :name: spicy_byteorder
 
 Specifies byte order for data operations.
 
@@ -45,9 +41,8 @@ Specifies byte order for data operations.
         Host      # data is in byte order of the host we are executing on
     };
 
-.. _spicy_charset:
-
 .. rubric:: ``spicy::Charset``
+   :name: spicy_charset
 
 Specifies the character set for bytes encoding/decoding.
 
@@ -60,9 +55,8 @@ Specifies the character set for bytes encoding/decoding.
         UTF16BE,  # UTF16 big endian encoding
     };
 
-.. _spicy_decodeerrorstrategy:
-
 .. rubric:: ``spicy::DecodeErrorStrategy``
+   :name: spicy_decodeerrorstrategy
 
 Specifies how data is handled that's not representable in a specified character set.
 
@@ -74,21 +68,18 @@ Specifies how data is handled that's not representable in a specified character 
         STRICT    # runtime error is triggered
     };
 
-.. _spicy_matchstate:
-
 .. rubric:: ``spicy::MatchState``
+   :name: spicy_matchstate
 
 Captures state for incremental regular expression matching.
 
-.. _spicy_streamstatistics:
-
 .. rubric:: ``spicy::StreamStatistics``
+   :name: spicy_streamstatistics
 
 Captures stream statistics.
 
-.. _spicy_protocol:
-
 .. rubric:: ``spicy::Protocol``
+   :name: spicy_protocol
 
 Specifies a transport-layer protocol.
 
@@ -100,9 +91,8 @@ Specifies a transport-layer protocol.
         ICMP
     };
 
-.. _spicy_realtype:
-
 .. rubric:: ``spicy::RealType``
+   :name: spicy_realtype
 
 Specifies the type of a real value.
 
@@ -113,9 +103,8 @@ Specifies the type of a real value.
         IEEE754_Double  # double precision in IEEE754 format
     };
 
-.. _spicy_reassemblerpolicy:
-
 .. rubric:: ``spicy::ReassemblerPolicy``
+   :name: spicy_reassemblerpolicy
 
 Specifies the policy for a sink's reassembler when encountering overlapping data.
 
@@ -125,9 +114,8 @@ Specifies the policy for a sink's reassembler when encountering overlapping data
         First # take the original data & discard the new data
     };
 
-.. _spicy_side:
-
 .. rubric:: ``spicy::Side``
+   :name: spicy_side
 
 Specifies a side an operation should operate on.
 
@@ -139,9 +127,8 @@ Specifies a side an operation should operate on.
         Both     # operate on both sides
     };
 
-.. _spicy_direction:
-
 .. rubric:: ``spicy::Direction``
+   :name: spicy_direction
 
 Specifies direction of a search.
 
@@ -152,9 +139,8 @@ Specifies direction of a search.
         Backward, # search backward
     };
 
-.. _spicy_zlibstream:
-
 .. rubric:: ``spicy::ZlibStream``
+   :name: spicy_zlibstream
 
 Captures the state of gzip decompression for the corresponding library functions.
 
