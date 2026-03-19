@@ -12,7 +12,7 @@
     `std::string`, just like other runtime types derive from corresponding
     `std` types, so performance-wise nothing should change. For
     convenience, there's also a new literal to create HILTI string
-    instances: `"foo"_hs` ("*H*ILTI *s*tring), similar to how we already
+    instances: `"foo"_hs` ("HILTI string), similar to how we already
     have `"foo"_b` for `bytes`.
 
     Note that `rt::String` deliberately does not convert from/to
