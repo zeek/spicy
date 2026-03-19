@@ -14,8 +14,8 @@ using namespace hilti::rt;
 
 integer::safe<uint64_t> string::size(const String& s, unicode::DecodeErrorStrategy errors) {
     const auto sv = s.str();
-    const auto* p = sv.begin();
-    const auto* e = sv.end();
+    auto p = sv.begin(); // NOLINT[readability-qualified-auto]
+    auto e = sv.end();   // NOLINT[readability-qualified-auto]
 
     uint64_t len = 0;
 
@@ -149,8 +149,8 @@ Bytes string::encode(const String& s, unicode::Charset cs, unicode::DecodeErrorS
             // HILTI `string` is always UTF-8, but we could be invoked with raw bags of bytes here as well, so validate.
             std::string t;
 
-            const auto* p = sv.begin();
-            const auto* e = sv.end();
+            auto p = sv.begin(); // NOLINT[readability-qualified-auto]
+            auto e = sv.end();   // NOLINT[readability-qualified-auto]
 
             while ( p < e ) {
                 try {
