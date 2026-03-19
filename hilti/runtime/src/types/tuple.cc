@@ -4,6 +4,4 @@
 
 using namespace hilti::rt;
 
-__attribute__((noreturn)) void tuple::detail::throw_unset_tuple_element() {
-    throw UnsetTupleElement("unset tuple element");
-}
+HILTI_NORETURN void tuple::detail::throw_unset_tuple_element() { throw UnsetTupleElement("unset tuple element"); }

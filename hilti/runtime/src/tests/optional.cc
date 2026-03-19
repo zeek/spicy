@@ -50,7 +50,11 @@ TEST_CASE("valueOrInit") {
 }
 
 TEST_CASE("tryValue") {
+#ifdef _MSC_VER
+    CHECK_THROWS_WITH_AS(Optional<int8_t>().tryValue(), "Unknown exception", const optional::Unset&);
+#else
     CHECK_THROWS_WITH_AS(Optional<int8_t>().tryValue(), "std::exception", const optional::Unset&);
+#endif
     CHECK_EQ(Optional<int8_t>(42).tryValue(), 42);
 }
 

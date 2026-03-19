@@ -29,11 +29,11 @@ TEST_CASE("backtrace") {
 // NOTE: Some compilers remove this function even if `noinline` is given via
 // e.g., constant folding, so we try to completely disable optimization.
 #if defined(__clang__)
-auto __attribute__((noinline, optnone)) make_backtrace() { return Backtrace(); }
+HILTI_NOINLINE __attribute__((optnone)) auto make_backtrace() { return Backtrace(); }
 #elif defined(__GNUC__)
-auto __attribute__((noinline, optimize(0))) make_backtrace() { return Backtrace(); }
+HILTI_NOINLINE __attribute__((optimize(0))) auto make_backtrace() { return Backtrace(); }
 #else
-#error "unsupported compiler"
+HILTI_NOINLINE auto make_backtrace() { return Backtrace(); }
 #endif
 
 TEST_CASE("comparison") {
@@ -53,7 +53,15 @@ TEST_CASE("comparison") {
 }
 
 TEST_CASE("demangle") {
+#ifdef _MSC_VER
+    // MSVC's typeid().name() uses "class X" / "struct X" / "enum X" prefixes;
+    // demangle strips them.
+    CHECK_EQ(demangle("class Foo"), "Foo");
+    CHECK_EQ(demangle("struct Bar"), "Bar");
+    CHECK_EQ(demangle("enum Baz"), "Baz");
+#else
     CHECK_EQ(demangle("i"), "int");
+#endif
 
     // If the symbol cannot be demangled the input is returned.
     CHECK_EQ(demangle(" foobar"), " foobar");

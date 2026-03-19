@@ -2,6 +2,27 @@
 
 cmake_minimum_required(VERSION 3.15.0)
 
+if (WIN32)
+    # Enable usage of CMAKE_MSVC_RUNTIME_LIBRARY variable.
+    cmake_policy(SET CMP0091 NEW)
+
+    # Set up vcpkg toolchain for Windows builds. The toolchain file must be set
+    # before the project() call.
+    get_filename_component(_toolchain ./3rdparty/vcpkg/scripts/buildsystems/vcpkg.cmake ABSOLUTE)
+    set(CMAKE_TOOLCHAIN_FILE ${_toolchain} CACHE STRING "Vcpkg toolchain file")
+
+    if (NOT DEFINED VCPKG_TARGET_TRIPLET)
+        set(VCPKG_TARGET_TRIPLET "x64-windows-static" CACHE STRING "Vcpkg target triplet")
+    endif ()
+    if (NOT DEFINED VCPKG_HOST_TRIPLET)
+        set(VCPKG_HOST_TRIPLET "x64-windows-static" CACHE STRING "Vcpkg host triplet")
+    endif ()
+    if (NOT DEFINED VCPKG_OVERLAY_TRIPLETS)
+        set(VCPKG_OVERLAY_TRIPLETS "${CMAKE_SOURCE_DIR}/vcpkg-triplets"
+            CACHE STRING "Vcpkg overlay triplets")
+    endif ()
+endif ()
+
 if (APPLE AND CMAKE_VERSION VERSION_GREATER_EQUAL 4.0.0 AND NOT CMAKE_OSX_SYSROOT)
     # We are going to need having CMAKE_OSX_SYSROOT point to the macOS SDK
     # path. However, starting with CMake 4.0, CMAKE_OSX_SYSROOT is not set
@@ -21,6 +42,34 @@ if (APPLE AND CMAKE_VERSION VERSION_GREATER_EQUAL 4.0.0 AND NOT CMAKE_OSX_SYSROO
 endif ()
 
 project(spicy LANGUAGES C CXX)
+
+if (MSVC)
+    # When building Spicy as part of Zeek, libunistd may already exist.
+    # Reuse that target to avoid duplicate target-name collisions.
+    if (NOT TARGET libunistd)
+        add_subdirectory(3rdparty/libunistd)
+        include_directories(BEFORE ${CMAKE_SOURCE_DIR}/3rdparty/libunistd/unistd)
+        list(APPEND CMAKE_REQUIRED_INCLUDES ${CMAKE_SOURCE_DIR}/3rdparty/libunistd/unistd)
+    else ()
+        get_target_property(_libunistd_include_dirs libunistd INTERFACE_INCLUDE_DIRECTORIES)
+        if (_libunistd_include_dirs)
+            include_directories(BEFORE ${_libunistd_include_dirs})
+            list(APPEND CMAKE_REQUIRED_INCLUDES ${_libunistd_include_dirs})
+        endif ()
+        unset(_libunistd_include_dirs)
+    endif ()
+
+    # Force-include unistd.h in C++ compilation units so that libunistd can set
+    # up WinSock2.h / WIN32_LEAN_AND_MEAN before anything else pulls in Windows.h.
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/FIunistd.h>)
+    # Use conforming preprocessor so that raw string literals inside macros are
+    # tokenized correctly (the traditional MSVC preprocessor misparses them).
+    add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:/Zc:preprocessor>)
+    # Report the correct C++ standard in __cplusplus (MSVC defaults to 199711L).
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus>)
+    # Use UTF-8 for both source and execution character sets.
+    add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:/utf-8>)
+endif ()
 
 set(flex_minimum_version "2.5.37")
 set(bison_minimum_version "3.0")
@@ -154,7 +203,7 @@ if (FLEX_ROOT)
         FLEX_EXECUTABLE
         NAMES flex win_flex
         PATHS ${FLEX_ROOT}
-        PATH_SUFFIXES bin
+        PATH_SUFFIXES bin tools
         NO_DEFAULT_PATH)
     find_library(
         FL_LIBRARY
@@ -165,8 +214,9 @@ if (FLEX_ROOT)
     find_path(
         FLEX_INCLUDE_DIR FlexLexer.h
         PATHS ${FLEX_ROOT}
-        PATH_SUFFIXES include
+        PATH_SUFFIXES include tools
         NO_DEFAULT_PATH)
+    set(_flex_include_hints ${FLEX_ROOT})
 endif ()
 
 if (BISON_ROOT)
@@ -174,7 +224,7 @@ if (BISON_ROOT)
         BISON_EXECUTABLE
         NAMES bison win_bison
         PATHS ${BISON_ROOT}
-        PATH_SUFFIXES bin
+        PATH_SUFFIXES bin tools
         NO_DEFAULT_PATH)
 endif ()
 
@@ -182,6 +232,24 @@ find_package(FLEX REQUIRED)
 find_package(BISON REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(Backtrace)
+
+# On Windows, FlexLexer.h may not be in a standard include path. Derive
+# search hints from the found flex executable so that common package manager
+# layouts (e.g. chocolatey's winflexbison3) are discovered automatically.
+if (WIN32 AND FLEX_FOUND)
+    get_filename_component(_flex_exe_dir "${FLEX_EXECUTABLE}" DIRECTORY)
+    get_filename_component(_flex_parent "${_flex_exe_dir}" DIRECTORY)
+    list(APPEND _flex_include_hints "${_flex_exe_dir}" "${_flex_parent}/lib/winflexbison3/tools"
+         "${_flex_parent}/lib/winflexbison3")
+
+    find_path(FLEX_INCLUDE_DIR FlexLexer.h HINTS ${_flex_include_hints} PATH_SUFFIXES include tools)
+endif ()
+
+find_path(
+    FLEX_INCLUDE_DIRS
+    NAMES FlexLexer.h
+    HINTS ${_flex_include_hints}
+    PATH_SUFFIXES include tools REQUIRED)
 
 if (Backtrace_FOUND AND NOT APPLE)
     # On systems other than MacOS there's a libexecinfo that's not working for us:
@@ -264,7 +332,10 @@ string(STRIP "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${BuildType}}" cxxflags)
 
 option("HILTI_DEV_PRECOMPILE_HEADERS" "Precompile headers for developer tests" ON)
 
-if (${HILTI_DEV_PRECOMPILE_HEADERS} AND TARGET hilti-config AND TARGET spicy-config)
+if (${HILTI_DEV_PRECOMPILE_HEADERS}
+    AND TARGET hilti-config
+    AND TARGET spicy-config
+    AND NOT MSVC)
     # Precompile libhilti for use in JIT during development.
     #
     # We only use precompiled headers during JIT, but e.g., not to during

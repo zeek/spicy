@@ -60,6 +60,9 @@ public:
             throw IndexError("iterator is invalid");
         }
 
+        if ( _iterator == static_cast<const typename M::M&>(_control.get()).end() )
+            throw IndexError("iterator is invalid");
+
         ++_iterator;
         return *this;
     }
@@ -180,6 +183,25 @@ public:
 
     Map() = default;
     Map(std::initializer_list<value_type> init) : M(std::move(init)) {}
+
+    Map(const Map& other) = default;
+    Map(Map&& other) noexcept = default;
+
+    Map& operator=(const Map& other) {
+        if ( this != &other ) {
+            M::operator=(other);
+            invalidateIterators();
+        }
+        return *this;
+    }
+
+    Map& operator=(Map&& other) noexcept {
+        if ( this != &other ) {
+            M::operator=(std::move(other));
+            invalidateIterators();
+        }
+        return *this;
+    }
 
     /** Checks whether a key is set in the map.
      *

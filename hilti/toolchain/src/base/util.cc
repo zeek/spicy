@@ -4,12 +4,17 @@
 #include <mach-o/dyld.h>
 #endif
 
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <pwd.h>
-#include <sys/stat.h>
 #include <sys/time.h>
+#include <wordexp.h>
+#endif
+
+#include <sys/stat.h>
 #include <unistd.h>
 #include <utf8proc/utf8proc.h>
-#include <wordexp.h>
 
 #include <algorithm>
 #include <cerrno>
@@ -64,6 +69,80 @@ std::pair<std::string, std::string> util::rsplit1(std::string_view s, std::strin
 }
 
 Result<std::vector<std::string>> util::splitShellUnsafe(std::string_view s) {
+#if defined(_MSC_VER)
+    // Shell-style word splitting with support for single/double quotes,
+    // backslash escaping, command substitution (backticks), and basic
+    // variable expansion ($VAR).
+    if ( s.empty() )
+        return {std::vector<std::string>{}};
+
+    std::vector<std::string> result;
+    std::string current;
+    bool in_single_quote = false;
+    bool in_double_quote = false;
+    bool escape_next = false;
+
+    for ( size_t i = 0; i < s.size(); ++i ) {
+        char c = s[i];
+
+        if ( escape_next ) {
+            current += c;
+            escape_next = false;
+            continue;
+        }
+
+        if ( c == '\\' && ! in_single_quote ) {
+            escape_next = true;
+            continue;
+        }
+
+        if ( c == '\'' && ! in_double_quote ) {
+            in_single_quote = ! in_single_quote;
+            continue;
+        }
+
+        if ( c == '"' && ! in_single_quote ) {
+            in_double_quote = ! in_double_quote;
+            continue;
+        }
+
+        if ( c == '`' && ! in_single_quote && ! in_double_quote ) {
+            // Skip command substitution content (cannot execute on Windows).
+            auto end = s.find('`', i + 1);
+            if ( end != std::string::npos )
+                i = end;
+            continue;
+        }
+
+        if ( c == '$' && ! in_single_quote ) {
+            size_t start = i + 1;
+            size_t end = start;
+            while ( end < s.size() && (std::isalnum(s[end]) || s[end] == '_') )
+                ++end;
+
+            auto varname = s.substr(start, end - start);
+            if ( auto* val = ::getenv(std::string(varname).c_str()) )
+                current += val;
+            i = end - 1;
+            continue;
+        }
+
+        if ( std::isspace(static_cast<unsigned char>(c)) && ! in_single_quote && ! in_double_quote ) {
+            if ( ! current.empty() ) {
+                result.push_back(std::move(current));
+                current.clear();
+            }
+            continue;
+        }
+
+        current += c;
+    }
+
+    if ( ! current.empty() )
+        result.push_back(std::move(current));
+
+    return {std::move(result)};
+#else
     // On FreeBSD running `wordexp` on an empty string errors with
     // `WRDE_SYNTAX`; construct the result by hand.
     if ( s.empty() )
@@ -82,6 +161,7 @@ Result<std::vector<std::string>> util::splitShellUnsafe(std::string_view s) {
     wordfree(&we);
 
     return {std::move(result)};
+#endif
 }
 
 std::string util::replace(const std::string& s, const std::string& o, const std::string& n) {
@@ -204,6 +284,12 @@ hilti::rt::filesystem::path util::currentExecutable() {
 
     return path;
 
+#elif defined(_WIN32)
+    char buf[MAX_PATH];
+    DWORD len = GetModuleFileNameA(nullptr, buf, MAX_PATH);
+    if ( len > 0 && len < MAX_PATH )
+        return rt::filesystem::path(std::string(buf, len));
+
 #elif defined(__FreeBSD__)
     const auto* exe = "/proc/curproc/file";
 
@@ -231,9 +317,19 @@ void util::abortWithBacktrace() {
 }
 
 double util::currentTime() {
+#ifdef _WIN32
+    FILETIME ft;
+    GetSystemTimeAsFileTime(&ft);
+    ULARGE_INTEGER ull;
+    ull.LowPart = ft.dwLowDateTime;
+    ull.HighPart = ft.dwHighDateTime;
+    // FILETIME is in 100ns intervals since 1601-01-01; convert to Unix epoch seconds.
+    return static_cast<double>(ull.QuadPart - 116444736000000000ULL) / 1e7;
+#else
     struct timeval tv{};
     gettimeofday(&tv, nullptr);
     return static_cast<double>(tv.tv_sec) + (static_cast<double>(tv.tv_usec) / 1e6);
+#endif
 }
 
 std::string util::toIdentifier(std::string s) {
@@ -338,6 +434,10 @@ std::optional<hilti::rt::filesystem::path> util::cacheDirectory(const hilti::Con
 
     const char* homedir = getenv("HOME");
 
+#ifdef _WIN32
+    if ( homedir == nullptr )
+        homedir = getenv("USERPROFILE");
+#else
     if ( homedir == nullptr ) {
         auto* pwuid = getpwuid(getuid());
         if ( ! pwuid )
@@ -345,6 +445,7 @@ std::optional<hilti::rt::filesystem::path> util::cacheDirectory(const hilti::Con
 
         homedir = pwuid->pw_dir;
     }
+#endif
 
     if ( homedir )
         return rt::filesystem::path(rt::filesystem::path(homedir) / ".cache" / "spicy" / configuration.version_string);

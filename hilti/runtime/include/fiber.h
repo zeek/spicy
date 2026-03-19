@@ -272,6 +272,15 @@ private:
     /** Current location for user-visible diagnostic messages; null if not set. */
     const char* _location = nullptr;
 
+#ifdef _WIN32
+    /** Saved TEB stack boundaries for proper exception handling during fiber switches. */
+    struct {
+        void* stack_base = nullptr;
+        void* stack_limit = nullptr;
+        void* deallocation_stack = nullptr;
+    } _teb;
+#endif
+
 #ifdef HILTI_HAVE_ASAN
     /** Additional tracking state that ASAN needs. */
     struct {
@@ -283,12 +292,12 @@ private:
 
     // TODO: Usage of these isn't thread-safe. Should become "atomic" and
     // move into global state.
-    inline static uint64_t _total_fibers;
-    inline static uint64_t _current_fibers;
-    inline static uint64_t _cached_fibers;
-    inline static uint64_t _max_fibers;
-    inline static uint64_t _max_stack_size;
-    inline static uint64_t _initialized; // number of trampolines run
+    HILTI_JIT_IMPORT_OR_INLINE static uint64_t _total_fibers;
+    HILTI_JIT_IMPORT_OR_INLINE static uint64_t _current_fibers;
+    HILTI_JIT_IMPORT_OR_INLINE static uint64_t _cached_fibers;
+    HILTI_JIT_IMPORT_OR_INLINE static uint64_t _max_fibers;
+    HILTI_JIT_IMPORT_OR_INLINE static uint64_t _max_stack_size;
+    HILTI_JIT_IMPORT_OR_INLINE static uint64_t _initialized; // number of trampolines run
 };
 
 std::ostream& operator<<(std::ostream& out, const Fiber& fiber);

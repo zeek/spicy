@@ -46,9 +46,10 @@ void hilti::Configuration::initLocation(const char* argv0) { initLocation(std::s
 
 void hilti::Configuration::initLocation(const hilti::rt::filesystem::path& argv0) {
     try {
-        auto exec = hilti::rt::filesystem::canonical(argv0).native();
-        auto prefix = hilti::rt::filesystem::canonical("${PROJECT_BINARY_DIR}").native();
-        init(util::startsWith(hilti::rt::normalizePath(exec), hilti::rt::normalizePath(prefix)));
+        auto exec = hilti::rt::normalizePath(hilti::rt::filesystem::canonical(argv0)).generic_string();
+        auto prefix =
+            hilti::rt::normalizePath(hilti::rt::filesystem::canonical("${PROJECT_BINARY_DIR}")).generic_string();
+        init(util::startsWith(exec, prefix));
     } catch ( const hilti::rt::filesystem::filesystem_error& ) {
         init(false);
     }
@@ -98,7 +99,11 @@ void Configuration::init(bool use_build_directory) {
     std::vector<std::string> library_paths;
 
     if ( auto* hilti_library_paths = std::getenv("HILTI_PATH") ) {
+#ifdef _WIN32
+        library_paths = util::toVector(hilti::rt::split(hilti_library_paths, ";") |
+#else
         library_paths = util::toVector(hilti::rt::split(hilti_library_paths, ":") |
+#endif
                                        std::views::transform([](auto s) { return std::string(s); }));
     }
     else {
@@ -141,6 +146,36 @@ void Configuration::init(bool use_build_directory) {
     //
     // (3) it helps the optimizer to know that symbols won't be accessed
     // externally.
+#ifdef _MSC_VER
+    runtime_cxx_flags_debug = flatten({
+        "/std:c++20",
+        "/Zi",
+        "/Od",
+        "/EHsc",
+        "/MT",
+        "/J",
+        // NDEBUG and _ITERATOR_DEBUG_LEVEL=0 are required even in debug mode
+        // to match the release CRT (/MT) used by pre-built runtime libraries.
+        "/DNDEBUG",
+        "/DHILTI_JIT_DLL",
+        "/D_ITERATOR_DEBUG_LEVEL=0",
+        prefix("${HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS}", "-I", installation_tag),
+        prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG}", "", installation_tag),
+    });
+
+    runtime_cxx_flags_release = flatten({
+        "/std:c++20",
+        "/Zi",
+        "/O2",
+        "/DNDEBUG",
+        "/EHsc",
+        "/MT",
+        "/J",
+        "/DHILTI_JIT_DLL",
+        prefix("${HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS}", "-I", installation_tag),
+        prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE}", "", installation_tag),
+    });
+#else
     runtime_cxx_flags_debug = flatten({
         "-fPIC",
         "-std=c++20",
@@ -163,13 +198,33 @@ void Configuration::init(bool use_build_directory) {
         prefix("${HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS}", "-I", installation_tag),
         prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE}", "", installation_tag),
     });
+#endif
 
     if ( auto libhilti_pch = precompiledLibhilti(*this, true) )
-        runtime_cxx_flags_debug.push_back(rt::fmt("-include%s", libhilti_pch->c_str()));
+#ifdef _MSC_VER
+        runtime_cxx_flags_debug.push_back(rt::fmt("/FI%s", libhilti_pch->generic_string()));
+#else
+        runtime_cxx_flags_debug.push_back(rt::fmt("-include%s", libhilti_pch->generic_string()));
+#endif
 
     if ( auto libhilti_pch = precompiledLibhilti(*this, false) )
-        runtime_cxx_flags_release.push_back(rt::fmt("-include%s", libhilti_pch->c_str()));
+#ifdef _MSC_VER
+        runtime_cxx_flags_release.push_back(rt::fmt("/FI%s", libhilti_pch->generic_string()));
+#else
+        runtime_cxx_flags_release.push_back(rt::fmt("-include%s", libhilti_pch->generic_string()));
+#endif
 
+#ifdef _MSC_VER
+    runtime_ld_flags_debug = flatten({
+        prefix("${HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "/LIBPATH:", installation_tag),
+        prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG}", "", installation_tag),
+    });
+
+    runtime_ld_flags_release = flatten({
+        prefix("${HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "/LIBPATH:", installation_tag),
+        prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE}", "", installation_tag),
+    });
+#else
     runtime_ld_flags_debug = flatten({
         prefix("${HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "-L", installation_tag),
         prefix("${HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "-Wl,-rpath,", installation_tag),
@@ -189,10 +244,20 @@ void Configuration::init(bool use_build_directory) {
         prefix(CMAKE_DL_LIBS, "-l", installation_tag),
         "-Wno-unused-command-line-argument",
     });
+#endif
 
     hlto_cxx_flags_debug = runtime_cxx_flags_debug;
     hlto_cxx_flags_release = runtime_cxx_flags_release;
 
+#ifdef _MSC_VER
+    // On MSVC, /LD tells cl.exe to produce a DLL.
+    hlto_ld_flags_debug = flatten({
+        "/LD",
+    });
+    hlto_ld_flags_release = flatten({
+        "/LD",
+    });
+#else
     hlto_ld_flags_debug = flatten({
         "-shared",
         "-Wl,-undefined",
@@ -205,6 +270,7 @@ void Configuration::init(bool use_build_directory) {
         "-Wl,dynamic_lookup",
         prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE}", "", installation_tag),
     });
+#endif
 
 #ifdef __APPLE__
     // Recent macOS versions have started to report `ld: warning: -undefined

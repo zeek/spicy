@@ -64,17 +64,17 @@
 #include <hilti/ast/statements/while.h>
 #include <hilti/ast/statements/yield.h>
 #include <hilti/ast/type.h>
+#include <hilti/ast/types/bytes.h>
+#include <hilti/ast/types/list.h>
+#include <hilti/ast/types/map.h>
 #include <hilti/ast/types/reference.h>
+#include <hilti/ast/types/set.h>
+#include <hilti/ast/types/stream.h>
 #include <hilti/ast/types/struct.h>
+#include <hilti/ast/types/vector.h>
 #include <hilti/ast/visitor.h>
 #include <hilti/base/timing.h>
 #include <hilti/base/util.h>
-#include <hilti/hilti/ast/types/bytes.h>
-#include <hilti/hilti/ast/types/list.h>
-#include <hilti/hilti/ast/types/map.h>
-#include <hilti/hilti/ast/types/set.h>
-#include <hilti/hilti/ast/types/stream.h>
-#include <hilti/hilti/ast/types/vector.h>
 
 using namespace hilti;
 using namespace hilti::detail;

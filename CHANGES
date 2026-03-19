@@ -1,3 +1,15 @@
+1.16.0-dev.91 | 2026-03-19 20:29:36 +0100
+
+  * Rework CHANGES slightly. (Benjamin Bannier, Corelight)
+
+    The previous formatting confused the spellchecker.
+
+  * Fix windows build. (Maor Hamami)
+
+    This adds a first iteration for adding Windows support for Spicy. With
+    this patch the code builds, and unit tests pass. We also tested that
+    this version of Spicy is usably in a fixed up version of Zeek.
+
 1.16.0-dev.88 | 2026-03-19 13:37:35 +0100
 
   * Introduce `hilti::rt::String` as a proper runtime class for HILTI strings. (Robin Sommer, Corelight)
@@ -12,7 +24,7 @@
     `std::string`, just like other runtime types derive from corresponding
     `std` types, so performance-wise nothing should change. For
     convenience, there's also a new literal to create HILTI string
-    instances: `"foo"_hs` ("*H*ILTI *s*tring), similar to how we already
+    instances: `"foo"_hs` ("HILTI string), similar to how we already
     have `"foo"_b` for `bytes`.
 
     Note that `rt::String` deliberately does not convert from/to

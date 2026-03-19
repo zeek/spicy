@@ -60,8 +60,10 @@ set(SOURCES_COMPILER
 
 add_library(spicy-objects OBJECT ${SOURCES_COMPILER})
 set_property(TARGET spicy-objects PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_compile_options(spicy-objects PRIVATE "-Wall")
-target_compile_options(spicy-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
+if (NOT MSVC)
+    target_compile_options(spicy-objects PRIVATE "-Wall")
+    target_compile_options(spicy-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
+endif ()
 target_include_directories(spicy-objects BEFORE
                            PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_include_directories(spicy-objects BEFORE
@@ -75,7 +77,7 @@ set_target_properties(spicy-objects PROPERTIES NO_SYSTEM_FROM_IMPORTED true)
 target_link_libraries(spicy-objects
                       PUBLIC $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects>)
 target_link_libraries(spicy-objects PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
-target_link_libraries(spicy-objects PRIVATE hilti)
+hilti_link_libraries_in_tree(spicy-objects PRIVATE)
 
 add_library(spicy)
 hilti_link_libraries_in_tree(spicy PUBLIC)
@@ -121,23 +123,33 @@ configure_file(src/config.cc.in ${AUTOGEN_CC}/config.cc)
 ##### Binaries
 
 add_executable(spicy-config bin/spicy-config.cc)
-target_compile_options(spicy-config PRIVATE "-Wall")
+if (NOT MSVC)
+    target_compile_options(spicy-config PRIVATE "-Wall")
+endif ()
 spicy_link_executable_in_tree(spicy-config PRIVATE)
 
 add_executable(spicyc bin/spicyc.cc)
-target_compile_options(spicyc PRIVATE "-Wall")
+if (NOT MSVC)
+    target_compile_options(spicyc PRIVATE "-Wall")
+endif ()
 spicy_link_executable_in_tree(spicyc PRIVATE)
 
 add_executable(spicy-driver bin/spicy-driver.cc)
-target_compile_options(spicy-driver PRIVATE "-Wall")
+if (NOT MSVC)
+    target_compile_options(spicy-driver PRIVATE "-Wall")
+endif ()
 spicy_link_executable_in_tree(spicy-driver PRIVATE)
 
 add_executable(spicy-doc bin/spicy-doc.cc)
-target_compile_options(spicy-doc PRIVATE "-Wall")
+if (NOT MSVC)
+    target_compile_options(spicy-doc PRIVATE "-Wall")
+endif ()
 spicy_link_executable_in_tree(spicy-doc PRIVATE)
 
 add_executable(spicy-batch-extract bin/spicy-batch-extract.cc)
-target_compile_options(spicy-batch-extract PRIVATE "-Wall")
+if (NOT MSVC)
+    target_compile_options(spicy-batch-extract PRIVATE "-Wall")
+endif ()
 spicy_link_executable_in_tree(spicy-batch-extract PRIVATE)
 
 add_subdirectory(bin/spicy-dump)
@@ -167,5 +179,7 @@ install(CODE "file(REMOVE \"\$ENV\{DESTDIR\}${CMAKE_INSTALL_FULL_INCLUDEDIR}/spi
 add_executable(spicy-toolchain-tests EXCLUDE_FROM_ALL tests/main.cc tests/grammar.cc)
 spicy_link_executable_in_tree(spicy-toolchain-tests PRIVATE)
 target_link_libraries(spicy-toolchain-tests PRIVATE doctest)
-target_compile_options(spicy-toolchain-tests PRIVATE "-Wall")
+if (NOT MSVC)
+    target_compile_options(spicy-toolchain-tests PRIVATE "-Wall")
+endif ()
 add_test(NAME spicy-toolchain-tests COMMAND ${PROJECT_BINARY_DIR}/bin/spicy-toolchain-tests)

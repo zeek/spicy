@@ -3,7 +3,6 @@
 #pragma once
 
 #include <doctest/doctest.h>
-#include <unistd.h>
 
 #include <cstdlib>
 #include <fstream>
@@ -22,13 +21,9 @@ namespace hilti::rt::test {
 class TemporaryFile {
 public:
     explicit TemporaryFile() {
-        std::string path = hilti::rt::filesystem::temp_directory_path() / "hilti-rt-tests-XXXXXX";
-
-        auto fd = ::mkstemp(path.data());
-        REQUIRE_NE(fd, -1);
-        ::close(fd);
-
-        _path = path;
+        auto result = hilti::rt::createTemporaryFile("hilti-rt-tests");
+        REQUIRE(result);
+        _path = std::move(*result);
     }
 
     std::vector<std::string> lines() const {

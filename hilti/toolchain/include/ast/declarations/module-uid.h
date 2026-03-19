@@ -74,9 +74,9 @@ struct UID {
     /** Hashes the UID. */
     size_t hash() const {
         return rt::hashCombine(std::hash<std::string>{}(id.str()), std::hash<std::string_view>{}(unique.str()),
-                               std::hash<std::string>{}(path.native()),
-                               std::hash<std::string>{}(parse_extension.native()),
-                               std::hash<std::string>{}(process_extension.native()));
+                               std::hash<std::string>{}(path.generic_string()),
+                               std::hash<std::string>{}(parse_extension.generic_string()),
+                               std::hash<std::string>{}(process_extension.generic_string()));
     }
 
     UID& operator=(const UID& other) = default;

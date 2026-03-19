@@ -95,15 +95,13 @@ public:
 
     node::Properties properties() const override {
         auto p = node::Properties{{"id", _uid.id},
-                                  {"path", _uid.path.native()},
-                                  {"ext", _uid.process_extension.native()},
+                                  {"path", _uid.path.generic_string()},
+                                  {"ext", _uid.process_extension.generic_string()},
                                   {"scope", _scope_path},
                                   {"dependencies", util::join(_dependencies, ", ")},
                                   {"skip-implementation", _skip_implementation}};
         return hilti::Declaration::properties() + std::move(p);
     }
-
-    std::string_view branchTag() const final { return _uid.process_extension.native(); }
 
     static auto create(ASTContext* ctx, const declaration::module::UID& uid, const ID& scope, const Declarations& decls,
                        const Statements& stmts, Meta meta = {}) {

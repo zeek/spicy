@@ -1527,7 +1527,13 @@ public:
 
     /** Returns an unsafe iterator representing the end of the instance. */
     detail::UnsafeConstIterator unsafeEnd() const {
-        return _end ? detail::UnsafeConstIterator(*_end) : _begin.chain()->unsafeEnd();
+        if ( _end )
+            return detail::UnsafeConstIterator(*_end);
+
+        if ( const auto* c = _begin.chain() )
+            return c->unsafeEnd();
+
+        return detail::UnsafeConstIterator(_begin);
     }
 
     /** Returns an safe iterator pointing to the beginning of the view. */

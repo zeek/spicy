@@ -67,7 +67,7 @@ namespace configuration {
 
 namespace detail {
 /** The runtime's configuration singleton. */
-extern std::unique_ptr<hilti::rt::Configuration> __configuration;
+extern HILTI_JIT_IMPORT std::unique_ptr<hilti::rt::Configuration> __configuration;
 
 /**
  * Returns the current global configuration without checking if it's already

@@ -107,8 +107,8 @@ namespace std {
 template<>
 struct hash<hilti::Location> {
     size_t operator()(const hilti::Location& x) const {
-        return hilti::rt::hashCombine(std::hash<std::string>()(x._file), x._from_line, x._to_line, x._from_character,
-                                      x._to_character);
+        return hilti::rt::hashCombine(std::hash<std::string>()(x._file.generic_string()), x._from_line, x._to_line,
+                                      x._from_character, x._to_character);
     }
 };
 } // namespace std

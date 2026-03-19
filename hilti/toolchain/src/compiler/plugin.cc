@@ -63,8 +63,10 @@ Plugin hilti::detail::createHiltiPlugin() {
 
         .unify_type = type_unifier::detail::unifyType,
 
-        .parse = [](Builder* builder, std::istream& in,
-                    const hilti::rt::filesystem::path& path) { return parser::parseSource(builder, in, path); },
+        .parse =
+            [](Builder* builder, std::istream& in, const hilti::rt::filesystem::path& path) {
+                return parser::parseSource(builder, in, path.generic_string());
+            },
 
         .coerce_ctor = [](Builder* builder, Ctor* c, QualifiedType* dst,
                           bitmask<CoercionStyle> style) { return coercer::detail::coerceCtor(builder, c, dst, style); },

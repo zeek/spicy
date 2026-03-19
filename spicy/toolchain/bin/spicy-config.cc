@@ -2,6 +2,8 @@
 //
 // Outputs paths and flags for using Spicy.
 
+#include <filesystem.h>
+
 #include <exception>
 #include <iostream>
 #include <list>
@@ -54,6 +56,16 @@ static void join(std::vector<U>& a, const std::vector<V>& b) {
     a.insert(a.end(), b.begin(), b.end());
 }
 
+// Specialization for path vectors: MSVC's std::construct_at disallows implicit
+// std::filesystem::path -> std::string via vector::insert.
+template<>
+void join<std::string, hilti::rt::filesystem::path>(std::vector<std::string>& a,
+                                                    const std::vector<hilti::rt::filesystem::path>& b) {
+    a.reserve(a.size() + b.size());
+    for ( const auto& x : b )
+        a.push_back(x.generic_string());
+}
+
 int main(int argc, char** argv) try {
     bool want_debug = false;
     bool want_dynamic_linking = false;
@@ -93,12 +105,12 @@ int main(int argc, char** argv) try {
 
     for ( const auto& opt : options ) {
         if ( opt == "--distbase" ) {
-            result.emplace_back(hilti::configuration().distbase);
+            result.emplace_back(hilti::configuration().distbase.generic_string());
             continue;
         }
 
         if ( opt == "--prefix" ) {
-            result.emplace_back(hilti::configuration().install_prefix);
+            result.emplace_back(hilti::configuration().install_prefix.generic_string());
             continue;
         }
 
@@ -122,7 +134,7 @@ int main(int argc, char** argv) try {
         }
 
         if ( opt == "--bindir" ) {
-            result.emplace_back(spicy::configuration().spicyc.parent_path());
+            result.emplace_back(spicy::configuration().spicyc.parent_path().generic_string());
             continue;
         }
 
@@ -136,32 +148,32 @@ int main(int argc, char** argv) try {
         }
 
         if ( opt == "--cxx" ) {
-            result.emplace_back(hilti::configuration().cxx);
+            result.emplace_back(hilti::configuration().cxx.generic_string());
             continue;
         }
 
         if ( opt == "--cxx-launcher" ) {
             if ( auto cxx_launcher = hilti::configuration().cxx_launcher )
-                result.emplace_back(*cxx_launcher);
+                result.emplace_back(cxx_launcher->generic_string());
 
             continue;
         }
 
         if ( opt == "--spicyc" ) {
-            result.emplace_back(spicy::configuration().spicyc);
+            result.emplace_back(spicy::configuration().spicyc.generic_string());
             continue;
         }
 
         if ( opt == "--spicy-build" ) {
-            result.emplace_back((spicy::configuration().spicyc.parent_path() / "spicy-build"));
+            result.emplace_back((spicy::configuration().spicyc.parent_path() / "spicy-build").generic_string());
             continue;
         }
 
         if ( opt == "--cmake-path" ) {
             if ( hilti::configuration().uses_build_directory )
-                result.emplace_back(hilti::configuration().distbase / "cmake");
+                result.emplace_back((hilti::configuration().distbase / "cmake").generic_string());
             else
-                result.emplace_back(hilti::configuration().install_prefix / "share/spicy/cmake");
+                result.emplace_back((hilti::configuration().install_prefix / "share/spicy/cmake").generic_string());
 
             continue;
         }

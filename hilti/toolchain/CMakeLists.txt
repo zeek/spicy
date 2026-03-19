@@ -143,8 +143,10 @@ set(SOURCES
 
 add_library(hilti-objects OBJECT ${SOURCES})
 set_property(TARGET hilti-objects PROPERTY POSITION_INDEPENDENT_CODE ON)
-target_compile_options(hilti-objects PRIVATE "-Wall")
-target_compile_options(hilti-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
+if (NOT MSVC)
+    target_compile_options(hilti-objects PRIVATE "-Wall")
+    target_compile_options(hilti-objects PRIVATE $<$<CONFIG:Debug>:-O0>)
+endif ()
 target_include_directories(hilti-objects BEFORE
                            PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 target_include_directories(hilti-objects BEFORE
@@ -220,11 +222,15 @@ configure_file(src/config.cc.in ${AUTOGEN_CC}/config.cc)
 ##### Binaries
 
 add_executable(hilti-config bin/hilti-config.cc)
-target_compile_options(hilti-config PRIVATE "-Wall")
+if (NOT MSVC)
+    target_compile_options(hilti-config PRIVATE "-Wall")
+endif ()
 hilti_link_executable_in_tree(hilti-config PRIVATE)
 
 add_executable(hiltic bin/hiltic.cc)
-target_compile_options(hiltic PRIVATE "-Wall")
+if (NOT MSVC)
+    target_compile_options(hiltic PRIVATE "-Wall")
+endif ()
 hilti_link_executable_in_tree(hiltic PRIVATE)
 
 ##### Installation
@@ -244,5 +250,7 @@ add_executable(hilti-toolchain-tests EXCLUDE_FROM_ALL tests/main.cc tests/id-bas
                                                       tests/visitor.cc tests/util.cc tests/graph.cc)
 hilti_link_executable_in_tree(hilti-toolchain-tests PRIVATE)
 target_link_libraries(hilti-toolchain-tests PRIVATE doctest)
-target_compile_options(hilti-toolchain-tests PRIVATE "-Wall")
+if (NOT MSVC)
+    target_compile_options(hilti-toolchain-tests PRIVATE "-Wall")
+endif ()
 add_test(NAME hilti-toolchain-tests COMMAND ${PROJECT_BINARY_DIR}/bin/hilti-toolchain-tests)
