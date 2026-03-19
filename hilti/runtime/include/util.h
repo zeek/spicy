@@ -606,22 +606,22 @@ class TemporaryDirectory {
 public:
     TemporaryDirectory() {
         const auto tmpdir = hilti::rt::filesystem::temp_directory_path();
+
 #if defined(_WIN32)
-        auto template_ = (tmpdir / "hilti-rt-test-XXXXXX").string();
-        if ( _mktemp_s(template_.data(), template_.size() + 1) != 0 )
+        auto path = (tmpdir / "hilti-rt-test-XXXXXX").string();
+        if ( _mktemp_s(path.data(), path.size() + 1) != 0 )
             throw RuntimeError("cannot create temporary directory");
 
-        _path = template_;
-        if ( ! hilti::rt::filesystem::create_directory(_path) )
+        if ( ! hilti::rt::filesystem::create_directory(path) )
             throw RuntimeError("cannot create temporary directory");
 #else
         auto template_ = (tmpdir / "hilti-rt-test-XXXXXX").native();
         auto* path = ::mkdtemp(template_.data());
         if ( ! path )
             throw RuntimeError("cannot create temporary directory");
+#endif
 
         _path = path;
-#endif
     }
 
     TemporaryDirectory(const TemporaryDirectory& other) = delete;
