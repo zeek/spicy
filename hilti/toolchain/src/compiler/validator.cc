@@ -479,6 +479,11 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     void operator()(ctor::Null* n) final {}
 
     void operator()(ctor::RegExp* n) final {
+        for ( const auto& pattern : n->patterns() ) {
+            if ( auto rc = pattern.validate(); ! rc )
+                error(rc.error(), n);
+        }
+
         if ( n->attributes()->find(hilti::attribute::kind::Anchor) )
             // This can end up reporting the same location multiple times,
             // which seems fine. Otherwise we'd need to explicitly track what's
