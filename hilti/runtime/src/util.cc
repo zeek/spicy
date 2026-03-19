@@ -432,9 +432,39 @@ std::string hilti::rt::detail::adl::to_string(const hilti::rt::ByteOrder& x, tag
 
 hilti::rt::Time hilti::rt::strptime(std::string_view buf, std::string_view format) {
     tm time;
+    memset(&time, 0, sizeof(time));
+
+#ifdef _MSC_VER
+    // libunistd's strptime uses std::get_time which doesn't properly handle
+    // %c on MSVC. Implement strptime using std::get_time directly with the
+    // C locale and proper %c expansion.
+    std::string fmt = format;
+    std::string::size_type pos;
+    // Expand %c to its POSIX C-locale equivalent. Use %a %b %e %H:%M:%S %Y
+    // (%e = space-padded day) which std::get_time supports on MSVC.
+    while ( (pos = fmt.find("%c")) != std::string::npos )
+        fmt.replace(pos, 2, "%a %b %e %H:%M:%S %Y");
+
+    std::istringstream input(buf);
+    input.imbue(std::locale::classic());
+    input >> std::get_time(&time, fmt.c_str());
+
+    const char* end = nullptr;
+    if ( ! input.fail() ) {
+        auto pos = input.tellg();
+        if ( pos == std::istringstream::pos_type(-1) )
+            // get_time consumed the entire string.
+            end = buf.data() + buf.size();
+        else
+            end = buf.data() + static_cast<size_t>(pos);
+    }
+#else
     const std::string buf_(buf);
     const std::string format_(format);
-    const char* end = ::strptime(buf_.c_str(), format_.c_str(), &time);
+
+    const char* end = ::strptime(buf_.data(), format_.c_str(), &time);
+#endif
+
 
     if ( ! end )
         throw InvalidArgument("could not parse time string");
