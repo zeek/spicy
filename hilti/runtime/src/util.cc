@@ -434,34 +434,33 @@ hilti::rt::Time hilti::rt::strptime(std::string_view buf, std::string_view forma
     tm time;
     memset(&time, 0, sizeof(time));
 
+    const std::string buf_(buf);
+    std::string format_(format);
+
 #ifdef _MSC_VER
     // libunistd's strptime uses std::get_time which doesn't properly handle
     // %c on MSVC. Implement strptime using std::get_time directly with the
     // C locale and proper %c expansion.
-    std::string fmt = format;
     std::string::size_type pos;
     // Expand %c to its POSIX C-locale equivalent. Use %a %b %e %H:%M:%S %Y
     // (%e = space-padded day) which std::get_time supports on MSVC.
-    while ( (pos = fmt.find("%c")) != std::string::npos )
-        fmt.replace(pos, 2, "%a %b %e %H:%M:%S %Y");
+    while ( (pos = format_.find("%c")) != std::string::npos )
+        format_.replace(pos, 2, "%a %b %e %H:%M:%S %Y");
 
-    std::istringstream input(buf);
+    std::istringstream input(buf_);
     input.imbue(std::locale::classic());
-    input >> std::get_time(&time, fmt.c_str());
+    input >> std::get_time(&time, format_.c_str());
 
     const char* end = nullptr;
     if ( ! input.fail() ) {
         auto pos = input.tellg();
         if ( pos == std::istringstream::pos_type(-1) )
             // get_time consumed the entire string.
-            end = buf.data() + buf.size();
+            end = buf_.data() + buf_.size();
         else
-            end = buf.data() + static_cast<size_t>(pos);
+            end = buf_.data() + static_cast<size_t>(pos);
     }
 #else
-    const std::string buf_(buf);
-    const std::string format_(format);
-
     const char* end = ::strptime(buf_.data(), format_.c_str(), &time);
 #endif
 
@@ -469,7 +468,7 @@ hilti::rt::Time hilti::rt::strptime(std::string_view buf, std::string_view forma
     if ( ! end )
         throw InvalidArgument("could not parse time string");
 
-    auto consumed = std::distance(buf_.c_str(), end);
+    auto consumed = std::distance(buf_.data(), end);
     if ( static_cast<decltype(buf_.size())>(consumed) != buf_.size() )
         throw InvalidArgument(hilti::rt::fmt("unparsed remainder after parsing time string: %s", end));
 
