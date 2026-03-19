@@ -95,7 +95,7 @@ public:
 
     /** Returns the operand at the given index. */
     auto operand(int i) const {
-        assert(i >= 0 && i < children().size());
+        assert(i >= 0 && std::cmp_less(i, children().size()));
         return child<operand_list::Operand>(i);
     }
 
