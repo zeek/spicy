@@ -1,0 +1,32 @@
+# @TEST-DOC: Validate that we reject invaliud usage of captures.
+#
+# @TEST-EXEC-FAIL: spicyc -dj %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module test;
+
+public type X = unit {
+    x: uint8 {
+        print $1; # not a regexp field
+    }
+
+    y: /a(b)c/ {
+        print $2; # group does not exist
+    }
+
+    z: /a(b)c/ | /d(e)f/ {
+        print $2; # capture groups not supported for parallel matching (because it's ill-defined)
+    }
+
+    nosub: /a(b)c/ &nosub {
+        print $1; # capture groups not available
+    }
+
+    err: /a(b))c/ { } # invalid regexp
+};
+
+function fn() {
+    print $1; # not inside a unit field
+}
+
+print $1; # not inside a unit field
