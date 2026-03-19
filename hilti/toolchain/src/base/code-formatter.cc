@@ -2,8 +2,7 @@
 
 #include <hilti/base/code-formatter.h>
 #include <hilti/base/logger.h>
-
-#include "base/util.h"
+#include <hilti/base/util.h>
 
 using namespace hilti;
 using namespace hilti::code_formatter;

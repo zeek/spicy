@@ -1,6 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-#include "hilti/hilti/compiler/detail/optimizer/pass.h"
+#include "hilti/compiler/detail/optimizer/pass.h"
 
 #include <cassert>
 

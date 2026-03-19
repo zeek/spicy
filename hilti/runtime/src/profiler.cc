@@ -13,7 +13,12 @@ using namespace hilti::rt::profiler;
 
 // Helper to get a platform-specific, monotonic high-resolution clock.
 inline static uint64_t _getClock() {
-#if defined(__APPLE__)
+#if defined(_WIN32)
+    LARGE_INTEGER freq, counter;
+    QueryPerformanceFrequency(&freq);
+    QueryPerformanceCounter(&counter);
+    return static_cast<uint64_t>(counter.QuadPart * 1000000000ULL / freq.QuadPart);
+#elif defined(__APPLE__)
     return clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW);
 #else
     struct timespec t;

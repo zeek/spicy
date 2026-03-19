@@ -9,6 +9,7 @@
 #include <utility>
 
 #include <hilti/rt/extension-points.h>
+#include <hilti/rt/macros.h>
 #include <hilti/rt/types/null.h>
 
 namespace hilti::rt {
@@ -23,8 +24,8 @@ namespace optional {
 struct Unset : public std::exception {};
 
 namespace detail {
-extern __attribute__((noreturn)) void throw_unset();          // throws rt::optional::Unset
-extern __attribute__((noreturn)) void throw_unset_optional(); // throws rt::UnsetOptional
+extern HILTI_NORETURN void throw_unset();          // throws rt::optional::Unset
+extern HILTI_NORETURN void throw_unset_optional(); // throws rt::UnsetOptional
 } // namespace detail
 } // namespace optional
 

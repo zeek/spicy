@@ -85,7 +85,7 @@ public:
     ContextIndex& operator=(const ContextIndex& other) = default;
     ContextIndex& operator=(ContextIndex&& other) noexcept = default;
 
-    inline static const ContextIndex None{0}; /**< index with reserved value zero representing an unset index */
+    static const ContextIndex None; /**< index with reserved value zero representing an unset index */
 
 private:
     rt::integer::safe<uint32_t> _value = 0; // safe integer to catch any uint32_t overflows
@@ -95,6 +95,9 @@ template<char Prefix>
 inline std::string to_string(const hilti::ast::detail::ContextIndex<Prefix>& index) {
     return index.str();
 }
+
+template<char Prefix>
+inline const ContextIndex<Prefix> ContextIndex<Prefix>::None{0};
 
 template<char Prefix>
 inline std::ostream& operator<<(std::ostream& out, const hilti::ast::detail::ContextIndex<Prefix>& index) {

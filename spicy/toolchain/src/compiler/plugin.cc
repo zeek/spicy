@@ -32,7 +32,7 @@ hilti::Plugin spicy::detail::createSpicyPlugin() {
             [](hilti::Builder* builder, std::istream& in, const hilti::rt::filesystem::path& path) {
                 assert(dynamic_cast<spicy::Builder*>(builder));
                 auto* spicy_builder = static_cast<spicy::Builder*>(builder);
-                return parser::parseSource(spicy_builder, in, path);
+                return parser::parseSource(spicy_builder, in, path.generic_string());
             },
 
         .coerce_ctor =

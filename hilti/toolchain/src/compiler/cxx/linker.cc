@@ -21,10 +21,10 @@ inline const DebugStream Compiler("compiler");
 } // namespace hilti::logging::debug
 
 void cxx::Linker::add(const linker::MetaData& md) {
-    _modules.emplace(md.module, md.path);
+    _modules.emplace(md.module, md.path.generic_string());
 
     // Continues logging from CodeGen::linkUnits.
-    HILTI_DEBUG(logging::debug::Compiler, fmt("  - module %s (%s)", md.module, md.path));
+    HILTI_DEBUG(logging::debug::Compiler, fmt("  - module %s (%s)", md.module, md.path.generic_string()));
 
     for ( const auto& j : md.joins ) {
         auto& joins = _joins[j.id];
@@ -51,15 +51,23 @@ void cxx::Linker::finalize() {
 
     for ( const auto& p : plugin::registry().plugins() )
         for ( const auto& i : p.cxx_includes )
-            unit->add(cxx::declaration::IncludeFile(i));
+            unit->add(cxx::declaration::IncludeFile(i.generic_string()));
 
     // Note we don't qualify the two subsequent globals with
     // `cxx_namespace_intern` because we need these exact names; that's what
     // the runtime lbirary is likewise hard-coded to expect.
+#ifdef _MSC_VER
+    // On MSVC, wrap in extern "C" to prevent name mangling so that
+    // GetProcAddress can find these symbols by their undecorated names.
+    unit->add("extern \"C\" {");
+#endif
     unit->add(fmt("const char HILTI_EXPORT HILTI_WEAK * %s = R\"(%s)\";",
                   HILTI_INTERNAL_GLOBAL_ID("hlto_library_version"), version.toJSON()));
     unit->add(fmt("const char HILTI_EXPORT HILTI_WEAK * %s = " HILTI_VERSION_FUNCTION_STRING "();",
                   HILTI_INTERNAL_GLOBAL_ID("hlto_bind_to_version")));
+#ifdef _MSC_VER
+    unit->add("}");
+#endif
 
     // Create a variable for the linker scope, but initialize it to magic value
     // `0` encoding unset. We will inject the actual scope at runtime when the

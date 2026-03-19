@@ -1,6 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-#include "hilti/hilti/compiler/detail/optimizer/optimizer.h"
+#include "hilti/compiler/detail/optimizer/optimizer.h"
 
 #include <optional>
 #include <string>
@@ -10,11 +10,11 @@
 #include <hilti/base/timing.h>
 #include <hilti/compiler/context.h>
 #include <hilti/compiler/detail/constant-folder.h>
+#include <hilti/compiler/detail/optimizer/pass.h>
 #include <hilti/compiler/detail/resolver.h>
 #include <hilti/compiler/detail/scope-builder.h>
 #include <hilti/compiler/type-unifier.h>
 #include <hilti/compiler/validator.h>
-#include <hilti/hilti/hilti/compiler/detail/optimizer/pass.h>
 
 using namespace hilti;
 using namespace hilti::detail;

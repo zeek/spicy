@@ -2,8 +2,15 @@
 
 #pragma once
 
+#if ! defined(_MSC_VER)
 #include <cxxabi.h>
+#endif
+#ifndef _WIN32
 #include <unistd.h>
+#else
+#include <io.h>
+#include <process.h>
+#endif
 
 #include <algorithm>
 #include <list>
@@ -20,6 +27,7 @@
 #include <hilti/rt/3rdparty/ArticleEnumClass-v2/EnumClass.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/filesystem.h>
+#include <hilti/rt/macros.h>
 #include <hilti/rt/result.h>
 #include <hilti/rt/types/set_fwd.h>
 #include <hilti/rt/types/time.h>
@@ -50,17 +58,28 @@
  * @param __VA_ARGS__ comma-separated list of enumerator definitions, either
  *        identifier or identifier with initializer.
  */
-#define HILTI_RT_ENUM(name, ...)                                                                                       \
+#define HILTI_RT_ENUM_TYPE(name, ...)                                                                                  \
     struct name {                                                                                                      \
         enum Value : int64_t { Undef = -1, __VA_ARGS__ };                                                              \
         constexpr name(int64_t value = Undef) noexcept : _value(value) {}                                              \
-        friend name Enum(Value value) { return name(value); }                                                          \
         friend constexpr bool operator==(const name& a, const name& b) noexcept { return a.value() == b.value(); }     \
         friend constexpr bool operator!=(const name& a, const name& b) noexcept { return ! (a == b); }                 \
         friend constexpr bool operator<(const name& a, const name& b) noexcept { return a.value() < b.value(); }       \
         constexpr int64_t value() const { return _value; }                                                             \
         int64_t _value;                                                                                                \
     }
+
+/**
+ * Like HILTI_RT_ENUM_TYPE, but also defines an inline `Enum()` factory function
+ * that converts a `name::Value` enumerator to the wrapper struct.
+ *
+ * Note: Generated (JIT) code should use HILTI_RT_ENUM_TYPE instead to avoid
+ * potential name clashes between the factory function and a user-defined type
+ * named `Enum`.
+ */
+#define HILTI_RT_ENUM(name, ...)                                                                                       \
+    HILTI_RT_ENUM_TYPE(name, __VA_ARGS__);                                                                             \
+    inline name Enum(name::Value value) { return name(value); }
 
 
 /**
@@ -77,7 +96,7 @@
 namespace hilti::rt {
 
 /** Reports an internal error and aborts execution. */
-void internalError(std::string_view msg) __attribute__((noreturn));
+HILTI_NORETURN void internalError(std::string_view msg);
 
 } // namespace hilti::rt
 
@@ -93,10 +112,10 @@ namespace hilti::rt {
 extern std::string version();
 
 /** Dumps a backtrack to stderr and then aborts execution. */
-extern void abort_with_backtrace() __attribute__((noreturn));
+extern HILTI_NORETURN void abort_with_backtrace();
 
 /** Aborts with an internal error saying we should not be where we are. */
-extern void cannot_be_reached() __attribute__((noreturn));
+extern HILTI_NORETURN void cannot_be_reached();
 
 /** Statistics about resource usage. */
 struct ResourceUsage {
@@ -570,10 +589,20 @@ class TemporaryDirectory {
 public:
     TemporaryDirectory() {
         const auto tmpdir = hilti::rt::filesystem::temp_directory_path();
+
+#if defined(_WIN32)
+        auto path = (tmpdir / "hilti-rt-test-XXXXXX").string();
+        if ( _mktemp_s(path.data(), path.size() + 1) != 0 )
+            throw RuntimeError("cannot create temporary directory");
+
+        if ( ! hilti::rt::filesystem::create_directory(path) )
+            throw RuntimeError("cannot create temporary directory");
+#else
         auto template_ = (tmpdir / "hilti-rt-test-XXXXXX").native();
         auto* path = ::mkdtemp(template_.data());
         if ( ! path )
             throw RuntimeError("cannot create temporary directory");
+#endif
 
         _path = path;
     }

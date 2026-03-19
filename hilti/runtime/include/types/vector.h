@@ -56,6 +56,12 @@ public:
      */
     Allocator() = default;
 
+    /** Construct from a rebound allocator. */
+    template<typename U>
+    Allocator(const Allocator<U>& other) noexcept
+        requires std::is_convertible_v<U, T>
+        : _default(other._default) {}
+
     /**
      * Constructs an allocator that initializes elements with a provided
      * default value.

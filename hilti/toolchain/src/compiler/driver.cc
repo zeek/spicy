@@ -1,12 +1,15 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#ifndef _WIN32
 #include <dlfcn.h>
+#endif
 #include <getopt.h>
 
 #include <algorithm>
 #include <exception>
 #include <fstream>
 #include <iostream>
+#include <ranges>
 #include <system_error>
 #include <utility>
 
@@ -90,7 +93,9 @@ Driver::~Driver() {
 }
 
 void Driver::usage() {
-    auto exts = util::join(plugin::registry().supportedExtensions(), ", ");
+    auto exts = util::join(plugin::registry().supportedExtensions() |
+                               std::views::transform([](const auto& ext) { return ext.generic_string(); }),
+                           ", ");
 
     std::string addl_usage = hookAugmentUsage();
     if ( addl_usage.size() )
@@ -153,7 +158,7 @@ result::Error Driver::error(std::string_view msg, const hilti::rt::filesystem::p
     auto x = fmt("%s: %s", _name, msg);
 
     if ( ! p.empty() )
-        x += fmt(" (%s)", p.native());
+        x += fmt(" (%s)", p);
 
     return result::Error(std::move(x));
 }
@@ -215,29 +220,10 @@ Result<Nothing> Driver::writeOutput(std::ifstream& in, const hilti::rt::filesyst
     return Nothing();
 }
 
-Result<hilti::rt::filesystem::path> Driver::writeToTemp(std::ifstream& in, const std::string& name_hint,
-                                                        const std::string& extension) {
-    auto template_ = fmt("%s.XXXXXX.%s", name_hint, extension);
-    auto name = std::move(template_);
-    auto fd = mkstemp(name.data());
-
-    if ( fd < 0 )
-        return error("Cannot open temporary file");
-
-    // Not sure if this is safe, but it seems to be what everybody does ...
-    std::ofstream out(name);
-    close(fd);
-
-    if ( ! util::copyStream(in, out) )
-        return error("Error writing to file", {std::move(name)});
-
-    _tmp_files.insert(name);
-    return hilti::rt::filesystem::path(name);
-}
 
 void Driver::dumpUnit(const Unit& unit) {
     if ( auto* module = unit.module() ) {
-        auto output_path = util::fmt("dbg.%s%s.ast", unit.uid().str(), unit.uid().process_extension.native());
+        auto output_path = util::fmt("dbg.%s%s.ast", unit.uid().str(), unit.uid().process_extension.generic_string());
         if ( auto out = openOutput(output_path) ) {
             HILTI_DEBUG(logging::debug::Driver, fmt("saving AST for module %s to %s", unit.uid().str(), output_path));
             ast_dumper::dump(*out, module, true);
@@ -245,7 +231,7 @@ void Driver::dumpUnit(const Unit& unit) {
     }
 
     if ( unit.isCompiledHILTI() ) {
-        auto output_path = util::fmt("dbg.%s%s", unit.uid().str(), unit.uid().process_extension.native());
+        auto output_path = util::fmt("dbg.%s%s", unit.uid().str(), unit.uid().process_extension.generic_string());
         if ( auto out = openOutput(output_path) ) {
             HILTI_DEBUG(logging::debug::Driver, fmt("saving code for module %s to %s", unit.uid().str(), output_path));
             unit.print(*out);
@@ -478,7 +464,7 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
     }
 
     if ( _driver_options.execute_code && ! _driver_options.output_path.empty() ) {
-        if ( ! util::endsWith(_driver_options.output_path, ".hlto") )
+        if ( _driver_options.output_path.extension() != ".hlto" )
             return error("output will be a precompiled object file and must have '.hlto' extension");
     }
 
@@ -544,11 +530,11 @@ void Driver::updateProcessExtension(const declaration::module::UID& uid, const h
     if ( _units.contains(new_uid) )
         logger().internalError(
             util::fmt("attempt to update process extension of unit %s to %s, but that already exists", uid,
-                      ext.native()));
+                      ext.generic_string()));
 
 
-    HILTI_DEBUG(logging::debug::Driver,
-                fmt("updating process extension of unit %s (%s) to %s", unit->uid(), unit->uid().path.native(), ext));
+    HILTI_DEBUG(logging::debug::Driver, fmt("updating process extension of unit %s (%s) to %s", unit->uid(),
+                                            unit->uid().path.generic_string(), ext.generic_string()));
 
     context()->astContext()->updateModuleUID(uid, new_uid);
 
@@ -561,12 +547,20 @@ void Driver::_addUnit(const std::shared_ptr<Unit>& unit) {
     if ( _units.contains(unit->uid()) )
         return;
 
-    HILTI_DEBUG(logging::debug::Driver, fmt("adding unit %s (%s)", unit->uid(), unit->uid().path.native()));
+    HILTI_DEBUG(logging::debug::Driver, fmt("adding unit %s (%s)", unit->uid(), unit->uid().path.generic_string()));
     unit->module()->setSkipImplementation(false);
     _units.emplace(unit->uid(), unit);
 }
 
 Result<void*> Driver::_symbol(const std::string& symbol) {
+#if defined(_MSC_VER)
+    auto* sym = reinterpret_cast<void*>(::GetProcAddress(::GetModuleHandleA(nullptr), symbol.c_str()));
+
+    if ( ! sym )
+        return result::Error("could not resolve symbol");
+
+    return sym;
+#else
     // Since `NULL` could be the address of a function, use `::dlerror` to
     // detect errors. Since `::dlerror` resets the error state when called we
     // can drive its state explicitly.
@@ -583,6 +577,7 @@ Result<void*> Driver::_symbol(const std::string& symbol) {
         return result::Error(util::fmt("address of symbol is %s", sym));
 
     return sym;
+#endif
 }
 
 Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
@@ -594,7 +589,7 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
             return result::Error(fmt("could not compute absolute path for %s", path_normalized));
     }
 
-    if ( _processed_paths.contains(path_normalized.native()) )
+    if ( _processed_paths.contains(path_normalized.generic_string()) )
         return Nothing();
 
     // Calling hook before stage check so that it can execute initialize()
@@ -643,9 +638,10 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
         HILTI_DEBUG(logging::debug::Driver, fmt("adding precompiled HILTI file %s", path));
 
         try {
-            if ( ! _libraries.contains(path) ) {
-                _libraries.insert({path, Library(path)});
-                if ( auto load = _libraries.at(path).open(); ! load )
+            const auto& name = path.generic_string();
+            if ( ! _libraries.contains(name) ) {
+                _libraries.insert({name, Library(path)});
+                if ( auto load = _libraries.at(name).open(); ! load )
                     return error(util::fmt("could not load library file %s: %s", path, load.error()));
             }
         } catch ( const hilti::rt::EnvironmentError& e ) {
@@ -656,7 +652,7 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
     else
         return error("unsupported file type", path);
 
-    _processed_paths.insert(path_normalized.native());
+    _processed_paths.insert(path_normalized.generic_string());
 
     return Nothing();
 }
@@ -722,7 +718,8 @@ Result<Nothing> Driver::compileUnits() {
     }
 
     if ( _driver_options.output_hilti ) {
-        std::string output_path = (_driver_options.output_path.empty() ? "/dev/stdout" : _driver_options.output_path);
+        std::string output_path =
+            (_driver_options.output_path.empty() ? "/dev/stdout" : _driver_options.output_path.string());
         auto output = openOutput(output_path, false);
         if ( ! output )
             return error(output.error());
@@ -848,7 +845,8 @@ Result<Nothing> Driver::linkUnits() {
     assert(cxx_code);
 
     if ( _driver_options.output_linker ) {
-        std::string output_path = (_driver_options.output_path.empty() ? "/dev/stdout" : _driver_options.output_path);
+        std::string output_path =
+            (_driver_options.output_path.empty() ? "/dev/stdout" : _driver_options.output_path.string());
 
         auto output = openOutput(output_path, false);
         if ( ! output )
@@ -872,7 +870,8 @@ Result<Nothing> Driver::outputUnits() {
     if ( _stage != Stage::COMPILED && _stage != Stage::CODEGENED && _stage != Stage::LINKED )
         logger().internalError("unexpected driver stage in outputUnits()");
 
-    std::string output_path = (_driver_options.output_path.empty() ? "/dev/stdout" : _driver_options.output_path);
+    std::string output_path =
+        (_driver_options.output_path.empty() ? "/dev/stdout" : _driver_options.output_path.string());
 
     bool append = false;
     for ( auto& [uid, unit] : _units ) {

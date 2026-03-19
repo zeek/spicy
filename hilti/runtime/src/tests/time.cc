@@ -26,7 +26,11 @@ TEST_CASE("current_time") {
 }
 
 TEST_CASE("mktime") {
+#ifdef _WIN32
+    setenv("TZ", "UTC", 1);
+#else
     setenv("TZ", "", 1);
+#endif
     tzset();
     const auto t = time::mktime(2021, 4, 1, 1, 2, 3);
     CHECK_EQ(t, Time(1617238923, Time::SecondTag{}));

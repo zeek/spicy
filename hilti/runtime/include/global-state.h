@@ -3,6 +3,7 @@
 #pragma once
 #include <sys/resource.h>
 
+#include <clocale> // IWYU pragma: keep
 #include <memory>
 #include <optional>
 #include <string>
@@ -32,6 +33,12 @@ class CompiledRegExp;
 } // namespace hilti::rt
 
 namespace hilti::rt::detail {
+
+#if defined(_WIN32)
+using runtime_locale_t = _locale_t;
+#else
+using runtime_locale_t = locale_t;
+#endif
 
 /** Struct capturing all truly global runtime state. */
 struct GlobalState {
@@ -77,17 +84,17 @@ struct GlobalState {
     std::unordered_map<std::string, std::shared_ptr<regexp::detail::CompiledRegExp>> regexp_cache;
 
     /** Cached C locale for use with C library functions. */
-    std::optional<locale_t> c_locale;
+    std::optional<runtime_locale_t> c_locale;
 };
 
 /**
  * Pointer to the global state singleton. Do not access directly, use
  * `globalState()` instead.
  */
-extern GlobalState* __global_state;
+extern HILTI_JIT_IMPORT GlobalState* __global_state;
 
 /** Creates the global state singleton. */
-extern GlobalState* createGlobalState();
+extern HILTI_JIT_IMPORT GlobalState* createGlobalState();
 
 /**
  * Returns the global state singleton. This creates the state the first time

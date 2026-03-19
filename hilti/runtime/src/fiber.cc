@@ -4,6 +4,10 @@
 
 #include <memory>
 
+#if defined(_MSC_VER)
+#include <intrin.h>
+#endif
+
 #include <hilti/rt/autogen/config.h>
 #include <hilti/rt/configuration.h>
 #include <hilti/rt/context.h>
@@ -56,7 +60,7 @@ static const std::string debug_stream_fibers = "fibers";
 // Wrapper similar to HILTI_RT_DEBUG that adds the current fiber to the message.
 #define HILTI_RT_FIBER_DEBUG(tag, msg)                                                                                 \
     {                                                                                                                  \
-        if ( ::hilti::rt::detail::unsafeGlobalState()->debug_logger &&                                                 \
+        if ( ::hilti::rt::detail::__global_state && ::hilti::rt::detail::unsafeGlobalState()->debug_logger &&          \
              ::hilti::rt::detail::unsafeGlobalState()->debug_logger->isEnabled(debug_stream_fibers) )                  \
             ::hilti::rt::debug::detail::print(debug_stream_fibers,                                                     \
                                               fmt("[%s/%s] %s", *context::detail::get()->fiber.current, tag, msg));    \
@@ -64,7 +68,7 @@ static const std::string debug_stream_fibers = "fibers";
 
 #define HILTI_RT_FIBER_DEBUG_NO_CONTEXT(tag, msg)                                                                      \
     {                                                                                                                  \
-        if ( ::hilti::rt::detail::unsafeGlobalState()->debug_logger &&                                                 \
+        if ( ::hilti::rt::detail::__global_state && ::hilti::rt::detail::unsafeGlobalState()->debug_logger &&          \
              ::hilti::rt::detail::unsafeGlobalState()->debug_logger->isEnabled(debug_stream_fibers) )                  \
             ::hilti::rt::debug::detail::print(debug_stream_fibers, fmt("[none/%s] %s", tag, msg));                     \
     }
@@ -183,6 +187,10 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
             // the main fiber.
             const auto min_size = configuration::get().fiber_shared_stack_size;
 
+#if defined(_WIN32)
+            _fiber->stack = reinterpret_cast<char*>(_AddressOfReturnAddress()) - min_size;
+            _fiber->stack_size = min_size;
+#else
             rlimit limit;
             if ( ::getrlimit(RLIMIT_STACK, &limit) < 0 )
                 throw RuntimeError("could not get current stack size");
@@ -198,6 +206,7 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
             _fiber->stack_size = min_size;
 #else
 #error "unsupported architecture in hilti::rt::detail::Fiber::Fiber()"
+#endif
 #endif
 
             // ASAN stack size will be set dynamically later.
@@ -256,6 +265,25 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
             // Nothing to do for these.
             break;
     };
+
+#ifdef _WIN32
+    // Initialize TEB stack boundaries for each fiber type. Windows
+    // exception handling needs correct StackBase/StackLimit/DeallocationStack
+    // in the TEB when throwing from within fibers.
+    if ( type == Type::Main ) {
+        // Capture the real thread TEB values.
+        _teb.stack_base = reinterpret_cast<void*>(__readgsqword(0x08));
+        _teb.stack_limit = reinterpret_cast<void*>(__readgsqword(0x10));
+        _teb.deallocation_stack = reinterpret_cast<void*>(__readgsqword(0x1478));
+    }
+    else {
+        // For fibers with their own or shared stacks, set boundaries from the
+        // allocated stack region.
+        _teb.stack_base = reinterpret_cast<char*>(::fiber_stack(_fiber.get())) + ::fiber_stack_size(_fiber.get());
+        _teb.stack_limit = ::fiber_stack(_fiber.get());
+        _teb.deallocation_stack = ::fiber_stack(_fiber.get());
+    }
+#endif
 }
 
 // Exception raised by a fiber resuming operation in case it has been aborted
@@ -294,6 +322,9 @@ std::pair<char*, char*> detail::StackBuffer::activeRegion() const {
 #if __x86_64__ || __arm__ || __arm64__ || __aarch64__ || __i386__
     auto* lower = reinterpret_cast<char*>(_fiber->regs.sp);
     auto* upper = reinterpret_cast<char*>(_fiber->regs.sp) + fiber_stack_used_size(_fiber);
+#elif defined(_M_X64) || defined(_M_IX86) || defined(_M_ARM) || defined(_M_ARM64)
+    auto* lower = reinterpret_cast<char*>(_fiber->regs.sp);
+    auto* upper = reinterpret_cast<char*>(_fiber->regs.sp) + fiber_stack_used_size(_fiber);
 #else
 #error "unsupported architecture in hilti::rt::detail::StackBuffer::activeRegion"
 #endif
@@ -315,6 +346,12 @@ size_t detail::StackBuffer::liveRemainingSize() const {
     // https://stackoverflow.com/questions/20059673/print-out-value-of-stack-pointer
     // for discussion of how to get stack pointer.
     auto* sp = reinterpret_cast<char*>(__builtin_frame_address(0));
+#elif defined(_M_X64) || defined(_M_IX86) || defined(_M_ARM) || defined(_M_ARM64)
+    auto* sp = reinterpret_cast<char*>(_AddressOfReturnAddress());
+#else
+#error "unsupported architecture in hilti::rt::detail::StackBuffer::liveRemainingSize()"
+#endif
+
     auto* lower = reinterpret_cast<char*>(::fiber_stack(_fiber));
 
     // Double-check we're pointing into the right space (ignore for the main
@@ -323,9 +360,6 @@ size_t detail::StackBuffer::liveRemainingSize() const {
     assert((sp >= allocatedRegion().first && sp < allocatedRegion().second) || ::fiber_is_toplevel(_fiber));
 
     return static_cast<size_t>(sp - lower);
-#else
-#error "unsupported architecture in hilti::rt::detail::StackBuffer::liveRemainingSize()"
-#endif
 }
 
 size_t detail::StackBuffer::activeSize() const { return ::fiber_stack_used_size(_fiber); }
@@ -412,7 +446,28 @@ void ASAN_NO_OPTIMIZE detail::Fiber::_executeSwitch(const char* tag, detail::Fib
 
     detail::Fiber::_startSwitchFiber(tag, to);
     context::detail::get()->fiber.current = to;
+
+#ifdef _WIN32
+    // Save current TEB stack boundaries and restore destination fiber's.
+    // Windows exception handling uses TEB.StackBase/StackLimit to walk the
+    // stack; without correct values, exceptions inside fibers crash.
+    from->_teb.stack_base = reinterpret_cast<void*>(__readgsqword(0x08));
+    from->_teb.stack_limit = reinterpret_cast<void*>(__readgsqword(0x10));
+    from->_teb.deallocation_stack = reinterpret_cast<void*>(__readgsqword(0x1478));
+    __writegsqword(0x08, reinterpret_cast<unsigned __int64>(to->_teb.stack_base));
+    __writegsqword(0x10, reinterpret_cast<unsigned __int64>(to->_teb.stack_limit));
+    __writegsqword(0x1478, reinterpret_cast<unsigned __int64>(to->_teb.deallocation_stack));
+#endif
+
     ::fiber_switch(from->_fiber.get(), to->_fiber.get());
+
+#ifdef _WIN32
+    // Restore TEB for the fiber we just switched back to.
+    __writegsqword(0x08, reinterpret_cast<unsigned __int64>(from->_teb.stack_base));
+    __writegsqword(0x10, reinterpret_cast<unsigned __int64>(from->_teb.stack_limit));
+    __writegsqword(0x1478, reinterpret_cast<unsigned __int64>(from->_teb.deallocation_stack));
+#endif
+
     detail::Fiber::_finishSwitchFiber(tag);
 
     HILTI_RT_FIBER_DEBUG(tag, fmt("resuming after fiber switch returns back to %s", *from));
