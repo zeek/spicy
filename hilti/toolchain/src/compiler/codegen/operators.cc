@@ -344,7 +344,9 @@ struct Visitor : hilti::visitor::PreOrder {
         result = fmt("%s(%s)", type, args[0]);
     }
 
-    void operator()(operator_::exception::Description* n) final { result = fmt("%s.description()", op0(n)); }
+    void operator()(operator_::exception::Description* n) final {
+        result = fmt("::hilti::rt::String(%s.description())", op0(n));
+    }
 
     // Function
 
@@ -510,7 +512,9 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     /// Result
-    void operator()(operator_::error::Description* n) final { result = fmt("%s.description()", op0(n)); }
+    void operator()(operator_::error::Description* n) final {
+        result = fmt("::hilti::rt::String(%s.description())", op0(n));
+    }
 
     void operator()(operator_::result::Deref* n) final { result = fmt("%s.valueOrThrow()", op0(n)); }
 

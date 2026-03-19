@@ -132,9 +132,6 @@ struct ResourceUsage {
 /** Returns statistics about the current resource usage. */
 ResourceUsage resource_usage();
 
-/** Returns the value of an environment variable, if set. */
-extern Optional<std::string> getenv(const std::string& name);
-
 /**
  * Creates a temporary file in the system temporary directory.
  *
@@ -573,20 +570,6 @@ namespace detail::adl {
 std::string to_string(const ByteOrder& x, tag /*unused*/);
 }
 
-/** Formats a time according to user-specified format string.
- *
- * This function uses the currently active locale and timezone to format
- * values. Formatted strings cannot exceed 128 bytes.
- *
- * @param format a POSIX-conformant format string, see
- *        https://pubs.opengroup.org/onlinepubs/009695399/functions/strftime.html
- *        for the available format specifiers
- * @param time timestamp to format
- * @return formatted timestamp
- * @throw `InvalidArgument` if the timestamp could not be formatted
- */
-std::string strftime(const std::string& format, const Time& time);
-
 /** Parse time from string.
  *
  * This function uses the currently active locale and timezone to parse values.
@@ -599,7 +582,7 @@ std::string strftime(const std::string& format, const Time& time);
  * @throw `InvalidArgument` if the time value could not be parsed
  *        `OutOfRange` if the parse time value cannot be represented
  */
-Time strptime(const std::string& buf, const std::string& format);
+Time strptime(std::string_view buf, std::string_view format);
 
 // RAII helper to create a temporary directory.
 class TemporaryDirectory {

@@ -66,7 +66,7 @@ inline std::string to_string(const T& x, adl::tag /*unused*/)
 {
     if constexpr ( has_hook_to_string<T>() ) {
         if ( auto s = T(x).HILTI_INTERNAL(hook_to_string)() ) // copy because we need a non-const T
-            return *s;
+            return std::string(*s);
     }
 
     return x.__to_string();

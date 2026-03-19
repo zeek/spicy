@@ -162,19 +162,7 @@ public:
      * @param scope identifier for the desired scope
      * @throws ``mime::InvalidType`` if the type cannot be parsed
      */
-    void connect_mime_type(const std::string& mt, uint64_t scope) { connect_mime_type(MIMEType(mt), scope); }
-
-    /**
-     * Connects new instances of all units to the sink that support a given
-     * MIME type. The lookup will consider all `public` units as well as units
-     * with the same scope. The units will then all receive any data written
-     * into the sink.
-     *
-     * @param mt MIME type to connect units for
-     * @param scope identifier for the desired scope
-     * @throws ``mime::InvalidType`` if the type cannot be parsed
-     */
-    void connect_mime_type(const hilti::rt::Bytes& mt, uint64_t scope) { connect_mime_type(MIMEType(mt.str()), scope); }
+    void connect_mime_type(std::string_view mt, uint64_t scope) { connect_mime_type(MIMEType(mt), scope); }
 
     /**
      * Reports a gap in the input stream.

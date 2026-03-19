@@ -51,7 +51,7 @@ const TypeInfo hilti::rt::type_info::stream_iterator{std::nullopt, "iterator<str
                                                      new hilti::rt::type_info::StreamIterator()};
 const TypeInfo hilti::rt::type_info::stream_view{std::nullopt, "view<stream>", TO_STRING(hilti::rt::stream::View),
                                                  new hilti::rt::type_info::StreamView()};
-const TypeInfo hilti::rt::type_info::string{std::nullopt, "string", TO_STRING(std::string),
+const TypeInfo hilti::rt::type_info::string{std::nullopt, "string", TO_STRING(hilti::rt::String),
                                             new hilti::rt::type_info::String()};
 const TypeInfo hilti::rt::type_info::time{std::nullopt, "time", TO_STRING(hilti::rt::Time),
                                           new hilti::rt::type_info::Time()};

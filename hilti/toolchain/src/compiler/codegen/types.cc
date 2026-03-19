@@ -688,7 +688,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         result = CxxTypes{.base_type = t};
     }
 
-    void operator()(type::String* n) final { result = CxxTypes{.base_type = "std::string"}; }
+    void operator()(type::String* n) final { result = CxxTypes{.base_type = "::hilti::rt::String"}; }
 
     void operator()(type::Struct* n) final {
         auto type_id = n->typeID();

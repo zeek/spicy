@@ -89,19 +89,19 @@ auto toVector(R&& xs) {
 }
 
 /** Splits a string at all occurrences of a delimiter. */
-extern std::vector<std::string> split(std::string s, const std::string& delim = " ");
+std::vector<std::string> split(std::string_view s, std::string_view delim = " ");
 
 /**
  * Splits a string once at the 1st occurrence of a delimiter. Leaves the 2nd
  * element of the result pair unset if the delimiter does not occur.
  */
-extern std::pair<std::string, std::string> split1(std::string s, const std::string& delim = " ");
+extern std::pair<std::string, std::string> split1(std::string_view s, std::string_view delim = " ");
 
 /**
  * Splits a string once at the last occurrence of a delimiter. Leaves the 1st
  * element of the result pair unset if the delimiter does not occur.
  */
-extern std::pair<std::string, std::string> rsplit1(std::string s, const std::string& delim = " ");
+extern std::pair<std::string, std::string> rsplit1(std::string_view s, std::string_view delim = " ");
 
 /**
  * Perform shell-style string splitting.
@@ -115,7 +115,7 @@ extern std::pair<std::string, std::string> rsplit1(std::string s, const std::str
  *
  * Returns a vector of substrings, or an error.
  */
-Result<std::vector<std::string>> splitShellUnsafe(const std::string& s);
+Result<std::vector<std::string>> splitShellUnsafe(std::string_view s);
 
 /**
  * Returns a subview of a range, specified through zero-based indices. If

@@ -7,6 +7,7 @@
 #include <spicy/rt/mime.h>
 
 using namespace hilti::rt;
+using namespace hilti::rt::string::literals;
 using namespace spicy::rt;
 
 TEST_SUITE_BEGIN("MimeType");
@@ -26,55 +27,55 @@ TEST_CASE("construct") {
 
     SUBCASE("from type") {
         SUBCASE("full type") {
-            MIMEType m("main/sub");
+            MIMEType m("main/sub"_hs);
             CHECK_EQ(m.mainType(), "main");
             CHECK_EQ(m.subType(), "sub");
         }
 
         SUBCASE("wildcard main type") {
-            MIMEType m("*/sub");
+            MIMEType m("*/sub"_hs);
             CHECK_EQ(m.mainType(), "*");
             CHECK_EQ(m.subType(), "sub");
         }
 
         SUBCASE("wildcard sub type") {
-            MIMEType m("main/*");
+            MIMEType m("main/*"_hs);
             CHECK_EQ(m.mainType(), "main");
             CHECK_EQ(m.subType(), "*");
         }
 
         SUBCASE("full wildcard") {
-            MIMEType m("*/*");
+            MIMEType m("*/*"_hs);
             CHECK_EQ(m.mainType(), "*");
             CHECK_EQ(m.subType(), "*");
         }
 
         SUBCASE("not parseable") {
-            CHECK_THROWS_WITH_AS(MIMEType(""), "cannot parse MIME type ''", const InvalidMIMEType&);
-            CHECK_THROWS_WITH_AS(MIMEType("foo"), "cannot parse MIME type 'foo'", const InvalidMIMEType&);
-            CHECK_THROWS_WITH_AS(MIMEType("main/"), "cannot parse MIME type 'main/'", const InvalidMIMEType&);
-            CHECK_THROWS_WITH_AS(MIMEType("/sub"), "cannot parse MIME type '/sub'", const InvalidMIMEType&);
+            CHECK_THROWS_WITH_AS(MIMEType(""_hs), "cannot parse MIME type ''", const InvalidMIMEType&);
+            CHECK_THROWS_WITH_AS(MIMEType("foo"_hs), "cannot parse MIME type 'foo'", const InvalidMIMEType&);
+            CHECK_THROWS_WITH_AS(MIMEType("main/"_hs), "cannot parse MIME type 'main/'", const InvalidMIMEType&);
+            CHECK_THROWS_WITH_AS(MIMEType("/sub"_hs), "cannot parse MIME type '/sub'", const InvalidMIMEType&);
         }
     }
 }
 
 TEST_CASE("asKey") {
-    CHECK_EQ(MIMEType("main/sub").asKey(), "main/sub");
-    CHECK_EQ(MIMEType("main/*").asKey(), "main");
-    CHECK_EQ(MIMEType("*/sub").asKey(), "");
-    CHECK_EQ(MIMEType("*/*").asKey(), "");
+    CHECK_EQ(MIMEType("main/sub"_hs).asKey(), "main/sub");
+    CHECK_EQ(MIMEType("main/*"_hs).asKey(), "main");
+    CHECK_EQ(MIMEType("*/sub"_hs).asKey(), "");
+    CHECK_EQ(MIMEType("*/*"_hs).asKey(), "");
 }
 
 TEST_CASE("isWildcard") {
-    CHECK_FALSE(MIMEType("main/sub").isWildcard());
-    CHECK(MIMEType("main/*").isWildcard());
-    CHECK(MIMEType("*/sub").isWildcard());
-    CHECK(MIMEType("*/*").isWildcard());
+    CHECK_FALSE(MIMEType("main/sub"_hs).isWildcard());
+    CHECK(MIMEType("main/*"_hs).isWildcard());
+    CHECK(MIMEType("*/sub"_hs).isWildcard());
+    CHECK(MIMEType("*/*"_hs).isWildcard());
 }
 
 TEST_CASE("parse") {
-    CHECK_EQ(MIMEType::parse("main/sub"), MIMEType("main", "sub"));
-    CHECK_EQ(MIMEType::parse("foo"), result::Error("cannot parse MIME type 'foo'"));
+    CHECK_EQ(MIMEType::parse("main/sub"_hs), MIMEType("main", "sub"));
+    CHECK_EQ(MIMEType::parse("foo"_hs), result::Error("cannot parse MIME type 'foo'"));
 }
 
 TEST_CASE("to_string") {

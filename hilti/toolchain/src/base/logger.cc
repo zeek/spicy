@@ -97,24 +97,22 @@ bool Logger::debugDisable(const std::string& dbg) {
     }
 }
 
-void Logger::log(logging::Level level, const std::string& msg, const Location& l) {
+void Logger::log(logging::Level level, std::string_view msg, const Location& l) {
     report(_output_std, level, 0, "", msg, l);
 }
 
-void Logger::info(const std::string& msg, const Location& l) {
-    report(_output_std, logging::Level::Info, 0, "", msg, l);
-}
+void Logger::info(std::string_view msg, const Location& l) { report(_output_std, logging::Level::Info, 0, "", msg, l); }
 
-void Logger::warning(const std::string& msg, const Location& l) {
+void Logger::warning(std::string_view msg, const Location& l) {
     report(_output_std, logging::Level::Warning, 0, "", msg, l);
     ++_warnings;
 }
 
-void Logger::deprecated(const std::string& msg, const Location& l) { warning(msg, l); }
+void Logger::deprecated(std::string_view msg, const Location& l) { warning(msg, l); }
 
-void Logger::error(const std::string& msg, const Location& l) { error(msg, {}, l); }
+void Logger::error(std::string_view msg, const Location& l) { error(msg, {}, l); }
 
-void Logger::error(const std::string& msg, const std::vector<std::string>& context, const Location& l) {
+void Logger::error(std::string_view msg, const std::vector<std::string>& context, const Location& l) {
     report(_output_std, logging::Level::Error, 0, "", msg, l);
 
     for ( const auto& x : context )
@@ -123,23 +121,23 @@ void Logger::error(const std::string& msg, const std::vector<std::string>& conte
     ++_errors;
 }
 
-void Logger::fatalError(const std::string& msg, const Location& l) {
+void Logger::fatalError(std::string_view msg, const Location& l) {
     report(_output_std, logging::Level::FatalError, 0, "", msg, l);
     exit(1);
 }
 
-void Logger::internalError(const std::string& msg, const Location& l) {
+void Logger::internalError(std::string_view msg, const Location& l) {
     report(_output_std, logging::Level::InternalError, 0, "", msg, l);
     util::abortWithBacktrace();
 }
 
-void Logger::_debug(const logging::DebugStream& dbg, const std::string& msg, const Location& l) {
+void Logger::_debug(const logging::DebugStream& dbg, std::string_view msg, const Location& l) {
     if ( auto i = _debug_streams.find(dbg); i != _debug_streams.end() )
         report(_output_debug, logging::Level::Debug, i->second, dbg.name(), msg, l);
 }
 
-void Logger::report(std::ostream& output, logging::Level level, size_t indent, const std::string& addl,
-                    const std::string& msg, const Location& l) const {
+void Logger::report(std::ostream& output, logging::Level level, size_t indent, std::string_view addl,
+                    std::string_view msg, const Location& l) const {
     std::string level_str = logging::to_string(level);
     std::string indent_str = std::string(static_cast<std::string::size_type>(indent) * 2, ' ');
 

@@ -17,10 +17,12 @@ namespace result {
 /** Represents an error message. */
 class Error {
 public:
-    Error(std::string description = "<no description>", std::string context = "")
-        : _description(std::move(description)), _context(std::move(context)) {}
-    const auto& description() const { return _description; }
-    const auto& context() const { return _context; }
+    Error(std::string_view description = "<no description>", std::string_view context = "")
+        : _description(description), _context(context) {}
+
+    std::string_view description() const { return _description; }
+    std::string_view context() const { return _context; }
+
     operator std::string() const { return _description; }
     operator std::string_view() const { return _description; }
 

@@ -12,9 +12,10 @@
 #include <hilti/rt/types/integer.h>
 #include <hilti/rt/types/regexp.h>
 
-using namespace std::string_literals;
-using namespace hilti::rt;
 using namespace hilti::rt::bytes;
+using namespace hilti::rt::string::literals;
+using namespace hilti::rt;
+using namespace std::literals;
 
 TEST_SUITE_BEGIN("Bytes");
 
@@ -36,24 +37,24 @@ TEST_CASE("at") {
 }
 
 TEST_CASE("decode") {
-    CHECK_EQ("123"_b.decode(unicode::Charset::ASCII), "123");
-    CHECK_EQ("abc"_b.decode(unicode::Charset::ASCII), "abc");
-    CHECK_EQ("abc"_b.decode(unicode::Charset::UTF8), "abc");
-    CHECK_EQ("\xF0\x9F\x98\x85"_b.decode(unicode::Charset::UTF8), "\xF0\x9F\x98\x85");
-    CHECK_EQ("\xF0\x9F\x98\x85"_b.decode(unicode::Charset::ASCII), "????");
+    CHECK_EQ("123"_b.decode(unicode::Charset::ASCII), "123"_hs);
+    CHECK_EQ("abc"_b.decode(unicode::Charset::ASCII), "abc"_hs);
+    CHECK_EQ("abc"_b.decode(unicode::Charset::UTF8), "abc"_hs);
+    CHECK_EQ("\xF0\x9F\x98\x85"_b.decode(unicode::Charset::UTF8), "\xF0\x9F\x98\x85"_hs);
+    CHECK_EQ("\xF0\x9F\x98\x85"_b.decode(unicode::Charset::ASCII), "????"_hs);
 
-    CHECK_EQ("€100"_b.decode(unicode::Charset::ASCII, unicode::DecodeErrorStrategy::REPLACE), "???100");
-    CHECK_EQ("€100"_b.decode(unicode::Charset::ASCII, unicode::DecodeErrorStrategy::IGNORE), "100");
+    CHECK_EQ("€100"_b.decode(unicode::Charset::ASCII, unicode::DecodeErrorStrategy::REPLACE), "???100"_hs);
+    CHECK_EQ("€100"_b.decode(unicode::Charset::ASCII, unicode::DecodeErrorStrategy::IGNORE), "100"_hs);
     CHECK_THROWS_WITH_AS("123ä4"_b.decode(unicode::Charset::ASCII, unicode::DecodeErrorStrategy::STRICT),
                          "illegal ASCII character in string", const RuntimeError&);
 
-    CHECK_EQ("\xc3\x28"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::REPLACE), "\ufffd(");
-    CHECK_EQ("\xc3\x28"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::IGNORE), "(");
+    CHECK_EQ("\xc3\x28"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::REPLACE), "\ufffd("_hs);
+    CHECK_EQ("\xc3\x28"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::IGNORE), "("_hs);
     CHECK_THROWS_WITH_AS("\xc3\x28"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::STRICT),
                          "illegal UTF8 sequence in string", const RuntimeError&);
 
-    CHECK_EQ(Bytes("\0a\0b\0c"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::STRICT), "abc");
-    CHECK_EQ(Bytes("a\0b\0c\0"s).decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), "abc");
+    CHECK_EQ(Bytes("\0a\0b\0c"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::STRICT), "abc"_hs);
+    CHECK_EQ(Bytes("a\0b\0c\0"s).decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), "abc"_hs);
 
     // Our `decode` of UTF-16 bytes returns UTF8 string with BOM if they do not fit into ASCII, see e.g.,
     // https://stackoverflow.com/questions/2223882/whats-the-difference-between-utf-8-and-utf-8-with-bom.
@@ -61,23 +62,24 @@ TEST_CASE("decode") {
     //
     // LHS is an UTF16 encoding of '東京', RHS UTF8 with BOM.
     CHECK_EQ("\xff\xfeqg\xacN"_b.decode(unicode::Charset ::UTF16LE, unicode::DecodeErrorStrategy::STRICT),
-             "\ufeff東京");
+             "\ufeff東京"_hs);
 
     // Decoding of UTF16 with BOM. The byte order in the charset is just a hint, but we still decode as UTF16.
     CHECK_EQ("\xff\xfeqg\xacN"_b.decode(unicode::Charset ::UTF16BE, unicode::DecodeErrorStrategy::STRICT),
-             "\ufeff東京");
+             "\ufeff東京"_hs);
 
     // Decoding of too few bytes for UTF16 (expected even number, provided uneven).
     CHECK_THROWS_WITH_AS(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::STRICT),
                          "illegal UTF16 character in string", const RuntimeError&);
-    CHECK_EQ(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::IGNORE), "ab");
-    CHECK_EQ(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::REPLACE), "ab\ufffd");
+    CHECK_EQ(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::IGNORE), "ab"_hs);
+    CHECK_EQ(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::REPLACE),
+             "ab\ufffd"_hs);
 
     // Our UTF16 implementation seems to differ in what it considers invalid encodings, e.g., `\x00\xd8` is rejected by
     // python-3.1[1-3], but accepted by us.
     //
     // TODO(bbannier): Test rejection of invalid UTF16 (but with even length).
-    CHECK_EQ(Bytes("\x00\xd8").decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), "");
+    CHECK_EQ(Bytes("\x00\xd8").decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), ""_hs);
 
     CHECK_THROWS_WITH_AS("123"_b.decode(unicode::Charset::Undef), "unknown character set for decoding",
                          const RuntimeError&);

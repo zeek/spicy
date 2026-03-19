@@ -278,7 +278,7 @@ void TextPrinter::printOffsets(const hilti::rt::type_info::Struct& ti, const hil
     if ( ! field_offsets )
         return;
 
-    if ( const auto& offsets = field_offsets->get_optional(field_name) ) {
+    if ( const auto& offsets = field_offsets->get_optional(hilti::rt::String(field_name)) ) {
         out() << " [" << tuple::get<0>(*offsets) << ", ";
 
         if ( const auto& end = tuple::get<1>(*offsets) )

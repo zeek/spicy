@@ -8,13 +8,21 @@
 
 namespace hilti::rt {
 
-/** sprintf-style string formatting. */
+/**
+ * Formats a string sprintf-style.
+ *
+ * \note There's a separate overload in `string.h` that receives and returns a `rt::String`.
+ */
 template<typename... Args>
 std::string fmt(const char* fmt, const Args&... args) {
     return tfm::format(fmt, args...);
 }
 
-/** sprintf-style string formatting. */
+/**
+ * Formats a string sprintf-style.
+ *
+ * \note There's a separate overload in `string.h` that receives and returns a `rt::String`.
+ */
 template<typename... Args>
 std::string fmt(std::string_view s, const Args&... args) {
     // In principal we do not know whether the passed `string_view` is

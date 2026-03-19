@@ -9,12 +9,14 @@
 
 using namespace hilti::rt;
 
-void Address::_parse(const std::string& addr) {
+void Address::_parse(std::string_view addr) {
+    auto addr_ = std::string(addr);
+
     // We need to guess whether it's a struct in_addr or IPv6 address. If
     // there's a colon in there, it's the latter.
     if ( addr.find(':') == std::string::npos ) {
         struct in_addr v4{};
-        if ( inet_pton(AF_INET, addr.c_str(), &v4) > 0 )
+        if ( inet_pton(AF_INET, addr_.c_str(), &v4) > 0 )
             _init(v4);
         else
             throw InvalidArgument(fmt("cannot parse IPv4 address '%s'", addr));
@@ -22,7 +24,7 @@ void Address::_parse(const std::string& addr) {
 
     else {
         struct in6_addr v6{};
-        if ( inet_pton(AF_INET6, addr.c_str(), &v6) > 0 )
+        if ( inet_pton(AF_INET6, addr_.c_str(), &v6) > 0 )
             _init(v6);
         else
             throw InvalidArgument(fmt("cannot parse IPv6 address '%s'", addr));

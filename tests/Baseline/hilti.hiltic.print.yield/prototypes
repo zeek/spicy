@@ -9,11 +9,11 @@
 extern uint64_t hlt_internal_hlto_scope;
 
 namespace hlt_internal::Foo {
-    extern auto test(const std::string& x) -> std::string;
+    extern auto test(const ::hilti::rt::String& x) -> ::hilti::rt::String;
 }
 
 namespace hlt::Foo {
-    extern auto test(const std::string& x) -> ::hilti::rt::Resumable;
+    extern auto test(const ::hilti::rt::String& x) -> ::hilti::rt::Resumable;
 }
 
 namespace hlt_internal::Foo {

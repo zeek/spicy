@@ -9,11 +9,11 @@
 extern uint64_t hlt_internal_hlto_scope;
 
 namespace hlt_internal::Foo {
-    extern auto test(const std::string& x) -> std::string;
+    extern auto test(const ::hilti::rt::String& x) -> ::hilti::rt::String;
 }
 
 namespace hlt::Foo {
-    extern auto test(const std::string& x) -> ::hilti::rt::Resumable;
+    extern auto test(const ::hilti::rt::String& x) -> ::hilti::rt::Resumable;
 }
 
 namespace hlt_internal::Foo {
@@ -22,7 +22,7 @@ namespace hlt_internal::Foo {
 
 HILTI_PRE_INIT(hlt_internal::Foo::_t_register_module)
 
-extern auto hlt::Foo::test(const std::string& x) -> ::hilti::rt::Resumable {
+extern auto hlt::Foo::test(const ::hilti::rt::String& x) -> ::hilti::rt::Resumable {
     auto args = std::make_tuple(::hilti::rt::resumable::detail::copyArg(x));
     auto args_on_heap = std::make_shared<decltype(args)>(std::move(args));
     auto cb = [args_on_heap = std::move(args_on_heap)](::hilti::rt::resumable::Handle* r) -> ::hilti::rt::any {
@@ -39,25 +39,25 @@ extern void hlt_internal::Foo::_t_register_module() {
     ::hilti::rt::detail::registerModule({ "Foo", hlt_internal_hlto_scope, nullptr, nullptr, nullptr, nullptr});
 }
 
-extern auto hlt_internal::Foo::test(const std::string& x) -> std::string {
+extern auto hlt_internal::Foo::test(const ::hilti::rt::String& x) -> ::hilti::rt::String {
     ::hilti::rt::detail::checkStack();
       ::hilti::rt::location("<...>/yield.hlt:12:5-12:49");
-    ::hilti::rt::print("HILTI - 1 - argument: "s, &::hilti::rt::type_info::string, ::hilti::rt::Bool(false));
+    ::hilti::rt::print("HILTI - 1 - argument: "_hs, &::hilti::rt::type_info::string, ::hilti::rt::Bool(false));
       ::hilti::rt::location("<...>/yield.hlt:13:5-13:19");
     ::hilti::rt::print(x, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
       ::hilti::rt::location("<...>/yield.hlt:15:5-15:10");
     ::hilti::rt::detail::yield();
       ::hilti::rt::location("<...>/yield.hlt:16:5-16:29");
-    ::hilti::rt::print("HILTI - 2"s, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
+    ::hilti::rt::print("HILTI - 2"_hs, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
       ::hilti::rt::location("<...>/yield.hlt:17:5-17:10");
     ::hilti::rt::detail::yield();
       ::hilti::rt::location("<...>/yield.hlt:18:5-18:29");
-    ::hilti::rt::print("HILTI - 3"s, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
+    ::hilti::rt::print("HILTI - 3"_hs, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
       ::hilti::rt::location("<...>/yield.hlt:19:5-19:10");
     ::hilti::rt::detail::yield();
       ::hilti::rt::location("<...>/yield.hlt:20:5-20:32");
-    ::hilti::rt::print("HILTI - Done"s, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
+    ::hilti::rt::print("HILTI - Done"_hs, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
       ::hilti::rt::location("<...>/yield.hlt:22:5-22:25");
-    return "test-result"s;
+    return "test-result"_hs;
 }
 

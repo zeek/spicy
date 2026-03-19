@@ -132,7 +132,7 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
                     if ( ! field.get().isEmitted() )
                         continue;
 
-                    auto offsets = field_offsets->get_optional(field.get().name);
+                    auto offsets = field_offsets->get_optional(std::string_view(field.get().name));
                     if ( ! offsets )
                         continue;
 
@@ -147,7 +147,7 @@ nlohmann::json JSONPrinter::convert(const hilti::rt::type_info::Value& v) {
                         json_map[field.get().name] = std::move(json_offsets);
                 }
 
-                if ( const auto& self = field_offsets->get_optional("self") )
+                if ( const auto& self = field_offsets->get_optional("self"_hs) )
                     json_map["self"] = make_json_offsets_object(*self);
 
                 j[HILTI_INTERNAL_ID("offsets")] = std::move(json_map);

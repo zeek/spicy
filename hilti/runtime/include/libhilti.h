@@ -27,8 +27,9 @@
 #include <hilti/rt/types/all.h>
 #include <hilti/rt/util.h>
 
-using namespace hilti::rt::bytes::literals; // NOLINT(google-global-names-in-headers)
-using namespace std::string_literals;       // NOLINT(google-global-names-in-headers)
-using namespace std::string_view_literals;  // NOLINT(google-global-names-in-headers)
+using namespace hilti::rt::bytes::literals;  // NOLINT(google-global-names-in-headers)
+using namespace hilti::rt::string::literals; // NOLINT(google-global-names-in-headers)
+using namespace std::string_literals;        // NOLINT(google-global-names-in-headers)
+using namespace std::string_view_literals;   // NOLINT(google-global-names-in-headers)
 
 #endif

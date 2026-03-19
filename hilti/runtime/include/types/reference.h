@@ -813,12 +813,12 @@ inline std::string to_string(const ValueReference<T>& x, adl::tag /*unused*/) {
 // String specialization
 
 template<>
-inline std::string detail::to_string_for_print<StrongReference<std::string>>(const StrongReference<std::string>& x) {
+inline std::string detail::to_string_for_print<StrongReference<String>>(const StrongReference<String>& x) {
     return x ? hilti::rt::to_string_for_print(*x) : "Null";
 }
 
 template<>
-inline std::string detail::to_string_for_print<WeakReference<std::string>>(const WeakReference<std::string>& x) {
+inline std::string detail::to_string_for_print<WeakReference<String>>(const WeakReference<String>& x) {
     if ( x.isExpired() )
         return "<expired ref>";
 
@@ -829,7 +829,7 @@ inline std::string detail::to_string_for_print<WeakReference<std::string>>(const
 }
 
 template<>
-inline std::string detail::to_string_for_print<ValueReference<std::string>>(const ValueReference<std::string>& x) {
+inline std::string detail::to_string_for_print<ValueReference<String>>(const ValueReference<String>& x) {
     return hilti::rt::to_string_for_print(*x);
 }
 

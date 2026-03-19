@@ -5,6 +5,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -117,27 +118,27 @@ public:
     Logger(std::ostream& output_std = std::cerr, std::ostream& output_debug = std::cerr)
         : _output_std(output_std), _output_debug(output_debug) {}
 
-    void log(logging::Level level, const std::string& msg, const Location& l = location::None);
+    void log(logging::Level level, std::string_view msg, const Location& l = location::None);
 
-    void info(const std::string& msg, const Location& l = location::None);
-    void warning(const std::string& msg, const Location& l = location::None);
-    void deprecated(const std::string& msg, const Location& l = location::None);
-    void error(const std::string& msg, const Location& l = location::None);
-    void error(const std::string& msg, const std::vector<std::string>& context, const Location& l = location::None);
-    void fatalError(const std::string& msg, const Location& l = location::None) __attribute__((noreturn));
-    void internalError(const std::string& msg, const Location& l = location::None) __attribute__((noreturn));
+    void info(std::string_view msg, const Location& l = location::None);
+    void warning(std::string_view msg, const Location& l = location::None);
+    void deprecated(std::string_view msg, const Location& l = location::None);
+    void error(std::string_view msg, const Location& l = location::None);
+    void error(std::string_view msg, const std::vector<std::string>& context, const Location& l = location::None);
+    void fatalError(std::string_view msg, const Location& l = location::None) __attribute__((noreturn));
+    void internalError(std::string_view msg, const Location& l = location::None) __attribute__((noreturn));
 
-    void info(const std::string& msg, const Node* n) { info(msg, n->location()); }
-    void warning(const std::string& msg, const Node* n) { warning(msg, n->location()); }
-    void deprecated(const std::string& msg, const Node* n) { deprecated(msg, n->location()); }
-    void error(const std::string& msg, const Node* n) { error(msg, n->location()); }
-    void fatalError(const std::string& msg, const Node* n) __attribute__((noreturn)) { fatalError(msg, n->location()); }
-    void internalError(const std::string& msg, const Node* n) __attribute__((noreturn)) {
+    void info(std::string_view msg, const Node* n) { info(msg, n->location()); }
+    void warning(std::string_view msg, const Node* n) { warning(msg, n->location()); }
+    void deprecated(std::string_view msg, const Node* n) { deprecated(msg, n->location()); }
+    void error(std::string_view msg, const Node* n) { error(msg, n->location()); }
+    void fatalError(std::string_view msg, const Node* n) __attribute__((noreturn)) { fatalError(msg, n->location()); }
+    void internalError(std::string_view msg, const Node* n) __attribute__((noreturn)) {
         internalError(msg, n->location());
     }
 
     /** Use HILTI_DEBUG(...) instead. */
-    void _debug(const logging::DebugStream& dbg, const std::string& msg, const Location& l = location::None);
+    void _debug(const logging::DebugStream& dbg, std::string_view msg, const Location& l = location::None);
 
     template<typename T>
     void log(std::string msg, const std::shared_ptr<T>& n) {
@@ -212,8 +213,8 @@ public:
     void reset() { _errors = _warnings = 0; }
 
 protected:
-    void report(std::ostream& output, logging::Level level, size_t indent, const std::string& addl,
-                const std::string& msg, const Location& l) const;
+    void report(std::ostream& output, logging::Level level, size_t indent, std::string_view addl, std::string_view msg,
+                const Location& l) const;
 
 private:
     friend Logger& logger();                                                  // NOLINT

@@ -36,7 +36,7 @@ void util::detail::internalError(const std::string& s) { logger().internalError(
 
 void util::cannotBeReached() { hilti::logger().internalError("code is executing that should not be reachable"); }
 
-std::vector<std::string> util::split(std::string s, const std::string& delim) {
+std::vector<std::string> util::split(std::string_view s, std::string_view delim) {
     std::vector<std::string> l;
 
     while ( true ) {
@@ -45,30 +45,30 @@ std::vector<std::string> util::split(std::string s, const std::string& delim) {
         if ( p == std::string::npos )
             break;
 
-        l.push_back(s.substr(0, p));
+        l.emplace_back(s.substr(0, p));
 
         s = s.substr(p + delim.size(), std::string::npos);
     }
 
-    l.push_back(std::move(s));
+    l.emplace_back(s);
     return l;
 }
 
-std::pair<std::string, std::string> util::split1(std::string s, const std::string& delim) {
+std::pair<std::string, std::string> util::split1(std::string_view s, std::string_view delim) {
     if ( auto i = s.find(delim); i != std::string::npos )
-        return std::make_pair(s.substr(0, i), s.substr(i + delim.size()));
+        return std::make_pair(std::string(s.substr(0, i)), std::string(s.substr(i + delim.size())));
 
-    return std::make_pair(std::move(s), "");
+    return std::make_pair(std::string(s), "");
 }
 
-std::pair<std::string, std::string> util::rsplit1(std::string s, const std::string& delim) {
+std::pair<std::string, std::string> util::rsplit1(std::string_view s, std::string_view delim) {
     if ( auto i = s.rfind(delim); i != std::string::npos )
-        return std::make_pair(s.substr(0, i), s.substr(i + delim.size()));
+        return std::make_pair(std::string(s.substr(0, i)), std::string(s.substr(i + delim.size())));
 
-    return std::make_pair("", std::move(s));
+    return std::make_pair("", std::string(s));
 }
 
-Result<std::vector<std::string>> util::splitShellUnsafe(const std::string& s) {
+Result<std::vector<std::string>> util::splitShellUnsafe(std::string_view s) {
 #if defined(_MSC_VER)
     // Shell-style word splitting with support for single/double quotes,
     // backslash escaping, command substitution (backticks), and basic
@@ -150,7 +150,7 @@ Result<std::vector<std::string>> util::splitShellUnsafe(const std::string& s) {
 
     wordexp_t we;
 
-    switch ( wordexp(s.c_str(), &we, WRDE_UNDEF) ) {
+    switch ( wordexp(std::string(s).c_str(), &we, WRDE_UNDEF) ) {
         case 0: break;
         // WRDE_NOSPACE may allocate part of the result.
         case WRDE_NOSPACE: wordfree(&we); [[fallthrough]];

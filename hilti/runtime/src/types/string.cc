@@ -12,16 +12,17 @@
 
 using namespace hilti::rt;
 
-integer::safe<uint64_t> string::size(const std::string& s, unicode::DecodeErrorStrategy errors) {
-    auto p = s.begin();
-    auto e = s.end();
+integer::safe<uint64_t> string::size(const String& s, unicode::DecodeErrorStrategy errors) {
+    const auto sv = s.str();
+    const auto* p = sv.begin();
+    const auto* e = sv.end();
 
     uint64_t len = 0;
 
     while ( p < e ) {
         try {
             // `utf8::next` is for iterating UTF-8 strings.
-            utf8::next(p, s.end());
+            utf8::next(p, e);
             ++len;
         } catch ( const utf8::invalid_utf8& ) {
             switch ( errors.value() ) {
@@ -41,8 +42,9 @@ integer::safe<uint64_t> string::size(const std::string& s, unicode::DecodeErrorS
     return len;
 }
 
-std::string string::upper(std::string_view s, unicode::DecodeErrorStrategy errors) {
-    const auto* p = reinterpret_cast<const unsigned char*>(s.data());
+String string::upper(const String& s, unicode::DecodeErrorStrategy errors) {
+    const auto sv = s.str();
+    const auto* p = reinterpret_cast<const unsigned char*>(sv.data());
     const auto* e = p + s.size();
 
     unsigned char buf[4];
@@ -68,11 +70,12 @@ std::string string::upper(std::string_view s, unicode::DecodeErrorStrategy error
         p += n;
     }
 
-    return rval;
+    return {std::string_view(rval)};
 }
 
-std::string string::lower(std::string_view s, unicode::DecodeErrorStrategy errors) {
-    const auto* p = reinterpret_cast<const unsigned char*>(s.data());
+String string::lower(const String& s, unicode::DecodeErrorStrategy errors) {
+    const auto sv = s.str();
+    const auto* p = reinterpret_cast<const unsigned char*>(sv.data());
     const auto* e = p + s.size();
 
     unsigned char buf[4];
@@ -98,13 +101,13 @@ std::string string::lower(std::string_view s, unicode::DecodeErrorStrategy error
         p += n;
     }
 
-    return rval;
+    return {std::string_view(rval)};
 }
 
-Vector<std::string> string::split(std::string_view s) {
+Vector<String> string::split(const String& s) {
     auto xs = hilti::rt::split(s);
 
-    Vector<std::string> result;
+    Vector<String> result;
     result.reserve(xs.size());
 
     for ( auto&& v : xs )
@@ -113,10 +116,10 @@ Vector<std::string> string::split(std::string_view s) {
     return result;
 }
 
-Vector<std::string> string::split(std::string_view s, std::string_view sep) {
+Vector<String> string::split(const String& s, const String& sep) {
     auto xs = hilti::rt::split(s, sep);
 
-    Vector<std::string> result;
+    Vector<String> result;
     result.reserve(xs.size());
 
     for ( auto&& v : xs )
@@ -125,27 +128,29 @@ Vector<std::string> string::split(std::string_view s, std::string_view sep) {
     return result;
 }
 
-Tuple<std::string, std::string> string::split1(const std::string& s) {
-    auto pair = hilti::rt::split1(s);
-    return tuple::make(std::move(pair.first), std::move(pair.second));
+Tuple<String, String> string::split1(const String& s) {
+    auto pair = hilti::rt::split1(std::string(s.str()));
+    return tuple::make(std::string_view(pair.first), std::string_view(pair.second));
 }
 
-Tuple<std::string, std::string> string::split1(const std::string& s, const std::string& sep) {
-    auto pair = hilti::rt::split1(s, sep);
-    return tuple::make(std::move(pair.first), std::move(pair.second));
+Tuple<String, String> string::split1(const String& s, const String& sep) {
+    auto pair = hilti::rt::split1(std::string(s.str()), std::string(sep.str()));
+    return tuple::make(String(std::string_view(pair.first)), String(std::string_view(pair.second)));
 }
 
-Bytes string::encode(std::string s, unicode::Charset cs, unicode::DecodeErrorStrategy errors) try {
-    if ( s.empty() )
-        return {std::move(s)};
+Bytes string::encode(const String& s, unicode::Charset cs, unicode::DecodeErrorStrategy errors) try {
+    const auto sv = s.str();
+
+    if ( sv.empty() )
+        return {};
 
     switch ( cs.value() ) {
         case unicode::Charset::UTF8: {
             // HILTI `string` is always UTF-8, but we could be invoked with raw bags of bytes here as well, so validate.
             std::string t;
 
-            auto p = s.begin();
-            auto e = s.end();
+            const auto* p = sv.begin();
+            const auto* e = sv.end();
 
             while ( p < e ) {
                 try {
@@ -172,7 +177,7 @@ Bytes string::encode(std::string s, unicode::Charset cs, unicode::DecodeErrorStr
         case unicode::Charset::UTF16BE: [[fallthrough]];
         case unicode::Charset::UTF16LE: {
             // HILTI `string` is always UTF-8, but we could be invoked with raw bags of bytes here as well, so validate.
-            auto t8 = string::encode(std::move(s), unicode::Charset::UTF8, errors).str();
+            auto t8 = string::encode(s, unicode::Charset::UTF8, errors).str();
 
             auto t = utf8::utf8to16(t8);
 
@@ -200,7 +205,7 @@ Bytes string::encode(std::string s, unicode::Charset cs, unicode::DecodeErrorStr
 
         case unicode::Charset::ASCII: {
             std::string t;
-            for ( const auto& c : s ) {
+            for ( const auto& c : sv ) {
                 if ( c >= 32 && c < 0x7f )
                     t += static_cast<char>(c);
                 else {
@@ -226,4 +231,38 @@ Bytes string::encode(std::string s, unicode::Charset cs, unicode::DecodeErrorStr
 } catch ( ... ) {
     // Throw a new `RuntimeError` for any other exception which has made it out of the function.
     throw RuntimeError("could not encode string");
+}
+
+hilti::rt::String hilti::rt::strftime(std::string_view format, const hilti::rt::Time& time) {
+    auto seconds = static_cast<time_t>(time.seconds());
+
+    std::tm tm;
+
+    constexpr size_t size = 128;
+    char mbstr[size];
+
+    // localtime() is required to call tzset() internally, whereas
+    // localtime_r() may or may not do so -- to be portable we have to
+    // call it ourselves:
+    ::tzset();
+
+    std::tm* localtime = nullptr;
+#if defined(_WIN32)
+    if ( auto* tmp = ::localtime(&seconds) ) {
+        tm = *tmp;
+        localtime = &tm;
+    }
+#else
+    localtime = ::localtime_r(&seconds, &tm);
+#endif
+    if ( ! localtime )
+        throw InvalidArgument(hilti::rt::fmt("cannot convert timestamp to local time: %s", std::strerror(errno)));
+
+
+    auto n = std::strftime(mbstr, size, std::string(format).c_str(), localtime);
+
+    if ( ! n )
+        throw InvalidArgument("could not format timestamp");
+
+    return String(mbstr);
 }

@@ -4,7 +4,9 @@
 
 #include <string>
 
+#include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/integer.h>
+#include <hilti/rt/types/string.h>
 #include <hilti/rt/types/vector.h>
 
 #include <spicy/rt/parser.h>
@@ -24,14 +26,15 @@ namespace spicy::rt {
 extern std::string version();
 
 /** Returns a bytes value rendered as a hex string. */
-extern std::string bytes_to_hexstring(const hilti::rt::Bytes& value);
+extern hilti::rt::String bytes_to_hexstring(const hilti::rt::Bytes& value);
 
 /** Returns a bytes value rendered as a MAC address string. */
-extern std::string bytes_to_mac(const hilti::rt::Bytes& value);
+extern hilti::rt::String bytes_to_mac(const hilti::rt::Bytes& value);
 
 /** Returns the internal `__offsets` member if present. */
-extern const hilti::rt::Map<std::string, hilti::rt::Tuple<hilti::rt::integer::safe<uint64_t>,
-                                                          hilti::rt::Optional<hilti::rt::integer::safe<uint64_t>>>>*
+extern const hilti::rt::Map<
+    hilti::rt::String,
+    hilti::rt::Tuple<hilti::rt::integer::safe<uint64_t>, hilti::rt::Optional<hilti::rt::integer::safe<uint64_t>>>>*
 get_offsets_for_unit(const hilti::rt::type_info::Struct& struct_, const hilti::rt::type_info::Value& value);
 
 /** Confirm a unit in trial mode. */
