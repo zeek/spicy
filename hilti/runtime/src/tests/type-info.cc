@@ -5,6 +5,7 @@
 #include <hilti/rt/type-info.h>
 
 using namespace hilti::rt;
+using namespace hilti::rt::string::literals;
 
 TEST_SUITE_BEGIN("TypeInfo");
 
@@ -86,7 +87,7 @@ TEST_CASE("traverse structs") {
     xi++;
 
     auto xf2 = type_info::value::auxType<type_info::String>(xi->second)->get(xi->second);
-    CHECK(xf2 == std::string("foo"));
+    CHECK(xf2 == "foo"_hs);
     xi++;
 
     auto y = type_info::value::auxType<type_info::Struct>(xi->second)->iterate(xi->second);

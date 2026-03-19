@@ -3,10 +3,13 @@
 #include <hilti/rt/autogen/version.h>
 #include <hilti/rt/type-info.h>
 #include <hilti/rt/types/bytes.h>
+#include <hilti/rt/types/string.h>
 #include <hilti/rt/util.h>
 
 #include <spicy/rt/autogen/config.h>
 #include <spicy/rt/util.h>
+
+using namespace hilti::rt::string::literals;
 
 std::string spicy::rt::version() {
     constexpr char spicy_version[] = PROJECT_VERSION_STRING_LONG;
@@ -27,11 +30,11 @@ static inline void byte_to_hex(unsigned char byte, char* hex_out) {
     hex_out[1] = hex_chars[byte & 0x0f];
 }
 
-std::string spicy::rt::bytes_to_hexstring(const hilti::rt::Bytes& value) {
+hilti::rt::String spicy::rt::bytes_to_hexstring(const hilti::rt::Bytes& value) {
     const auto& data = value.str();
 
     if ( data.empty() )
-        return "";
+        return ""_hs;
 
     std::string result;
     result.resize(data.size() * 2); // 2 digits per hex byte
@@ -39,14 +42,14 @@ std::string spicy::rt::bytes_to_hexstring(const hilti::rt::Bytes& value) {
     for ( unsigned long i = 0; i < data.size(); i++ )
         byte_to_hex(data[i], &result[i * 2]);
 
-    return result;
+    return hilti::rt::String(result);
 }
 
-std::string spicy::rt::bytes_to_mac(const hilti::rt::Bytes& value) {
+hilti::rt::String spicy::rt::bytes_to_mac(const hilti::rt::Bytes& value) {
     const auto& data = value.str();
 
     if ( data.empty() )
-        return "";
+        return ""_hs;
 
     // Two digits per hex byte, plus one colon per byte except the last.
     std::string result((data.size() * 2) + (data.size() - 1), ':');
@@ -54,11 +57,11 @@ std::string spicy::rt::bytes_to_mac(const hilti::rt::Bytes& value) {
     for ( unsigned long i = 0; i < data.size(); i++ )
         byte_to_hex(data[i], &result[i * 3]);
 
-    return result;
+    return hilti::rt::String(result);
 }
 
-const hilti::rt::Map<std::string, hilti::rt::Tuple<hilti::rt::integer::safe<uint64_t>,
-                                                   hilti::rt::Optional<hilti::rt::integer::safe<uint64_t>>>>*
+const hilti::rt::Map<hilti::rt::String, hilti::rt::Tuple<hilti::rt::integer::safe<uint64_t>,
+                                                         hilti::rt::Optional<hilti::rt::integer::safe<uint64_t>>>>*
 spicy::rt::get_offsets_for_unit(const hilti::rt::type_info::Struct& struct_, const hilti::rt::type_info::Value& value) {
     for ( const auto& [f, v] : struct_.iterate(value, /*include_internal=*/true) ) {
         if ( f.name == HILTI_INTERNAL_ID("offsets") )

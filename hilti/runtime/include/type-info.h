@@ -903,7 +903,7 @@ class StreamIterator : public detail::AtomicType<hilti::rt::stream::SafeConstIte
 class StreamView : public detail::AtomicType<hilti::rt::stream::View> {};
 
 /** Auxiliary type information for type ``string`. */
-class String : public detail::AtomicType<std::string> {};
+class String : public detail::AtomicType<hilti::rt::String> {};
 
 /** Auxiliary type information for type ``strong_ref<T>`. */
 class StrongReference : public detail::DereferenceableType {

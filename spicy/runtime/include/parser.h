@@ -17,6 +17,7 @@
 #include <hilti/rt/types/null.h>
 #include <hilti/rt/types/port.h>
 #include <hilti/rt/types/reference.h>
+#include <hilti/rt/types/string.h>
 #include <hilti/rt/types/struct.h>
 #include <hilti/rt/types/tuple.h>
 #include <hilti/rt/util.h>
@@ -148,7 +149,7 @@ struct has_on_undelivered {
 struct Parser {
     Parser(::hilti::rt::struct_::tag::Inits, std::string_view name, bool is_public, Parse1Function parse1,
            hilti::rt::any parse2, Parse3Function parse3, ContextNewFunction context_new,
-           const hilti::rt::TypeInfo* type, std::string description, hilti::rt::Vector<MIMEType> mime_types,
+           const hilti::rt::TypeInfo* type, hilti::rt::String description, hilti::rt::Vector<MIMEType> mime_types,
            hilti::rt::Vector<ParserPort> ports)
         : name(name),
           is_public(is_public),
@@ -165,7 +166,7 @@ struct Parser {
 
     Parser(::hilti::rt::struct_::tag::Inits, std::string_view name, bool is_public, Parse1Function parse1,
            hilti::rt::any parse2, Parse3Function parse3, hilti::rt::Null /* null */, const hilti::rt::TypeInfo* type,
-           std::string description, hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
+           hilti::rt::String description, hilti::rt::Vector<MIMEType> mime_types, hilti::rt::Vector<ParserPort> ports)
         : name(name),
           is_public(is_public),
           parse1(parse1),
@@ -180,7 +181,7 @@ struct Parser {
 
     Parser(::hilti::rt::struct_::tag::Inits, std::string_view name, bool is_public, hilti::rt::Null /* null */,
            hilti::rt::any parse2, hilti::rt::Null /* null */, hilti::rt::Null /* null */,
-           const hilti::rt::TypeInfo* type, std::string description, hilti::rt::Vector<MIMEType> mime_types,
+           const hilti::rt::TypeInfo* type, hilti::rt::String description, hilti::rt::Vector<MIMEType> mime_types,
            hilti::rt::Vector<ParserPort> ports)
         : Parser(::hilti::rt::struct_::tag::Inits(), name, is_public, nullptr, std::move(parse2), nullptr, nullptr,
                  type, std::move(description), std::move(mime_types), std::move(ports)) {
@@ -189,7 +190,7 @@ struct Parser {
 
     Parser(::hilti::rt::struct_::tag::Inits, std::string_view name, bool is_public, hilti::rt::Null /* null */,
            hilti::rt::any parse2, hilti::rt::Null /* null */, ContextNewFunction context_new,
-           const hilti::rt::TypeInfo* type, std::string description, hilti::rt::Vector<MIMEType> mime_types,
+           const hilti::rt::TypeInfo* type, hilti::rt::String description, hilti::rt::Vector<MIMEType> mime_types,
            hilti::rt::Vector<ParserPort> ports)
         : Parser(::hilti::rt::struct_::tag::Inits(), name, is_public, nullptr, std::move(parse2), nullptr, context_new,
                  type, std::move(description), std::move(mime_types), std::move(ports)) {
@@ -216,7 +217,7 @@ struct Parser {
     }
 
     /** Short descriptive name. */
-    std::string_view name;
+    std::string name;
 
     /** Whether this parser is public. */
     bool is_public = false;
@@ -273,7 +274,7 @@ struct Parser {
     /**
      * Human-readable description associated with this parser.
      */
-    std::string description;
+    hilti::rt::String description;
 
     /**
      * MIME types this parer can handle.
@@ -389,7 +390,7 @@ extern void accept_input();
  *
  * @param reason user-presentable description of the violation
  */
-extern void decline_input(const std::string& reason);
+extern void decline_input(const hilti::rt::String& reason);
 
 namespace detail {
 

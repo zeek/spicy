@@ -1,8 +1,8 @@
 # @TEST-DOC: Validate that one can load additional static or shared libraries.
 
 # @TEST-REQUIRES: command -v ar
-# @TEST-EXEC: $(spicy-config --cxx-launcher --cxx --debug --ldflags) -fPIC -shared -o hello.so hello.cc
-# @TEST-EXEC: CXX="$(spicy-config --cxx-launcher --cxx)" CXXFLAGS="$(spicy-config --debug --ldflags) -fPIC" make hi.o && ar rcs hi.a hi.o
+# @TEST-EXEC: $(spicy-config --cxx-launcher --cxx --debug --cxxflags --ldflags) -fPIC -shared -o hello.so hello.cc
+# @TEST-EXEC: CXX="$(spicy-config --cxx-launcher --cxx)" CXXFLAGS="$(spicy-config --debug --cxxflags --ldflags) -fPIC" make hi.o && ar rcs hi.a hi.o
 
 # Works in just-in-time mode.
 # @TEST-EXEC: spicyc --cxx-link $PWD/hello.so --cxx-link $PWD/hi.a -j foo.spicy>>output
@@ -15,14 +15,20 @@
 
 # @TEST-START-FILE hello.cc
 // This file will be compiled into a shared library.
-#include <string>
-std::string hello(const std::string& name) { return "Hello, " + name + "!"; }
+#include <hilti/rt/linker.h>
+#include <hilti/rt/types/string.h>
+HILTI_EXPORT ::hilti::rt::String hello(const ::hilti::rt::String& name) {
+    return ::hilti::rt::String(std::string("Hello, ") + std::string(name.str()) + "!");
+}
 # @TEST-END-FILE
 
 # @TEST-START-FILE hi.cc
 // This file will be compiled into a static archive.
-#include <string>
-std::string hi(const std::string& name) { return "Hi, " + name + "!"; }
+#include <hilti/rt/linker.h>
+#include <hilti/rt/types/string.h>
+HILTI_EXPORT ::hilti::rt::String hi(const ::hilti::rt::String& name) {
+    return ::hilti::rt::String(std::string("Hi, ") + std::string(name.str()) + "!");
+}
 # @TEST-END-FILE
 
 # @TEST-START-FILE foo.spicy

@@ -52,7 +52,7 @@ TEST_CASE("primitive") {
     CHECK_EQ(to_string(static_cast<int64_t>(-42)), "-42");
     CHECK_EQ(to_string(static_cast<uint64_t>(42)), "42");
 
-    CHECK_EQ(to_string("abc"), "\"abc\"");
+    CHECK_EQ(to_string("abc"_hs), "\"abc\"");
 }
 
 TEST_CASE("safe-int") {
@@ -69,8 +69,8 @@ TEST_CASE("safe-int") {
 }
 
 TEST_CASE("string") {
-    CHECK_EQ(to_string(std::string("abc")), "\"abc\"");
-    CHECK_EQ(to_string_for_print(std::string("abc")), "abc");
+    CHECK_EQ(to_string(hilti::rt::String("abc")), "\"abc\"");
+    CHECK_EQ(to_string_for_print(hilti::rt::String("abc")), "abc");
 }
 
 TEST_CASE("string_view") {
@@ -176,11 +176,11 @@ TEST_CASE("optional") {
     CHECK_EQ(to_string(hilti::rt::Optional<int8_t>(2)), "2");
     CHECK_EQ(to_string(hilti::rt::Optional<hilti::rt::Optional<int8_t>>()), "(not set)");
     CHECK_EQ(to_string(hilti::rt::Optional<hilti::rt::Optional<int8_t>>(2)), "2");
-    CHECK_EQ(to_string(hilti::rt::Optional<std::string>("abc")), "\"abc\"");
+    CHECK_EQ(to_string(hilti::rt::Optional<hilti::rt::String>("abc")), "\"abc\"");
 
     CHECK_EQ(to_string_for_print(hilti::rt::Optional<int8_t>(2)), "2");
-    CHECK_EQ(to_string_for_print(hilti::rt::Optional<std::string>("abc")), "abc");
-    CHECK_EQ(to_string_for_print(hilti::rt::Optional<std::string>()), "(not set)");
+    CHECK_EQ(to_string_for_print(hilti::rt::Optional<hilti::rt::String>("abc")), "abc");
+    CHECK_EQ(to_string_for_print(hilti::rt::Optional<hilti::rt::String>()), "(not set)");
     CHECK_EQ(to_string_for_print(hilti::rt::Optional<std::string_view>("abc")), "abc");
     CHECK_EQ(to_string_for_print(hilti::rt::Optional<std::string_view>()), "(not set)");
 
@@ -309,8 +309,8 @@ TEST_CASE("Time") {
 }
 
 TEST_CASE("tuple") {
-    CHECK_EQ(to_string(tuple::make(1, std::string("abc"), 1e-9)), "(1, \"abc\", 1e-09)");
-    CHECK_EQ(fmt("%s", tuple::make(1, std::string("abc"), 1e-9)), "(1, \"abc\", 1e-09)");
+    CHECK_EQ(to_string(tuple::make(1, "abc"_hs, 1e-9)), "(1, \"abc\", 1e-09)");
+    CHECK_EQ(fmt("%s", tuple::make(1, "abc"_hs, 1e-9)), "(1, \"abc\", 1e-09)");
 }
 
 TEST_CASE("View") {

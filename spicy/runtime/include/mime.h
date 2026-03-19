@@ -8,6 +8,7 @@
 #include <hilti/rt/exception.h>
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/result.h>
+#include <hilti/rt/types/string.h>
 #include <hilti/rt/util.h>
 
 namespace spicy::rt {
@@ -44,13 +45,13 @@ public:
      *
      * @throws `InvalidMIMEType` if it cannot parse the type
      */
-    MIMEType(const std::string& type) {
+    MIMEType(std::string_view type) {
         if ( type == "*" ) {
             _main = _sub = "*";
             return;
         }
 
-        auto x = hilti::rt::split1(type, "/");
+        auto x = hilti::rt::split1(std::string(type), "/");
         _main = hilti::rt::trim(x.first);
         _sub = hilti::rt::trim(x.second);
 
@@ -108,7 +109,7 @@ public:
      * @param string of the form `main/sub`.
      * @return parsed type, or an error if not parseable
      */
-    static hilti::rt::Result<MIMEType> parse(const std::string& s) {
+    static hilti::rt::Result<MIMEType> parse(std::string_view s) {
         try {
             return MIMEType(s);
         } catch ( const InvalidMIMEType& e ) {

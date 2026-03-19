@@ -9,7 +9,7 @@
 extern uint64_t hlt_internal_hlto_scope;
 
 namespace hlt_internal::Foo {
-    static ::hilti::rt::Optional<std::string> X = {};
+    static ::hilti::rt::Optional<::hilti::rt::String> X = {};
     extern void _t_init_globals(::hilti::rt::Context* ctx);
     extern void _t_destroy_globals(::hilti::rt::Context* ctx);
     extern void _t_init_module();
@@ -20,7 +20,7 @@ HILTI_PRE_INIT(hlt_internal::Foo::_t_register_module)
 
 extern void hlt_internal::Foo::_t_destroy_globals(::hilti::rt::Context* ctx) { ::hlt_internal::Foo::X.reset();; }
 
-extern void hlt_internal::Foo::_t_init_globals(::hilti::rt::Context* ctx) { ::hlt_internal::Foo::X = ::hilti::rt::optional::make("Hello, world!"s); }
+extern void hlt_internal::Foo::_t_init_globals(::hilti::rt::Context* ctx) { ::hlt_internal::Foo::X = ::hilti::rt::optional::make("Hello, world!"_hs); }
 
 extern void hlt_internal::Foo::_t_init_module() {
       ::hilti::rt::location("<...>/globals.hlt:16:1-16:15");

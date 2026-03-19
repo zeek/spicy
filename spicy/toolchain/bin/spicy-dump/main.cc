@@ -49,7 +49,7 @@ static struct option long_options[] = {
 
 };
 
-static void fatalError(const std::string& msg) {
+static void fatalError(std::string_view msg) {
     hilti::logger().error(fmt("spicy-dump: %s", msg));
     spicy::rt::done();
     hilti::rt::done();

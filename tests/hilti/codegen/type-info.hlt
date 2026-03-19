@@ -240,7 +240,7 @@ struct VisitorTypesInit {
         auto fv = i->second;
         CHECK_EQ(i->first.name, "s");
         CHECK(fv);
-        CHECK_EQ(type_info::value::auxType<type_info::String>(fv)->get(fv), "string");
+        CHECK_EQ(type_info::value::auxType<type_info::String>(fv)->get(fv), "string"_hs);
         fv = (++i)->second;
         CHECK_EQ(i->first.name, "i");
         CHECK_EQ(type_info::value::auxType<type_info::SignedInteger<int64_t>>(fv)->get(fv), 42);
@@ -277,7 +277,7 @@ struct VisitorTypesInit {
 
                 auto v1 = i->second;
                 CHECK(v1);
-                CHECK_EQ(type_info::value::auxType<type_info::String>(v1)->get(v1), "string");
+                CHECK_EQ(type_info::value::auxType<type_info::String>(v1)->get(v1), "string"_hs);
                 CHECK_EQ(i->first.name, "a");
                 CHECK_EQ(i->first.lower, 0);
                 CHECK_EQ(i->first.upper, 4);
@@ -361,10 +361,10 @@ struct VisitorTypesInit {
                 auto i = s.begin();
                 auto [k1, v1] = *i++;
                 CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint64_t>>(k1)->get(k1), 1);
-                CHECK_EQ(type_info::value::auxType<type_info::String>(v1)->get(v1), "foo-1");
+                CHECK_EQ(type_info::value::auxType<type_info::String>(v1)->get(v1), "foo-1"_hs);
                 auto [k2, v2] = *i++;
                 CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint64_t>>(k2)->get(k2), 2);
-                CHECK_EQ(type_info::value::auxType<type_info::String>(v2)->get(v2), "foo-2");
+                CHECK_EQ(type_info::value::auxType<type_info::String>(v2)->get(v2), "foo-2"_hs);
                 CHECK(++i == s.end());
 
                 break;
@@ -373,7 +373,7 @@ struct VisitorTypesInit {
                 SEEN();
                 auto [key, value] = type.map_iterator->value(v);
                 CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint64_t>>(key)->get(key), 1);
-                CHECK_EQ(type_info::value::auxType<type_info::String>(value)->get(value), "foo-1");
+                CHECK_EQ(type_info::value::auxType<type_info::String>(value)->get(value), "foo-1"_hs);
 
                 break;
             }
@@ -390,7 +390,7 @@ struct VisitorTypesInit {
                 SEEN();
                 auto i = type.optional->value(v);
                 CHECK(i);
-                CHECK_EQ(type_info::value::auxType<type_info::String>(i)->get(i), "optional");
+                CHECK_EQ(type_info::value::auxType<type_info::String>(i)->get(i), "optional"_hs);
                 break;
             }
             case TypeInfo::Port: {
@@ -413,18 +413,18 @@ struct VisitorTypesInit {
                 SEEN();
                 auto i = type.result->value(v);
                 CHECK(i);
-                CHECK_EQ(type_info::value::auxType<type_info::String>(i)->get(i), "result");
+                CHECK_EQ(type_info::value::auxType<type_info::String>(i)->get(i), "result"_hs);
                 break;
             }
             case TypeInfo::Set: {
                 SEEN();
                 auto s = type.set->iterate(v);
                 auto i = s.begin();
-                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "aaa");
+                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "aaa"_hs);
                 ++i;
-                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "bbb");
+                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "bbb"_hs);
                 ++i;
-                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "ccc");
+                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "ccc"_hs);
                 ++i;
                 CHECK(i == s.end());
 
@@ -433,7 +433,7 @@ struct VisitorTypesInit {
             case TypeInfo::SetIterator: {
                 SEEN();
                 auto i = type.set_iterator->value(v);
-                CHECK_EQ(type_info::value::auxType<type_info::String>(i)->get(i), "aaa");
+                CHECK_EQ(type_info::value::auxType<type_info::String>(i)->get(i), "aaa"_hs);
                 break;
             }
             case TypeInfo::SignedInteger_int8: {
@@ -474,7 +474,7 @@ struct VisitorTypesInit {
             }
             case TypeInfo::String: {
                 SEEN();
-                CHECK_EQ(type.string->get(v), "string");
+                CHECK_EQ(type.string->get(v), "string"_hs);
                 break;
             }
             case TypeInfo::StrongReference: {
@@ -508,7 +508,7 @@ struct VisitorTypesInit {
 
                 auto v2 = i->second;
                 CHECK(v2);
-                CHECK_EQ(type_info::value::auxType<type_info::String>(v2)->get(v2), "string");
+                CHECK_EQ(type_info::value::auxType<type_info::String>(v2)->get(v2), "string"_hs);
                 CHECK_EQ(i->first.name, "");
                 ++i;
 
@@ -564,11 +564,11 @@ struct VisitorTypesInit {
                 SEEN();
                 auto s = type.vector->iterate(v);
                 auto i = s.begin();
-                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "11");
+                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "11"_hs);
                 ++i;
-                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "22");
+                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "22"_hs);
                 ++i;
-                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "33");
+                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "33"_hs);
                 ++i;
                 CHECK(i == s.end());
 
@@ -577,7 +577,7 @@ struct VisitorTypesInit {
             case TypeInfo::VectorIterator: {
                 SEEN();
                 auto i = type.vector_iterator->value(v);
-                CHECK_EQ(type_info::value::auxType<type_info::String>(i)->get(i), "11");
+                CHECK_EQ(type_info::value::auxType<type_info::String>(i)->get(i), "11"_hs);
                 break;
             }
             case TypeInfo::Void: {
@@ -648,7 +648,7 @@ struct VisitorOptionals {
         switch ( type.tag ) {
             case TypeInfo::String: {
                 ++num_strings;
-                CHECK_EQ(type.string->get(v), "yes");
+                CHECK_EQ(type.string->get(v), "yes"_hs);
                 break;
             }
             default: {
