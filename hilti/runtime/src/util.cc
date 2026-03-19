@@ -90,27 +90,24 @@ hilti::rt::Result<hilti::rt::filesystem::path> hilti::rt::createTemporaryFile(co
     if ( ec )
         return hilti::rt::result::Error(fmt("could not create temporary file: %s", ec.message()));
 
-#if defined(_WIN32)
     auto template_ = (tmp_dir / (prefix + "-XXXXXX")).string();
+
+#if defined(_WIN32)
     if ( _mktemp_s(template_.data(), template_.size() + 1) != 0 )
         return hilti::rt::result::Error(fmt("could not create temporary file in %s", tmp_dir));
 
     std::ofstream ofs(template_);
     if ( ! ofs )
         return hilti::rt::result::Error(fmt("could not create temporary file in %s", tmp_dir));
-
-    return hilti::rt::filesystem::path(template_);
 #else
-    auto template_ = (tmp_dir / (prefix + "-XXXXXX")).string();
-
     auto handle = ::mkstemp(template_.data());
     if ( handle == -1 )
         return hilti::rt::result::Error(fmt("could not create temporary file in %s: %s", tmp_dir, strerror(errno)));
 
     ::close(handle);
+#endif
 
     return hilti::rt::filesystem::path(template_);
-#endif
 }
 
 hilti::rt::filesystem::path hilti::rt::normalizePath(const hilti::rt::filesystem::path& p) {
