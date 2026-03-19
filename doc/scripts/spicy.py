@@ -19,8 +19,21 @@ from sphinx.util.console import darkgreen, red
 from sphinx.util.nodes import logging, make_refnode
 
 
-def setup(Sphinx):
-    Sphinx.add_domain(SpicyDomain)
+def install_html_translator(app):
+    if app.builder.format != "html":
+        return
+
+    class SpicyHTMLTranslator(
+        SpicyHTMLTranslatorMixin, app.builder.get_translator_class()
+    ):
+        pass
+
+    app.set_translator("html", SpicyHTMLTranslator)
+
+
+def setup(app):
+    app.add_domain(SpicyDomain)
+    app.connect("builder-inited", install_html_translator)
 
 
 logger = logging.getLogger(__name__)
@@ -463,6 +476,28 @@ class SpicyOutput(LiteralInclude):
 
     def message(self, msg):
         logger.info(msg)
+
+
+class SpicyHTMLTranslatorMixin:
+    """
+    Mixin for the Sphinx HTML translator that adds permalink anchors to rubric
+    nodes that have a `name` set .
+    """
+
+    def depart_rubric(self, node):
+        if (
+            node.get("ids")
+            and self.config.html_permalinks
+            and self.builder.add_permalinks
+        ):
+            icon = self.config.html_permalinks_icon
+            anchor_id = node["ids"][0]
+            self.body.append(
+                f'<a class="headerlink" href="#{anchor_id}"'
+                f' title="{_("Link to this entry")}">{icon}</a>'
+            )
+
+        super().depart_rubric(node)
 
 
 directives.register_directive("spicy-code", SpicyCode)
