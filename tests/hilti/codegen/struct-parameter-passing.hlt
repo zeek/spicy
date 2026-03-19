@@ -6,16 +6,16 @@
 
 module foo {
 
-# `in` parameters are passed as references.
-# CHECK: X1::X1(::hilti::rt::struct_::tag::Parameters, const ::hilti::rt::integer::safe<uint8_t>& _t_p_y) : _t_p_y(_t_p_y) {
+# `in` parameters are passed as const references.
+# CHECK: X1::X1([[PARAMS:[A-Za-z:_]*Parameters]], const [[UINT8:[A-Za-z:<>]*uint8_t[A-Za-z:<>]*]]& [[Y:[A-Za-z_]*y[A-Za-z_]*]]) : [[Y]]([[Y]]) {
 public type X1 = struct (uint<8> y) {};
 
 # `copy` parameters are passed as values and moved from.
-# CHECK: X2::X2(::hilti::rt::struct_::tag::Parameters, ::hilti::rt::integer::safe<uint8_t> _t_p_y) : _t_p_y(std::move(_t_p_y)) {
+# CHECK: X2::X2([[PARAMS]], [[UINT8]] [[Y]]) : [[Y]](std::move([[Y]])) {
 public type X2 = struct (copy uint<8> y) {};
 
 # `inout` parameters are passed as references.
-# CHECK: X3::X3(::hilti::rt::struct_::tag::Parameters, ::hilti::rt::integer::safe<uint8_t>& _t_p_y) : _t_p_y(_t_p_y) {
+# CHECK: X3::X3([[PARAMS]], [[UINT8]]& [[Y]]) : [[Y]]([[Y]]) {
 public type X3 = struct (inout uint<8> y) {};
 
 }

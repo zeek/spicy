@@ -1,7 +1,8 @@
 # @TEST-DOC: Tests removing return values from tuples if unchanged
 #
 # @TEST-REQUIRES: which FileCheck
-# @TEST-EXEC: hiltic %INPUT -p | FileCheck %INPUT
+# @TEST-EXEC: hiltic %INPUT -p -o output.hlt
+# @TEST-EXEC: FileCheck %INPUT < output.hlt
 # @TEST-EXEC: hiltic %INPUT -dj
 
 module Test {

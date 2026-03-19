@@ -1,3 +1,28 @@
+1.16.0-dev.86 | 2026-03-18 07:31:30 -0400
+
+  * Use an intermediate file rather than pipe in tests (Evan Typanski, Corelight)
+
+    This means you can look at the output more easily for FileCheck tests.
+
+  * Loosen `FileCheck` tests a bit (Evan Typanski, Corelight)
+
+    I had two primary rules:
+
+    1) Only test what is necessary. If we're looking for a variable
+       declaration, but it wouldn't really matter what's in it, just {{.*}}
+       it. If all that matters is that `self` is used between two statements,
+       only test for that.
+
+    2) Anything that's not *exactly* as it appears in source should have
+       regular expressions to catch the exact minimal case. For example, if
+       a hook is named `_t_on_x`, the only part we need is that it is `on_x`
+       so use `{{.*}}on_x{{.*}}`. This makes it more resilient to unrelated
+       compiler name changes.
+
+    There are other simple rules, like not checking for semicolons. The goal
+    should just be make the simplest looking test that catches the case you
+    want.
+
 1.16.0-dev.83 | 2026-03-12 16:38:10 +0100
 
   * Fix signed/unsigned comparison warning (Tim Wojtulewicz, Corelight)
