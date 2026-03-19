@@ -121,7 +121,7 @@ Result<std::vector<std::string>> util::splitShellUnsafe(std::string_view s) {
                 ++end;
 
             auto varname = s.substr(start, end - start);
-            if ( auto* val = ::getenv(varname.c_str()) )
+            if ( auto* val = ::getenv(std::string(varname).c_str()) )
                 current += val;
             i = end - 1;
             continue;
