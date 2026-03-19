@@ -1,0 +1,14 @@
+# @TEST-EXEC-FAIL: hiltic -p %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that we capture invalid regular expression constructors at compile time.
+
+module Foo {
+
+global regexp re1 = /gh(i/;
+
+function void f() {
+    local re2 = /gh(i/;
+}
+
+}
