@@ -24,6 +24,8 @@ static const unsigned int AddSeparatorBefore = (1U << 4U); // Force adding a sep
 
 static const std::set<std::string_view> ReservedKeywords = {
     "NULL",
+    "DBL_MAX",
+    "DBL_MIN",
     "alignas",
     "alignof",
     "and",

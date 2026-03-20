@@ -185,36 +185,67 @@ set_config_val(
     "!INSTALL!${CMAKE_INSTALL_FULL_DATADIR}/hilti !BUILD!${PROJECT_SOURCE_DIR}/hilti/lib")
 
 # Include directories
-set_config_val(
-    HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS
-    "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/hilti/runtime/include !BUILD!${PROJECT_BINARY_DIR}/include"
-)
+if (MSVC)
+    # On Windows, JIT compilation also needs the libunistd compatibility headers
+    # (e.g. arpa/inet.h, sys/resource.h) that the main build gets via
+    # include_directories() in the top-level CMakeLists.txt.
+    set_config_val(
+        HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS
+        "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/3rdparty/libunistd/unistd !BUILD!${PROJECT_SOURCE_DIR}/hilti/runtime/include !BUILD!${PROJECT_BINARY_DIR}/include"
+    )
+else ()
+    set_config_val(
+        HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS
+        "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/hilti/runtime/include !BUILD!${PROJECT_BINARY_DIR}/include"
+    )
+endif ()
 set_config_val(
     HILTI_CONFIG_TOOLCHAIN_CXX_INCLUDE_DIRS
     "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/hilti/toolchain/include !BUILD!${PROJECT_BINARY_DIR}/include"
 )
 
-# CXX flags
+# CXX flags — use dash-prefixed form (-D, -EHsc, …) so MSYS2/Git-Bash
+# does not mistake slash-prefixed flags for POSIX paths.
+string(REGEX REPLACE "(^| )/" "\\1-" _cxx_flags "${CMAKE_CXX_FLAGS}")
 set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG
-               "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+               "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${_cxx_flags}")
 set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE
-               "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+               "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${_cxx_flags}")
 
 # Libraries
-set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG "hilti-rt-debug")
-set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE "hilti-rt")
+if (MSVC)
+    # MSVC linker expects library.lib, not -llibrary.
+    # Include all Windows compatibility libraries needed by the HILTI runtime.
+    set(_hilti_rt_deps
+        "hilti-rt-debug.lib jrx.lib libunistd.lib libportable.lib shlwapi.lib Ws2_32.lib")
+    set(_hilti_rt_deps_release
+        "hilti-rt.lib jrx.lib libunistd.lib libportable.lib shlwapi.lib Ws2_32.lib")
+    set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG "${_hilti_rt_deps}")
+    set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE "${_hilti_rt_deps_release}")
+else ()
+    set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG "hilti-rt-debug")
+    set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE "hilti-rt")
+endif ()
 
 # Library directories
-set_config_val(HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS
-               "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}")
+if (MSVC)
+    set_config_val(
+        HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS
+        "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !BUILD!${PROJECT_BINARY_DIR}/3rdparty/libunistd/unistd !BUILD!${PROJECT_BINARY_DIR}/3rdparty/libunistd/portable !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}"
+    )
+else ()
+    set_config_val(HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS
+                   "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}")
+endif ()
 set_config_val(HILTI_CONFIG_TOOLCHAIN_CXX_LIBRARY_DIRS
                "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}")
 
 # LD flags
+string(REGEX REPLACE "(^| )/" "\\1-" _ld_flags "${CMAKE_EXE_LINKER_FLAGS_INIT}")
 set_config_val(HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG
-               "${addl_ld_flags} ${EXTRA_LD_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT}")
+               "${addl_ld_flags} ${EXTRA_LD_FLAGS} ${_ld_flags}")
 set_config_val(HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE
-               "${addl_ld_flags} ${EXTRA_LD_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT}")
+               "${addl_ld_flags} ${EXTRA_LD_FLAGS} ${_ld_flags}")
 
 configure_file(include/config.h.in ${AUTOGEN_H}/config.h)
 configure_file(src/config.cc.in ${AUTOGEN_CC}/config.cc)
@@ -232,6 +263,26 @@ if (NOT MSVC)
     target_compile_options(hiltic PRIVATE "-Wall")
 endif ()
 hilti_link_executable_in_tree(hiltic PRIVATE)
+
+if (MSVC)
+    # Export HILTI runtime symbols so JIT-compiled HLTO DLLs can link
+    # against the host executable at load time.
+    # cmake-format: off
+    set_target_properties(
+        hiltic
+        PROPERTIES
+            WINDOWS_EXPORT_ALL_SYMBOLS ON
+            ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+    )
+    # cmake-format: on
+
+    # Compiler wrapper that translates GCC-style -o flag to MSVC /Fe: so that
+    # the documented $(spicy-config --cxx) invocation works on all platforms.
+    add_executable(hilti-cxx-driver bin/hilti-cxx-driver.cc)
+    target_compile_definitions(hilti-cxx-driver
+                               PRIVATE HILTI_CXX_DRIVER_REAL_CXX=${CMAKE_CXX_COMPILER})
+    install(TARGETS hilti-cxx-driver RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+endif ()
 
 ##### Installation
 

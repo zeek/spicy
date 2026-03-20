@@ -6,4 +6,4 @@ cxx="$(spicy-config --cxx)"
 cxxflags="$(hilti-config ${debug}) $(spicy-config --cxxflags ${debug})"
 ldflags="$(hilti-config ${debug}) $(spicy-config --ldflags ${debug})"
 
-exec ${cxx} ${cxxflags} $@ ${ldflags}
+exec "${cxx}" ${cxxflags} $@ ${ldflags}
