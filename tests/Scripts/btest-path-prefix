@@ -1,0 +1,56 @@
+#!/bin/sh
+#
+# Outputs the PATH prefix for btest: build/install bin dir, test scripts dir,
+# and (on Windows) the btest tools dir.
+#
+# On Windows, Python passes PATH with semicolons but bash splits on colons,
+# so directories with C:/ drive letters and btest-diff (installed via pip)
+# become invisible. This script produces a clean colon-separated PATH prefix.
+#
+# An explicit BTEST_TOOLS_DIR env var takes priority if set.
+
+scripts_dir="$(cd "$(dirname "$0")" && pwd)"
+
+# Determine the bin directory: build mode or installation mode.
+if build_dir="$("$scripts_dir/build-directory" 2>/dev/null)"; then
+    build_bin="$build_dir/bin"
+elif [ -n "${SPICY_INSTALLATION_DIRECTORY}" ]; then
+    build_bin="${SPICY_INSTALLATION_DIRECTORY}/bin"
+else
+    build_bin=""
+fi
+
+# Locate the directory containing btest-diff.
+tools_dir="${BTEST_TOOLS_DIR:-}"
+
+if [ -z "$tools_dir" ]; then
+    # 1. Check the repo-local .venv (common dev setup).
+    repo_venv="$scripts_dir/../../.venv"
+    for d in "$repo_venv/Scripts" "$repo_venv/bin"; do
+        if [ -x "$d/btest-diff" ]; then
+            tools_dir="$d"
+            break
+        fi
+    done
+fi
+
+if [ -z "$tools_dir" ]; then
+    # 2. Search PATH with both : and ; separators (handles Windows).
+    old_ifs="$IFS"
+    IFS=':;'
+    for p in $PATH; do
+        if [ -x "$p/btest-diff" ]; then
+            tools_dir="$p"
+            break
+        fi
+    done
+    IFS="$old_ifs"
+fi
+
+# On Windows, convert C:/ paths to /c/ so bash PATH splitting works.
+if which cygpath >/dev/null 2>&1; then
+    [ -n "$tools_dir" ] && tools_dir="$(cygpath -u "$tools_dir")"
+    scripts_dir="$(cygpath -u "$scripts_dir")"
+fi
+
+echo "${tools_dir:+$tools_dir:}$build_bin:$scripts_dir"

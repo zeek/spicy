@@ -33,9 +33,25 @@ if %errorlevel% neq 0 set FAILED=1
 
 if %FAILED% neq 0 (
     echo.
-    echo === SOME TESTS FAILED ===
+    echo === SOME UNIT TESTS FAILED ===
     exit /b 1
 )
+
+echo.
+echo === ALL UNIT TESTS PASSED ===
+
+:: Run BTest integration tests.
+echo.
+echo === Running BTest ===
+cd ..
+"C:\Program Files\Git\bin\bash.exe" -c "export SPICY_BUILD_DIRECTORY=$(cygpath -u '%CD%/build'); export PATH=/c/btest-venv/Scripts:$PATH; export HILTI_CXX_COMPILER_LAUNCHER=; cd tests && /c/btest-venv/Scripts/python /c/btest-venv/Scripts/btest -j 5 -f diag.log -z 3 2>&1; rc=$?; if [ $rc -ne 0 ]; then echo; echo '=== Begin diagnostics ==='; cat diag.log; echo '=== End diagnostics ==='; fi; exit $rc"
+if %errorlevel% neq 0 (
+    echo.
+    echo === BTEST FAILED ===
+    set FAILED=1
+)
+
+if %FAILED% neq 0 exit /b 1
 
 echo.
 echo === ALL TESTS PASSED ===

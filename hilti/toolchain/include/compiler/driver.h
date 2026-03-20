@@ -356,7 +356,8 @@ protected:
      * @param append true to append to existing file
      * @return set if successful, or an appropriate error result
      */
-    Result<std::ofstream> openOutput(const hilti::rt::filesystem::path& p, bool binary = false, bool append = false);
+    Result<std::unique_ptr<std::ostream>> openOutput(const hilti::rt::filesystem::path& p, bool binary = false,
+                                                     bool append = false);
 
     /**
      * Helper function to open a file for reading.
@@ -527,7 +528,7 @@ private:
      * @param symbol the symbol to look up
      * @return either a valid, not-nil pointer to the symbol or an error
      */
-    static Result<void*> _symbol(const std::string& symbol);
+    Result<void*> _symbol(const std::string& symbol);
 
     std::string _name;
     driver::Options _driver_options;

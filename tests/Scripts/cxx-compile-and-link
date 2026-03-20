@@ -4,6 +4,18 @@
 
 cxx="$(spicy-config --cxx)"
 cxxflags="$(hilti-config ${debug}) $(spicy-config --cxxflags ${debug})"
-ldflags="$(hilti-config ${debug}) $(spicy-config --ldflags ${debug})"
+ldflags="$(hilti-config ${debug}) $(spicy-config --ldflags ${dynamic_loading} ${debug})"
 
-exec ${cxx} ${cxxflags} $@ ${ldflags}
+if cxx_is_msvc "$cxx"; then
+    cxxflags=$(msvc_strip_jit_flags "$cxxflags")
+    msvc_parse_args "$@"
+    "${cxx}" ${cxxflags} ${MSVC_ARGS} "/Fe:${MSVC_OUT:-a.exe}" /link /INCLUDE:main ${ldflags}
+    rc=$?
+    # MSVC always appends .exe. Copy so ./foo works in bash too.
+    if [ $rc -eq 0 ] && [ -n "$MSVC_OUT" ] && [ -f "${MSVC_OUT}.exe" ]; then
+        cp "${MSVC_OUT}.exe" "${MSVC_OUT}" 2>/dev/null
+    fi
+    exit $rc
+else
+    exec "${cxx}" ${cxxflags} $@ ${ldflags}
+fi

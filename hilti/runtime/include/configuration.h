@@ -34,8 +34,15 @@ struct Configuration {
      * current function to still execute and do another call, and (2) safely
      * abort with an exception if we're getting too low. (It seems that the
      * latter can require quite a bit of space, hence the large default here.)
+     *
+     * On Windows, SEH-based C++ exception unwinding requires significantly
+     * more stack than on Unix.
      **/
+#ifdef _WIN32
+    size_t fiber_min_stack_size = static_cast<size_t>(128 * 1024);
+#else
     size_t fiber_min_stack_size = static_cast<size_t>(20 * 1024);
+#endif
 
     /** File where debug output is to be sent. Default is stderr. */
     std::optional<hilti::rt::filesystem::path> debug_out;

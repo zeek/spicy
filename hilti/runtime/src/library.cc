@@ -75,7 +75,13 @@ hilti::rt::Result<hilti::rt::library::Version> hilti::rt::Library::open() const 
     if ( ! _handle ) {
         const auto path = _path.string();
 #if defined(_WIN32)
-        HMODULE handle = ::LoadLibraryA(path.c_str());
+        // Use LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR to find the HLTO itself,
+        // and LOAD_LIBRARY_SEARCH_USER_DIRS to find dependencies via
+        // AddDllDirectory (where we place hardlinks of the current exe).
+        // This avoids loading separate executables from the app directory.
+        HMODULE handle = ::LoadLibraryExA(path.c_str(), NULL,
+                                          LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_USER_DIRS |
+                                              LOAD_LIBRARY_SEARCH_SYSTEM32);
 
         if ( ! handle )
             return result::Error(fmt("failed to load library %s: error code %lu", _path, ::GetLastError()));

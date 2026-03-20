@@ -151,14 +151,13 @@ void Configuration::init(bool use_build_directory) {
         "/std:c++20",
         "/Zi",
         "/Od",
+        "/FS",
         "/EHsc",
-        "/MT",
+        "/MD",
         "/J",
-        // NDEBUG and _ITERATOR_DEBUG_LEVEL=0 are required even in debug mode
-        // to match the release CRT (/MT) used by pre-built runtime libraries.
+        "/FIunistd.h",
         "/DNDEBUG",
         "/DHILTI_JIT_DLL",
-        "/D_ITERATOR_DEBUG_LEVEL=0",
         prefix("${HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS}", "-I", installation_tag),
         prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG}", "", installation_tag),
     });
@@ -167,10 +166,12 @@ void Configuration::init(bool use_build_directory) {
         "/std:c++20",
         "/Zi",
         "/O2",
+        "/FS",
         "/DNDEBUG",
         "/EHsc",
-        "/MT",
+        "/MD",
         "/J",
+        "/FIunistd.h",
         "/DHILTI_JIT_DLL",
         prefix("${HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS}", "-I", installation_tag),
         prefix("${HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE}", "", installation_tag),
@@ -217,11 +218,13 @@ void Configuration::init(bool use_build_directory) {
 #ifdef _MSC_VER
     runtime_ld_flags_debug = flatten({
         prefix("${HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "/LIBPATH:", installation_tag),
+        prefix("${HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG}", "", installation_tag),
         prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG}", "", installation_tag),
     });
 
     runtime_ld_flags_release = flatten({
         prefix("${HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "/LIBPATH:", installation_tag),
+        prefix("${HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE}", "", installation_tag),
         prefix("${HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE}", "", installation_tag),
     });
 #else
