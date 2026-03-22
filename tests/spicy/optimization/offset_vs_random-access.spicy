@@ -1,5 +1,8 @@
 # @TEST-DOC: Checks that `offset()` can be used without enabling random access functionality.
 
+# Checks for trim is done via _parse.*stage2 checks since it gets constant
+# propagated.
+
 # For a unit using `offset()` random access is disabled. Trimming is kept on.
 # @TEST-EXEC: spicyc -p offset.spicy -o offset.hlt
 # @TEST-EXEC:   grep -q '#     - uses_offset' offset.hlt

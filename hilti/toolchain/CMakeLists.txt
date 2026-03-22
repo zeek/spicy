@@ -115,7 +115,6 @@ set(SOURCES
     src/compiler/jit.cc
     src/compiler/optimizer/optimizer.cc
     src/compiler/optimizer/pass.cc
-    src/compiler/optimizer/passes/constant-propagation.cc
     src/compiler/optimizer/passes/dead-code-cfg.cc
     src/compiler/optimizer/passes/dead-code-static.cc
     src/compiler/optimizer/passes/feature-requirements.cc
@@ -124,6 +123,7 @@ set(SOURCES
     src/compiler/optimizer/passes/propagate-function-returns.cc
     src/compiler/optimizer/passes/remove-unused-fields.cc
     src/compiler/optimizer/passes/remove-unused-params.cc
+    src/compiler/optimizer/passes/value-propagation.cc
     src/compiler/parser/driver.cc
     src/compiler/plugin.cc
     src/compiler/printer.cc
