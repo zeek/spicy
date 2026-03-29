@@ -5,6 +5,7 @@
 
 #pragma once
 
+#if ! defined(_MSC_VER)
 // Options for both GCC and clang
 #pragma GCC diagnostic ignored "-Wunused"
 #pragma GCC diagnostic ignored "-Winvalid-offsetof" // our type info infrastructure needs this
@@ -14,4 +15,5 @@
 #pragma clang diagnostic ignored "-Wtautological-compare"
 #elif defined(__GNUC__) // note that clang defines this as well
 // GCC-specific options
+#endif
 #endif

@@ -243,7 +243,7 @@ uint64_t charsToUInt64(const char* dgts, int base, Error handler) {
     errno = 0;
     char* cp;
     auto u = strtoull(dgts, &cp, base);
-    if ( cp == dgts || *cp != '\0' || (u == ULONG_MAX && errno == ERANGE) ) {
+    if ( cp == dgts || *cp != '\0' || (u == ULLONG_MAX && errno == ERANGE) ) {
         errno = 0;
         handler();
     }

@@ -1,0 +1,5 @@
+#! /bin/sh
+#
+# Returns true (exit 0) if running on Windows (MSYS/Git Bash).
+
+test "$(uname -o 2>/dev/null)" = "Msys"

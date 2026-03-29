@@ -5,4 +5,10 @@
 cxx=$(spicy-config --cxx)
 cxxflags=$(spicy-config --cxxflags ${debug})
 
-exec ${cxx} ${cxxflags} $@
+if cxx_is_msvc "$cxx"; then
+    cxxflags=$(msvc_strip_jit_flags "$cxxflags")
+    msvc_parse_args "$@"
+    exec "${cxx}" ${cxxflags} ${MSVC_ARGS} ${MSVC_OUT:+/Fo$MSVC_OUT}
+else
+    exec "${cxx}" ${cxxflags} $@
+fi

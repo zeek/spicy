@@ -313,10 +313,25 @@ int main(int argc, char** argv) try {
         driver.listParsers(std::cout, driver.opt_list_parsers > 1);
 
     else {
+#ifdef _WIN32
+        // On Windows, /dev/stdin does not exist as a filesystem path.
+        // Fall back to reading from std::cin when the default is in use.
+        bool use_stdin = (driver.opt_file == "/dev/stdin");
+        std::ifstream in_file;
+
+        if ( ! use_stdin ) {
+            in_file.open(driver.opt_file, std::ios::in | std::ios::binary);
+            if ( ! in_file.is_open() )
+                driver.fatalError("cannot open input for reading");
+        }
+
+        std::istream& in = use_stdin ? std::cin : in_file;
+#else
         std::ifstream in(driver.opt_file, std::ios::in | std::ios::binary);
 
         if ( ! in.is_open() )
             driver.fatalError("cannot open input for reading");
+#endif
 
         if ( driver.opt_input_is_batch ) {
             if ( auto x = driver.processPreBatchedInput(in); ! x )

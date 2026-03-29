@@ -105,8 +105,14 @@ set_config_val(SPICY_CONFIG_RUNTIME_CXX_FLAGS_DEBUG "")
 set_config_val(SPICY_CONFIG_RUNTIME_CXX_FLAGS_RELEASE "")
 
 # Libraries
-set_config_val(SPICY_CONFIG_RUNTIME_LIBRARIES_DEBUG "spicy-rt-debug z")
-set_config_val(SPICY_CONFIG_RUNTIME_LIBRARIES_RELEASE "spicy-rt z")
+if (MSVC)
+    # Use full paths so the MSVC linker finds them without extra /LIBPATH entries.
+    set_config_val(SPICY_CONFIG_RUNTIME_LIBRARIES_DEBUG "spicy-rt-debug.lib ${ZLIB_LIBRARY_DEBUG}")
+    set_config_val(SPICY_CONFIG_RUNTIME_LIBRARIES_RELEASE "spicy-rt.lib ${ZLIB_LIBRARY_RELEASE}")
+else ()
+    set_config_val(SPICY_CONFIG_RUNTIME_LIBRARIES_DEBUG "spicy-rt-debug z")
+    set_config_val(SPICY_CONFIG_RUNTIME_LIBRARIES_RELEASE "spicy-rt z")
+endif ()
 
 # Library directories
 set_config_val(SPICY_CONFIG_RUNTIME_CXX_LIBRARY_DIRS "")
@@ -139,6 +145,19 @@ if (NOT MSVC)
     target_compile_options(spicy-driver PRIVATE "-Wall")
 endif ()
 spicy_link_executable_in_tree(spicy-driver PRIVATE)
+
+if (MSVC)
+    # Export HILTI/Spicy runtime symbols so JIT-compiled HLTO DLLs can link
+    # against the host executable at load time.
+    # cmake-format: off
+    set_target_properties(
+        spicyc spicy-driver
+        PROPERTIES
+            WINDOWS_EXPORT_ALL_SYMBOLS ON
+            ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+    )
+    # cmake-format: on
+endif ()
 
 add_executable(spicy-doc bin/spicy-doc.cc)
 if (NOT MSVC)
