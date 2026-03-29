@@ -56,11 +56,24 @@ public:
      */
     Allocator() = default;
 
-    /** Construct from a rebound allocator. */
+    // Two converting constructors are needed to satisfy the Allocator
+    // requirements: the STL may rebind to internal types (e.g. MSVC's
+    // _Container_proxy for iterator debugging) that are not convertible
+    // from T. Without the non-convertible overload, MSVC debug builds
+    // fail because _ITERATOR_DEBUG_LEVEL != 0 triggers proxy-allocator
+    // construction that the constrained-only constructor cannot satisfy.
+
+    /** Construct from a rebound allocator, preserving default when types are convertible. */
     template<typename U>
     Allocator(const Allocator<U>& other) noexcept
         requires std::is_convertible_v<U, T>
         : _default(other._default) {}
+
+    /** Construct from a rebound allocator with incompatible value type. */
+    template<typename U>
+    Allocator(const Allocator<U>&) noexcept
+        requires(! std::is_convertible_v<U, T>)
+    {}
 
     /**
      * Constructs an allocator that initializes elements with a provided
