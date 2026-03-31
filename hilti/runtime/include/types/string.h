@@ -278,3 +278,9 @@ inline Optional<String> getenv(std::string_view name) {
 String strftime(std::string_view format, const Time& time);
 
 } // namespace hilti::rt
+
+template<>
+struct std::hash<hilti::rt::String> {
+    size_t operator()(const hilti::rt::String& s) const noexcept { return std::hash<std::string_view>{}(s); }
+};
+
