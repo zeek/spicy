@@ -176,13 +176,13 @@ bool Sink::_deliver(hilti::rt::Optional<hilti::rt::Bytes> data, uint64_t rseq, u
 }
 
 void Sink::_newData(hilti::rt::Optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_t len) {
-    if ( len == 0 )
+    if ( len == 0 ) [[unlikely]]
         // Nothing to do.
         return;
 
     // Fast-path: if it's right at the end of the input stream, we
     // haven't anything buffered, and we do auto-trimming, just pass on.
-    if ( _auto_trim && _chunks.empty() && rseq == _cur_rseq ) {
+    if ( _auto_trim && _chunks.empty() && rseq == _cur_rseq ) [[likely]] {
         _debugReassembler("fastpath new data", data, rseq, len);
         _deliver(std::move(data), rseq, rseq + len);
         return;
