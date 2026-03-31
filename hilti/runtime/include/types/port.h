@@ -6,6 +6,7 @@
 
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/types/address.h>
+#include <hilti/rt/types/string.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt {
@@ -59,7 +60,7 @@ public:
      * Returns a human-readable representation of the port, using the same
      * format that the corresponding constructor parses.
      */
-    operator std::string() const;
+    operator hilti::rt::String() const;
 
 private:
     // Throws RuntimeError if it cannot parse the address.
@@ -71,7 +72,9 @@ private:
 
 namespace detail::adl {
 extern std::string to_string(const Protocol& x, adl::tag /*unused*/);
-inline std::string to_string(const Port& x, adl::tag /*unused*/) { return x; };
+inline std::string to_string(const Port& x, adl::tag /*unused*/) {
+    return std::string(static_cast<hilti::rt::String>(x));
+};
 } // namespace detail::adl
 
 inline std::ostream& operator<<(std::ostream& out, const Protocol& x) {

@@ -10,6 +10,7 @@
 #include <spicy/rt/init.h>
 #include <spicy/rt/parser.h>
 
+using namespace hilti::rt::string::literals;
 using namespace spicy::rt;
 using namespace spicy::rt::detail;
 
@@ -37,20 +38,20 @@ void spicy::rt::init() {
                 default_parser = hilti::rt::Null();
         }
 
-        globalState()->parsers_by_name[{p->name.data(), p->name.size()}].emplace_back(p);
+        globalState()->parsers_by_name[p->name].emplace_back(p);
 
         for ( const auto& x : p->ports ) {
-            auto idx = std::string(x.port);
+            auto idx = x.port;
 
             switch ( x.direction.value() ) {
-                case Direction::Originator: globalState()->parsers_by_name[idx + "%orig"].emplace_back(p); break;
+                case Direction::Originator: globalState()->parsers_by_name[idx + "%orig"_hs].emplace_back(p); break;
 
-                case Direction::Responder: globalState()->parsers_by_name[idx + "%resp"].emplace_back(p); break;
+                case Direction::Responder: globalState()->parsers_by_name[idx + "%resp"_hs].emplace_back(p); break;
 
                 case Direction::Both:
                     globalState()->parsers_by_name[idx].emplace_back(p);
-                    globalState()->parsers_by_name[idx + "%orig"].emplace_back(p);
-                    globalState()->parsers_by_name[idx + "%resp"].emplace_back(p);
+                    globalState()->parsers_by_name[idx + "%orig"_hs].emplace_back(p);
+                    globalState()->parsers_by_name[idx + "%resp"_hs].emplace_back(p);
                     break;
 
                 case Direction::Undef: break;

@@ -74,13 +74,13 @@ TEST_CASE("isWildcard") {
 }
 
 TEST_CASE("parse") {
-    CHECK_EQ(MIMEType::parse("main/sub"_hs), MIMEType("main", "sub"));
+    CHECK_EQ(MIMEType::parse("main/sub"_hs), MIMEType("main"_hs, "sub"_hs));
     CHECK_EQ(MIMEType::parse("foo"_hs), result::Error("cannot parse MIME type 'foo'"));
 }
 
 TEST_CASE("to_string") {
     CHECK_THROWS_WITH_AS(to_string(MIMEType()), "MIME type is uninitialized", const InvalidMIMEType&);
-    CHECK_EQ(to_string(MIMEType("main", "sub")), "main/sub");
+    CHECK_EQ(to_string(MIMEType("main"_hs, "sub"_hs)), "main/sub");
 }
 
 TEST_SUITE_END();

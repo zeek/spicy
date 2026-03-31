@@ -283,4 +283,3 @@ template<>
 struct std::hash<hilti::rt::String> {
     size_t operator()(const hilti::rt::String& s) const noexcept { return std::hash<std::string_view>{}(s); }
 };
-

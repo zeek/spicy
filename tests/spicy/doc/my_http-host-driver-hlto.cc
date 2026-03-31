@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
     driver.listParsers(std::cout);
 
     // Retrieve meta object describing parser.
-    auto parser = driver.lookupParser(argv[2]);
+    auto parser = driver.lookupParser(hilti::rt::String(argv[2]));
     assert(parser);
 
     // Fill string stream with $1 as data to parse.
