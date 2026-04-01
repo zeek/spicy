@@ -1,3 +1,4 @@
+// FIXME(bbannier): I assume you checked and figured out that adding `WINDOWS_EXPORT_ALL_SYMBOLS` to custom host programs was too hard?
 // Loading HLTOs in custom host programs requires --export-dynamic (ELF) or
 // WINDOWS_EXPORT_ALL_SYMBOLS (MSVC). Custom AOT-compiled hosts don't have
 // the latter set up — this needs a shared runtime DLL on Windows.
