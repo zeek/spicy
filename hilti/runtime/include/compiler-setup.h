@@ -5,7 +5,7 @@
 
 #pragma once
 
-#if ! defined(_MSC_VER)
+#if defined(__clang__) || defined(__GNUC__)
 // Options for both GCC and clang
 #pragma GCC diagnostic ignored "-Wunused"
 #pragma GCC diagnostic ignored "-Winvalid-offsetof" // our type info infrastructure needs this
