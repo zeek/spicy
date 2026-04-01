@@ -6,6 +6,7 @@ cxx="$(spicy-config --cxx)"
 cxxflags="$(hilti-config ${debug}) $(spicy-config --cxxflags ${debug})"
 ldflags="$(hilti-config ${debug}) $(spicy-config --ldflags ${dynamic_loading} ${debug})"
 
+# FIXME(bbannier): this script is supposed to be a small wrapper around `*-config` invocations which we also have in our docs. This shouldn't need complicated flag manipulations like the ones below. Could you try moving them into e.g., `jit.cc` or even `config.cc.in`? With that we probably could also remove many test modifications you made in this branch.
 if cxx_is_msvc "$cxx"; then
     cxxflags=$(msvc_strip_jit_flags "$cxxflags")
     msvc_parse_args "$@"
