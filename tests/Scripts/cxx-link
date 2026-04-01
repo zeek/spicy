@@ -5,6 +5,7 @@
 cxx=$(spicy-config --cxx)
 ldflags=$(spicy-config --ldflags ${debug})
 
+# FIXME(bbannier): Same.
 if cxx_is_msvc "$cxx"; then
     msvc_parse_args "$@"
     # Force the linker to pull main() from the runtime library.
