@@ -166,8 +166,9 @@ public:
      *
      * @param driver driver owning this state
      */
-    ParsingStateForDriver(ParsingType type, const Parser* parser, std::string id, hilti::rt::Optional<std::string> cid,
-                          hilti::rt::Optional<UnitContext> context, Driver* driver)
+    ParsingStateForDriver(ParsingType type, const Parser* parser, hilti::rt::String id,
+                          hilti::rt::Optional<std::string> cid, hilti::rt::Optional<UnitContext> context,
+                          Driver* driver)
         : ParsingState(type, parser, std::move(context)),
           _id(std::move(std::move(id))),
           _cid(std::move(std::move(cid))),
@@ -180,15 +181,15 @@ protected:
     void debug(const std::string& msg) override;
 
 private:
-    std::string _id;
-    hilti::rt::Optional<std::string> _cid;
+    hilti::rt::String _id;
+    hilti::rt::Optional<hilti::rt::String> _cid;
     Driver* _driver;
 };
 
 /** Connection state collecting parsing state for the two side. */
 struct ConnectionState {
-    std::string orig_id;
-    std::string resp_id;
+    hilti::rt::String orig_id;
+    hilti::rt::String resp_id;
     ParsingStateForDriver* orig_state = nullptr;
     ParsingStateForDriver* resp_state = nullptr;
 };
@@ -234,7 +235,7 @@ public:
      *
      * \note This just forwards to `spicy::rt::lookupParser()`.
      */
-    hilti::rt::Result<const spicy::rt::Parser*> lookupParser(const std::string& name = "",
+    hilti::rt::Result<const spicy::rt::Parser*> lookupParser(const hilti::rt::String& name = {},
                                                              const hilti::rt::Optional<uint64_t>& linker_scope = {}) {
         return spicy::rt::lookupParser(name, linker_scope);
     }

@@ -5,11 +5,11 @@
 #include <cassert>
 #include <map>
 #include <memory>
-#include <string>
 #include <vector>
 
 #include <hilti/rt/macros.h>
 #include <hilti/rt/types/optional.h>
+#include <hilti/rt/types/string.h>
 
 namespace spicy::rt {
 struct Parser;
@@ -53,10 +53,10 @@ struct GlobalState {
      * Map of parsers by all their possible names. This includes port and
      * MIME type specifications as supported by `spicy-driver -p <name>``.
      */
-    std::map<std::string, std::vector<const Parser*>> parsers_by_name;
+    std::map<hilti::rt::String, std::vector<const Parser*>> parsers_by_name;
 
     /** Map of parsers by the MIME types they handle. */
-    std::map<std::string, std::vector<const Parser*>> parsers_by_mime_type;
+    std::map<hilti::rt::String, std::vector<const Parser*>> parsers_by_mime_type;
 };
 
 /**

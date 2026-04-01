@@ -6,6 +6,7 @@
 #include <hilti/rt/util.h>
 
 using namespace hilti::rt;
+using namespace hilti::rt::string::literals;
 
 void Port::_parse(const std::string& port) {
     const char* s = port.c_str();
@@ -44,29 +45,29 @@ void Port::_parse(const std::string& port) {
     _port = port_;
 }
 
-Port::operator std::string() const {
-    std::string protocol;
+Port::operator hilti::rt::String() const {
+    hilti::rt::String protocol;
 
     switch ( _protocol.value() ) {
         case Protocol::ICMP: {
-            protocol = "icmp";
+            protocol = "icmp"_hs;
             break;
         }
         case Protocol::TCP: {
-            protocol = "tcp";
+            protocol = "tcp"_hs;
             break;
         }
         case Protocol::UDP: {
-            protocol = "udp";
+            protocol = "udp"_hs;
             break;
         }
         case Protocol::Undef: {
-            protocol = "<unknown>";
+            protocol = "<unknown>"_hs;
             break;
         }
     }
 
-    return fmt("%u/%s", _port, protocol);
+    return fmt("%u/%s"_hs, _port, protocol);
 }
 
 std::string hilti::rt::detail::adl::to_string(const Protocol& x, adl::tag /*unused*/) {

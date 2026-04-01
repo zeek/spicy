@@ -12,6 +12,8 @@
 
 #include <spicy/rt/libspicy.h>
 
+using namespace hilti::rt::string::literals;
+
 void print(const hilti::rt::type_info::Value& v) {
     const auto& type = v.type();
     switch ( type.tag ) {
@@ -42,7 +44,7 @@ int main(int argc, char** argv) {
     driver.listParsers(std::cout);
 
     // Retrieve meta object describing parser.
-    auto parser = driver.lookupParser("MyHTTP::RequestLine");
+    auto parser = driver.lookupParser("MyHTTP::RequestLine"_hs);
     assert(parser);
 
     // Fill string stream with $1 as data to parse.

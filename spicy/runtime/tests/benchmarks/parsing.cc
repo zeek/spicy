@@ -15,6 +15,8 @@
 #include <spicy/rt/parsed-unit.h>
 #include <spicy/rt/parser.h>
 
+using namespace hilti::rt::string::literals;
+
 static std::string bigEndian(std::uint64_t number) {
     char buffer[8];
     for ( int i = 0; i < 8; ++i ) {
@@ -63,15 +65,15 @@ static const int64_t min_input = 100;
 static const int64_t max_input = 100000;
 static const int64_t mult = 10;
 
-BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitVectorSize, std::string("Benchmark::UnitVectorSize"))
+BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitVectorSize, "Benchmark::UnitVectorSize"_hs)
     ->RangeMultiplier(mult)
     ->Range(min_input, max_input);
 
-BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitVectorLookahead, std::string("Benchmark::UnitVectorLookahead"))
+BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitVectorLookahead, "Benchmark::UnitVectorLookahead"_hs)
     ->RangeMultiplier(mult)
     ->Range(min_input, max_input);
 
-BENCHMARK_CAPTURE(benchmarkParser, Benchmark::Regex, std::string("Benchmark::Regex"))
+BENCHMARK_CAPTURE(benchmarkParser, Benchmark::Regex, "Benchmark::Regex"_hs)
     ->RangeMultiplier(mult)
     ->Range(min_input, max_input);
 

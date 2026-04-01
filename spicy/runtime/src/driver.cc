@@ -394,12 +394,12 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
     if ( magic != std::string("!spicy-batch v2") )
         return hilti::rt::result::Error("input is not a v2 Spicy batch file");
 
-    std::unordered_map<std::string, driver::ParsingStateForDriver> flows;
-    std::unordered_map<std::string, driver::ConnectionState> connections;
+    std::unordered_map<hilti::rt::String, driver::ParsingStateForDriver> flows;
+    std::unordered_map<hilti::rt::String, driver::ConnectionState> connections;
 
     // Helper to add flows to the map.
-    auto create_state = [&](driver::ParsingType type, const std::string& parser_name, const std::string& id,
-                            hilti::rt::Optional<std::string> cid, hilti::rt::Optional<UnitContext> context) {
+    auto create_state = [&](driver::ParsingType type, const hilti::rt::String& parser_name, const hilti::rt::String& id,
+                            hilti::rt::Optional<hilti::rt::String> cid, hilti::rt::Optional<UnitContext> context) {
         if ( auto parser = lookupParser(parser_name) ) {
             if ( ! context )
                 context = (*parser)->createContext();
@@ -431,8 +431,8 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             if ( m.size() != 4 )
                 return hilti::rt::result::Error("unexpected number of argument for @begin-flow");
 
-            auto id = std::string(m[1]);
-            auto parser_name = std::string(m[3]);
+            auto id = m[1];
+            auto parser_name = m[3];
 
             driver::ParsingType type;
 
@@ -451,11 +451,11 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             if ( m.size() != 7 )
                 return hilti::rt::result::Error("unexpected number of argument for @begin-conn");
 
-            auto cid = std::string(m[1]);
-            auto orig_id = std::string(m[3]);
-            auto orig_parser_name = std::string(m[4]);
-            auto resp_id = std::string(m[5]);
-            auto resp_parser_name = std::string(m[6]);
+            auto cid = m[1];
+            auto orig_id = m[3];
+            auto orig_parser_name = m[4];
+            auto resp_id = m[5];
+            auto resp_parser_name = m[6];
 
             driver::ParsingType type;
 
@@ -493,8 +493,8 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
                 continue;
             }
 
-            connections[cid] = driver::ConnectionState{.orig_id = std::move(orig_id),
-                                                       .resp_id = std::move(resp_id),
+            connections[cid] = driver::ConnectionState{.orig_id = orig_id,
+                                                       .resp_id = resp_id,
                                                        .orig_state = orig_state,
                                                        .resp_state = resp_state};
             _total_connections++;
@@ -505,7 +505,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             if ( m.size() != 3 )
                 return hilti::rt::result::Error("unexpected number of argument for @data");
 
-            auto id = std::string(m[1]);
+            auto id = m[1];
             auto size = std::stoul(std::string(m[2]));
 
             std::string data(size, {});
@@ -529,7 +529,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             if ( m.size() != 3 )
                 return hilti::rt::result::Error("unexpected number of argument for @gap");
 
-            auto id = std::string(m[1]);
+            auto id = m[1];
             auto size = std::stoul(std::string(m[2]));
 
             auto s = flows.find(id);
@@ -546,7 +546,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             if ( m.size() != 2 )
                 return hilti::rt::result::Error("unexpected number of argument for @end-flow");
 
-            auto id = std::string(m[1]);
+            auto id = m[1];
 
             auto s = flows.find(id);
             if ( s != flows.end() ) {
@@ -565,7 +565,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             if ( m.size() != 2 )
                 return hilti::rt::result::Error("unexpected number of argument for @end-conn");
 
-            auto cid = std::string(m[1]);
+            auto cid = m[1];
 
             if ( auto s = connections.find(cid); s != connections.end() ) {
                 try {

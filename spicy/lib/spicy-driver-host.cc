@@ -142,7 +142,7 @@ int main(int argc, char** argv) {
                     fatalError(prog, x.error());
             }
             else {
-                auto parser = driver.lookupParser(driver.opt_parser);
+                auto parser = driver.lookupParser(hilti::rt::String(driver.opt_parser));
                 if ( ! parser )
                     fatalError(prog, parser.error());
 

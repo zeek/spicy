@@ -128,7 +128,7 @@ int main(int argc, char** argv) {
         return 0;
 
     // Retrieve meta object describing parser.
-    auto parser = driver.lookupParser(argv[1]);
+    auto parser = driver.lookupParser(hilti::rt::String(argv[1]));
     assert(parser);
 
     // Fill string stream with data to parse.

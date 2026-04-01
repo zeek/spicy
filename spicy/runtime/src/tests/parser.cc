@@ -211,24 +211,24 @@ TEST_CASE("registerParserAlias") {
     init(); // populates the alias table
 
     Driver driver;
-    auto parser_ = driver.lookupParser("parser");
+    auto parser_ = driver.lookupParser("parser"_hs);
     CHECK(parser_);
 
-    CHECK(driver.lookupParser("parser", 123));
-    CHECK(! driver.lookupParser("parser", 9999));
+    CHECK(driver.lookupParser("parser"_hs, 123));
+    CHECK(! driver.lookupParser("parser"_hs, 9999));
 
-    CHECK(registerParserAlias("parser", "alias1"));
-    CHECK_EQ(driver.lookupParser("alias1"), parser_);
-    CHECK_EQ(driver.lookupParser("alias1%orig"), parser_);
-    CHECK_EQ(driver.lookupParser("alias1%resp"), parser_);
+    CHECK(registerParserAlias("parser"_hs, "alias1"_hs));
+    CHECK_EQ(driver.lookupParser("alias1"_hs), parser_);
+    CHECK_EQ(driver.lookupParser("alias1%orig"_hs), parser_);
+    CHECK_EQ(driver.lookupParser("alias1%resp"_hs), parser_);
 
-    CHECK(registerParserAlias("parser", "alias2%orig"));
-    CHECK_EQ(driver.lookupParser("alias2%orig"), parser_);
-    CHECK_FALSE(driver.lookupParser("alias2%resp"));
-    CHECK_FALSE(driver.lookupParser("alias2"));
+    CHECK(registerParserAlias("parser"_hs, "alias2%orig"_hs));
+    CHECK_EQ(driver.lookupParser("alias2%orig"_hs), parser_);
+    CHECK_FALSE(driver.lookupParser("alias2%resp"_hs));
+    CHECK_FALSE(driver.lookupParser("alias2"_hs));
 
-    CHECK_FALSE(registerParserAlias("does-not-exist", "alias3"));
-    CHECK_FALSE(registerParserAlias("parser", ""));
+    CHECK_FALSE(registerParserAlias("does-not-exist"_hs, "alias3"_hs));
+    CHECK_FALSE(registerParserAlias("parser"_hs, ""_hs));
 }
 
 TEST_CASE("waitForEod") {

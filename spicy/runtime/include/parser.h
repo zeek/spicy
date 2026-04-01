@@ -74,7 +74,7 @@ namespace hilti::rt::detail::adl {
 inline std::string to_string(const spicy::rt::ParserPort& x, adl::tag /*unused*/) {
     // TODO: Not sure why we need to explicit to_string() here.
     if ( x.direction == spicy::rt::Direction::Both )
-        return x.port;
+        return std::string(static_cast<hilti::rt::String>(x.port));
     else
         return fmt("%s (%s direction)", x.port, x.direction);
 }
@@ -217,7 +217,7 @@ struct Parser {
     }
 
     /** Short descriptive name. */
-    std::string name;
+    hilti::rt::String name;
 
     /** Whether this parser is public. */
     bool is_public = false;
@@ -330,7 +330,8 @@ inline const auto& parserNames() { return detail::globalState()->parsers_by_name
  * @param alias alias name to register the parser under
  * @return success if the alias was registered successfully, or a suitable error message if it failed
  */
-hilti::rt::Result<hilti::rt::Nothing> registerParserAlias(const std::string& parser, const std::string& alias);
+hilti::rt::Result<hilti::rt::Nothing> registerParserAlias(const hilti::rt::String& parser,
+                                                          const hilti::rt::String& alias);
 
 /**
  * Retrieves a parser by its name.
@@ -346,7 +347,7 @@ hilti::rt::Result<hilti::rt::Nothing> registerParserAlias(const std::string& par
  *
  * @return the parser, or an error if it could not be retrieved
  */
-hilti::rt::Result<const spicy::rt::Parser*> lookupParser(const std::string& name = "",
+hilti::rt::Result<const spicy::rt::Parser*> lookupParser(const hilti::rt::String& name = {},
                                                          const hilti::rt::Optional<uint64_t>& linker_scope = {});
 
 /**

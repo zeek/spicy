@@ -11,6 +11,8 @@
 #include <hilti/rt/types/string.h>
 #include <hilti/rt/util.h>
 
+using namespace hilti::rt::string::literals;
+
 namespace spicy::rt {
 
 /**
@@ -20,7 +22,7 @@ HILTI_EXCEPTION(InvalidMIMEType, UsageError)
 
 namespace mime {
 
-constexpr char INVALID_NAME[] = "";
+constexpr hilti::rt::String INVALID_NAME; // empty name as special value for uninitialized MIME types
 
 } // namespace mime
 
@@ -62,13 +64,13 @@ public:
     MIMEType() = default;
 
     /** Returns the main type, with '*' reflecting a wildcard. */
-    std::string mainType() const {
+    const auto& mainType() const {
         ensureValid();
         return _main;
     };
 
     /** Returns the sub type, with '*' reflecting a wildcard. */
-    std::string subType() const {
+    const auto& subType() const {
         ensureValid();
         return _sub;
     };
@@ -82,7 +84,7 @@ public:
     MIMEType& operator=(const MIMEType&) = default;
     MIMEType& operator=(MIMEType&&) noexcept = default;
 
-    operator std::string() const { return mainType() + "/" + subType(); }
+    operator hilti::rt::String() const { return mainType() + "/"_hs + subType(); }
 
     /**
      * Converts the type into textual key suitable for using as an index in map.
@@ -91,11 +93,11 @@ public:
      * sub type is a wildcard, returns just the main type. Otherwise returns
      * the standard `main/sub` form.
      */
-    std::string asKey() const {
+    hilti::rt::String asKey() const {
         ensureValid();
 
         if ( _main == "*" )
-            return "";
+            return ""_hs;
 
         if ( _sub == "*" )
             return _main;
@@ -135,12 +137,16 @@ private:
             throw InvalidMIMEType("MIME type is uninitialized");
     }
 
-    std::string _main = mime::INVALID_NAME; /**< Main type. */
-    std::string _sub = mime::INVALID_NAME;  /**< sub type. */
+    hilti::rt::String _main = mime::INVALID_NAME; /**< Main type. */
+    hilti::rt::String _sub = mime::INVALID_NAME;  /**< sub type. */
 };
+
+inline std::ostream& operator<<(std::ostream& out, const MIMEType& x) { return out << hilti::rt::to_string(x); }
 
 } // namespace spicy::rt
 
 namespace hilti::rt::detail::adl {
-extern inline std::string to_string(const spicy::rt::MIMEType& x, adl::tag /*unused*/) { return x; }
+extern inline std::string to_string(const spicy::rt::MIMEType& x, adl::tag /*unused*/) {
+    return std::string(static_cast<hilti::rt::String>(x).str());
+}
 } // namespace hilti::rt::detail::adl

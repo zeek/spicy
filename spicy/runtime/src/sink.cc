@@ -394,7 +394,7 @@ void Sink::connect_mime_type(const MIMEType& mt, uint64_t scope) {
                                                    // clang-tidy false positive
 
                     SPICY_RT_DEBUG_VERBOSE(fmt("connecting parser %s [%p] to sink %p for MIME type %s", p->name,
-                                               &m.first, this, std::string(mt)));
+                                               &m.first, this, hilti::rt::to_string(mt)));
                     _units.emplace_back(std::move(m.first));
                     _states.emplace_back(m.second);
                 }

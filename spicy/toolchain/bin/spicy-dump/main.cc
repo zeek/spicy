@@ -291,7 +291,7 @@ int main(int argc, char** argv) try {
         driver.listParsers(std::cout, driver.opt_list_parsers > 1);
 
     else {
-        auto parser = driver.lookupParser(driver.opt_parser);
+        auto parser = driver.lookupParser(hilti::rt::String(driver.opt_parser));
         if ( ! parser )
             fatalError(parser.error());
 

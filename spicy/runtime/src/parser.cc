@@ -39,8 +39,8 @@ void spicy::rt::decline_input(const hilti::rt::String& reason) {
         (*hook)(std::string(reason.str()));
 }
 
-hilti::rt::Result<hilti::rt::Nothing> spicy::rt::registerParserAlias(const std::string& parser,
-                                                                     const std::string& alias) {
+hilti::rt::Result<hilti::rt::Nothing> spicy::rt::registerParserAlias(const hilti::rt::String& parser,
+                                                                     const hilti::rt::String& alias) {
     if ( parser.empty() )
         return hilti::rt::result::Error("empty parser name");
 
@@ -55,8 +55,8 @@ hilti::rt::Result<hilti::rt::Nothing> spicy::rt::registerParserAlias(const std::
             globalState()->parsers_by_name[alias].emplace_back(p);
 
             if ( alias.find('%') == std::string::npos ) {
-                globalState()->parsers_by_name[alias + "%orig"].emplace_back(p);
-                globalState()->parsers_by_name[alias + "%resp"].emplace_back(p);
+                globalState()->parsers_by_name[alias + "%orig"_hs].emplace_back(p);
+                globalState()->parsers_by_name[alias + "%resp"_hs].emplace_back(p);
             }
 
             return hilti::rt::Nothing();
@@ -66,7 +66,7 @@ hilti::rt::Result<hilti::rt::Nothing> spicy::rt::registerParserAlias(const std::
     return hilti::rt::result::Error(hilti::rt::fmt("unknown parser '%s'", parser));
 }
 
-hilti::rt::Result<const spicy::rt::Parser*> spicy::rt::lookupParser(const std::string& name,
+hilti::rt::Result<const spicy::rt::Parser*> spicy::rt::lookupParser(const hilti::rt::String& name,
                                                                     const hilti::rt::Optional<uint64_t>& linker_scope) {
     const auto& parsers = spicy::rt::parsers();
 
