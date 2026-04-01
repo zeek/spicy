@@ -14,6 +14,7 @@ global real minus_inf = neg_one/zero;
 global real nan = zero/zero;
 
 assert zero == minus_zero;
+# FIXME(bbannier): These two now test something different. Before we checked that values become inf, now we check equality semantic of inf itself. Can you come up with something which keeps the previous test?
 assert inf == inf;
 assert minus_inf == minus_inf;
 assert inf == - minus_inf;
