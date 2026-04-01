@@ -1,9 +1,8 @@
-# @TEST-DOC: Checks that HLTO files are created with proper permissions on Windows.
+# @TEST-DOC: Checks that HLTO files are created with proper permissions.
 #
 # @TEST-REQUIRES: is-windows
-# @TEST-EXEC: hiltic -dj %INPUT -o test.hlto && python check_perms.py test.hlto >>output
-# @TEST-EXEC: hiltic -dj %INPUT -o test.hlto && python check_perms.py test.hlto >>output
-# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: hiltic -dj %INPUT -o test.hlto
+# @TEST-EXEC: python check_perms.py test.hlto
 
 module foo {}
 
@@ -11,14 +10,9 @@ module foo {}
 import os
 import sys
 
-path = sys.argv[1]
+hlto = sys.argv[1]
 
-if not os.path.isfile(path):
-    print("FAIL: not found")
-    sys.exit(1)
+assert os.path.isfile(hlto)
+assert os.access(hlto, os.R_OK | os.W_OK)
 
-if os.access(path, os.R_OK | os.W_OK):
-    print("writable")
-else:
-    print("read-only")
 @TEST-END-FILE

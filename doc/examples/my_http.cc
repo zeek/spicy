@@ -14,12 +14,7 @@ int main(int argc, char** argv) {
     assert(parser);
 
     try {
-#ifdef _WIN32
-        std::istream& in = std::cin;
-#else
-        std::ifstream in("/dev/stdin", std::ios::in);
-#endif
-        driver.processInput(**parser, in);
+        driver.processInput(**parser, std::cin);
     } catch ( const std::exception& e ) {
         std::cerr << e.what() << std::endl;
     }

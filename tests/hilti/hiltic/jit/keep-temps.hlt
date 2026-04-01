@@ -1,5 +1,6 @@
 # @TEST-EXEC: TMPDIR=$PWD TMP=$PWD TEMP=$PWD hiltic -j -T %INPUT
-# @TEST-EXEC: ls Foo*.cc __linker__*.cc *.hlto && (ls Foo*.o __linker__*.o 2>/dev/null || ls Foo*.obj __linker__*.obj 2>/dev/null)
+# @TEST-EXEC: ls Foo*.cc __linker__*.cc *.hlto
+# @TEST-EXEC: ls Foo*.o __linker__*.o || ls Foo*.obj __linker__*.obj
 #
 # @TEST-DOC: Validates that if instructed the driver leaves temporary files around.
 
