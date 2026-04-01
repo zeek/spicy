@@ -1,4 +1,6 @@
 #!/bin/sh
+
+# FIXME(bbannier): remove this and require BTest tools in path.
 #
 # Outputs the PATH prefix for btest: build/install bin dir, test scripts dir,
 # and (on Windows) the btest tools dir.
