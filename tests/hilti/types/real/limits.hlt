@@ -3,6 +3,7 @@
 
 module Foo {
 
+# FIXME(bbannier): Please add `DBL_MIN` and `DBL_MAX` to `ReservedKeywords` in `hilti/toolchain/src/compiler/cxx/elements.cc` and remove this workaround.
 global real dbl_max_ = 0x1.fffffffffffffp+1023;
 global real dbl_min_ = 0x1p-1022;
 global real subnorm = 0x0.0000000000001p-1022;
