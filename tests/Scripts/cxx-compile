@@ -5,6 +5,7 @@
 cxx=$(spicy-config --cxx)
 cxxflags=$(spicy-config --cxxflags ${debug})
 
+# FIXME(bbannier): Same.
 if cxx_is_msvc "$cxx"; then
     cxxflags=$(msvc_strip_jit_flags "$cxxflags")
     msvc_parse_args "$@"
