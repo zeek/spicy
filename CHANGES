@@ -1,3 +1,32 @@
+1.16.0-dev.102 | 2026-04-01 18:19:52 +0200
+
+  * GH-2131: Add compile-time validation of regular expressions. (Robin Sommer, Corelight)
+
+    So far we would catch pattern errors only at runtime. Now we report
+    the following at compile time if it can be statically determined:
+
+    - Patterns that don't compile (e.g., due to syntax errors)
+    - Use of `$N` referring to a capture group that exceeds the number a pattern defines.
+    - Use of `$N' with a regular expression specifying multiple patterns
+      for parallel matching (in which case group numbers are ill-defined).
+    - Use of `$N' with a `&nosub` field.
+
+    Closes #2131.
+
+  * Add a couple of static analysis methods to regular expression patterns. (Robin Sommer, Corelight)
+
+    These allow to (1) validate a regular expression and (2) determine its
+    number of capture groups. They work by temporarily compiling the
+    patterns.
+
+    Also includes a tiny cleanup removing an unused function parameter.
+
+  * Bump justrx to pull in fix for memory leak. (Robin Sommer, Corelight)
+
+  * GH-2294: Fix compiler crash for a type mapping to an unknown ID. (Robin Sommer, Corelight)
+
+    Closes #2294.
+
 1.16.0-dev.96 | 2026-04-01 14:54:21 +0200
 
   * GH-2186: Add support for permalinks to Spicy rubrics. (Robin Sommer, Corelight)

@@ -1237,21 +1237,59 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         // We check the original type since regexps get parsed as bytes.
         if ( n->kind() == hilti::expression::keyword::Kind::Captures ) {
             UnqualifiedType* original_type = nullptr;
+            const type::unit::item::Field* field = nullptr;
 
             // Check type in hook bodies.
             if ( auto* hook = n->parent<declaration::Hook>() ) {
                 auto idx = hook->unitFieldIndex();
-                auto* field = context()->lookup(idx)->as<type::unit::item::Field>();
+                field = context()->lookup(idx)->as<type::unit::item::Field>();
                 original_type = field->originalType()->type();
             }
 
-            // Captures can also appear in field attributes.
-            else if ( auto* field = n->parent<type::unit::item::Field>() )
-                original_type = field->originalType()->type();
+            else {
+                // Captures can also appear in field attributes.
+                field = n->parent<type::unit::item::Field>();
+
+                if ( field )
+                    original_type = field->originalType()->type();
+            }
 
             // In all other cases, or when we are not parsing a regexp raise an error.
-            if ( ! original_type || ! original_type->isA<hilti::type::RegExp>() )
+            if ( ! original_type || ! original_type->isA<hilti::type::RegExp>() ) {
                 error("capture groups can only be used in hooks for fields parsing regexp", n);
+                return;
+            }
+
+            if ( field ) {
+                if ( field->attributes()->find(attribute::kind::Nosub) ) {
+                    error("cannot use capture group with &nosub field", n);
+                    return;
+                }
+
+                if ( const auto* regexp = field->ctor()->tryAs<hilti::ctor::RegExp>() ) {
+                    if ( regexp->patterns().size() > 1 ) {
+                        error("cannot use capture groups with regular expression consisting of multiple patterns", n);
+                        return;
+                    }
+
+                    const auto* index_operator = n->parent()->as<hilti::operator_::vector::IndexNonConst>();
+                    auto index = index_operator->op1()
+                                     ->as<hilti::expression::Ctor>()
+                                     ->ctor()
+                                     ->as<hilti::ctor::UnsignedInteger>()
+                                     ->value();
+
+                    assert(! regexp->patterns().empty());
+                    const auto& pattern = regexp->patterns().front();
+
+                    if ( auto captures = pattern.numberOfCaptures();
+                         captures && index > *captures ) // ignore errors here, will be reported elsewhere
+                        error(fmt("capture group index %" PRIu64
+                                  " is too large, the regular expression defines only %" PRIu64 " group%s",
+                                  index, *captures, (*captures != 1 ? "s" : "")),
+                              n);
+                }
+            }
         }
     }
 };

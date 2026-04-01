@@ -455,3 +455,15 @@ TEST_CASE("caching") {
     CHECK_NE(re1a.jrx(), re3.jrx());
     CHECK_NE(re1a.jrx(), re4.jrx());
 }
+
+TEST_CASE("validation") {
+    CHECK("abc"_p.validate().hasValue());
+    CHECK_EQ("abc("_p.validate().error().description(), "error compiling pattern 'abc(': bad pattern: syntax error");
+}
+
+TEST_CASE("capture-groups") {
+    CHECK_EQ("abc"_p.numberOfCaptures(), 0);
+    CHECK_EQ("a(b)c"_p.numberOfCaptures(), 1);
+    CHECK_EQ("a((b)c)()"_p.numberOfCaptures(), 3);
+    CHECK_FALSE(")"_p.numberOfCaptures());
+}
