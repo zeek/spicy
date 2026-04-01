@@ -9,6 +9,7 @@ else
     debug="--debug"
 fi
 
+# FIXME(bbannier): We want users to use our tools directly, and what you do here works makes me think they are currently broken. Let's move this into the compiler binaries, or modify the flags tools like `spicy-config` return.
 if [ "$1" = "--dynamic-loading" ]; then
     dynamic_loading="--dynamic-loading"
     shift
