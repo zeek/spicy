@@ -1,3 +1,43 @@
+1.16.0-dev.106 | 2026-04-01 13:55:05 -0400
+
+  * Add copy propagation. (Evan Typanski, Corelight)
+
+    Copy propagation is just an extension of constant propagation that will
+    also propagate a Name. That means that if you take in a parameter, like:
+
+    function f(x: uint8) {
+      local y = x;
+      print(y);
+    }
+
+    You can propagate `x` into the print. Before, because `y` was not a
+    constant, we would not propagate. This means the dead store can be
+    eliminated, which may help for larger parsers with register spill and
+    expensive copies.
+
+    We may also apply this to more than just Names. I tested with member
+    accesses, but it did not do much. The problem with doing more is that we
+    have to care about aliasing of the "parent," so we cannot just rely on
+    `inout` in order to see if something may change. Thus, the more we do,
+    it gets significantly more complex, with each step also adding potential
+    for too much propagation. Too much may hurt the performance gains.
+
+  * Make constant propagation on calls more granular. (Evan Typanski, Corelight)
+
+    The constant propagation pass would get around certain cases with
+    functions having references by just marking everything as
+    not-a-constant. But, that really limits the utility, and it's something
+    that signalled a bug.
+
+    This changes constant propagation to only mark `inout` function
+    parameters as not-a-constant. This also necessitates marking a Spicy
+    runtime function as having an `inout any` parameter, since it would
+    otherwise cause a bitfield test to fail.
+
+    This should allow us to propagate constants more.
+
+  * Remove `init` from if/while if unused. (Evan Typanski, Corelight)
+
 1.16.0-dev.102 | 2026-04-01 18:19:52 +0200
 
   * GH-2131: Add compile-time validation of regular expressions. (Robin Sommer, Corelight)

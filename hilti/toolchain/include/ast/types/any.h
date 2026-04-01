@@ -16,6 +16,7 @@ public:
 
     std::string_view typeClass() const final { return "any"; }
 
+    bool isAliasingType() const override { return true; }
     bool isAllocable() const override { return true; }
     bool isSortable() const override { return true; }
 
