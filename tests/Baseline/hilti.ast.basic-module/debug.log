@@ -742,7 +742,7 @@
 [debug/ast-final]           - QualifiedType <const="true" extern="false" side="rhs"> [parent @f:XXX] (hilti.hlt:66:16-66:117) [@q:XXX]
 [debug/ast-final]           - QualifiedType <const="true" extern="false" side="rhs"> [parent @f:XXX] (hilti.hlt:69:16-69:116) [@q:XXX]
 [debug/ast-final]           - QualifiedType <const="true" extern="false" side="rhs"> [parent @f:XXX] (hilti.hlt:70:16-70:119) [@q:XXX]
-[debug/ast-final]           - type::Bool <declaration="D1" type="-" unified="bool" wildcard="false"> [parent @q:XXX] (basic-module.hlt:9:10-9:13) (resolved) [@t:XXX]
+[debug/ast-final]           - type::Bool <declaration="D1" type="-" unified="bool" wildcard="false"> [parent @q:XXX] (basic-module.hlt:10:10-10:13) (resolved) [@t:XXX]
 [debug/ast-final]           - type::Enum <declaration="D10" type="T8" unified="name(hilti::DecodeErrorStrategy)" wildcard="false"> [parent @q:XXX] (hilti.hlt:15:35-15:66) (resolved) [@t:XXX]
 [debug/ast-final]           - type::Enum <declaration="D3" type="T1" unified="name(hilti::BitOrder)" wildcard="false"> [parent @q:XXX] (hilti.hlt:8:24-8:42) (resolved) [@t:XXX]
 [debug/ast-final]           - type::Enum <declaration="D4" type="T2" unified="name(hilti::ByteOrder)" wildcard="false"> [parent @q:XXX] (hilti.hlt:9:25-9:59) (resolved) [@t:XXX]
@@ -813,7 +813,7 @@
 [debug/ast-final]           | size -> declaration::Parameter <canonical-id="hilti::size_2" declaration="-" fqid="size" id="size" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | t -> declaration::Parameter <canonical-id="hilti::t" declaration="-" fqid="t" id="t" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
 [debug/ast-final]           | y -> declaration::Parameter <canonical-id="hilti::y" declaration="-" fqid="y" id="y" is_type_param="false" kind="in" linkage="private"> [parent @t:XXX] (resolved) [@d:XXX] ([@d:XXX])
-[debug/ast-final]         - AttributeSet [parent @d:XXX] (basic-module.hlt:9:14-9:13) [@a:XXX]
+[debug/ast-final]         - AttributeSet [parent @d:XXX] (basic-module.hlt:10:14-10:13) [@a:XXX]
 [debug/ast-final]         - AttributeSet [parent @d:XXX] (hilti.hlt:8:43-8:82) [@a:XXX]
 [debug/ast-final]         - AttributeSet [parent @d:XXX] (hilti.hlt:9:60-9:91) [@a:XXX]
 [debug/ast-final]         - AttributeSet [parent @d:XXX] (hilti.hlt:10:46-10:79) [@a:XXX]
@@ -847,7 +847,7 @@
 [debug/ast-final]         - Function <id="profiler_stop"> [parent @d:XXX] (hilti.hlt:46:16-46:140) [@f:XXX]
 [debug/ast-final]         - Function <id="throw_attribute_not_set"> [parent @d:XXX] (hilti.hlt:43:16-43:124) [@f:XXX]
 [debug/ast-final]         - Function <id="throw_unset_optional"> [parent @d:XXX] (hilti.hlt:42:16-42:119) [@f:XXX]
-[debug/ast-final]         - QualifiedType <const="false" extern="false" side="rhs"> [parent @d:XXX] (basic-module.hlt:9:10-9:13) [@q:XXX]
+[debug/ast-final]         - QualifiedType <const="false" extern="false" side="rhs"> [parent @d:XXX] (basic-module.hlt:10:10-10:13) [@q:XXX]
 [debug/ast-final]         - QualifiedType <const="false" extern="false" side="rhs"> [parent @d:XXX] (hilti.hlt:8:24-8:42) [@q:XXX]
 [debug/ast-final]         - QualifiedType <const="false" extern="false" side="rhs"> [parent @d:XXX] (hilti.hlt:9:25-9:59) [@q:XXX]
 [debug/ast-final]         - QualifiedType <const="false" extern="false" side="rhs"> [parent @d:XXX] (hilti.hlt:10:20-10:45) [@q:XXX]
@@ -920,7 +920,7 @@
 [debug/ast-final]       - declaration::Function <canonical-id="hilti::throw_attribute_not_set" declaration="-" fqid="hilti::throw_attribute_not_set" id="throw_attribute_not_set" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (hilti.hlt:43:1-43:125) [@d:XXX]
 [debug/ast-final]       - declaration::Function <canonical-id="hilti::throw_unset_optional" declaration="-" fqid="hilti::throw_unset_optional" id="throw_unset_optional" linkage="public" linked-declaration="-" linked-prototype="-" operator="<set>"> [parent @d:XXX] (hilti.hlt:42:1-42:120) [@d:XXX]
 [debug/ast-final]       - declaration::Property <canonical-id="hilti::%skip-implementation" declaration="-" fqid="hilti::%skip-implementation" id="%skip-implementation" linkage="private"> [parent @d:XXX] (hilti.hlt:6:1-6:21) [@d:XXX]
-[debug/ast-final]       - declaration::Type <canonical-id="Foo::X" declaration="D1" fqid="Foo::X" id="X" linkage="private"> [parent @d:XXX] (basic-module.hlt:9:1-9:14) [@d:XXX]
+[debug/ast-final]       - declaration::Type <canonical-id="Foo::X" declaration="D1" fqid="Foo::X" id="X" linkage="private"> [parent @d:XXX] (basic-module.hlt:10:1-10:14) [@d:XXX]
 [debug/ast-final]       - declaration::Type <canonical-id="hilti::AddressFamily" declaration="D6" fqid="hilti::AddressFamily" id="AddressFamily" linkage="public"> [parent @d:XXX] (hilti.hlt:11:1-11:84) [@d:XXX]
 [debug/ast-final]       - declaration::Type <canonical-id="hilti::BitOrder" declaration="D3" fqid="hilti::BitOrder" id="BitOrder" linkage="public"> [parent @d:XXX] (hilti.hlt:8:1-8:83) [@d:XXX]
 [debug/ast-final]       - declaration::Type <canonical-id="hilti::ByteOrder" declaration="D4" fqid="hilti::ByteOrder" id="ByteOrder" linkage="public"> [parent @d:XXX] (hilti.hlt:9:1-9:92) [@d:XXX]
@@ -938,11 +938,11 @@
 [debug/ast-final]       - declaration::Type <canonical-id="hilti::Side" declaration="D5" fqid="hilti::Side" id="Side" linkage="public"> [parent @d:XXX] (hilti.hlt:10:1-10:80) [@d:XXX]
 [debug/ast-final]       - declaration::Type <canonical-id="hilti::StreamStatistics" declaration="D14" fqid="hilti::StreamStatistics" id="StreamStatistics" linkage="public"> [parent @d:XXX] (hilti.hlt:23:1-28:45) [@d:XXX]
 [debug/ast-final]       - declaration::Type <canonical-id="hilti::SystemException" declaration="D16" fqid="hilti::SystemException" id="SystemException" linkage="public"> [parent @d:XXX] (hilti.hlt:52:1-52:80) [@d:XXX]
-[debug/ast-final]       - statement::Block [parent @d:XXX] (basic-module.hlt:7:1-13:1) [@s:XXX]
+[debug/ast-final]       - statement::Block [parent @d:XXX] (basic-module.hlt:8:1-14:1) [@s:XXX]
 [debug/ast-final]       - statement::Block [parent @d:XXX] (hilti.hlt:3:1-71:1) [@s:XXX]
 [debug/ast-final]       | Foo -> declaration::Module <canonical-id="Foo" declaration="D2" dependencies="" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/basic-module.hlt" scope="" skip-implementation="false"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
 [debug/ast-final]       | hilti -> declaration::Module <canonical-id="hilti" declaration="D20" dependencies="" ext=".hlt" fqid="hilti" id="hilti" linkage="public" path="<...>/hilti.hlt" scope="" skip-implementation="true"> [parent @a:XXX] [@d:XXX] ([@d:XXX])
-[debug/ast-final]     - declaration::Module <canonical-id="Foo" declaration="D2" dependencies="" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/basic-module.hlt" scope="" skip-implementation="false"> [parent @a:XXX] (basic-module.hlt:7:1-13:1) [@d:XXX]
+[debug/ast-final]     - declaration::Module <canonical-id="Foo" declaration="D2" dependencies="" ext=".hlt" fqid="Foo" id="Foo" linkage="public" path="<...>/basic-module.hlt" scope="" skip-implementation="false"> [parent @a:XXX] (basic-module.hlt:8:1-14:1) [@d:XXX]
 [debug/ast-final]     - declaration::Module <canonical-id="hilti" declaration="D20" dependencies="" ext=".hlt" fqid="hilti" id="hilti" linkage="public" path="<...>/hilti.hlt" scope="" skip-implementation="true"> [parent @a:XXX] (hilti.hlt:3:1-71:1) [@d:XXX]
 [debug/ast-final]   - ASTRoot [no parent] (<root>) [@a:XXX]
 [debug/ast-final]   [D10] hilti::DecodeErrorStrategy [declaration::Type] (hilti.hlt:15:1-15:118)
@@ -955,11 +955,11 @@
 [debug/ast-final]   [D17] hilti::RuntimeError [declaration::Type] (hilti.hlt:56:1-56:86)
 [debug/ast-final]   [D18] hilti::RecoverableFailure [declaration::Type] (hilti.hlt:59:1-59:98)
 [debug/ast-final]   [D19] hilti::MissingData [declaration::Type] (hilti.hlt:62:1-62:84)
-[debug/ast-final]   [D1] Foo::X [declaration::Type] (basic-module.hlt:9:1-9:14)
+[debug/ast-final]   [D1] Foo::X [declaration::Type] (basic-module.hlt:10:1-10:14)
 [debug/ast-final]   [D20] hilti [declaration::Module] (hilti.hlt:3:1-71:1)
 [debug/ast-final]   [D21] hilti::UTF8 [declaration::Constant] (hilti.hlt:14:23-14:60)
 [debug/ast-final]   [D22] hilti::REPLACE [declaration::Constant] (hilti.hlt:15:35-15:66)
-[debug/ast-final]   [D2] Foo [declaration::Module] (basic-module.hlt:7:1-13:1)
+[debug/ast-final]   [D2] Foo [declaration::Module] (basic-module.hlt:8:1-14:1)
 [debug/ast-final]   [D3] hilti::BitOrder [declaration::Type] (hilti.hlt:8:1-8:83)
 [debug/ast-final]   [D4] hilti::ByteOrder [declaration::Type] (hilti.hlt:9:1-9:92)
 [debug/ast-final]   [D5] hilti::Side [declaration::Type] (hilti.hlt:10:1-10:80)

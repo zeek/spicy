@@ -1,5 +1,6 @@
 # @TEST-GROUP: no-jit
 # @TEST-EXEC: ${HILTIC} -c -D compiler,ast-final %INPUT >output 2>debug.log
+# FIXME(bbannier): Sorting here makes the output absolutely undeciperhable. If you have issues with non-deterministic order of operations lets fix that instead. Same for all the other tests where you added output sorting.
 # @TEST-EXEC: LC_ALL=C sort -o debug.log debug.log
 # @TEST-EXEC: btest-diff output
 # @TEST-EXEC: btest-diff debug.log
