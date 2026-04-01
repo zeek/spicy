@@ -89,11 +89,13 @@ base=$(cd "$(dirname "$0")/.." && pwd)
 
 # On MSYS/Git Bash, paths like /c/... are not understood by native Windows
 # programs. Convert them to Windows-compatible paths (C:/...) when needed.
-if which cygpath >/dev/null 2>&1; then
-    native_path() { cygpath -m "$1"; }
-else
-    native_path() { echo "$1"; }
-fi
+native_path() {
+    if which cygpath >/dev/null 2>&1; then
+        cygpath -m "$1"
+    else
+        echo "$1"
+    fi
+}
 
 if [ "${out}" != "${out#/}" ]; then
     # absolute path
