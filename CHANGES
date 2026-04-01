@@ -1,3 +1,22 @@
+1.16.0-dev.96 | 2026-04-01 14:54:21 +0200
+
+  * GH-2186: Add support for permalinks to Spicy rubrics. (Robin Sommer, Corelight)
+
+    If a `rubric` directive comes with a `name` (i.e., an anchor ID),
+    Sphinx will now render an on-hover permalink, just like it does
+    already for sections. We then use this inside our auto-generated
+    function and type documentation.
+
+    Closes #2186.
+
+  * Move further string usages over to our custom class. (Robin Sommer)
+
+    These originally appeared to be fine for leaving as `std::string`, but
+    it turns out that's inconsistent after all and potentially leading to
+    trouble.,
+
+  * Make our strings hashable. (Robin Sommer)
+
 1.16.0-dev.91 | 2026-03-19 20:29:36 +0100
 
   * Rework CHANGES slightly. (Benjamin Bannier, Corelight)

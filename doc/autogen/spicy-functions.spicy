@@ -1,6 +1,5 @@
-.. _spicy_zlib_init:
-
 .. rubric:: ``function spicy::zlib_init(window_bits: int64) : ZlibStream``
+   :name: spicy_zlib_init
 
 Initializes a zlib stream for decompression.
 
@@ -9,57 +8,48 @@ Initializes a zlib stream for decompression.
 
 Will throw a `ZlibError` exception if initialization fails.
 
-.. _spicy_zlib_decompress:
-
 .. rubric:: ``function spicy::zlib_decompress(inout stream_: ZlibStream, data: bytes) : bytes``
+   :name: spicy_zlib_decompress
 
 Decompresses a chunk of data through the given zlib stream.
 
-.. _spicy_zlib_finish:
-
 .. rubric:: ``function spicy::zlib_finish(inout stream_: ZlibStream) : bytes``
+   :name: spicy_zlib_finish
 
 Finalizes a zlib stream used for decompression.
 
-.. _spicy_base64_encode:
-
 .. rubric:: ``function spicy::base64_encode(inout stream_: Base64Stream, data: bytes) : bytes``
+   :name: spicy_base64_encode
 
 Encodes a stream of data into base64.
 
-.. _spicy_base64_decode:
-
 .. rubric:: ``function spicy::base64_decode(inout stream_: Base64Stream, data: bytes) : bytes``
+   :name: spicy_base64_decode
 
 Decodes a stream of base64 data back into the clear.
 
-.. _spicy_base64_finish:
-
 .. rubric:: ``function spicy::base64_finish(inout stream_: Base64Stream) : bytes``
+   :name: spicy_base64_finish
 
 Finalizes a base64 stream used for decoding or encoding.
 
-.. _spicy_crc32_init:
-
 .. rubric:: ``function spicy::crc32_init() : uint64``
+   :name: spicy_crc32_init
 
 Returns the initialization value for CRC32 computation.
 
-.. _spicy_crc32_add:
-
 .. rubric:: ``function spicy::crc32_add(crc: uint64, data: bytes) : uint64``
+   :name: spicy_crc32_add
 
 Computes a running CRC32.
 
-.. _spicy_current_time:
-
 .. rubric:: ``function spicy::current_time() : time``
+   :name: spicy_current_time
 
 Returns the current wall clock time.
 
-.. _spicy_mktime:
-
 .. rubric:: ``function spicy::mktime(y: uint64, m: uint64, d: uint64, H: uint64, M: uint64, S: uint64) : time``
+   :name: spicy_mktime
 
 Constructs a time value from a tuple of broken-out elements specifying local time.
 
@@ -70,27 +60,23 @@ Constructs a time value from a tuple of broken-out elements specifying local tim
 - *M*: minute (0-59)
 - *S*: second (0-59)
 
-.. _spicy_bytes_to_hexstring:
-
 .. rubric:: ``function spicy::bytes_to_hexstring(value: bytes) : string``
+   :name: spicy_bytes_to_hexstring
 
 Returns a bytes value rendered as a hex string.
 
-.. _spicy_bytes_to_mac:
-
 .. rubric:: ``function spicy::bytes_to_mac(value: bytes) : string``
+   :name: spicy_bytes_to_mac
 
 Returns a bytes value rendered as a MAC address string (i.e., colon-separated hex bytes).
 
-.. _spicy_getenv:
-
 .. rubric:: ``function spicy::getenv(name: string) : optional<string>``
+   :name: spicy_getenv
 
 Returns the value of an environment variable, if set.
 
-.. _spicy_strftime:
-
 .. rubric:: ``function spicy::strftime(format: string, timestamp: time) : string``
+   :name: spicy_strftime
 
 Formats a time according to user-specified format string.
 
@@ -103,9 +89,8 @@ https://pubs.opengroup.org/onlinepubs/009695399/functions/strftime.html.
 This function can raise ``InvalidArgument`` if the timestamp could not be
 converted to local time or formatted.
 
-.. _spicy_strptime:
-
 .. rubric:: ``function spicy::strptime(buf: string, format: string) : time``
+   :name: spicy_strptime
 
 Parses time from a string.
 
@@ -118,33 +103,29 @@ This function raises ``InvalidArgument`` if the string could not be parsed
 with the given format string, or ``OutOfRange`` if the parsed time value cannot
 be represented.
 
-.. _spicy_parse_address:
-
 .. rubric:: ``function spicy::parse_address(s: string) : addr``
+   :name: spicy_parse_address
 
 Parses an address from a string. The address can be in standard IPv4 or IPv6
 ASCII represententation. The function raises ``InvalidArgument`` if the string
 could not be parsed.
 
-.. _spicy_parse_address_2:
-
 .. rubric:: ``function spicy::parse_address(b: bytes) : addr``
+   :name: spicy_parse_address_2
 
 Parses an address from a bytes instance. The address can be in standard IPv4
 or IPv6 ASCII represententation. The function raises ``InvalidArgument`` if the
 string could not be parsed.
 
-.. _spicy_accept_input:
-
 .. rubric:: ``function spicy::accept_input()``
+   :name: spicy_accept_input
 
 Reports a confirmation to the host application indicating that the parser
 appears to be processing the expected input format. It's up to the host
 application how to use this information.
 
-.. _spicy_decline_input:
-
 .. rubric:: ``function spicy::decline_input(reason: string)``
+   :name: spicy_decline_input
 
 Reports a violation to the host application indicating that the parser
 appears not to be processing the expected input format.  It's up to the
