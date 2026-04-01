@@ -1,0 +1,12 @@
+# @TEST-EXEC-FAIL: spicyc -p %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Test that a field with an invalid type declaration fails to compile; regression test for #2294
+
+module Test;
+
+type Foo = uint; # not a known ID
+
+public type Main = unit {
+  foo: Foo;
+};
