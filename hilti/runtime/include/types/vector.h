@@ -73,7 +73,9 @@ public:
     template<typename U>
     Allocator(const Allocator<U>&) noexcept
         requires(! std::is_convertible_v<U, T>)
-    {}
+    {
+        cannot_be_reached();
+    }
 
     /**
      * Constructs an allocator that initializes elements with a provided
