@@ -1,5 +1,7 @@
 #! /bin/sh
 
+# FIXME(bbannier): let's not add this and instead fix the compiler to do the right thing on windows. If we can do that we can also roll back many test modifications.
+
 . $(dirname $0)/cxx-common.sh
 
 cxx="$(spicy-config --cxx)"
