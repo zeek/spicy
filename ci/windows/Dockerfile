@@ -27,7 +27,7 @@ RUN choco install -y --no-progress python
 
 # Set working environment.
 SHELL [ "cmd", "/c" ]
-RUN setx /M PATH "%PATH%;C:\\Program Files\\Git\\bin"
+RUN setx /M PATH "%PATH%;C:\\Program Files\\Git\\bin;C:\\btest-venv\\Scripts"
 RUN mkdir C:\build
 WORKDIR C:\build
 

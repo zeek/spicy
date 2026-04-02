@@ -14,6 +14,7 @@ cd build
 cmake.exe .. ^
     -G Ninja ^
     -DCMAKE_BUILD_TYPE=Release ^
+    -DCMAKE_INSTALL_PREFIX=C:/spicy ^
     -DCMAKE_C_COMPILER=cl.exe ^
     -DCMAKE_CXX_COMPILER=cl.exe ^
     -DVCPKG_TARGET_TRIPLET=x64-windows-static ^

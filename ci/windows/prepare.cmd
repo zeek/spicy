@@ -28,3 +28,12 @@ echo.
 
 echo === Ninja Version ===
 ninja --version
+
+echo.
+echo === Installing BTest ===
+python -m venv C:\btest-venv
+C:\btest-venv\Scripts\pip install "btest @ git+https://github.com/zeek/btest@master"
+if %errorlevel% neq 0 exit /b %errorlevel%
+
+:: Fix CRLF in btest scripts so Git Bash can execute them.
+"C:\Program Files\Git\bin\bash.exe" -c "for f in /c/btest-venv/Scripts/btest*; do sed -i 's/\r$//' \"$f\"; done"

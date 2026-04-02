@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <hilti/rt/libhilti.h>
+
 #include <spicy/rt/libspicy.h>
 
 using spicy::rt::fmt;
@@ -14,8 +15,7 @@ int main(int argc, char** argv) {
     assert(parser);
 
     try {
-        std::ifstream in("/dev/stdin", std::ios::in);
-        driver.processInput(**parser, in);
+        driver.processInput(**parser, std::cin);
     } catch ( const std::exception& e ) {
         std::cerr << e.what() << std::endl;
     }

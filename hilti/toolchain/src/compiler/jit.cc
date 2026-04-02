@@ -470,14 +470,14 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
             args.emplace_back(lib);
 
 #ifdef _MSC_VER
-    // On MSVC, linker-specific flags must appear after the /link separator.
-    // The JIT DLL links against the host executable's import library
-    // (e.g., zeek_exe.lib) so runtime symbols are properly resolved.
-    args.emplace_back("/link");
+    // On MSVC, linker-specific flags must appear after the -link separator.
+    args.emplace_back("-link");
     const auto& ld_flags = options().debug ? hilti::configuration().runtime_ld_flags_debug :
                                              hilti::configuration().runtime_ld_flags_release;
-    for ( const auto& f : ld_flags )
-        args.push_back(f);
+    for ( const auto& f : ld_flags ) {
+        if ( util::startsWith(f, "-") )
+            args.push_back(f);
+    }
 #endif
 
     // We are using the compiler as a linker here, no need to use a compiler launcher.
@@ -501,14 +501,18 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
     // Instantiate the library object from the file on disk, and set it up
     // to delete the file & its directory on destruction.
     bool keep_tmps = options().keep_tmps;
-    auto library = std::shared_ptr<const Library>(new Library(lib), [keep_tmps](const Library* library) {
-        if ( ! keep_tmps ) {
-            auto remove = library->remove();
-            if ( ! remove )
-                logger().warning(util::fmt("could not remove JIT library: %s", remove.error()));
-        }
-
+    auto library = std::shared_ptr<const Library>(new Library(lib), [keep_tmps, lib](const Library* library) {
+        // Delete the Library first so the DLL is unloaded (FreeLibrary/dlclose),
+        // then remove the file from disk. On Windows a loaded DLL cannot be
+        // deleted, so the order matters.
         delete library;
+
+        if ( ! keep_tmps ) {
+            std::error_code ec;
+            hilti::rt::filesystem::remove(lib, ec);
+            if ( ec )
+                logger().warning(util::fmt("could not remove JIT library %s: %s", lib, ec.message()));
+        }
     });
 
     if ( _dump_code ) {
@@ -537,7 +541,7 @@ Result<JIT::JobRunner::JobID> JIT::JobRunner::_scheduleJob(const hilti::rt::file
 
 Result<Nothing> JIT::JobRunner::_spawnJob() {
     if ( jobs_pending.empty() )
-        return {};
+        return Nothing();
 
     auto [jid, cmdline] = jobs_pending.front();
     jobs_pending.pop_front();
@@ -576,7 +580,7 @@ Result<Nothing> JIT::JobRunner::_spawnJob() {
             util::fmt("could not determine PID of process '%s %s': %s", util::join(cmdline), ec.message()));
     }
 
-    return {};
+    return Nothing();
 }
 
 Result<Nothing> JIT::JobRunner::_waitForJobs() {
@@ -602,6 +606,11 @@ Result<Nothing> JIT::JobRunner::_waitForJobs() {
             rt::fatalError(util::fmt("expected unsigned integer but received '%s' for HILTI_JIT_PARALLELISM", *e));
         });
     else {
+#ifdef _WIN32
+        // On Windows, parallel cl.exe invocations in the same working directory
+        // can conflict on PDB files. Use sequential compilation by default.
+        parallelism = 1;
+#else
         auto j = std::thread::hardware_concurrency();
         if ( j == 0 )
             rt::warning(
@@ -609,6 +618,7 @@ Result<Nothing> JIT::JobRunner::_waitForJobs() {
                 "Use "
                 "`HILTI_JIT_PARALLELISM` to override");
         parallelism = std::max(j, 1U);
+#endif
     }
 
     std::vector<result::Error> errors;
@@ -616,9 +626,39 @@ Result<Nothing> JIT::JobRunner::_waitForJobs() {
 
     while ( ! jobs_pending.empty() || ! jobs.empty() ) {
         // If we still have jobs pending, spawn up to `parallelism` parallel background jobs.
-        while ( ! jobs_pending.empty() && jobs.size() < parallelism )
-            _spawnJob();
+        while ( ! jobs_pending.empty() && jobs.size() < parallelism ) {
+            if ( auto rc = _spawnJob(); ! rc )
+                errors.emplace_back(rc.error());
+        }
 
+#ifdef _WIN32
+        // On Windows, reproc::poll() uses WSAPoll() which does not work with
+        // file-redirected output handles. Wait for each job sequentially.
+        std::vector<JobID> finished;
+        for ( auto&& [id, job] : jobs ) {
+            auto [status, ec] = job.process->wait(reproc::infinite);
+
+            if ( ec ) {
+                finished.push_back(id);
+                errors.emplace_back(util::fmt("could not wait for process: %s", ec.message()));
+                continue;
+            }
+
+            HILTI_DEBUG(logging::debug::Jit, util::fmt("[job %u] exited with code %d", id, status));
+
+            if ( status != 0 ) {
+                _recordUserDiagnostics(id, job);
+                finished.push_back(id);
+                errors.emplace_back("JIT compilation failed");
+                continue;
+            }
+
+            finished.push_back(id);
+        }
+
+        for ( auto id : finished )
+            jobs.erase(id);
+#else
         std::vector<reproc::event::source> sources;
         std::vector<JobID> ids;
 
@@ -664,6 +704,7 @@ Result<Nothing> JIT::JobRunner::_waitForJobs() {
                 jobs.erase(id);
             }
         }
+#endif
     }
 
     if ( ! errors.empty() )

@@ -1,5 +1,5 @@
 // @TEST-EXEC: spicyc -x my_http my_http.spicy
-// @TEST-EXEC: $(spicy-config --cxx) -o my_http my_http___linker__.cc my_http_MyHTTP.cc %INPUT $(spicy-config --cxxflags --ldflags)
+// @TEST-EXEC: "$(spicy-config --cxx)" -o my_http my_http___linker__.cc my_http_MyHTTP.cc %INPUT $(spicy-config --cxxflags --ldflags)
 // @TEST-EXEC: ./my_http "$(cat data)" >output
 // @TEST-EXEC: btest-diff output
 //

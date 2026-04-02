@@ -4,6 +4,8 @@
 
 # shellcheck disable=SC2016
 cat \
+  | sed 's#\\\\#/#g' \
+  | sed 's#\(^\|[ "('\''[]\)[A-Za-z]:/#\1/#g' \
   | sed '/\/\* __HILTI_LINKER_V1__/,/\*\// {s#/\([^/ ]\{1,\}/\)\{1,\}\([^/ ]\{1,\}\)#<...>/\2#g;}' \
   | sed '/\/\/ Begin of [^ ]* (from/       {s#/\([^/ ]\{1,\}/\)\{1,\}\([^/ ]\{1,\}\)#<...>/\2#g;}' \
   | sed '/\/\/ \{1,\}- [^ ]\{1,\} (.*/     {s#/\([^/ ]\{1,\}/\)\{1,\}\([^/ ]\{1,\}\)#<...>/\2#g;}' \
@@ -19,3 +21,11 @@ cat \
   | sed 's#hlt_internal_hlto_bind_to_version = .*#hlt_internal_hlto_bind_to_version = <...>#g' \
   | sed 's/\[\(@.:\)[0-9a-f]\{1,\}\]/[\1XXX]/g' \
   | sed 's/\[\(parent @.:\)[0-9a-f]\{1,\}\]/[\1XXX]/g' \
+  | sed 's#0x0\.0000000000000p+0#0x0p+0#g' \
+  | sed 's#\(0x[0-9a-fA-F]\{1,\}\)\.0\{1,\}\(p[+-][0-9]\{1,\}\)#\1\2#g' \
+  | sed 's#stream=0x[0-9a-fA-F]\{1,\}#stream=0xXXXXXXXX#g' \
+  | sed 's#stream=[0-9a-fA-F]\{8,16\}#stream=0xXXXXXXXX#g' \
+  | sed 's#for stream 0x[0-9a-fA-F]\{1,\}#for stream 0xXXXXXXXX#g' \
+  | sed 's#for stream [0-9a-fA-F]\{8,16\}#for stream 0xXXXXXXXX#g' \
+  | sed '/^extern "C" {$/d; /^extern "C" }$/d' \
+  | awk '/^}$/ && prev ~ /hlt_internal_hlto_bind_to_version/ { next } { prev=$0; print }'

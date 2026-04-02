@@ -1,3 +1,7 @@
+// Loading HLTOs in custom host programs requires --export-dynamic (ELF) or
+// WINDOWS_EXPORT_ALL_SYMBOLS (MSVC). Custom AOT-compiled hosts don't have
+// the latter set up — this needs a shared runtime DLL on Windows.
+// @TEST-REQUIRES: ! is-windows
 // @TEST-EXEC: spicyc -j my_http.spicy -o my_http.hlto
 // @TEST-EXEC: $(spicy-config --cxx) -o my_http %INPUT $(spicy-config --cxxflags --ldflags --dynamic-loading --debug)
 // @TEST-EXEC: ./my_http my_http.hlto MyHTTP::RequestLine "$(cat data)" >output
