@@ -1,3 +1,12 @@
+1.16.0-dev.108 | 2026-04-02 11:11:05 +0200
+
+  * Drop `sonoma_homebrew` task. (Benjamin Bannier, Corelight)
+
+    This task was meant for continuously testing the Spicy Homebrew formula.
+    This recently started failing, likely due to changes in Cirrus images.
+    Since this has as far as I recall never caught any issue and we run it by
+    hand when bumping the formula anyway drop the task here.
+
 1.16.0-dev.106 | 2026-04-01 13:55:05 -0400
 
   * Add copy propagation. (Evan Typanski, Corelight)
