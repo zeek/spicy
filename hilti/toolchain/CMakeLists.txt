@@ -204,11 +204,13 @@ set_config_val(
     "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/hilti/toolchain/include !BUILD!${PROJECT_BINARY_DIR}/include"
 )
 
-# CXX flags
+# CXX flags — use dash-prefixed form (-D, -EHsc, …) so MSYS2/Git-Bash
+# does not mistake slash-prefixed flags for POSIX paths.
+string(REGEX REPLACE "(^| )/" "\\1-" _cxx_flags "${CMAKE_CXX_FLAGS}")
 set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG
-               "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+               "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${_cxx_flags}")
 set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE
-               "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+               "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${_cxx_flags}")
 
 # Libraries
 if (MSVC)
@@ -239,10 +241,11 @@ set_config_val(HILTI_CONFIG_TOOLCHAIN_CXX_LIBRARY_DIRS
                "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}")
 
 # LD flags
+string(REGEX REPLACE "(^| )/" "\\1-" _ld_flags "${CMAKE_EXE_LINKER_FLAGS_INIT}")
 set_config_val(HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG
-               "${addl_ld_flags} ${EXTRA_LD_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT}")
+               "${addl_ld_flags} ${EXTRA_LD_FLAGS} ${_ld_flags}")
 set_config_val(HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE
-               "${addl_ld_flags} ${EXTRA_LD_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT}")
+               "${addl_ld_flags} ${EXTRA_LD_FLAGS} ${_ld_flags}")
 
 configure_file(include/config.h.in ${AUTOGEN_H}/config.h)
 configure_file(src/config.cc.in ${AUTOGEN_CC}/config.cc)
@@ -272,6 +275,12 @@ if (MSVC)
             ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
     )
     # cmake-format: on
+
+    # Compiler wrapper that translates GCC-style -o flag to MSVC /Fe: so that
+    # the documented $(spicy-config --cxx) invocation works on all platforms.
+    add_executable(hilti-cxx-driver bin/hilti-cxx-driver.cc)
+    target_compile_definitions(hilti-cxx-driver PRIVATE HILTI_CXX_DRIVER_REAL_CXX=${CMAKE_CXX_COMPILER})
+    install(TARGETS hilti-cxx-driver RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif ()
 
 ##### Installation

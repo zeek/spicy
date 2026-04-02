@@ -222,6 +222,10 @@ int main(int argc, char** argv) try {
         }
 
         if ( opt == "--ldflags" ) {
+#if defined(_MSC_VER)
+            result.emplace_back("-link");
+            result.emplace_back("-INCLUDE:main");
+#endif
             if ( want_dynamic_linking ) {
 #if __APPLE__
                 result.emplace_back("-Wl,-all_load");
@@ -250,6 +254,16 @@ int main(int argc, char** argv) try {
                 join(result, hilti::configuration().hlto_ld_flags_debug);
             else
                 join(result, hilti::configuration().hlto_ld_flags_release);
+
+#if defined(_MSC_VER)
+            // MSVC DLLs require all symbols resolved at link time, so
+            // include the runtime import libraries after a /link separator.
+            result.emplace_back("-link");
+            if ( want_debug )
+                join(result, hilti::configuration().runtime_ld_flags_debug);
+            else
+                join(result, hilti::configuration().runtime_ld_flags_release);
+#endif
 
             continue;
         }

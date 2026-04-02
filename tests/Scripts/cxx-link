@@ -5,10 +5,4 @@
 cxx=$(spicy-config --cxx)
 ldflags=$(spicy-config --ldflags ${debug})
 
-if cxx_is_msvc "$cxx"; then
-    msvc_parse_args "$@"
-    # Force the linker to pull main() from the runtime library.
-    exec "${cxx}" ${MSVC_ARGS} "/Fe:${MSVC_OUT:-a.exe}" /link /INCLUDE:main ${ldflags}
-else
-    exec "${cxx}" $@ ${ldflags}
-fi
+exec "${cxx}" $@ ${ldflags}

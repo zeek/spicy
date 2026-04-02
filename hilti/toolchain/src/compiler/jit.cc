@@ -470,12 +470,12 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
             args.emplace_back(lib);
 
 #ifdef _MSC_VER
-    // On MSVC, linker-specific flags must appear after the /link separator.
-    args.emplace_back("/link");
+    // On MSVC, linker-specific flags must appear after the -link separator.
+    args.emplace_back("-link");
     const auto& ld_flags = options().debug ? hilti::configuration().runtime_ld_flags_debug :
                                              hilti::configuration().runtime_ld_flags_release;
     for ( const auto& f : ld_flags ) {
-        if ( util::startsWith(f, "/") )
+        if ( util::startsWith(f, "-") )
             args.push_back(f);
     }
 #endif

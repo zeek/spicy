@@ -2,9 +2,6 @@
 #
 # Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-# Prevent MSYS from converting /flags to C:/Program Files/Git/flags.
-export MSYS2_ARG_CONV_EXCL="*"
-
 usage() {
     cat << EOF
 $(basename "$0") [options] <input files>
@@ -132,10 +129,6 @@ cxx="$("${spicy_config}" --cxx ${spicy_config_flags})"
 cxxflags="$("${spicy_config}" --cxxflags ${spicy_config_flags})"
 ldflags="$("${spicy_config}" --ldflags ${spicy_config_flags})"
 
-# Strip JIT-only defines that don't apply to AOT compilation.
-if echo "${cxx}" | grep -qi cl.exe; then
-    cxxflags=$(echo "$cxxflags" | sed 's|/DHILTI_JIT_DLL ||g')
-fi
 spicy_lib_dir=$(for i in $(${spicy_config} --libdirs); do test -e "${i}/spicy_rt.hlt" && echo "${i}" && break; done) # extract the directory we want
 spicy_driver=${spicy_lib_dir}/spicy-driver-host.cc
 
@@ -168,12 +161,5 @@ execute "$("${spicy_config}" --spicyc)" ${hiltic_flags} -x "${dest}/" ${spicy_in
 cxxs="${cc_inputs} $(find "${dest}" -type f)"
 
 # Compile all C++ code into executable
-if echo "${cxx}" | grep -qi cl.exe; then
-    test "${verbose}" = 1 && echo "> ${cxx} [cxxflags] ${cxxs} /Fe:${out} /link [ldflags] /INCLUDE:main"
-    "${cxx}" ${cxxflags} ${cxxs} "/Fe:${out}" /link ${ldflags} /INCLUDE:main || exit 1
-    # MSVC produces foo.exe; create a copy without .exe so ./foo works in bash.
-    cp "${out}.exe" "${out}" 2>/dev/null || true
-else
-    test "${verbose}" = 1 && echo "> ${cxx} [cxxflags] ${cxxs} [ldflags] -o ${out}"
-    "${cxx}" ${cxxflags} ${cxxs} ${ldflags} -o "${out}" || exit 1
-fi
+test "${verbose}" = 1 && echo "> ${cxx} [cxxflags] ${cxxs} [ldflags] -o ${out}"
+"${cxx}" ${cxxflags} ${cxxs} ${ldflags} -o "${out}" || exit 1
