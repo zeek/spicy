@@ -1,6 +1,5 @@
 # @TEST-GROUP: no-jit
 # @TEST-EXEC: ${HILTIC} -g -p -D ast-final %INPUT >output 2>&1
-# @TEST-EXEC: LC_ALL=C sort -o output output
 # @TEST-EXEC: btest-diff output
 
 module Foo {

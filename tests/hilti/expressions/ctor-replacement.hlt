@@ -1,5 +1,4 @@
 # @TEST-EXEC: hiltic -p -D ast-final %INPUT >output 2>&1
-# @TEST-EXEC: LC_ALL=C sort -o output output
 # @TEST-EXEC: btest-diff output
 #
 # @TEST-DOC: Check that the constant folder replaces constant expressions with corresponding ctor nodes, and that the printer round-trips the result.

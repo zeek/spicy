@@ -1,6 +1,5 @@
 # @TEST-GROUP: no-jit
 # @TEST-EXEC: ${HILTIC} -c -D compiler,ast-final %INPUT >output 2>debug.log
-# @TEST-EXEC: LC_ALL=C sort -o debug.log debug.log
 # @TEST-EXEC: btest-diff output
 # @TEST-EXEC: btest-diff debug.log
 

@@ -4,8 +4,8 @@
 
 #include <map>
 #include <optional>
+#include <set>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 #include <hilti/ast/forward.h>
@@ -96,7 +96,12 @@ public:
     Scope& operator=(Scope&& other) = delete;
 
 private:
-    using ItemMap = std::map<std::string, std::unordered_set<Declaration*>>;
+    // Overloads sharing the same name are sorted by canonical ID so that
+    // iteration order is deterministic across platforms.
+    struct DeclOrder {
+        bool operator()(const Declaration* a, const Declaration* b) const;
+    };
+    using ItemMap = std::map<std::string, std::set<Declaration*, DeclOrder>>;
 
     std::vector<Referee> _findID(const ID& id, bool external = false) const;
     std::vector<Referee> _findID(const Scope* scope, const ID& id, bool external = false) const;

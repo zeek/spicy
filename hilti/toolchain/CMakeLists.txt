@@ -279,7 +279,8 @@ if (MSVC)
     # Compiler wrapper that translates GCC-style -o flag to MSVC /Fe: so that
     # the documented $(spicy-config --cxx) invocation works on all platforms.
     add_executable(hilti-cxx-driver bin/hilti-cxx-driver.cc)
-    target_compile_definitions(hilti-cxx-driver PRIVATE HILTI_CXX_DRIVER_REAL_CXX=${CMAKE_CXX_COMPILER})
+    target_compile_definitions(hilti-cxx-driver
+                               PRIVATE HILTI_CXX_DRIVER_REAL_CXX=${CMAKE_CXX_COMPILER})
     install(TARGETS hilti-cxx-driver RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif ()
 
