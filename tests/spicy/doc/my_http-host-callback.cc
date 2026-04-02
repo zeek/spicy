@@ -1,6 +1,7 @@
 // @TEST-EXEC: spicyc -x my_http my_http.spicy
 // @TEST-EXEC: spicyc -P my_http -o my_http.h my_http.spicy
-// @TEST-EXEC: $(spicy-config --cxx) -o my_http my_http___linker__.cc my_http_MyHTTP.cc my_http-callback.cc %INPUT $(spicy-config --cxxflags --ldflags)
+// # FIXME(bbannier): This test checks a workflow from our docs, let's not use test scripts here. If you cannot make this work let's disable the test on windows.
+// @TEST-EXEC: cxx-compile-and-link -o my_http my_http___linker__.cc my_http_MyHTTP.cc my_http-callback.cc %INPUT
 // @TEST-EXEC: ./my_http "$(cat data)" | sort >output
 // @TEST-EXEC: btest-diff output
 //

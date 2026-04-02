@@ -1,6 +1,6 @@
 # @TEST-REQUIRES: using-build-directory
-# @TEST-EXEC: chmod +x cxx-wrapper
-# @TEST-EXEC: HILTI_CXX=$(pwd)/cxx-wrapper BUILD=$($SCRIPTS/build-directory) hiltic -d -D jit -j %INPUT >output
+# FIXME(bbannier): Let's pull this step into a separate script, as written the code we care about most of the time is off the screen.
+# @TEST-EXEC: if is-windows; then HILTI_CXX=$(cygpath -w "$(pwd)/cxx-wrapper.cmd") BUILD=$(cygpath -w "$($SCRIPTS/build-directory)") hiltic -d -D jit -j %INPUT >output; else chmod +x cxx-wrapper && HILTI_CXX=$(pwd)/cxx-wrapper BUILD=$($SCRIPTS/build-directory) hiltic -d -D jit -j %INPUT >output; fi
 # @TEST-EXEC: btest-diff output
 # @TEST-EXEC: btest-diff wrapper.output
 # @TEST-EXEC-FAIL: HILTI_CXX=/does/not/exist hiltic -j %INPUT 2>error
@@ -20,5 +20,14 @@ hilti::print("Hello, world!");
 #! /bin/sh
 echo "our wrapper ran!" >$(dirname $0)/wrapper.output
 cxx=$(cat ${BUILD}/CMakeCache.txt | grep ^CMAKE_CXX_COMPILER: | cut -d = -f 2)
-${cxx} $@ >&2
+# FIXME(bbannier): lets add a comment explaining why we set this.
+export MSYS2_ARG_CONV_EXCL="*"
+"${cxx}" "$@" >&2
+@TEST-END-FILE
+
+@TEST-START-FILE cxx-wrapper.cmd
+@echo off
+echo our wrapper ran!>"%~dp0wrapper.output"
+for /f "usebackq tokens=1,* delims==" %%a in (`findstr /b "CMAKE_CXX_COMPILER:" "%BUILD%\CMakeCache.txt"`) do set "CXX=%%b"
+"%CXX%" %*
 @TEST-END-FILE

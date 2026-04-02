@@ -1,5 +1,6 @@
 # @TEST-EXEC: mkdir -p a/b/c && cp bar.hlt.templ a/b/c/bar.hlt
-# @TEST-EXEC: HILTI_PATH=${DIST}/hilti/lib:a/b/c ${HILTIC} -j foo.hlt >output
+# FIXME(bbannier): let's move this to a dedicated script here (@TEST-START-FILE, ...)
+# @TEST-EXEC: sep=':'; is-windows && sep=';'; HILTI_PATH="${DIST}/hilti/lib${sep}a/b/c" ${HILTIC} -j foo.hlt >output
 # @TEST-EXEC: btest-diff output
 
 @TEST-START-FILE foo.hlt

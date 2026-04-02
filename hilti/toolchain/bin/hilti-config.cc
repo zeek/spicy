@@ -196,7 +196,7 @@ int main(int argc, char** argv) try {
             if ( want_dynamic_linking ) {
 #if __APPLE__
                 result.emplace_back("-Wl,-all_load");
-#else
+#elif ! defined(_MSC_VER)
                 result.emplace_back("-Wl,--export-dynamic");
                 result.emplace_back("-Wl,--whole-archive");
 #endif
@@ -208,7 +208,7 @@ int main(int argc, char** argv) try {
                 join(result, hilti::configuration().runtime_ld_flags_release);
 
             if ( want_dynamic_linking ) {
-#if ! (__APPLE__)
+#if ! (__APPLE__) && ! defined(_MSC_VER)
                 result.emplace_back("-Wl,--no-whole-archive");
 #endif
             }

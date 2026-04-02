@@ -1,5 +1,5 @@
 # @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT
-# @TEST-EXEC: grep -q does_not_exist .stderr
+# @TEST-EXEC: grep -q does_not_exist .stderr || grep -q does_not_exist hilti-jit-error.log
 #
 # Check that a failure with the HILTI linker's code doesn't produce leaks or
 # other unexpected output. Because the actual output depends on the underlying

@@ -1,5 +1,7 @@
-# @TEST-EXEC: TMPDIR=$PWD hiltic -j -T %INPUT
-# @TEST-EXEC: ls Foo*.cc Foo*.o __linker__*.cc __linker__*.o *.hlto
+# FIXME(bbannier): Which one is windows actually using?
+# @TEST-EXEC: TMPDIR=$PWD TMP=$PWD TEMP=$PWD hiltic -j -T %INPUT
+# @TEST-EXEC: ls Foo*.cc __linker__*.cc *.hlto
+# @TEST-EXEC: ls Foo*.o __linker__*.o || ls Foo*.obj __linker__*.obj
 #
 # @TEST-DOC: Validates that if instructed the driver leaves temporary files around.
 

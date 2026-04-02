@@ -230,8 +230,8 @@ struct VisitorTypesInit {
 
     // Helper for checking content of a struct of type "S". All our instances
     // of "S" have the same values.
-    void testStruct(const type_info::Value& v) {
-        auto s = type_info::value::auxType<type_info::Struct>(v)->iterate(v);
+    void testStruct(const hilti::rt::type_info::Value& v) {
+        auto s = hilti::rt::type_info::value::auxType<hilti::rt::type_info::Struct>(v)->iterate(v);
         if ( s.empty() )
             // We get here for hilti::MatchState
             return;
@@ -240,10 +240,10 @@ struct VisitorTypesInit {
         auto fv = i->second;
         CHECK_EQ(i->first.name, "s");
         CHECK(fv);
-        CHECK_EQ(type_info::value::auxType<type_info::String>(fv)->get(fv), "string"_hs);
+        CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::String>(fv)->get(fv), "string"_hs);
         fv = (++i)->second;
         CHECK_EQ(i->first.name, "i");
-        CHECK_EQ(type_info::value::auxType<type_info::SignedInteger<int64_t>>(fv)->get(fv), 42);
+        CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::SignedInteger<int64_t>>(fv)->get(fv), 42);
         CHECK(++i == s.end());
 
         CHECK_EQ(v.to_string(), "[$s=\"string\", $i=42]");
@@ -277,7 +277,7 @@ struct VisitorTypesInit {
 
                 auto v1 = i->second;
                 CHECK(v1);
-                CHECK_EQ(type_info::value::auxType<type_info::String>(v1)->get(v1), "string"_hs);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::String>(v1)->get(v1), "string"_hs);
                 CHECK_EQ(i->first.name, "a");
                 CHECK_EQ(i->first.lower, 0);
                 CHECK_EQ(i->first.upper, 4);
@@ -286,7 +286,7 @@ struct VisitorTypesInit {
 
                 auto v2 = i->second;
                 CHECK(v2);
-                CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint32_t>>(v2)->get(v2), 6);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::UnsignedInteger<uint32_t>>(v2)->get(v2), 6);
                 CHECK_EQ(i->first.name, "b");
                 CHECK_EQ(i->first.lower, 1);
                 CHECK_EQ(i->first.upper, 2);
@@ -295,7 +295,7 @@ struct VisitorTypesInit {
 
                 auto v3 = i->second;
                 CHECK(v3);
-                CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint32_t>>(v3)->get(v3), 31);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::UnsignedInteger<uint32_t>>(v3)->get(v3), 31);
                 CHECK_EQ(i->first.name, "c");
                 CHECK_EQ(i->first.lower, 3);
                 CHECK_EQ(i->first.upper, 7);
@@ -360,11 +360,11 @@ struct VisitorTypesInit {
                 auto s = type.map->iterate(v);
                 auto i = s.begin();
                 auto [k1, v1] = *i++;
-                CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint64_t>>(k1)->get(k1), 1);
-                CHECK_EQ(type_info::value::auxType<type_info::String>(v1)->get(v1), "foo-1"_hs);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::UnsignedInteger<uint64_t>>(k1)->get(k1), 1);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::String>(v1)->get(v1), "foo-1"_hs);
                 auto [k2, v2] = *i++;
-                CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint64_t>>(k2)->get(k2), 2);
-                CHECK_EQ(type_info::value::auxType<type_info::String>(v2)->get(v2), "foo-2"_hs);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::UnsignedInteger<uint64_t>>(k2)->get(k2), 2);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::String>(v2)->get(v2), "foo-2"_hs);
                 CHECK(++i == s.end());
 
                 break;
@@ -372,8 +372,8 @@ struct VisitorTypesInit {
             case TypeInfo::MapIterator: {
                 SEEN();
                 auto [key, value] = type.map_iterator->value(v);
-                CHECK_EQ(type_info::value::auxType<type_info::UnsignedInteger<uint64_t>>(key)->get(key), 1);
-                CHECK_EQ(type_info::value::auxType<type_info::String>(value)->get(value), "foo-1"_hs);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::UnsignedInteger<uint64_t>>(key)->get(key), 1);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::String>(value)->get(value), "foo-1"_hs);
 
                 break;
             }
@@ -390,7 +390,7 @@ struct VisitorTypesInit {
                 SEEN();
                 auto i = type.optional->value(v);
                 CHECK(i);
-                CHECK_EQ(type_info::value::auxType<type_info::String>(i)->get(i), "optional"_hs);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::String>(i)->get(i), "optional"_hs);
                 break;
             }
             case TypeInfo::Port: {
@@ -413,18 +413,18 @@ struct VisitorTypesInit {
                 SEEN();
                 auto i = type.result->value(v);
                 CHECK(i);
-                CHECK_EQ(type_info::value::auxType<type_info::String>(i)->get(i), "result"_hs);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::String>(i)->get(i), "result"_hs);
                 break;
             }
             case TypeInfo::Set: {
                 SEEN();
                 auto s = type.set->iterate(v);
                 auto i = s.begin();
-                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "aaa"_hs);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::String>(*i)->get(*i), "aaa"_hs);
                 ++i;
-                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "bbb"_hs);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::String>(*i)->get(*i), "bbb"_hs);
                 ++i;
-                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "ccc"_hs);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::String>(*i)->get(*i), "ccc"_hs);
                 ++i;
                 CHECK(i == s.end());
 
@@ -433,7 +433,7 @@ struct VisitorTypesInit {
             case TypeInfo::SetIterator: {
                 SEEN();
                 auto i = type.set_iterator->value(v);
-                CHECK_EQ(type_info::value::auxType<type_info::String>(i)->get(i), "aaa"_hs);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::String>(i)->get(i), "aaa"_hs);
                 break;
             }
             case TypeInfo::SignedInteger_int8: {
@@ -502,19 +502,19 @@ struct VisitorTypesInit {
 
                 auto v1 = i->second;
                 CHECK(v1);
-                CHECK_EQ(type_info::value::auxType<type_info::SignedInteger<int32_t>>(v1)->get(v1), 123);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::SignedInteger<int32_t>>(v1)->get(v1), 123);
                 CHECK_EQ(i->first.name, "a");
                 ++i;
 
                 auto v2 = i->second;
                 CHECK(v2);
-                CHECK_EQ(type_info::value::auxType<type_info::String>(v2)->get(v2), "string"_hs);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::String>(v2)->get(v2), "string"_hs);
                 CHECK_EQ(i->first.name, "");
                 ++i;
 
                 auto v3 = i->second;
                 CHECK(v3);
-                CHECK_EQ(type_info::value::auxType<type_info::Bool>(v3)->get(v3), true);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::Bool>(v3)->get(v3), true);
                 CHECK_EQ(i->first.name, "c");
 
                 ++i;
@@ -527,7 +527,7 @@ struct VisitorTypesInit {
                 SEEN();
                 const auto* x = type.union_;
                 auto i = x->value(v);
-                CHECK_EQ(type_info::value::auxType<type_info::SignedInteger<int64_t>>(i)->get(i), 42);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::SignedInteger<int64_t>>(i)->get(i), 42);
                 CHECK_EQ(x->fields().size(), 2);
                 CHECK_EQ(v.to_string(), "$i=42");
                 break;
@@ -564,11 +564,11 @@ struct VisitorTypesInit {
                 SEEN();
                 auto s = type.vector->iterate(v);
                 auto i = s.begin();
-                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "11"_hs);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::String>(*i)->get(*i), "11"_hs);
                 ++i;
-                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "22"_hs);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::String>(*i)->get(*i), "22"_hs);
                 ++i;
-                CHECK_EQ(type_info::value::auxType<type_info::String>(*i)->get(*i), "33"_hs);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::String>(*i)->get(*i), "33"_hs);
                 ++i;
                 CHECK(i == s.end());
 
@@ -577,7 +577,7 @@ struct VisitorTypesInit {
             case TypeInfo::VectorIterator: {
                 SEEN();
                 auto i = type.vector_iterator->value(v);
-                CHECK_EQ(type_info::value::auxType<type_info::String>(i)->get(i), "11"_hs);
+                CHECK_EQ(hilti::rt::type_info::value::auxType<hilti::rt::type_info::String>(i)->get(i), "11"_hs);
                 break;
             }
             case TypeInfo::Void: {
@@ -678,28 +678,28 @@ int main(int argc, char** argv) {
     CHECK_EQ(std::string(ti_types->display), std::string("Test::TestTypes"));
 
     VisitorTypesInit visitor_init;
-    type_info::value::Parent p_init(x_init);
-    auto v_init = type_info::Value(x_init.get(), ti_types, p_init);
-    for ( auto f : type_info::value::auxType<type_info::Struct>(v_init)->iterate(v_init) )
+    hilti::rt::type_info::value::Parent p_init(x_init);
+    auto v_init = hilti::rt::type_info::Value(x_init.get(), ti_types, p_init);
+    for ( auto f : hilti::rt::type_info::value::auxType<hilti::rt::type_info::Struct>(v_init)->iterate(v_init) )
         visitor_init.visit(f.second);
 
     CHECK_EQ(visitor_init.seen.size(), VisitorTypesInit::ExpectedVisitorsSeen);
 
     // Test instance of TestTypes that has been initialized with default values.
     VisitorTypesDefault visitor_default;
-    type_info::value::Parent p_default(x_default);
-    auto v_default = type_info::Value(x_default.get(), ti_types, p_default);
-    for ( auto f : type_info::value::auxType<type_info::Struct>(v_default)->iterate(v_default) )
+    hilti::rt::type_info::value::Parent p_default(x_default);
+    auto v_default = hilti::rt::type_info::Value(x_default.get(), ti_types, p_default);
+    for ( auto f : hilti::rt::type_info::value::auxType<hilti::rt::type_info::Struct>(v_default)->iterate(v_default) )
         visitor_default.visit(f.second);
 
     CHECK_EQ(visitor_default.seen.size(), VisitorTypesDefault::ExpectedVisitorsSeen);
 
     // Test instances of TestOptions in which one optional has been set.
     VisitorOptionals visitor2;
-    type_info::value::Parent p_optionals(x_default);
-    auto v_optionals = type_info::Value(x_optionals.get(), ti_optionals, p_optionals);
+    hilti::rt::type_info::value::Parent p_optionals(x_default);
+    auto v_optionals = hilti::rt::type_info::Value(x_optionals.get(), ti_optionals, p_optionals);
     int idx = 0;
-    for ( auto f : type_info::value::auxType<type_info::Struct>(v_optionals)->iterate(v_optionals) ) {
+    for ( auto f : hilti::rt::type_info::value::auxType<hilti::rt::type_info::Struct>(v_optionals)->iterate(v_optionals) ) {
         if ( idx == 0 ) {
             CHECK(f.second);
             visitor2.visit(f.second);

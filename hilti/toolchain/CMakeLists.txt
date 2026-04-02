@@ -185,10 +185,20 @@ set_config_val(
     "!INSTALL!${CMAKE_INSTALL_FULL_DATADIR}/hilti !BUILD!${PROJECT_SOURCE_DIR}/hilti/lib")
 
 # Include directories
-set_config_val(
-    HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS
-    "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/hilti/runtime/include !BUILD!${PROJECT_BINARY_DIR}/include"
-)
+if (MSVC)
+    # On Windows, JIT compilation also needs the libunistd compatibility headers
+    # (e.g. arpa/inet.h, sys/resource.h) that the main build gets via
+    # include_directories() in the top-level CMakeLists.txt.
+    set_config_val(
+        HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS
+        "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/3rdparty/libunistd/unistd !BUILD!${PROJECT_SOURCE_DIR}/hilti/runtime/include !BUILD!${PROJECT_BINARY_DIR}/include"
+    )
+else ()
+    set_config_val(
+        HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS
+        "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/hilti/runtime/include !BUILD!${PROJECT_BINARY_DIR}/include"
+    )
+endif ()
 set_config_val(
     HILTI_CONFIG_TOOLCHAIN_CXX_INCLUDE_DIRS
     "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/hilti/toolchain/include !BUILD!${PROJECT_BINARY_DIR}/include"
@@ -201,12 +211,30 @@ set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE
                "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
 
 # Libraries
-set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG "hilti-rt-debug")
-set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE "hilti-rt")
+if (MSVC)
+    # MSVC linker expects library.lib, not -llibrary.
+    # Include all Windows compatibility libraries needed by the HILTI runtime.
+    set(_hilti_rt_deps
+        "hilti-rt-debug.lib jrx.lib libunistd.lib libportable.lib shlwapi.lib Ws2_32.lib")
+    set(_hilti_rt_deps_release
+        "hilti-rt.lib jrx.lib libunistd.lib libportable.lib shlwapi.lib Ws2_32.lib")
+    set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG "${_hilti_rt_deps}")
+    set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE "${_hilti_rt_deps_release}")
+else ()
+    set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_DEBUG "hilti-rt-debug")
+    set_config_val(HILTI_CONFIG_RUNTIME_LIBRARIES_RELEASE "hilti-rt")
+endif ()
 
 # Library directories
-set_config_val(HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS
-               "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}")
+if (MSVC)
+    set_config_val(
+        HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS
+        "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !BUILD!${PROJECT_BINARY_DIR}/3rdparty/libunistd/unistd !BUILD!${PROJECT_BINARY_DIR}/3rdparty/libunistd/portable !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}"
+    )
+else ()
+    set_config_val(HILTI_CONFIG_RUNTIME_CXX_LIBRARY_DIRS
+                   "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}")
+endif ()
 set_config_val(HILTI_CONFIG_TOOLCHAIN_CXX_LIBRARY_DIRS
                "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}")
 
@@ -232,6 +260,19 @@ if (NOT MSVC)
     target_compile_options(hiltic PRIVATE "-Wall")
 endif ()
 hilti_link_executable_in_tree(hiltic PRIVATE)
+
+if (MSVC)
+    # Export HILTI runtime symbols so JIT-compiled HLTO DLLs can link
+    # against the host executable at load time.
+    # cmake-format: off
+    set_target_properties(
+        hiltic
+        PROPERTIES
+            WINDOWS_EXPORT_ALL_SYMBOLS ON
+            ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+    )
+    # cmake-format: on
+endif ()
 
 ##### Installation
 

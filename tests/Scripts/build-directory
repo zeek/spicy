@@ -2,8 +2,16 @@
 #
 # Infers the build directory and returns it.
 
+# FIXME(bbannier): This implements functionality which already exists in the Spicy binaries. Adding this risks us not testing that feature, suggest to drop this here completely.
+
 if [ -n "${SPICY_BUILD_DIRECTORY}" ]; then
-    echo ${SPICY_BUILD_DIRECTORY}
+    # On Windows (MSYS/Git Bash), env vars passed through Python use C:/
+    # paths which break bash PATH splitting. Convert to /c/ format.
+    if which cygpath >/dev/null 2>&1; then
+        cygpath -u "${SPICY_BUILD_DIRECTORY}"
+    else
+        echo ${SPICY_BUILD_DIRECTORY}
+    fi
     exit 0
 fi
 

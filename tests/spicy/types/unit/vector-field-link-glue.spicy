@@ -1,5 +1,5 @@
 # @TEST-EXEC: spicyc -l %INPUT -o foo.cc
-# @TEST-EXEC: $(spicy-config --cxx --cxxflags --debug) -c foo.cc
+# @TEST-EXEC: "$(spicy-config --cxx)" $(spicy-config --cxxflags --debug) -c foo.cc
 #
 # @TEST-DOC: Checks that we emit type defs in the linker glue for vector fields.
 

@@ -188,8 +188,15 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
             const auto min_size = configuration::get().fiber_shared_stack_size;
 
 #if defined(_WIN32)
-            _fiber->stack = reinterpret_cast<char*>(_AddressOfReturnAddress()) - min_size;
-            _fiber->stack_size = min_size;
+            // Use the real stack bottom from the TEB so that checkStack()
+            // accurately reflects remaining space and can fire before the
+            // OS guard page is hit.
+            // FIXME(bbannier): This intrinsic and magic number are absolute black boxes, could you please rewrite this
+            // using a proper, public API? From a quick search `NtCurrentTeb` might be useful.
+            auto* dealloc_stack = reinterpret_cast<char*>(__readgsqword(0x1478));
+            _fiber->stack = dealloc_stack;
+            _fiber->stack_size =
+                static_cast<size_t>(reinterpret_cast<char*>(_AddressOfReturnAddress()) - dealloc_stack);
 #else
             rlimit limit;
             if ( ::getrlimit(RLIMIT_STACK, &limit) < 0 )
