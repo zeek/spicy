@@ -1,5 +1,5 @@
 # @TEST-REQUIRES: using-build-directory
-# @TEST-EXEC: if is-windows; then HILTI_CXX=$(cygpath -w "$(pwd)/cxx-wrapper.cmd") BUILD=$(cygpath -w "$($SCRIPTS/build-directory)") hiltic -d -D jit -j %INPUT >output; else chmod +x cxx-wrapper && HILTI_CXX=$(pwd)/cxx-wrapper BUILD=$($SCRIPTS/build-directory) hiltic -d -D jit -j %INPUT >output; fi
+# @TEST-EXEC: sh run-with-cxx-wrapper.sh %INPUT >output
 # @TEST-EXEC: btest-diff output
 # @TEST-EXEC: btest-diff wrapper.output
 # @TEST-EXEC-FAIL: HILTI_CXX=/does/not/exist hiltic -j %INPUT 2>error
@@ -15,11 +15,25 @@ hilti::print("Hello, world!");
 
 }
 
+@TEST-START-FILE run-with-cxx-wrapper.sh
+#! /bin/sh
+# Set HILTI_CXX to our wrapper and run hiltic with JIT.
+if is-windows; then
+    HILTI_CXX=$(cygpath -w "$(pwd)/cxx-wrapper.cmd")
+    BUILD=$(cygpath -w "$($SCRIPTS/build-directory)")
+else
+    chmod +x cxx-wrapper
+    HILTI_CXX=$(pwd)/cxx-wrapper
+    BUILD=$($SCRIPTS/build-directory)
+fi
+export HILTI_CXX BUILD
+hiltic -d -D jit -j "$1"
+@TEST-END-FILE
+
 @TEST-START-FILE cxx-wrapper
 #! /bin/sh
 echo "our wrapper ran!" >$(dirname $0)/wrapper.output
 cxx=$(cat ${BUILD}/CMakeCache.txt | grep ^CMAKE_CXX_COMPILER: | cut -d = -f 2)
-export MSYS2_ARG_CONV_EXCL="*"
 "${cxx}" "$@" >&2
 @TEST-END-FILE
 

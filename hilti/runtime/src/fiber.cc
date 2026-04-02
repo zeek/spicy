@@ -201,8 +201,7 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
             VirtualQuery(_AddressOfReturnAddress(), &mbi, sizeof(mbi));
             auto* stack_bottom = reinterpret_cast<char*>(mbi.AllocationBase);
             _fiber->stack = stack_bottom;
-            _fiber->stack_size =
-                static_cast<size_t>(reinterpret_cast<char*>(_AddressOfReturnAddress()) - stack_bottom);
+            _fiber->stack_size = static_cast<size_t>(reinterpret_cast<char*>(_AddressOfReturnAddress()) - stack_bottom);
 #else
             rlimit limit;
             if ( ::getrlimit(RLIMIT_STACK, &limit) < 0 )

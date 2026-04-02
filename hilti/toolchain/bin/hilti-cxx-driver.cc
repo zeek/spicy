@@ -17,13 +17,13 @@
 
 #ifdef _WIN32
 
+#include <process.h>
+#include <windows.h>
+
 #include <algorithm>
 #include <cstring>
 #include <string>
 #include <vector>
-
-#include <process.h>
-#include <windows.h>
 
 // Path to the real C++ compiler, substituted by CMake.
 #define STRINGIFY2(x) #x

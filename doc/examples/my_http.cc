@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <hilti/rt/libhilti.h>
+
 #include <spicy/rt/libspicy.h>
 
 using spicy::rt::fmt;

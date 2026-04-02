@@ -14,8 +14,8 @@ global real minus_inf = neg_one/zero;
 global real nan = zero/zero;
 
 assert zero == minus_zero;
-assert inf == inf;
-assert minus_inf == minus_inf;
+assert inf == 3.14159/zero;
+assert minus_inf == -3.14159/zero;
 assert inf == - minus_inf;
 
 # Note: NaN is always != anything

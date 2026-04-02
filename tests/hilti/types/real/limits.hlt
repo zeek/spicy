@@ -3,12 +3,12 @@
 
 module Foo {
 
-global real dbl_max_ = 0x1.fffffffffffffp+1023;
-global real dbl_min_ = 0x1p-1022;
+global real DBL_MAX = 0x1.fffffffffffffp+1023;
+global real DBL_MIN = 0x1p-1022;
 global real subnorm = 0x0.0000000000001p-1022;
 global real too_sml = 0x0.0000000000001p-1023;
 
-assert subnorm < dbl_min_;
+assert subnorm < DBL_MIN;
 
 }
 
