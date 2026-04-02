@@ -279,17 +279,6 @@ sonoma_task:
   test_script:
     - (source /tmp/btest.venv/bin/activate && btest -djc tests/btest.cfg)
 
-homebrew_sonoma_task:
-  skip: $CIRRUS_BRANCH != 'main' && $CIRRUS_TAG == ''
-
-  macos_instance:
-    image: $IMAGE_MACOS_SONOMA
-
-  script:
-    - brew tap zeek/zeek
-    - brew install spicy --HEAD
-    - brew test spicy
-
 docker_alpine_3_18_task:
   container:
     dockerfile: docker/Dockerfile.alpine-3.18
