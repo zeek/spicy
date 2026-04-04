@@ -7,8 +7,8 @@ file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/bin" "${PROJECT_BINARY_DIR}/lib")
 
 ##### Compiler library
 
-flex_target(scanner_hilti src/compiler/parser/scanner.ll ${AUTOGEN_CC}/__scanner.cc
-            DEFINES_FILE ${AUTOGEN_CC}/__scanner.h)
+flex_target(scanner_hilti ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/parser/scanner.ll
+            ${AUTOGEN_CC}/__scanner.cc DEFINES_FILE ${AUTOGEN_CC}/__scanner.h)
 bison_target_pp(parser_hilti src/compiler/parser/parser.yy ${AUTOGEN_CC}/__parser.cc DEFINES_FILE
                 ${AUTOGEN_CC}/__parser.h)
 

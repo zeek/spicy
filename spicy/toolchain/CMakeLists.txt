@@ -9,8 +9,8 @@ file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/bin" "${PROJECT_BINARY_DIR}/lib")
 
 set(AUTOGEN_H_HILTI "${PROJECT_BINARY_DIR}/include/hilti/autogen")
 
-flex_target(scanner_spicy src/compiler/parser/scanner.ll ${AUTOGEN_CC}/__scanner.cc
-            DEFINES_FILE ${AUTOGEN_CC}/__scanner.h)
+flex_target(scanner_spicy ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler/parser/scanner.ll
+            ${AUTOGEN_CC}/__scanner.cc DEFINES_FILE ${AUTOGEN_CC}/__scanner.h)
 bison_target_pp(parser_spicy src/compiler/parser/parser.yy ${AUTOGEN_CC}/__parser.cc DEFINES_FILE
                 ${AUTOGEN_CC}/__parser.h)
 
