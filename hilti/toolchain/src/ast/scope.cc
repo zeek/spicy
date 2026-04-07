@@ -17,6 +17,19 @@
 
 using namespace hilti;
 
+bool Scope::ItemOrder::operator()(const Declaration* a, const Declaration* b) const {
+    if ( a == b )
+        return false;
+
+    if ( ! a || ! b )
+        return a < b;
+
+    if ( a->canonicalID() != b->canonicalID() )
+        return a->canonicalID() < b->canonicalID();
+
+    return a->meta().location() < b->meta().location();
+}
+
 bool Scope::insert(const ID& id, Declaration* d) {
     if ( const auto& i = _items.find(id); i != _items.end() ) {
         if ( i->second.contains(d) )
