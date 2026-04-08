@@ -301,15 +301,25 @@ void cxx::Block::addForRange(bool const_, const ID& id, const Expression& seq, c
 
 void cxx::Block::addSwitch(const Expression& cond, const std::vector<std::pair<Expression, Block>>& cases_,
                            std::optional<Block> default_) {
-    auto x = Block();
+    auto cases = util::toVector(
+        cases_ | std::views::transform([](const auto& c) { return std::make_pair(std::vector{c.first}, c.second); }));
+    addSwitch(cond, cases, std::move(default_));
+}
 
-    for ( const auto& c : cases_ )
-        x._stmts.emplace_back(fmt("case %s:", c.first), c.second, 0);
+void cxx::Block::addSwitch(const Expression& cond, const std::vector<std::pair<std::vector<Expression>, Block>>& cases_,
+                           std::optional<Block> default_) {
+    auto x = Block();
+    x.setEnsureBracesforBlock();
+
+    for ( const auto& [values, block] : cases_ ) {
+        auto conditions = values | std::views::transform([&](const auto& e) { return fmt("case %s:", e); });
+        x._stmts.emplace_back(util::join(conditions, " "), block, 0);
+    }
 
     if ( default_ )
         x._stmts.emplace_back("default:", *default_, 0);
 
-    _stmts.emplace_back(fmt("switch ( %s )", cond), std::move(x), flags::AddSeparatorAfter);
+    _stmts.emplace_back(fmt("switch ( %s )", cond), std::move(x), 0);
 }
 
 void cxx::Block::addTry(Block body, std::vector<std::pair<declaration::Argument, Block>> catches) {
