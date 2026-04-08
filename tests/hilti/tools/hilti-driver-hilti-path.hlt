@@ -1,6 +1,13 @@
 # @TEST-EXEC: mkdir -p a/b/c && cp bar.hlt.templ a/b/c/bar.hlt
-# @TEST-EXEC: HILTI_PATH=${DIST}/hilti/lib:a/b/c ${HILTIC} -j foo.hlt >output
+# @TEST-EXEC: sh run-hilti-path.sh >output
 # @TEST-EXEC: btest-diff output
+
+@TEST-START-FILE run-hilti-path.sh
+#! /bin/sh
+# HILTI_PATH uses ';' on Windows and ':' elsewhere.
+sep=':'; is-windows && sep=';'
+HILTI_PATH="${DIST}/hilti/lib${sep}a/b/c" ${HILTIC} -j foo.hlt
+@TEST-END-FILE
 
 @TEST-START-FILE foo.hlt
 

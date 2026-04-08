@@ -8,6 +8,10 @@
 #include <intrin.h>
 #endif
 
+#if defined(_WIN32)
+#include <windows.h>
+#endif
+
 #include <hilti/rt/autogen/config.h>
 #include <hilti/rt/configuration.h>
 #include <hilti/rt/context.h>
@@ -188,8 +192,16 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
             const auto min_size = configuration::get().fiber_shared_stack_size;
 
 #if defined(_WIN32)
-            _fiber->stack = reinterpret_cast<char*>(_AddressOfReturnAddress()) - min_size;
-            _fiber->stack_size = min_size;
+            // Use the real stack bottom so that checkStack() accurately
+            // reflects remaining space and can fire before the OS guard
+            // page is hit.  VirtualQuery on any address inside the stack
+            // returns the allocation base of the entire stack reservation,
+            // which is equivalent to the TEB's DeallocationStack field.
+            MEMORY_BASIC_INFORMATION mbi;
+            VirtualQuery(_AddressOfReturnAddress(), &mbi, sizeof(mbi));
+            auto* stack_bottom = reinterpret_cast<char*>(mbi.AllocationBase);
+            _fiber->stack = stack_bottom;
+            _fiber->stack_size = static_cast<size_t>(reinterpret_cast<char*>(_AddressOfReturnAddress()) - stack_bottom);
 #else
             rlimit limit;
             if ( ::getrlimit(RLIMIT_STACK, &limit) < 0 )

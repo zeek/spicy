@@ -5,4 +5,4 @@
 cxx=$(spicy-config --cxx)
 cxxflags=$(spicy-config --cxxflags ${debug})
 
-exec ${cxx} ${cxxflags} $@
+exec "${cxx}" ${cxxflags} $@

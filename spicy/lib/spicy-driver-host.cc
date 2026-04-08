@@ -115,7 +115,7 @@ void SpicyDriver::parseOptions(const std::string& prog, int argc, char** argv) {
 int main(int argc, char** argv) {
     SpicyDriver driver;
 
-    auto prog = hilti::rt::filesystem::path(argv[0]).filename().native();
+    auto prog = hilti::rt::filesystem::path(argv[0]).filename().string();
     driver.parseOptions(prog, argc, argv);
 
     auto config = hilti::rt::configuration::get();
@@ -132,10 +132,23 @@ int main(int argc, char** argv) {
             driver.listParsers(std::cout);
 
         else {
+#ifdef _WIN32
+            bool use_stdin = (driver.opt_file == "/dev/stdin");
+            std::ifstream in_file;
+
+            if ( ! use_stdin ) {
+                in_file.open(driver.opt_file, std::ios::in | std::ios::binary);
+                if ( ! in_file.is_open() )
+                    fatalError(prog, "cannot open input for reading");
+            }
+
+            std::istream& in = use_stdin ? std::cin : in_file;
+#else
             std::ifstream in(driver.opt_file, std::ios::in | std::ios::binary);
 
             if ( ! in.is_open() )
                 fatalError(prog, "cannot open input for reading");
+#endif
 
             if ( driver.opt_input_is_batch ) {
                 if ( auto x = driver.processPreBatchedInput(in); ! x )

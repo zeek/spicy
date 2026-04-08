@@ -4,7 +4,7 @@
 # @TEST-EXEC: btest-diff output
 # @TEST-EXEC: grep -q "^# user_time" .stderr
 # @TEST-EXEC: ${SPICY_BUILD} -S %INPUT
-# @TEST-EXEC: ./a.out -h >no-main.output 2>&1
+# @TEST-EXEC: ./a.out -h 2>&1 | sed 's|^[^ ]*[/\\]a\.out|./a.out|' >no-main.output
 # @TEST-EXEC: btest-diff no-main.output
 
 module Mini;

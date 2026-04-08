@@ -167,10 +167,17 @@ result::Error Driver::augmentError(const result::Error& err, const hilti::rt::fi
     return error(err.description(), p);
 }
 
-Result<std::ofstream> Driver::openOutput(const hilti::rt::filesystem::path& p, bool binary, bool append) {
+Result<std::unique_ptr<std::ostream>> Driver::openOutput(const hilti::rt::filesystem::path& p, bool binary,
+                                                         bool append) {
+    if ( p == "/dev/stdout" )
+        return {std::make_unique<std::ostream>(std::cout.rdbuf())};
+
+    if ( p == "/dev/stderr" )
+        return {std::make_unique<std::ostream>(std::cerr.rdbuf())};
+
     auto mode = std::ios::out;
 
-    if ( append || p == "/dev/stdout" || p == "/dev/stderr" )
+    if ( append )
         mode |= std::ios::app;
     else
         mode |= std::ios::trunc;
@@ -178,9 +185,9 @@ Result<std::ofstream> Driver::openOutput(const hilti::rt::filesystem::path& p, b
     if ( binary )
         mode |= std::ios::binary;
 
-    std::ofstream out(p, mode);
+    auto out = std::make_unique<std::ofstream>(p, mode);
 
-    if ( ! out.is_open() )
+    if ( ! out->is_open() )
         return error("Cannot open file for output", p);
 
     return {std::move(out)};
@@ -214,7 +221,7 @@ Result<Nothing> Driver::writeOutput(std::ifstream& in, const hilti::rt::filesyst
     if ( ! out )
         return out.error();
 
-    if ( ! util::copyStream(in, *out) )
+    if ( ! util::copyStream(in, **out) )
         return error("Error writing to file", p);
 
     return Nothing();
@@ -226,7 +233,7 @@ void Driver::dumpUnit(const Unit& unit) {
         auto output_path = util::fmt("dbg.%s%s.ast", unit.uid().str(), unit.uid().process_extension.generic_string());
         if ( auto out = openOutput(output_path) ) {
             HILTI_DEBUG(logging::debug::Driver, fmt("saving AST for module %s to %s", unit.uid().str(), output_path));
-            ast_dumper::dump(*out, module, true);
+            ast_dumper::dump(**out, module, true);
         }
     }
 
@@ -234,7 +241,7 @@ void Driver::dumpUnit(const Unit& unit) {
         auto output_path = util::fmt("dbg.%s%s", unit.uid().str(), unit.uid().process_extension.generic_string());
         if ( auto out = openOutput(output_path) ) {
             HILTI_DEBUG(logging::debug::Driver, fmt("saving code for module %s to %s", unit.uid().str(), output_path));
-            unit.print(*out);
+            unit.print(**out);
         }
     }
 
@@ -243,7 +250,7 @@ void Driver::dumpUnit(const Unit& unit) {
         auto output_path = util::fmt("dbg.%s.cc", id);
         if ( auto out = openOutput(util::fmt("dbg.%s.cc", id)) ) {
             HILTI_DEBUG(logging::debug::Driver, fmt("saving C++ code for module %s to %s", id, output_path));
-            cxx->save(*out);
+            cxx->save(**out);
         }
     }
 }
@@ -477,6 +484,17 @@ Result<Nothing> Driver::initialize() {
 
     _stage = INITIALIZED;
 
+#ifdef _WIN32
+    // On Windows, JIT-compiled DLLs need to link against the host
+    // executable's import library to resolve runtime symbols at load time.
+    {
+        auto lib_path = util::currentExecutable();
+        lib_path.replace_extension(".lib");
+        if ( rt::filesystem::exists(lib_path) )
+            _compiler_options.cxx_link.push_back(lib_path.string());
+    }
+#endif
+
     util::removeDuplicates(_compiler_options.cxx_include_paths);
     util::removeDuplicates(_compiler_options.library_paths);
 
@@ -554,6 +572,13 @@ void Driver::_addUnit(const std::shared_ptr<Unit>& unit) {
 
 Result<void*> Driver::_symbol(const std::string& symbol) {
 #if defined(_MSC_VER)
+    // First try the loaded JIT library (DLL), then fall back to the host exe.
+    if ( _library ) {
+        hilti::rt::Result<void*> lib_sym = _library->symbol(symbol.c_str());
+        if ( lib_sym )
+            return *lib_sym;
+    }
+
     auto* sym = reinterpret_cast<void*>(::GetProcAddress(::GetModuleHandleA(nullptr), symbol.c_str()));
 
     if ( ! sym )
@@ -638,6 +663,31 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
         HILTI_DEBUG(logging::debug::Driver, fmt("adding precompiled HILTI file %s", path));
 
         try {
+#ifdef _WIN32
+            // HLTO DLLs import from the host exe that built them. When
+            // loading cross-tool (e.g., HLTO built by spicyc loaded by
+            // spicy-driver), we create hardlinks of the current exe
+            // under all known tool names in a redirect directory.
+            // LoadLibraryEx searches this directory (via AddDllDirectory)
+            // and resolves the hardlink to the already-loaded process
+            // module since it's the same physical file.
+            {
+                static bool redirect_done = false;
+                if ( ! redirect_done ) {
+                    redirect_done = true;
+                    auto current_exe = rt::filesystem::canonical(util::currentExecutable());
+                    auto redirect_dir = rt::filesystem::temp_directory_path() / "hilti-hlto-redirect";
+                    std::error_code ec;
+                    rt::filesystem::create_directories(redirect_dir, ec);
+                    for ( const auto* name : {"hiltic.exe", "spicyc.exe", "spicy-driver.exe", "spicy-dump.exe"} ) {
+                        auto target = redirect_dir / name;
+                        rt::filesystem::remove(target, ec);
+                        rt::filesystem::create_hard_link(current_exe, target, ec);
+                    }
+                    ::AddDllDirectory(redirect_dir.wstring().c_str());
+                }
+            }
+#endif
             const auto& name = path.generic_string();
             if ( ! _libraries.contains(name) ) {
                 _libraries.insert({name, Library(path)});
@@ -729,7 +779,7 @@ Result<Nothing> Driver::compileUnits() {
                 continue;
 
             HILTI_DEBUG(logging::debug::Driver, util::fmt("saving HILTI code for module %s", unit->uid().str()));
-            if ( ! unit->print(*output) )
+            if ( ! unit->print(**output) )
                 return error(fmt("error print HILTI code for module %s", unit->uid().str()));
         }
     }
@@ -853,7 +903,7 @@ Result<Nothing> Driver::linkUnits() {
             return output.error();
 
         HILTI_DEBUG(logging::debug::Driver, fmt("writing linker code to %s", output_path));
-        cxx_code->save(*output);
+        cxx_code->save(**output);
         return Nothing(); // All done.
     }
 
@@ -899,7 +949,7 @@ Result<Nothing> Driver::outputUnits() {
 
                 HILTI_DEBUG(logging::debug::Driver,
                             fmt("saving C++ code for module %s to %s", unit->uid().str(), cxx_path));
-                cxx->save(*output);
+                cxx->save(**output);
             }
 
             if ( _driver_options.output_prototypes ) {
@@ -909,7 +959,7 @@ Result<Nothing> Driver::outputUnits() {
 
                 HILTI_DEBUG(logging::debug::Driver,
                             fmt("saving C++ prototypes for module %s to %s", unit->uid().str(), output_path));
-                unit->createPrototypes(*output);
+                unit->createPrototypes(**output);
             }
 
             _generated_cxxs.push_back(std::move(*cxx));

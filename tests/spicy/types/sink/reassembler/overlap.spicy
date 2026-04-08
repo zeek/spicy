@@ -1,10 +1,10 @@
 # @TEST-DOC: Check that sink hooks are correctly set up.
 #
-# @TEST-EXEC: spicy-driver -d -p Mini::Main %INPUT hooks.spicy -f /dev/zero >>output
+# @TEST-EXEC: zero=/dev/zero; is-windows && zero=NUL; spicy-driver -d -p Mini::Main %INPUT hooks.spicy -f $zero >>output
 #
 # @TEST-EXEC: echo "Without hooks" >>output
 # Running without hooks defined behaves as expected, regression test for #1804.
-# @TEST-EXEC: spicy-driver -d -p Mini::Main %INPUT -f /dev/zero >>output
+# @TEST-EXEC: zero=/dev/zero; is-windows && zero=NUL; spicy-driver -d -p Mini::Main %INPUT -f $zero >>output
 #
 # @TEST-EXEC: btest-diff output
 
