@@ -20,6 +20,7 @@ static const unsigned int BlockEos = (1U << 0U);           // Add an end-of-stat
 static const unsigned int NoSeparator = (1U << 1U);        // Don't add a separator after block.
 static const unsigned int AddSeparatorAfter = (1U << 2U);  // Force adding a separator after block.
 static const unsigned int AddSeparatorBefore = (1U << 4U); // Force adding a separator before block.
+static const unsigned int SkipBlock = (1U << 5U);          // Skip rendering of the block, just emit the string prefix.
 } // namespace flags
 
 static const std::set<std::string_view> ReservedKeywords = {
@@ -310,6 +311,7 @@ void cxx::Block::addSwitch(const Expression& cond, const std::vector<std::pair<E
 
     _stmts.emplace_back(fmt("switch ( %s )", cond), std::move(x), flags::AddSeparatorAfter);
 }
+
 void cxx::Block::addTry(Block body, std::vector<std::pair<declaration::Argument, Block>> catches) {
     body.setEnsureBracesforBlock();
     _stmts.emplace_back("try", std::move(body), flags::NoSeparator);
@@ -323,6 +325,12 @@ void cxx::Block::addTry(Block body, std::vector<std::pair<declaration::Argument,
         _stmts.emplace_back(fmt("catch ( %s )", arg), std::move(b),
                             (e == catches.back().first ? flags::AddSeparatorAfter : flags::NoSeparator));
     }
+}
+
+void cxx::Block::addLabel(std::string_view label) {
+    // Need to include `{}` here as otherwise we might run into:
+    //    "error: label at end of compound statement is a C++23 extension"
+    _stmts.emplace_back(fmt("%s: {}", label), Block(), flags::SkipBlock | flags::AddSeparatorAfter);
 }
 
 size_t cxx::Block::size(bool ignore_comments) const {
@@ -675,6 +683,16 @@ cxx::Formatter& cxx::operator<<(cxx::Formatter& f, const cxx::Block& x) {
 
             if ( fl & flags::AddSeparatorBefore && i != 0 )
                 f << separator();
+
+            if ( fl & flags::SkipBlock ) {
+                f << s;
+                f << eol();
+
+                if ( fl & flags::AddSeparatorAfter )
+                    f << separator();
+
+                continue;
+            }
 
             if ( fl & flags::BlockEos ) {
                 f << s;

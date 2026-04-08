@@ -587,16 +587,6 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
             error("'if' header lacking both condition and declaration", n);
     }
 
-    void operator()(statement::Break* n) final {
-        auto* w = n->parent<statement::While>();
-        auto* f = n->parent<statement::For>();
-
-        if ( ! (f || w) ) {
-            error("'break' outside of loop", n);
-            return;
-        }
-    }
-
     void operator()(statement::Continue* n) final {
         auto* w = n->parent<statement::While>();
         auto* f = n->parent<statement::For>();

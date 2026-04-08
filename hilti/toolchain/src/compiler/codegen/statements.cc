@@ -42,6 +42,24 @@ struct Visitor : hilti::visitor::PreOrder {
 
     int level = 0;
 
+    // Helper that returns true if the given loop body contains any `break`
+    // statements linked to the given loop statement.
+    static bool loopContainsBreaks(const Statement* loop, Statement* body) {
+        struct BreakFinder : visitor::PreOrder {
+            BreakFinder(const Statement* loop) : loop(loop) {}
+
+            const hilti::Statement* loop;
+            bool contains_breaks = false;
+
+            void operator()(statement::Break* n) final {
+                if ( n->linkedLoop() == loop )
+                    contains_breaks = true;
+            }
+        };
+
+        return visitor::visit(BreakFinder(loop), body, {}, [](const auto& v) { return v.contains_breaks; });
+    }
+
     void operator()(statement::Assert* n) final {
         auto throw_with_msg = [&](const cxx::Expression& msg) {
             return fmt("throw ::hilti::rt::AssertionFailure(::hilti::rt::to_string_for_print(%s), \"%s\")", msg,
@@ -121,7 +139,10 @@ struct Visitor : hilti::visitor::PreOrder {
             block->addBlock(cg->compile(n));
     }
 
-    void operator()(statement::Break* n) final { block->addStatement("break"); }
+    void operator()(statement::Break* n) final {
+        assert(n->linkedLoop());
+        block->addStatement(fmt("goto %s_%" PRIu64, HILTI_INTERNAL_ID("done"), n->linkedLoop()->identity()));
+    }
 
     void operator()(statement::Continue* n) final { block->addStatement("continue"); }
 
@@ -215,6 +236,9 @@ struct Visitor : hilti::visitor::PreOrder {
             b.addForRange(true, id, fmt("::hilti::rt::range(%s)", HILTI_INTERNAL_ID("seq")), body);
             block->addBlock(std::move(b));
         }
+
+        if ( loopContainsBreaks(n, n->body()) )
+            block->addLabel(fmt("%s_%" PRIu64, HILTI_INTERNAL_ID("done"), n->identity()));
     }
 
     void operator()(statement::Return* n) final {
@@ -236,14 +260,10 @@ struct Visitor : hilti::visitor::PreOrder {
         // TODO(robin): We generate if-else chain here. We could optimize the case
         // where all expressions are integers and go with a "real" switch in
         // that case.
-        cxx::ID cxx_id;
-        std::string cxx_type;
-        std::string cxx_init;
-
         auto* cond = n->condition();
-        cxx_type = cg->compile(cond->type(), codegen::TypeUsage::Storage);
-        cxx_id = cxx::ID(cond->id());
-        cxx_init = cg->compile(cond->init());
+        auto cxx_type = cg->compile(cond->type(), codegen::TypeUsage::Storage);
+        auto cxx_id = cxx::ID(cond->id());
+        auto cxx_init = cg->compile(cond->init());
 
         bool first = true;
         for ( const auto& c : n->cases() ) {
@@ -276,7 +296,8 @@ struct Visitor : hilti::visitor::PreOrder {
         else
             default_.addStatement(
                 fmt("throw ::hilti::rt::UnhandledSwitchCase(::hilti::rt::to_string_for_print(%s), \"%s\")",
-                    (first ? cxx_init : cxx_id), n->meta().location()));
+                    (first ? static_cast<std::string>(cxx_init) : static_cast<std::string>(cxx_id)),
+                    n->meta().location()));
 
         if ( first )
             block->addBlock(std::move(default_));
@@ -396,6 +417,9 @@ struct Visitor : hilti::visitor::PreOrder {
             // C++ doesn't support having both init and cond in a while-loop.
             // Use a for-loop instead.
             block->addFor(std::move(sinit), std::move(cond), "", body);
+
+        if ( loopContainsBreaks(n, n->body()) )
+            block->addLabel(fmt("%s_%" PRIu64, HILTI_INTERNAL_ID("done"), n->identity()));
     }
 
     void operator()(statement::Yield* n) final {

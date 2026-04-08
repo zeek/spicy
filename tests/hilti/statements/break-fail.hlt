@@ -1,0 +1,18 @@
+# @TEST-DOC: Checks that we capture invalid usage of `break`.
+#
+# @TEST-EXEC-FAIL: hiltic -p %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+break; # not allowed here
+
+function void f() {
+    break; # not allowed here
+}
+
+switch ( 1 ) {
+    case 1: break; # not allowed here; might be surpirsing, but it's what we document right now
+}
+
+}

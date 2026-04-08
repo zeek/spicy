@@ -330,6 +330,7 @@ public:
                    std::optional<Block> default_ = {});
     void appendFromBlock(Block b);
     void addTry(Block body, std::vector<std::pair<declaration::Argument, Block>> catches);
+    void addLabel(std::string_view label);
 
     bool ensureBracesForBlock() const { return _ensure_braces_for_block; }
     void setEnsureBracesforBlock() { _ensure_braces_for_block = true; }
