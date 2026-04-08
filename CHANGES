@@ -1,3 +1,15 @@
+1.16.0-dev.113 | 2026-04-08 09:34:23 +0200
+
+  * cmake: use absolute source paths in flex_target() calls to fix DWARF debug info (Doğukan Çağatay)
+
+    Relative `.ll` input paths cause flex to embed bare filenames in `#line`
+    directives, resulting in non-existent DWARF paths that break debugsource
+    RPM packaging (cpio cannot stat them).
+
+    Prefixing with `${CMAKE_CURRENT_SOURCE_DIR}/` fixes this.
+
+    No functional change — only the path string in `#line` directives is affected.
+
 1.16.0-dev.111 | 2026-04-08 09:05:07 +0200
 
   * Miscellaneous fixes to make BTest suite pass on Windows. (Maor Hamami)
