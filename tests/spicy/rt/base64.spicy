@@ -18,7 +18,7 @@ print enc;
 global dec: bytes;
 global d: spicy::Base64Stream;
 
-dec += spicy::base64_decode(d, b"MTIz");
+dec += spicy::base64_decode(d, b"MTIs");
 dec += spicy::base64_decode(d, b"NDU2Nzg");
 dec += spicy::base64_decode(d, b"5");
 dec += spicy::base64_decode(d, b"MA==");

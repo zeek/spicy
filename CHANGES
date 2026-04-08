@@ -10227,7 +10227,7 @@ x:
 
         - We remove the distinction between building the toolchain
           with/without JIT. We now always assume we have the JIT
-          capbility available, but will fail gracefully when unable to
+          capability available, but will fail gracefully when unable to
           use the host compiler.
 
         - JIT compilation captures & reports C++ error output.
