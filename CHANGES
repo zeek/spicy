@@ -1,3 +1,14 @@
+1.16.0-dev.124 | 2026-04-08 14:28:01 +0200
+
+  * Properly clean up unit sink state. (Benjamin Bannier, Corelight)
+
+    We previously would hold unit sink state in a raw pointer inside the
+    unit. This meant that we needed to manually manage its memory which was
+    errorprone. This patch switches sink state over to a smart pointer so we
+    get correct RAII behavior on update or when exceptions are thrown. Since
+    units are copyable we need to use a `std::shared_ptr` as opposed to a
+    `std::unique_ptr` here.
+
 1.16.0-dev.122 | 2026-04-08 14:27:36 +0200
 
   * Use inline const instead of constexpr to support MSVC (Maor Hamami)

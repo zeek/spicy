@@ -108,7 +108,7 @@ TEST_CASE("atEod") {
 
 struct UnitWithSinkSupport : std::enable_shared_from_this<UnitWithSinkSupport> {
     static Parser HILTI_INTERNAL(parser);
-    sink::detail::State* HILTI_INTERNAL(sink) = nullptr;
+    std::shared_ptr<sink::detail::State> HILTI_INTERNAL(sink);
     hilti::rt::Optional<hilti::rt::RecoverableFailure> HILTI_INTERNAL(error);
 
     void (*HILTI_INTERNAL(on_0x25_gap))(uint64_t, uint64_t) = nullptr;

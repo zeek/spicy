@@ -3,6 +3,7 @@
 #pragma once
 
 #include <list>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -68,7 +69,7 @@ auto connectUnit(UnitRef<U>& unit) {
     auto self = hilti::rt::ValueReference<U>::self(&*unit);
 
     auto& state = unit->HILTI_INTERNAL(sink);
-    state = new sink::detail::State();                       // NOLINT
+    state = std::make_shared<sink::detail::State>();
     state->resumable = (*parse2)(self, state->data, {}, {}); // Kick-off parsing with empty data.
     state->parser = &U::HILTI_INTERNAL(parser);
     return state;
@@ -319,7 +320,7 @@ private:
     void _debugDeliver(const hilti::rt::Bytes& data) const;
 
     // States for connected units.
-    std::vector<sink::detail::State*> _states;
+    std::vector<std::shared_ptr<sink::detail::State>> _states;
 
     // Must come after `_state` as it's keeping the states around.
     std::vector<hilti::rt::StrongReferenceGeneric> _units;
