@@ -37,14 +37,14 @@ repos:
     stages: ["pre-commit"]
 
 - repo: https://github.com/pre-commit/mirrors-clang-format
-  rev: v21.1.2
+  rev: 07a0f7667439f60724899f6ae288e4a4f572e0e1  # frozen: v22.1.2
   hooks:
   - id: clang-format
     types_or: ["c", "c++"]
     stages: ["pre-commit"]
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v6.0.0
+  rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
   hooks:
   - id: trailing-whitespace
     exclude: '^tests/Baseline'
@@ -55,7 +55,7 @@ repos:
   - id: check-added-large-files
 
 - repo: https://gitlab.com/daverona/pre-commit/cpp
-  rev: 0.8.0
+  rev: 46cc8b337c73e5c1622ba0bb6dc21cdfcfe00c2f  # frozen: 0.8.0
   hooks:
   - id: cpplint
     exclude: '3rdparty/'
@@ -63,12 +63,12 @@ repos:
     stages: ["pre-commit"]
 
 - repo: https://github.com/jorisroovers/gitlint
-  rev:  v0.19.1
+  rev:  acc9d9de6369b76d22cb4167029d2035e8730b98  # frozen: v0.19.1
   hooks:
   - id: gitlint
 
 - repo: https://github.com/pre-commit/pygrep-hooks
-  rev: v1.10.0
+  rev: 3a6eb0fadf60b3cccfd80bad9dbb6fae7e47b316  # frozen: v1.10.0
   hooks:
   - id: rst-backticks
     stages: ["pre-commit"]
@@ -78,7 +78,7 @@ repos:
     stages: ["pre-commit"]
 
 - repo: https://github.com/cheshirekow/cmake-format-precommit
-  rev: v0.6.13
+  rev: e2c2116d86a80e72e7146a06e68b7c228afc6319  # frozen: v0.6.13
   hooks:
   - id: cmake-format
     stages: ["pre-commit"]
@@ -86,14 +86,14 @@ repos:
     stages: ["pre-commit"]
 
 - repo: https://github.com/crate-ci/typos
-  rev: v1.39.0
+  rev: 02ea592e44b3a53c302f697cddca7641cd051c3d  # frozen: v1.45.0
   hooks:
   - id: typos
     exclude: 'tests/.*/regexp/.*|.clang-tidy'
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
   # Ruff version.
-  rev: v0.14.3
+  rev: c60c980e561ed3e73101667fe8365c609d19a438  # frozen: v0.15.9
   hooks:
   - id: ruff-check
     args: [ --fix ]

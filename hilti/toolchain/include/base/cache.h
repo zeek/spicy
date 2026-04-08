@@ -45,7 +45,7 @@ public:
      * Returns the value for a given key if it exists; or, if not, executes a
      * a couple callbacks to compute a value. This splits the computation
      * into two parts to handle cases where it may recurse: the first
-     * callback computes a prelimary value *v* that will be inserted into the
+     * callback computes a preliminary value *v* that will be inserted into the
      * cache immediately. It will then be passed to the second callback to
      * compute the final value. If that second callback accesses the cache
      * with the same key during its operation, it will find *v*. The 2nd

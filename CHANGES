@@ -1,3 +1,10 @@
+1.16.0-dev.115 | 2026-04-08 10:32:11 +0200
+
+  * Bump and freeze pre-commit hooks. (Benjamin Bannier, Corelight)
+
+    We are now freezing hooks as a best practice against repos changing
+    their tags behind our backs.
+
 1.16.0-dev.113 | 2026-04-08 09:34:23 +0200
 
   * cmake: use absolute source paths in flex_target() calls to fix DWARF debug info (Doğukan Çağatay)
@@ -10227,7 +10234,7 @@ x:
 
         - We remove the distinction between building the toolchain
           with/without JIT. We now always assume we have the JIT
-          capbility available, but will fail gracefully when unable to
+          capability available, but will fail gracefully when unable to
           use the host compiler.
 
         - JIT compilation captures & reports C++ error output.

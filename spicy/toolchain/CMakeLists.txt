@@ -122,7 +122,7 @@ set_config_val(SPICY_CONFIG_TOOLCHAIN_CXX_LIBRARY_DIRS "")
 set_config_val(SPICY_CONFIG_RUNTIME_LD_FLAGS_DEBUG "")
 set_config_val(SPICY_CONFIG_RUNTIME_LD_FLAGS_RELEASE "")
 
-# Generate configurarion
+# Generate configuration
 configure_file(include/config.h.in ${AUTOGEN_H}/config.h)
 configure_file(src/config.cc.in ${AUTOGEN_CC}/config.cc)
 
