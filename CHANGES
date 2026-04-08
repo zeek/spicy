@@ -1,3 +1,13 @@
+1.16.0-dev.120 | 2026-04-08 11:54:32 +0200
+
+  * Bump CodSpeedHQ/action from 4.10.4 to 4.13.0 (dependabot[bot])
+
+  * Bump hendrikmuhs/ccache-action from 1.2.20 to 1.2.22 (dependabot[bot])
+
+  * Bump 3rdparty/utfcpp from `cfc9112` to `9dd9052` (dependabot[bot])
+
+  * Bump 3rdparty/vcpkg from `1e5a281` to `65f9c07` (dependabot[bot])
+
 1.16.0-dev.115 | 2026-04-08 10:32:11 +0200
 
   * Bump and freeze pre-commit hooks. (Benjamin Bannier, Corelight)
