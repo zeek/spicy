@@ -22,7 +22,7 @@ HILTI_EXCEPTION(InvalidMIMEType, UsageError)
 
 namespace mime {
 
-constexpr hilti::rt::String INVALID_NAME; // empty name as special value for uninitialized MIME types
+inline const hilti::rt::String INVALID_NAME; // empty name as special value for uninitialized MIME types
 
 } // namespace mime
 

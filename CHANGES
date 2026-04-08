@@ -1,3 +1,7 @@
+1.16.0-dev.122 | 2026-04-08 14:27:36 +0200
+
+  * Use inline const instead of constexpr to support MSVC (Maor Hamami)
+
 1.16.0-dev.120 | 2026-04-08 11:54:32 +0200
 
   * Bump CodSpeedHQ/action from 4.10.4 to 4.13.0 (dependabot[bot])
