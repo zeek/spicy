@@ -139,19 +139,19 @@ bool Sink::_deliver(std::optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_
 
     _size += data->size();
 
-    std::vector<sink::detail::State*> states;
+    std::vector<std::shared_ptr<sink::detail::State>> states;
     states.reserve(_states.size());
-    for ( auto* s : _states ) {
+    for ( auto s : _states ) {
         if ( s->skip_delivery )
             continue;
 
         if ( s->resumable )
             throw ParseError("more data after sink's unit has already completed parsing");
 
-        states.push_back(s);
+        states.push_back(std::move(s));
     }
 
-    for ( auto* s : states ) {
+    for ( auto& s : states ) {
         if ( states.size() == 1 )
             s->data->append(std::move(*data));
         else
@@ -396,7 +396,7 @@ void Sink::connect_mime_type(const MIMEType& mt, uint64_t scope) {
                     SPICY_RT_DEBUG_VERBOSE(fmt("connecting parser %s [%p] to sink %p for MIME type %s", p->name,
                                                &m.first, this, std::string(mt)));
                     _units.emplace_back(std::move(m.first));
-                    _states.emplace_back(m.second);
+                    _states.emplace_back(std::move(m.second));
                 }
             }
         }
@@ -415,7 +415,7 @@ void Sink::_close(bool orderly) {
         SPICY_RT_DEBUG_VERBOSE(
             fmt("closing sink, disconnecting parsers from sink %p%s", this, (orderly ? "" : " (abort)")));
 
-        for ( auto* s : _states ) {
+        for ( auto& s : _states ) {
             if ( ! s->resumable ) {
                 s->data->freeze();
 
@@ -433,8 +433,6 @@ void Sink::_close(bool orderly) {
 
                 assert(s->resumable); // must have conluded after freezing/aborting
             }
-
-            delete s; // NOLINT
         }
 
         _states.clear();

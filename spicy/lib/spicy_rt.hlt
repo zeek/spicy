@@ -13,7 +13,7 @@ public type ParseError = exception &cxxname="spicy::rt::ParseError";
 public type UnitAlreadyConnected = exception &cxxname="spicy::rt::UnitAlreadyConnected";
 
 # State stored inside a unit to allow connecting it to a sink.
-public type SinkState = __library_type("spicy::rt::sink::detail::State*");
+public type SinkState = __library_type("std::shared_ptr<spicy::rt::sink::detail::State>");
 
 public type ParsedUnit = __library_type("spicy::rt::ParsedUnit");
 
