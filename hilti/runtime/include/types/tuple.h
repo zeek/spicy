@@ -141,11 +141,8 @@ public:
      * unset optionals leaving the corresponding tuple element unset
      */
     template<typename... Us>
-    explicit Tuple(tuple::OptionalTag, Optional<Us>&&... us) : Tuple() {
-        [&]<size_t... Is>(std::index_sequence<Is...>) {
-            ((us.hasValue() ? std::get<Is>(*this) = std::forward<Us>(*us), TupleBase::set(Is) : void()), ...);
-        }(std::index_sequence_for<Ts...>{});
-    }
+    explicit Tuple(tuple::OptionalTag, Optional<Us>&&... us)
+        : Tuple(std::index_sequence_for<Ts...>{}, std::move(us)...) {}
 
     /** Copy constructor. */
     Tuple(const Tuple& other) = default;
@@ -216,19 +213,38 @@ private:
     template<typename... Us>
     friend class Tuple;
 
+    // Helper to set tuple from a number of `Optional` values.
+    template<size_t... Is, typename... Us>
+    Tuple(std::index_sequence<Is...>, Optional<Us>&&... us) : TupleBase(), Base(_initElement<Is>(std::move(us))...) {
+        ((us.hasValue() ? TupleBase::set(Is) : void()), ...);
+    }
+
     // This returns the value that we initialize the storage tuple with when no
     // fields are set. That's mostly just the elements' defaults, except for
     // ValueReference types, which we initialize with a nullptr. The latter
     // lets us deal with self-recursive tuple types.
     static auto _defaultStorage() {
-        return Base{[]() {
-            if constexpr ( tuple::detail::IsValueReference<Ts>::value ) {
-                using element_type = typename tuple::detail::IsValueReference<Ts>::element_type;
-                return Ts(std::shared_ptr<element_type>(nullptr));
-            }
-            else
-                return Ts{};
-        }()...};
+        return []<size_t... Is>(std::index_sequence<Is...>) {
+            return Base{_defaultValue<Is>()...};
+        }(std::index_sequence_for<Ts...>{});
+    }
+
+    // Helper to compute the default value for the element at index I.
+    template<size_t I>
+    static auto _defaultValue() {
+        using T = std::tuple_element_t<I, Base>;
+        if constexpr ( tuple::detail::IsValueReference<T>::value ) {
+            using element_type = typename tuple::detail::IsValueReference<T>::element_type;
+            return T(std::shared_ptr<element_type>(nullptr));
+        }
+        else
+            return T{};
+    }
+
+    // Given an `Optional` value, either return its contents if set, or a default for tuple entry `I`.
+    template<size_t I, typename U>
+    static auto _initElement(Optional<U>&& u) {
+        return u.hasValue() ? std::move(*u) : _defaultValue<I>();
     }
 };
 
