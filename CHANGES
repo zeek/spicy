@@ -1,3 +1,17 @@
+1.16.0-dev.130 | 2026-04-10 11:59:34 +0200
+
+  * Add fast path to bytes iterator increment. (Robin Sommer, Corelight)
+
+    The decrement operation had that path already, but not increment. Also
+    sprinkling some `[[(un-)likely]]` across the fast-paths; not clear if
+    that does much, but can't hurt.
+
+  * GH-2300: Fix construction of tuples from map keys. (Robin Sommer, Corelight)
+
+    The previous implementation did not properly handle construction
+    from `std::map::value_type`, which has a `const` first element.
+    We need this for iterations over maps.
+
 1.16.0-dev.126 | 2026-04-08 11:12:45 -0400
 
   * Fix potential memory leak splitting strings (Evan Typanski, Corelight)

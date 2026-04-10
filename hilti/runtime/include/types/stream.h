@@ -710,17 +710,23 @@ private:
     }
 
     void _increment(const integer::safe<uint64_t>& n) {
-        if ( ! _chain )
+        if ( ! _chain ) [[unlikely]]
             throw InvalidIterator("unbound stream iterator");
 
-        if ( ! n )
+        if ( ! n ) [[unlikely]]
             return;
 
-        if ( _chain->isValid() ) {
+        if ( _chain->isValid() ) [[likely]] {
             const Chunk* hint = nullptr;
 
-            if ( _chain->inRange(_offset) )
+            if ( _chain->inRange(_offset) ) [[likely]] {
+                if ( _chunk && _chunk->inRange(_offset + n) ) [[likely]] {
+                    _offset += n;
+                    return; // fast-path, inside still-valid chunk
+                }
+
                 hint = _chunk; // current chunk is still valid
+            }
             else
                 hint = _chain->head(); // previous chunk was likely trimmed off, try new head
 
@@ -735,20 +741,20 @@ private:
     }
 
     void _decrement(const integer::safe<uint64_t>& n) {
-        if ( ! _chain )
+        if ( ! _chain ) [[unlikely]]
             throw InvalidIterator("unbound stream iterator");
 
-        if ( n > _offset )
+        if ( n > _offset ) [[unlikely]]
             throw InvalidIterator("attempt to move before beginning of stream");
 
-        if ( ! n )
+        if ( ! n ) [[unlikely]]
             return;
 
-        if ( _chain->isValid() ) {
+        if ( _chain->isValid() ) [[likely]] {
             const Chunk* hint = nullptr;
 
-            if ( _chain->inRange(_offset) ) {
-                if ( _chunk && _chunk->inRange(_offset - n) ) {
+            if ( _chain->inRange(_offset) ) [[likely]] {
+                if ( _chunk && _chunk->inRange(_offset - n) ) [[likely]] {
                     _offset -= n;
                     return; // fast-path, inside still-valid chunk
                 }
@@ -996,24 +1002,24 @@ private:
     }
 
     void _increment(const integer::safe<uint64_t>& n) {
-        if ( n == 0 )
+        if ( n == 0 ) [[unlikely]]
             return;
 
         _offset += n;
 
-        if ( _chunk && _offset < _chunk->endOffset() )
+        if ( _chunk && _offset < _chunk->endOffset() ) [[likely]]
             return; // fast-path, chunk still valid
 
         _chunk = _chain->findChunk(_offset, _chunk);
     }
 
     void _decrement(const integer::safe<uint64_t>& n) {
-        if ( n == 0 )
+        if ( n == 0 ) [[unlikely]]
             return;
 
         _offset -= n;
 
-        if ( _chunk && _offset > _chunk->offset() )
+        if ( _chunk && _offset > _chunk->offset() ) [[likely]]
             return; // fast-path, chunk still valid
 
         _chunk = _chain->findChunk(_offset, _chunk);
