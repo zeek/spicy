@@ -234,6 +234,7 @@ struct Constant : public DeclarationBase {
     cxx::Type type;
     std::optional<cxx::Expression> init;
     Linkage linkage;
+    bool constexpr_ = false; // whether to declare the constant as `constexpr`
 
     Constant(cxx::ID id = {}, cxx::Type type = {}, std::optional<cxx::Expression> init = {}, Linkage linkage = {})
         : DeclarationBase(std::move(id)), type(std::move(type)), init(std::move(init)), linkage(std::move(linkage)) {}

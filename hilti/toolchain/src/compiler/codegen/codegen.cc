@@ -248,13 +248,24 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
     }
 
     void operator()(declaration::Constant* n) final {
-        if ( n->type()->type()->isA<type::Enum>() )
+        const auto* type = n->type()->type();
+
+        if ( type->isA<type::Enum>() )
             // Ignore, will be declared through the enum type.
             return;
 
         auto x =
             cxx::declaration::Constant({cxxNamespace(), n->id()}, cg->compile(n->type(), codegen::TypeUsage::Storage),
                                        cg->compile(n->value()));
+
+
+        if ( type->isA<type::SignedInteger>() || type->isA<type::UnsignedInteger>() )
+            // Make these constexpr so that our safeints can still be used in
+            // C++' constant expressions. We could do these for other simple
+            // types as well, but I think we can also leave that for the C++
+            // compiler to figure out what's best.
+            x.constexpr_ = true;
+
         unit->add(x);
     }
 

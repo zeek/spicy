@@ -857,8 +857,12 @@ void cxx::declaration::Constant::emit(cxx::Formatter& f) const {
     if ( linkage )
         f << linkage << ' ';
 
-    if ( ! util::startsWith(type, "const ") )
-        f << "const ";
+    if ( ! util::startsWith(type, "const ") ) {
+        if ( constexpr_ )
+            f << "constexpr ";
+        else
+            f << "const ";
+    }
 
     f << type << ' ' << id.local();
 
