@@ -39,7 +39,7 @@ static hilti::Meta toMeta(spicy::detail::parser::location l) {
 
 static std::string expandUTF8Escapes(Driver* driver, std::string s, spicy::detail::parser::location l) {
     try {
-        return hilti::util::expandUTF8Escapes(s);
+        return hilti::util::expandUTF8Escapes(std::move(s));
     } catch ( const hilti::rt::Exception& ) {
         driver->error("invalid escape sequence", toMeta(l));
         return "<error>";
