@@ -8,8 +8,6 @@
 
 using namespace hilti;
 
-const Location location::None;
-
 Location::operator bool() const { return _file != location::None._file; }
 
 Location Location::merge(const Location& loc) const {
@@ -45,6 +43,6 @@ std::string Location::dump(bool no_path) const {
         }
     }
 
-    auto path = no_path ? _file.filename() : _file;
+    auto path = no_path ? rt::filesystem::path(_file).filename() : rt::filesystem::path(_file);
     return util::fmt("%s%s", path.generic_string(), lines);
 }

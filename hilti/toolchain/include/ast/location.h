@@ -26,8 +26,8 @@ public:
      * @param from_character first character number of the described range; -1 if not available.
      * @param to_character first character number of the described range; -1 if not available.
      */
-    Location(hilti::rt::filesystem::path file = "", int from_line = -1, int to_line = -1, int from_character = -1,
-             int to_character = -1)
+    constexpr Location(std::string file = "", int from_line = -1, int to_line = -1, int from_character = -1,
+                       int to_character = -1)
         : _file(std::move(file)),
           _from_line(from_line),
           _to_line(to_line),
@@ -40,7 +40,7 @@ public:
     Location& operator=(Location&&) = default;
     ~Location() = default;
 
-    auto file() const { return _file.generic_string(); }
+    auto file() const { return _file; }
     auto from() const { return _from_line; }
     auto to() const { return _to_line; }
 
@@ -77,7 +77,7 @@ public:
     }
 
 private:
-    hilti::rt::filesystem::path _file;
+    std::string _file;
     int _from_line = -1;
     int _to_line = -1;
 
@@ -97,8 +97,11 @@ inline std::ostream& operator<<(std::ostream& out, const Location& l) {
 }
 
 namespace location {
+// TODO: This should be `constinit` to guarantee initialization at compile
+// time, but gcc-12 used on e.g., debian-12 does not recognize this as a
+// valid use.
 /** Sentinel value indicating that no location information is available. */
-extern const Location None;
+/*constinit*/ static inline const Location None;
 } // namespace location
 
 } // namespace hilti
@@ -107,8 +110,8 @@ namespace std {
 template<>
 struct hash<hilti::Location> {
     size_t operator()(const hilti::Location& x) const {
-        return hilti::rt::hashCombine(std::hash<std::string>()(x._file.generic_string()), x._from_line, x._to_line,
-                                      x._from_character, x._to_character);
+        return hilti::rt::hashCombine(std::hash<std::string>()(x._file), x._from_line, x._to_line, x._from_character,
+                                      x._to_character);
     }
 };
 } // namespace std
