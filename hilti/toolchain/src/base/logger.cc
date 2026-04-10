@@ -7,8 +7,6 @@
 
 using namespace hilti;
 
-std::unique_ptr<Logger> Logger::_singleton;
-
 std::map<std::string, logging::DebugStream>& logging::DebugStream::_streams() {
     static std::map<std::string, logging::DebugStream> streams;
     return streams;

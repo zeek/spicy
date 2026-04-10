@@ -228,7 +228,7 @@ private:
 
     std::map<logging::DebugStream, size_t> _debug_streams;
 
-    static std::unique_ptr<Logger> _singleton;
+    constinit inline static std::unique_ptr<Logger> _singleton;
 };
 
 inline Logger& logger() {
