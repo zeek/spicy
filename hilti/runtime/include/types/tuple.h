@@ -143,7 +143,12 @@ public:
     template<typename... Us>
     explicit Tuple(tuple::OptionalTag, Optional<Us>&&... us) : Tuple() {
         [&]<size_t... Is>(std::index_sequence<Is...>) {
-            ((us.hasValue() ? std::get<Is>(*this) = std::forward<Us>(*us), TupleBase::set(Is) : void()), ...);
+            // Use construct_at rather than assignment so this works even when
+            // an element type has a deleted assignment operator (e.g.,
+            // std::map::value_type).
+            ((us.hasValue() ? (std::construct_at(&std::get<Is>(*this), std::move(*us)), TupleBase::set(Is)) :
+                              void()),
+             ...);
         }(std::index_sequence_for<Ts...>{});
     }
 
@@ -159,6 +164,15 @@ public:
      */
     template<typename... Us>
     Tuple(Tuple<Us...>&& other) : TupleBase(other), Base(std::forward<typename std::tuple<Us...>>(other)) {}
+
+    /**
+     * Constructor from a `std::map::value_type` (`std::pair<const K, V>`),
+     * with both elements set. `const_cast` is safe here because `p` is &&.
+     */
+    template<typename K, typename V>
+        requires(sizeof...(Ts) == 2)
+    explicit Tuple(std::pair<const K, V>&& p)
+        : TupleBase(tuple::detail::AllSetTag{}, 2), Base(std::move(const_cast<K&>(p.first)), std::move(p.second)) {}
 
     /**
      * Accessor to retrieve a particular element, assuming it's set.
