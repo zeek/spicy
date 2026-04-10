@@ -38,5 +38,12 @@ function void f2() {
 
 f2();
 
+# Regression test for #2300.
+function void f3() {
+    for ( x in map("a": 1, "b": 2, "c": 1) )
+        hilti::printTuple((x, x[0], x[1]));
+}
+
+f3();
 
 }

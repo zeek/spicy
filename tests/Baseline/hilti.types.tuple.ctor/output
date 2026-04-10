@@ -7,3 +7,6 @@ Hello!, True
 (False, Enum::Undef)
 [$a="a", $b=(not set)]
 ("a", (not set))
+("a", 1), a, 1
+("b", 2), b, 2
+("c", 1), c, 1
