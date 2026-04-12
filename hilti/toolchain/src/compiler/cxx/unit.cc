@@ -69,8 +69,8 @@ void Unit::_addModuleInitFunction() {
         add_init_function(context().get(), _preinit_module, HILTI_INTERNAL_ID("preinit_module"));
 
     if ( cxxModuleID() != cxx::ID("__linker__") ) {
-        auto scope = fmt("%s_hlto_scope", context()->options().cxx_namespace_intern);
-        auto extern_scope = cxx::declaration::Global(cxx::ID(scope), "uint64_t", {}, {}, "extern");
+        auto scope = cxx::ID(fmt("%s_hlto_scope", context()->options().cxx_namespace_intern));
+        auto extern_scope = cxx::declaration::Global(scope, "uint64_t", {}, {}, "extern");
         add(extern_scope);
 
         cxx::Block register_;
