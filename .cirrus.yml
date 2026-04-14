@@ -279,9 +279,9 @@ sonoma_task:
   test_script:
     - (source /tmp/btest.venv/bin/activate && btest -djc tests/btest.cfg)
 
-docker_alpine_3_18_task:
+docker_alpine_3_23_task:
   container:
-    dockerfile: docker/Dockerfile.alpine-3.18
+    dockerfile: docker/Dockerfile.alpine-3.23
     cpu: 4
     memory: 14G
 
@@ -300,7 +300,7 @@ docker_alpine_3_18_task:
     - git submodule update --recursive --init
 
   configure_script:
-    - LDFLAGS="-lucontext" ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
+    - ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
   build_script:
     - ninja -j4 -C build install
   test_install_script:
