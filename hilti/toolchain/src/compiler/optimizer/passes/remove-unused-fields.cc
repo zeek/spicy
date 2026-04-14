@@ -74,7 +74,7 @@ struct Collector : public optimizer::visitor::Collector {
         if ( field->attributes()->find(hilti::attribute::kind::NeededByFeature) )
             return false; // features are handled by other passes
 
-        return optimizer()->mayModify(field);
+        return optimizer()->mayModifyOrRemove(field);
     }
 
     // Given a struct field access operator, returns the corresponding field
