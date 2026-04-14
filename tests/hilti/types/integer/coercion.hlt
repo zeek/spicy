@@ -24,6 +24,9 @@ else
 
 assert i == j;
 
+const C = 1;
+assert C != -1; # unsigned vs signed, indirectly via constant
+
 global uint<8>  u8_hi =  0xFF;
 global uint<16> u16_hi = 0xFFFF;
 global uint<32> u32_hi = 0xFFFFFFFF;

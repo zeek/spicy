@@ -1130,7 +1130,15 @@ static CoercedExpression coerceExpressionBackend(Builder* builder, Expression* e
     }
 
     if ( try_coercion ) {
-        if ( auto* c = e->tryAs<expression::Ctor>() ) {
+        const auto* c = e->tryAs<expression::Ctor>();
+        if ( ! c ) {
+            if ( const auto* name = e->tryAs<expression::Name>(); name && name->isResolved() ) {
+                if ( const auto* decl = name->resolvedDeclaration()->tryAs<declaration::Constant>() )
+                    c = decl->value()->tryAs<expression::Ctor>();
+            }
+        }
+
+        if ( c ) {
             if ( auto nc = hilti::coerceCtor(builder, c->ctor(), dst, style) )
                 RETURN(CoercedExpression(src_, builder->expressionCtor(builder->ctorCoerced(c->ctor(), *nc, c->meta()),
                                                                        e->meta())));
