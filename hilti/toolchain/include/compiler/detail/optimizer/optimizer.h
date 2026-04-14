@@ -63,6 +63,24 @@ public:
     /** Returns the CFG cache in use. */
     auto* cfgCache() { return _cfg_cache; }
 
+    /**
+     * Records that a function part of the AST has been modified. This will
+     * later trigger a re-computation of state related to that function by
+     * `updateAST()`.
+     *
+     * @param function the modified function
+     */
+    void functionChanged(hilti::Function* function);
+
+    /**
+     * Records that a module part of the AST has been modified. This will later
+     * trigger a re-computation of state related to that module by
+     * `updateAST()`.
+     *
+     * @param module the modified module
+     */
+    void moduleChanged(declaration::Module* module);
+
 protected:
     friend class hilti::detail::Optimizer;
     friend class visitor::Collector;
@@ -87,20 +105,6 @@ protected:
         _pinfo = pinfo;
         return util::scope_exit([&]() { _pinfo = nullptr; });
     }
-
-    /**
-     * Records that a function part of the AST has been modified. This will
-     * later trigger a re-computation of state related to that function by
-     * `updateAST()`.
-     */
-    void functionChanged(hilti::Function* function);
-
-    /**
-     * Records that a module part of the AST has been modified. This will later
-     * trigger a re-computation of state related to that module by
-     * `updateAST()`.
-     */
-    void moduleChanged(declaration::Module* module);
 
     /**
      * Updates the AST state after modifications made by a pass. This may run
