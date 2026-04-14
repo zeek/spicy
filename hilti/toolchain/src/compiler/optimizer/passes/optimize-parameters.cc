@@ -13,8 +13,8 @@ using namespace hilti::detail::optimizer;
 namespace {
 
 /** Collects function parameters not used within the function body. */
-struct CollectorUnusedParameters : public optimizer::visitor::Collector {
-    CollectorUnusedParameters(Optimizer* optimizer, const CollectorCallers* operators)
+struct CollectorParameters : public optimizer::visitor::Collector {
+    CollectorParameters(Optimizer* optimizer, const CollectorCallers* operators)
         : optimizer::visitor::Collector(optimizer), collector_callers(operators) {}
 
     const CollectorCallers* collector_callers;
@@ -164,10 +164,10 @@ struct CollectorUnusedParameters : public optimizer::visitor::Collector {
 
 /** Removes unused function parameters. */
 struct Mutator : public optimizer::visitor::Mutator {
-    Mutator(Optimizer* optimizer, const CollectorUnusedParameters* collector_unused_parameters)
-        : optimizer::visitor::Mutator(optimizer), collector_unused_parameters(collector_unused_parameters) {}
+    Mutator(Optimizer* optimizer, const CollectorParameters* collector)
+        : optimizer::visitor::Mutator(optimizer), collector(collector) {}
 
-    const CollectorUnusedParameters* collector_unused_parameters = nullptr;
+    const CollectorParameters* collector = nullptr;
 
     std::set<const Operator*> processed_operators;
     std::set<type::Function*> processed_functions;
@@ -204,11 +204,11 @@ struct Mutator : public optimizer::visitor::Mutator {
 
         processed_operators.insert(op);
 
-        const auto& unused = collector_unused_parameters->unused_params.at(function_id);
+        const auto& unused = collector->unused_params.at(function_id);
         if ( unused.empty() || ! op )
             return;
 
-        const auto* uses_of_op = collector_unused_parameters->collector_callers->uses(op);
+        const auto* uses_of_op = collector->collector_callers->uses(op);
 
         if ( ! uses_of_op )
             return;
@@ -225,7 +225,7 @@ struct Mutator : public optimizer::visitor::Mutator {
 
         processed_functions.insert(ftype);
 
-        auto unused = collector_unused_parameters->unused_params.at(function_id); // copy, so that we can sort below
+        auto unused = collector->unused_params.at(function_id); // copy, so that we can sort below
         if ( unused.empty() )
             return;
 
@@ -263,13 +263,13 @@ bool run(Optimizer* optimizer) {
     CollectorCallers collector_callers(optimizer);
     collector_callers.run();
 
-    CollectorUnusedParameters collector(optimizer, &collector_callers);
+    CollectorParameters collector(optimizer, &collector_callers);
     collector.run();
 
     return Mutator(optimizer, &collector).run();
 }
 
-optimizer::RegisterPass remove_unused_params({.id = PassID::RemoveUnusedParameters,
+optimizer::RegisterPass optimize_params({.id = PassID::OptimizeParameters,
                                               .guarantees = Guarantees::ConstantsFolded,
                                               .run = run});
 
