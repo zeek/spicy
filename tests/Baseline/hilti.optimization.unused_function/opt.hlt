@@ -15,10 +15,6 @@ public function extern bool extern_unused1() {
     return False;
 }
 
-function extern bool extern_unused2() {
-    return False;
-}
-
 init function void test_init() {
 }
 

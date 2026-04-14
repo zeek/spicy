@@ -1,12 +1,12 @@
-# @TEST-EXEC: ${HILTIC} -P "" -o Foo.h %INPUT
-# @TEST-EXEC: ${HILTIC} -j -D compiler,jit %INPUT driver.cc >output
+# @TEST-EXEC: hiltic --strict-public-api -P "" -o Foo.h %INPUT
+# @TEST-EXEC: hiltic --strict-public-api -j -D compiler,jit %INPUT driver.cc >output
 # @TEST-EXEC: btest-diff output
 
 module Foo {
 
 import hilti;
 
-function extern string test(string x) {
+public function extern string test(string x) {
     hilti::print("HILTI - 1 - argument: ", False);
     hilti::print(x);
 

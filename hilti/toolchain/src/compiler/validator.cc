@@ -70,7 +70,8 @@ using util::fmt;
  */
 static std::unordered_map<node::Tag, std::unordered_set<attribute::Kind>> allowed_attributes{
     {node::tag::Function,
-     {attribute::kind::Cxxname,
+     {attribute::kind::AlwaysEmit,
+      attribute::kind::Cxxname,
       attribute::kind::HavePrototype,
       attribute::kind::Priority,
       attribute::kind::Static,

@@ -134,7 +134,7 @@ struct CollectorUnusedParameters : public optimizer::visitor::Collector {
         // Create the unused params
         auto& unused = unused_params[function_id];
 
-        if ( ! optimizer()->mayModify(n) )
+        if ( ! optimizer()->mayModifyOrRemove(n) )
             return;
 
         // Don't make changes if the method is overloaded because that might
