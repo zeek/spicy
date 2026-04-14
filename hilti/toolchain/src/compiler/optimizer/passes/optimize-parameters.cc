@@ -12,7 +12,10 @@ using namespace hilti::detail::optimizer;
 
 namespace {
 
-/** Collects function parameters not used within the function body. */
+/**
+ * Collects function parameters that can be optimized based on their usage inside
+ * the body.
+ */
 struct CollectorParameters : public optimizer::visitor::Collector {
     CollectorParameters(Optimizer* optimizer, const CollectorCallers* operators)
         : optimizer::visitor::Collector(optimizer), collector_callers(operators) {}
@@ -21,6 +24,9 @@ struct CollectorParameters : public optimizer::visitor::Collector {
 
     // The unused parameters for a given function ID
     std::map<ID, std::vector<std::size_t>> unused_params;
+
+    // Parameters of kind `copy/`inout` that are promotable to `in`.
+    std::set<declaration::Parameter*> promotable_params;
 
     /**
      * Determines if the uses of this operator contain any side effects.
@@ -92,8 +98,81 @@ struct CollectorParameters : public optimizer::visitor::Collector {
         }
     }
 
+    /**
+     * Helper returning the set of parameters that are possibly modified
+     * anywhere inside the given function body, according to our CFG's dataflow
+     * information.
+     */
+    std::set<const declaration::Parameter*> modifiedParameters(statement::Block* body, optimizer::ASTState* state) {
+        auto* cfg = state->cfgCache()->get(body);
+        if ( ! cfg )
+            return {};
+
+        std::set<const declaration::Parameter*> result;
+
+        for ( const auto& [node, transfer] : cfg->dataflow() ) {
+            for ( const auto* decl : transfer.write ) {
+                if ( const auto* param = decl->tryAs<declaration::Parameter>() )
+                    result.insert(param);
+            }
+
+            for ( const auto& [decl, _] : transfer.gen ) {
+                if ( const auto* param = decl->tryAs<declaration::Parameter>() )
+                    result.insert(param);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Helper to extract function parameters from either a function declaration
+     * or a field method declaration. If declaration is null, returns an empty
+     * set.
+     */
+    node::Set<type::function::Parameter> functionParameters(const Declaration* decl) {
+        if ( ! decl )
+            return {};
+
+        if ( const auto* f = decl->tryAs<declaration::Function>() )
+            return f->function()->ftype()->parameters();
+        else if ( const auto* f = decl->tryAs<declaration::Field>() )
+            return f->type()->type()->tryAs<type::Function>()->parameters();
+        else
+            util::detail::internalError(util::fmt("unexpected prototype node of type '%s'", decl->typename_()));
+    }
+
+    /**
+     * Records any promotable parameters for a function, considering both the
+     * its main definition and any separate prototype declaration if provided.
+     */
+    void collectPromotable(type::Function* ftype, statement::Block* body, Declaration* prototype = nullptr) {
+        auto modified = modifiedParameters(body, state());
+
+        const auto& params = ftype->parameters();
+        auto prototype_params = functionParameters(prototype);
+
+        for ( std::size_t i = 0; i < params.size(); ++i ) {
+            auto* param = params[i];
+
+            if ( (param->kind() == parameter::Kind::Copy || param->kind() == parameter::Kind::InOut) &&
+                 ! modified.contains(param) ) {
+                promotable_params.insert(param);
+
+                if ( i < prototype_params.size() && prototype_params[i]->kind() == param->kind() )
+                    promotable_params.insert(prototype_params[i]);
+            }
+        }
+    }
+
     void operator()(declaration::Function* n) final {
         auto function_id = n->functionID(context());
+        const auto may_modify = optimizer()->mayModify(n);
+
+        if ( auto* body = n->function()->body(); body && may_modify ) {
+            auto* prototype = n->linkedPrototypeIndex() ? context()->lookup(n->linkedPrototypeIndex()) : nullptr;
+            collectPromotable(n->function()->ftype(), body, prototype);
+        }
 
         if ( unused_params.contains(function_id) )
             return;
@@ -101,7 +180,7 @@ struct CollectorParameters : public optimizer::visitor::Collector {
         // Create the unused params
         auto& unused = unused_params[function_id];
 
-        if ( ! optimizer()->mayModify(n) )
+        if ( ! may_modify )
             return;
 
         auto all_lookups = context()->root()->scope()->lookupAll(n->fullyQualifiedID());
@@ -137,6 +216,9 @@ struct CollectorParameters : public optimizer::visitor::Collector {
         if ( ! optimizer()->mayModifyOrRemove(n) )
             return;
 
+        if ( auto* func = n->inlineFunction(); func && func->body() )
+            collectPromotable(func->ftype(), func->body());
+
         // Don't set if a use may have side effects
         if ( usesContainSideEffects(n->operator_()) )
             return;
@@ -162,7 +244,10 @@ struct CollectorParameters : public optimizer::visitor::Collector {
     }
 };
 
-/** Removes unused function parameters. */
+/**
+ * Optimizes function parameters: removes unused ones and promotes
+ * `copy`/`inout` to `in` where possible.
+ */
 struct Mutator : public optimizer::visitor::Mutator {
     Mutator(Optimizer* optimizer, const CollectorParameters* collector)
         : optimizer::visitor::Mutator(optimizer), collector(collector) {}
@@ -242,6 +327,20 @@ struct Mutator : public optimizer::visitor::Mutator {
         ftype->setParameters(builder()->context(), params);
     }
 
+    /**
+     * Helper to get a function's call operator from either a function
+     * declaration or a field method declaration.
+     */
+    const auto* functionOperator(const declaration::Parameter* n) {
+        if ( auto* func = n->parent<declaration::Function>() )
+            return func->operator_();
+        else if ( auto* field = n->parent<declaration::Field>() )
+            return field->operator_();
+        else
+            util::detail::internalError(
+                util::fmt("unexpected parameter parent of type '%s'", n->parent()->typename_()));
+    }
+
     void operator()(declaration::Function* n) final {
         auto function_id = n->functionID(context());
         pruneFromDecl(function_id, n->function()->ftype());
@@ -257,6 +356,33 @@ struct Mutator : public optimizer::visitor::Mutator {
         pruneFromDecl(function_id, ftype);
         pruneFromUses(function_id, n->operator_());
     }
+
+    void operator()(declaration::Parameter* n) final {
+        if ( ! collector->promotable_params.contains(n) )
+            return;
+
+        auto msg = util::fmt("promoting unmodified '%s' parameter to 'in'", to_string(n->kind()));
+        recordChange(n, msg);
+        n->setKind(context(), parameter::Kind::In);
+
+        // Promoting parameters can change the call-site CFG dataflow. so we
+        // must invalidate the CFG of every function that calls this one.
+        const auto* uses = collector->collector_callers->uses(functionOperator(n));
+        if ( ! uses )
+            return;
+
+        for ( const auto* use : *uses ) {
+            if ( auto* f = use->parent<Function>() )
+                state()->functionChanged(f);
+            else {
+                // If the call site is at module level, invalidate the module's
+                // CFG instead.
+                auto* module = use->parent<hilti::declaration::Module>();
+                assert(module);
+                state()->moduleChanged(module);
+            }
+        }
+    }
 };
 
 bool run(Optimizer* optimizer) {
@@ -270,7 +396,7 @@ bool run(Optimizer* optimizer) {
 }
 
 optimizer::RegisterPass optimize_params({.id = PassID::OptimizeParameters,
-                                              .guarantees = Guarantees::ConstantsFolded,
-                                              .run = run});
+                                         .guarantees = Guarantees::ConstantsFolded,
+                                         .run = run});
 
 } // namespace

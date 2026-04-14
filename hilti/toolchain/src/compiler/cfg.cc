@@ -743,7 +743,7 @@ struct DataflowVisitor : visitor::PreOrder {
 
     // Joint backend for function and member call visitors.
     void processCall(const node::Set<type::function::Parameter>& formal_args,
-              const node::Range<hilti::Expression>& args) {
+                     const node::Range<hilti::Expression>& args) {
         assert(args.size() == formal_args.size()); // The call should match the signature.
 
         for ( size_t i = 0; i < formal_args.size(); ++i ) {
