@@ -146,8 +146,14 @@ public:
             // Use construct_at rather than assignment so this works even when
             // an element type has a deleted assignment operator (e.g.,
             // std::map::value_type).
-            ((us.hasValue() ? (std::construct_at(&std::get<Is>(*this), std::move(*us)), TupleBase::set(Is)) :
-                              void()),
+            ((us.hasValue() ?
+                  [&]() {
+                      auto* elem = &std::get<Is>(*this);
+                      std::destroy_at(elem);
+                      std::construct_at(elem, std::move(*us));
+                      return TupleBase::set(Is);
+                  }() :
+                  void()),
              ...);
         }(std::index_sequence_for<Ts...>{});
     }
