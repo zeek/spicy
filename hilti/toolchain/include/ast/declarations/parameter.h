@@ -55,6 +55,10 @@ public:
 
     void setDefault(ASTContext* ctx, hilti::Expression* e) { setChild(ctx, 1, e); }
     void setIsTypeParameter() { _is_type_param = true; }
+    void setKind(ASTContext* ctx, parameter::Kind kind) {
+        _kind = kind;
+        setChild(ctx, 0, _qtype(ctx, type()->type(), kind));
+    }
     void setType(ASTContext* ctx, QualifiedType* t) { setChild(ctx, 0, t); }
 
     std::string_view displayName() const final { return "parameter"; }
