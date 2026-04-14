@@ -23,8 +23,8 @@ using ProductionPtr = std::shared_ptr<Production>;
 
 using Location = hilti::Location;
 namespace location {
-inline const auto& None = hilti::location::None; // NOLINT
-}
+using hilti::location::None;
+} // namespace location
 
 /**
  * Returns a readable representation of a production for diagnostics.

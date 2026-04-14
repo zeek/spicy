@@ -1,3 +1,15 @@
+1.16.0-dev.140 | 2026-04-14 17:03:32 +0200
+
+  * Bump alpine in CI. (Benjamin Bannier, Corelight)
+
+  * Clean up some unnecessary includes. (Benjamin Bannier, Corelight)
+
+  * Fix static initialization issues around the global "none" location. (Benjamin Bannier, Corelight)
+
+  * Fix static initialization issues around the global logger. (Benjamin Bannier, Corelight)
+
+  * Fix uses of copy instead of move. (Benjamin Bannier, Corelight)
+
 1.16.0-dev.134 | 2026-04-14 09:47:39 +0200
 
   * Fix leak in Tuple constructor. (Benjamin Bannier, Corelight)

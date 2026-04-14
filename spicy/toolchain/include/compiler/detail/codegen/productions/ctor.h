@@ -2,9 +2,7 @@
 
 #pragma once
 
-#include <memory>
 #include <string>
-#include <utility>
 
 #include <hilti/ast/expressions/ctor.h>
 
