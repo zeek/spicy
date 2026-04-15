@@ -40,12 +40,12 @@ RUN apt-get update \
  && pipx install pygments \
  # LLVM toolchain.
  && curl https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
- && echo 'deb http://apt.llvm.org/noble/ llvm-toolchain-noble-20 main' >> /etc/apt/sources.list.d/llvm20.list \
- && echo 'deb-src http://apt.llvm.org/noble/ llvm-toolchain-noble-20 main' >> /etc/apt/sources.list.d/llvm20.list \
+ && echo 'deb http://apt.llvm.org/noble/ llvm-toolchain-noble-21 main' >> /etc/apt/sources.list.d/llvm21.list \
+ && echo 'deb-src http://apt.llvm.org/noble/ llvm-toolchain-noble-21 main' >> /etc/apt/sources.list.d/llvm21.list \
  && curl https://apt.llvm.org/llvm-snapshot.gpg.key -o /etc/apt/trusted.gpg.d/llvm.asc \
  && apt-get update \
- && apt-get install -y --no-install-recommends llvm-20-dev clang-20 libclang-20-dev clang-tidy-20 libclang-rt-20-dev \
- && update-alternatives --install /usr/bin/FileCheck FileCheck $(which FileCheck-20) 100 \
+ && apt-get install -y --no-install-recommends llvm-21-dev clang-21 libclang-21-dev clang-tidy-21 libclang-rt-21-dev \
+ && update-alternatives --install /usr/bin/FileCheck FileCheck $(which FileCheck-21) 100 \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
