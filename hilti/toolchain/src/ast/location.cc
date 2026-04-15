@@ -43,6 +43,6 @@ std::string Location::dump(bool no_path) const {
         }
     }
 
-    auto path = no_path ? rt::filesystem::path(_file).filename() : rt::filesystem::path(_file);
+    const auto& path = no_path ? rt::filesystem::path(_file).filename() : rt::filesystem::path(_file);
     return util::fmt("%s%s", path.generic_string(), lines);
 }
