@@ -1,3 +1,7 @@
+1.16.0-dev.142 | 2026-04-15 12:38:08 +0200
+
+  * Avoid unneeded copies in `Location`. (Benjamin Bannier, Corelight)
+
 1.16.0-dev.140 | 2026-04-14 17:03:32 +0200
 
   * Bump alpine in CI. (Benjamin Bannier, Corelight)

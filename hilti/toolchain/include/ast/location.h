@@ -40,7 +40,7 @@ public:
     Location& operator=(Location&&) = default;
     ~Location() = default;
 
-    auto file() const { return _file; }
+    const auto& file() const { return _file; }
     auto from() const { return _from_line; }
     auto to() const { return _to_line; }
 
