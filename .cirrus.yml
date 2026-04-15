@@ -40,12 +40,12 @@ lint_task:
 
   env:
     CCACHE_DIR: /tmp/ccache
-    LD_LIBRARY_PATH: /usr/lib/llvm-20/lib/clang/20/lib/linux/
+    LD_LIBRARY_PATH: /usr/lib/llvm-21/lib/clang/21/lib/linux/
 
   update_git_script:
     - git submodule update --recursive --init
 
-  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-20 --clang-tidy `which clang-tidy-20`
+  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-21 --clang-tidy `which clang-tidy-21`
   build_script:       ./ci/run-ci -b build build
   test_code_script:   ./ci/run-ci -b build test-code
 
@@ -59,7 +59,7 @@ lint_task:
     clang_artifacts:
         path: build/ci
 
-clang20_ubuntu_debug_task:
+clang21_ubuntu_debug_task:
   container:
     dockerfile: ci/Dockerfile
     cpu: 4
@@ -75,12 +75,12 @@ clang20_ubuntu_debug_task:
 
   env:
     CCACHE_DIR: /tmp/ccache
-    LD_LIBRARY_PATH: /usr/lib/llvm-20/lib/clang/20/lib/linux/
+    LD_LIBRARY_PATH: /usr/lib/llvm-21/lib/clang/21/lib/linux/
 
   update_git_script:
     - git submodule update --recursive --init
 
-  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-20
+  configure_script:   ./ci/run-ci -b build configure debug --cxx-compiler clang++-21
   build_script:       ./ci/run-ci -b build build
   test_build_script:  ./ci/run-ci -b build test-build
   install_script:     ./ci/run-ci -b build install
@@ -101,7 +101,7 @@ clang20_ubuntu_debug_task:
     clang_artifacts:
         path: build/ci
 
-clang20_lts_ubuntu_release_task:
+clang21_lts_ubuntu_release_task:
   container:
     dockerfile: ci/Dockerfile
     cpu: 4
@@ -121,7 +121,7 @@ clang20_lts_ubuntu_release_task:
   update_git_script:
     - git submodule update --recursive --init
 
-  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-20
+  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-21
   build_script:          ./ci/run-ci -b build build
   test_build_script:     ./ci/run-ci -b build test-build
   install_script:        ./ci/run-ci -b build install
@@ -142,7 +142,7 @@ clang20_lts_ubuntu_release_task:
       type: text/xml
       format: junit
 
-clang20_lts_ubuntu_release_static_task:
+clang21_lts_ubuntu_release_static_task:
   container:
     dockerfile: ci/Dockerfile
     cpu: 4
@@ -162,7 +162,7 @@ clang20_lts_ubuntu_release_static_task:
   update_git_script:
     - git submodule update --recursive --init
 
-  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-20
+  configure_script:      ./ci/run-ci -b build configure release --cxx-compiler clang++-21
   build_script:          ./ci/run-ci -b build build
   install_script:        ./ci/run-ci -b build install
   cleanup_script:        ./ci/run-ci -b build cleanup
