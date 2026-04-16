@@ -350,19 +350,52 @@ public:
     // Static helper functions that optimization passes may find useful.
 
     /**
+     * Returns a global ID for a function or struct method declaration that's
+     * suitable for use as an index into maps tracking per-function optimizer
+     * state.
+     *
+     * This generally returns a function's canonical ID, but it follows any
+     * linked prototypes, so that for a method, we get the canonical ID of the
+     * method's field declaration, and for free standing functions, we get the
+     * canonical ID of the prototype declaration if that exists. This way, the
+     * ID will be consistent no matter if this method gets called for a
+     * function's implementation or prototype.
+     *
+     * Generally, when indexing state by function, prefer this over both
+     * `Declaration::canonicalID()` (which is different for prototypes and
+     * implementations) and `Declaration::fullyQualifiedID()` (which is not
+     * globally unique across modules; separate functions can have the same
+     * fully qualified ID).
+     *
+     * @param decl a function or struct-field declaration
+     * @return the indexing ID
+     */
+    ID functionID(const Declaration* decl) const {
+        if ( const auto* f = decl->tryAs<declaration::Function>() ) {
+            if ( const auto* prototype = context()->lookup(f->linkedPrototypeIndex()) )
+                return prototype->canonicalID();
+            else
+                return f->canonicalID();
+        }
+        else
+            return decl->canonicalID();
+    }
+
+    /**
      * Provides the enclosing function of this node, if any. This standardizes
      * field inline functions and function declarations.
      *
-     * @param ctx the AST Context
      * @param node the node, possibly within a function
-     * @return the function which encloses the node, or nullopt if none
+     * @return a tuple consisting of the function which encloses the node and
+     * its ID as returned by `functionID()`; or `std::nullopt` if the node is
+     * not within a function
      */
-    static std::optional<std::tuple<Function*, ID>> enclosingFunction(ASTContext* ctx, const Node* n) {
+    std::optional<std::tuple<Function*, ID>> enclosingFunction(const Node* n) const {
         for ( const auto* current = n->parent(); current; current = current->parent() ) {
             if ( const auto* fn_decl = current->tryAs<declaration::Function>() )
-                return std::tuple(fn_decl->function(), fn_decl->functionID(ctx));
+                return std::tuple(fn_decl->function(), functionID(fn_decl));
             else if ( const auto* field = current->tryAs<declaration::Field>(); field && field->inlineFunction() )
-                return std::tuple(field->inlineFunction(), field->fullyQualifiedID());
+                return std::tuple(field->inlineFunction(), functionID(field));
         }
 
         return {};
