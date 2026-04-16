@@ -1,0 +1,14 @@
+# @TEST-DOC: Ensures coerced names from value propagation can compile. Regression test for #2327
+#
+# @TEST-EXEC: spicyc -j %INPUT
+
+module Test;
+
+type Inner = unit(data: bytes) {
+    val: uint8 &parse-from=data;
+};
+
+public type Outer = unit {
+    raw: bytes &size=1;
+    parsed: Inner(self.raw);
+};

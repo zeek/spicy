@@ -225,8 +225,11 @@ struct Replacer : optimizer::visitor::Mutator {
 
         if ( source_expr.propagate ) {
             Node* to_replace = n;
-            // Replace the coercion, too, so that the coercer reruns.
-            if ( auto* coerced = n->parent()->tryAs<expression::Coerced>() )
+
+            // Only replace the coercion for ctors, since that gets different handling.
+            // Names (and anything else possibly propagated) can keep the coercion.
+            if ( auto* coerced = n->parent()->tryAs<expression::Coerced>();
+                 coerced && source_expr.expr->isA<expression::Ctor>() )
                 to_replace = coerced;
 
             replaceNode(to_replace, source_expr.expr, "propagating constant value");
