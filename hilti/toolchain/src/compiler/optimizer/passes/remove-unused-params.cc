@@ -93,7 +93,7 @@ struct CollectorUnusedParameters : public optimizer::visitor::Collector {
     }
 
     void operator()(declaration::Function* n) final {
-        auto function_id = n->functionID(context());
+        auto function_id = optimizer()->functionID(n);
 
         if ( unused_params.contains(function_id) )
             return;
@@ -126,7 +126,7 @@ struct CollectorUnusedParameters : public optimizer::visitor::Collector {
         if ( ! ftype || ! n->parent()->isA<type::Struct>() )
             return;
 
-        const auto& function_id = n->fullyQualifiedID();
+        const auto& function_id = optimizer()->functionID(n);
 
         if ( unused_params.contains(function_id) )
             return;
@@ -135,6 +135,11 @@ struct CollectorUnusedParameters : public optimizer::visitor::Collector {
         auto& unused = unused_params[function_id];
 
         if ( ! optimizer()->mayModify(n) )
+            return;
+
+        // Don't make changes if the method is overloaded because that might
+        // break overload resolution.
+        if ( const auto* struct_ = n->parent()->tryAs<type::Struct>(); struct_ && struct_->fields(n->id()).size() > 1 )
             return;
 
         // Don't set if a use may have side effects
@@ -148,7 +153,7 @@ struct CollectorUnusedParameters : public optimizer::visitor::Collector {
     }
 
     void operator()(expression::Name* n) final {
-        auto opt_enclosing_fn = hilti::detail::Optimizer::enclosingFunction(context(), n);
+        auto opt_enclosing_fn = optimizer()->enclosingFunction(n);
         if ( ! opt_enclosing_fn )
             return;
 
@@ -243,7 +248,7 @@ struct Mutator : public optimizer::visitor::Mutator {
     }
 
     void operator()(declaration::Function* n) final {
-        auto function_id = n->functionID(context());
+        auto function_id = optimizer()->functionID(n);
         pruneFromDecl(function_id, n->function()->ftype());
         pruneFromUses(function_id, n->operator_());
     }
@@ -253,7 +258,7 @@ struct Mutator : public optimizer::visitor::Mutator {
         if ( ! ftype || ! n->parent()->isA<type::Struct>() )
             return;
 
-        const auto& function_id = n->fullyQualifiedID();
+        const auto& function_id = optimizer()->functionID(n);
         pruneFromDecl(function_id, ftype);
         pruneFromUses(function_id, n->operator_());
     }

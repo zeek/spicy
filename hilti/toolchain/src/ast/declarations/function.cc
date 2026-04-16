@@ -16,10 +16,3 @@ node::Properties declaration::Function::properties() const {
 
     return Declaration::properties() + std::move(p);
 }
-
-ID declaration::Function::functionID(ASTContext* ctx) const {
-    if ( auto* prototype = ctx->lookup(linkedPrototypeIndex()) )
-        return prototype->fullyQualifiedID();
-
-    return fullyQualifiedID();
-}
