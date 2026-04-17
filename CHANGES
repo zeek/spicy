@@ -1,3 +1,7 @@
+1.16.0-dev.153 | 2026-04-17 22:30:34 +0200
+
+  * Add draft v1.16.0 release notes. (Benjamin Bannier, Corelight)
+
 1.16.0-dev.151 | 2026-04-17 17:13:44 +0200
 
   * Bump to llvm-21 in CI. (Benjamin Bannier, Corelight)
