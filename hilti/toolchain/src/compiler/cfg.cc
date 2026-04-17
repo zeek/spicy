@@ -741,14 +741,9 @@ struct DataflowVisitor : visitor::PreOrder {
     void operator()(statement::Return*) override { transfer.keep = true; }
     void operator()(statement::Yield*) override { transfer.keep = true; }
 
-    void operator()(operator_::function::Call* call) override {
-        auto* fun = call->op0()->as<expression::Name>();
-        auto* decl = fun->resolvedDeclaration();
-        assert(decl); // Input should be fully resolved.
-
-        const auto& formal_args = decl->as<declaration::Function>()->function()->ftype()->parameters();
-
-        const auto& args = call->op1()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value();
+    // Joint backend for function and member call visitors.
+    void processCall(const node::Set<type::function::Parameter>& formal_args,
+                     const node::Range<hilti::Expression>& args) {
         assert(args.size() == formal_args.size()); // The call should match the signature.
 
         for ( size_t i = 0; i < formal_args.size(); ++i ) {
@@ -778,6 +773,28 @@ struct DataflowVisitor : visitor::PreOrder {
         // Since we do not know whether the called function is pure always keep it.
         // TODO(bbannier): remove calls to pure functions.
         transfer.keep = true;
+    }
+
+    void operator()(operator_::function::Call* call) override {
+        auto* fun = call->op0()->as<expression::Name>();
+        auto* decl = fun->resolvedDeclaration();
+        assert(decl); // Input should be fully resolved.
+
+        const auto& formal_args = decl->as<declaration::Function>()->function()->ftype()->parameters();
+        const auto& args = call->op1()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value();
+        processCall(formal_args, args);
+    }
+
+    void operator()(operator_::struct_::MemberCall* call) override {
+        const auto& formal_args = static_cast<const struct_::MemberCall&>(call->operator_())
+                                      .declaration()
+                                      ->type()
+                                      ->type()
+                                      ->as<type::Function>()
+                                      ->parameters();
+
+        const auto& args = call->op2()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value();
+        processCall(formal_args, args);
     }
 
     void operator()(Expression* expression) override {
