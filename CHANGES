@@ -1,3 +1,22 @@
+1.16.0-dev.149 | 2026-04-17 10:02:44 -0400
+
+  * GH-2327: Fix regression with val prop names and coercions (Evan Typanski, Corelight)
+
+    Fixes #2327
+
+    Constant propagation added special handling to replace coercions if the
+    given expression was coerced. This helps for cases that will then need
+    further "work" after constant propagation in order to trigger another
+    coercion cycle.
+
+    But, when value propagation gained more abilities, this became a
+    liability. Coercions no longer go through the same path and end up
+    missing cases. These cases are necessary to stay the same, and we get
+    no value in replacing the coercion (eg for `! Null` coercions, those are
+    only possible with `Ctor`).
+
+    We need to be a bit pickier about replacing coercions when propagating.
+
 1.16.0-dev.147 | 2026-04-17 10:32:36 +0200
 
   * Produce better C++ code for `switch` statements. (Robin Sommer, Corelight)
