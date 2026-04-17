@@ -826,6 +826,9 @@ struct Printer : visitor::PreOrder {
             _out << f;
 
         _out << "}";
+
+        if ( auto* attrs = n->attributes(); ! attrs->attributes().empty() )
+            _out << ' ' << attrs;
     }
 
     void operator()(type::Bool* n) final { _out << "bool"; }
