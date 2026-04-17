@@ -804,7 +804,7 @@ struct Printer : visitor::PreOrder {
         else
             _out << fmt("%d..%d", n->lower(), n->upper());
 
-        if ( auto* attrs = n->attributes(); ! attrs->attributes().empty() )
+        if ( auto* attrs = n->attributes(); attrs && ! attrs->attributes().empty() )
             _out << ' ' << attrs;
 
         _out << ";" << _out.newline();
@@ -826,6 +826,9 @@ struct Printer : visitor::PreOrder {
             _out << f;
 
         _out << "}";
+
+        if ( auto* attrs = n->attributes(); attrs && ! attrs->attributes().empty() )
+            _out << ' ' << attrs;
     }
 
     void operator()(type::Bool* n) final { _out << "bool"; }
