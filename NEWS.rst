@@ -7,11 +7,70 @@ Version 1.16 (in progress)
 
 .. rubric:: New Functionality
 
+- Improvements to generated C++ code
+
+  We continued our work to improve the C++ code generated from Spicy grammars by
+  removing artifacts from automated parser construction, and observed
+  throughput improvements of 20-60% in microbenchmarks. These improvements are
+  powered by the existing machinery and new passes, mainly
+
+  - GH-2249: Add new optimizer pass removing unused struct fields.
+
+    Add optimizer pass that removes struct fields with no productive
+    accesses. When such fields are printed via ``self`` they will appear as
+    ``(optimized out)``. This optimization can be disabled on a per-type level
+    by declaring them with linkage ``export``, or globally by passing
+    ``--strict-public-api`` to the compiler invocation.
+
+  - GH-2031 which reduced the state generated parsers pass around, and reduced
+    the number of temporary variables creating during parsing
+
+  - GH-1781 which allowed putting more parser onto the stack eliminating heap
+    allocations and streamlined memory access
+
+  - GH-2247 to extend constant propagation, and also added copy propagation as
+    an extension which took advantage of improved handling of non-mutating data
+    access in CFG (GH-2238, GH-2254)
+
+- Support for using Spicy on Windows
+
+  We are grateful to Maor Hamami for his contributions to this release to
+  make Spicy work under Windows. This included numerous changes for compiling
+  with MSVC, fixes to codegen and to allow Windows processes to load HLTO files
+  (which are always used even if not saved). He also added CI support for
+  Windows which will allow us to catch regressions early. At this point Windows
+  is not an officially supported platform, but we are happy to see support
+  improve.
+
+- GH-2131 added some compile-time validation of regular expressions. Previously
+  incorrect regular expression would not fail until runtime.
+
+- GH-2249: Allow specifying which optimizer passes should not run via
+  environment variable ``HILTI_DISABLE_OPTIMIZER_PASSES``.
+
+- GH-2305: Optimize byte iterator increment operation
+
 .. rubric:: Changed Functionality
+
+- GH-2279: String values in the C++ API are now passed as ``hilti::rt::String``
+  instead of ``std::string``
+
+- GH-2304: Produce better C++ code for switch statements
 
 .. rubric:: Bug fixes
 
+- GH-2251: Fix coercion of enum values to bool
+- GH-2259: Ensure that all enum types exposed by the runtime library have an
+  ``Undef`` variant
+- GH-2297: Doğukan Çağatay contributed a fix so DWARF debug info can be found
+  with debugsource packaging
+- GH-2302: Fix potential memory leak when using sinks
+- GH-2300: Fix construction of tuples from map keys
+- GH-2304: Fix operator resolving involving global constants
+
 .. rubric:: Documentation
+
+- GH-2186: library function names now include HTML anchors to simplify linking to them
 
 Version 1.15
 ============
