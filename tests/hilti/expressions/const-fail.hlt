@@ -1,7 +1,7 @@
 # @TEST-EXEC-FAIL: hiltic -j %INPUT >output 2>&1
 # @TEST-EXEC: btest-diff output
 #
-# @TEST-DOC: Validate that `const` values can only be initialized with literals.
+# @TEST-DOC: Validate that `const` values can only be initialized with literals (unless named values get constant-folded).
 module Foo {
 
 function uint<64> f1() {
@@ -10,7 +10,7 @@ function uint<64> f1() {
 
 const x1 = 1;
 const x2 = x1;                    # Rejected.
-const x3 = 1 + (x1*2);            # Rejected.
+const x3 = 1 + (x1*2);            # Ok through constant folding.
 const x4 = set(1, 2, 3, 4, 5);
 const x5 = set(1, 2, x1, 4, 5);   # Rejected.
 const x6 = set(1, 2, f1(), 4, 5); # Rejected.

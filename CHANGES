@@ -1,3 +1,49 @@
+1.16.0-dev.147 | 2026-04-17 10:32:36 +0200
+
+  * Produce better C++ code for `switch` statements. (Robin Sommer, Corelight)
+
+    We now emit actual C++ `switch` statements when the condition is of
+    integral or enum type and all case expressions are constant values.
+    Otherwise we continue to emit an `if-else` chain as before.
+
+    Note that `break` inside a `case` exits an enclosing loop, if any; not
+    the `switch`. We were potentially emitting broken code there before,
+    although that situation should have been rare (`break` inside `case`
+    inside `while/for`).
+
+  * Fix operator resolving involving global constants. (Robin Sommer, Corelight)
+
+    This would not find the intended operator:
+
+    ```
+    module Test {
+
+    const CONST = 1;
+    assert CONST != -1; #  unsupported operator: <uint<64>> != <int<64>>
+
+    }
+    ```
+
+    The probably was that when trying to coerce, we would not follow the
+    `Name` expression to see the constant value.
+
+  * Emit C++ integer constants as `constexpr`. (Robin Sommer, Corelight)
+
+    That way the C++ compiler allows usage in place of actual literal
+    constants (like in `case N`).
+
+  * Emit C++ `goto` instead of `break` to exit a loop prematurely. (Robin Sommer, Corelight)
+
+    Previously, we would just emit one C++ `break` for every HILTI
+    `break`, assuming that semantics match in terms of what `break` refers
+    to. However, that's not really the case: in HILTI/Spicy, `break` can
+    only be used to exit a loop, not for example inside a `case` in a
+    switch.
+
+    This prepares for emitting actual C++ `switch` statements, where,
+    without this change, outputting a C++ `break` inside a `case` would
+    now exit the switch rather than the enclosing loop.
+
 1.16.0-dev.142 | 2026-04-15 12:38:08 +0200
 
   * Avoid unneeded copies in `Location`. (Benjamin Bannier, Corelight)
