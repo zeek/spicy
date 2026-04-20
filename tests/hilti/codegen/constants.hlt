@@ -1,0 +1,18 @@
+# @TEST-DOC: Validate C++ code emitted for constants.
+#
+# @TEST-REQUIRES: type FileCheck
+# @TEST-EXEC: hiltic -c %INPUT -o output.cc
+# @TEST-EXEC: cat output.cc | FileCheck %INPUT
+
+module foo {
+
+# Literal values are as `constexpr`.
+# CHECK: constexpr ::hilti::rt::integer::safe<uint64_t> a = [[A:[^;]+]];
+const a = 1;
+
+# Computed values are emitted as `const` since we do not ensure that all all
+# operations in the computation as `constexpr`.
+# CHECK: const ::hilti::rt::integer::safe<uint64_t> b = [[A]] * [[A]];
+const b = a * a;
+
+}
