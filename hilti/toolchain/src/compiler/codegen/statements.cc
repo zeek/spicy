@@ -320,7 +320,7 @@ struct Visitor : hilti::visitor::PreOrder {
                     cases.back().second.addStatement("break");
             }
 
-            auto cxx_switch_cond = normalize_cxx_switch_value(cxx_init, false);
+            auto cxx_switch_cond = normalize_cxx_switch_value(cxx::Expression(cxx_id), false);
 
             std::optional<cxx::Block> default_;
 
@@ -329,7 +329,7 @@ struct Visitor : hilti::visitor::PreOrder {
             else
                 default_ = throw_on_default(static_cast<std::string>(cxx_switch_cond));
 
-            block->addSwitch(cxx_switch_cond, cases, std::move(default_));
+            block->addSwitch(fmt("auto&& %s = %s; %s", cxx_id, cxx_init, cxx_switch_cond), cases, std::move(default_));
         };
 
         // Emit a C++ if/else chain for complex condition values.
