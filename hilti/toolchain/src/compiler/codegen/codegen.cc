@@ -259,11 +259,11 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
                                        cg->compile(n->value()));
 
 
-        if ( type->isA<type::SignedInteger>() || type->isA<type::UnsignedInteger>() )
-            // Make these constexpr so that our safeints can still be used in
-            // C++' constant expressions. We could do these for other simple
-            // types as well, but I think we can also leave that for the C++
-            // compiler to figure out what's best.
+        // Literal integer values we can emit as `constexpr` so our safeints
+        // can be used in C++ constant expressions. We likely can do this for
+        // other simple types as well, but punt on that for now.
+        if ( n->value()->isA<expression::Ctor>() &&
+             (type->isA<type::SignedInteger>() || type->isA<type::UnsignedInteger>()) )
             x.constexpr_ = true;
 
         unit->add(x);
