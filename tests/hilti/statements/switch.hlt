@@ -46,6 +46,9 @@ function void f2(int<64> i) {
         case 1: hilti::print("2A");
         case 2,3,4: hilti::print("2B");
         case 5: hilti::print("2C");
+        case 4711:
+            if (x == -2)
+                hilti::print(x);
         default: hilti::print("2*");
     }
 }
