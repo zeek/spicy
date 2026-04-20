@@ -1,3 +1,32 @@
+1.16.0-dev.156 | 2026-04-20 18:29:54 +0200
+
+  * Revert "Produce better C++ code for `switch` statements." (Benjamin Bannier, Corelight)
+
+    This reverts commit 324aee958ec5dd513685faac9ef0d6b94bca2529.
+
+    The patch had a two issues:
+
+    - it did not properly handle `switch` conditions which contained an
+      assignment (`switch (local x = cond())`) and never declared the local
+      variable when the HILTI `switch` was emitted as a C++ `switch`.
+    - it didn't properly handle duplicate case labels. These are allowed in
+      HILTI, but not in C++.
+
+    Both these issues cause the Zeek build to fail. Revert this part of the
+    PR for now.
+
+  * Fix when we emit constants as `constexpr`. (Benjamin Bannier, Corelight)
+
+    We previously would emit all integer constants as C++ `constexpr`
+    constants. This requires that the initializer was also `constexpr` which
+    we did not ensure, e.g., it would be possible to initialize a constant
+    with the product of two other constants, an example of which exists in
+    Zeek's Redis analyzer which MSVC failed to compile.
+
+    This patch changes the codegen so we only emit `constexpr` for constants
+    if they were initialized with a literal. This is a regression fix for
+    b0ae8045417b3.
+
 1.16.0-dev.153 | 2026-04-17 22:30:34 +0200
 
   * Add draft v1.16.0 release notes. (Benjamin Bannier, Corelight)

@@ -15,16 +15,4 @@ while ( True ) {
     break;
     }
 
-
-for ( i in [1,2,3] ) {
-    switch ( i ) {
-        case 2:
-            break; # this breaks the loop!
-
-        default: {}
-
-        }
-
-    hilti::print(i);
-    }
 }
