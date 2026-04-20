@@ -1,12 +1,19 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <hilti/ast/ctors/enum.h>
+#include <hilti/ast/ctors/integer.h>
 #include <hilti/ast/ctors/string.h>
+#include <hilti/ast/declarations/constant.h>
 #include <hilti/ast/declarations/local-variable.h>
 #include <hilti/ast/expressions/ctor.h>
+#include <hilti/ast/expressions/name.h>
 #include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/statements/all.h>
+#include <hilti/ast/types/enum.h>
+#include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/struct.h>
 #include <hilti/base/logger.h>
+#include <hilti/base/util.h>
 #include <hilti/compiler/detail/codegen/codegen.h>
 #include <hilti/compiler/detail/cxx/all.h>
 
@@ -394,14 +401,72 @@ struct Visitor : hilti::visitor::PreOrder {
 
         bool can_use_cxx_switch = is_integral_type(cond->type()->type());
 
+        std::set<uint64_t> cases_seen;
+
+#define NO_SWITCH_AND_CONTINUE                                                                                         \
+    {                                                                                                                  \
+        can_use_cxx_switch = false;                                                                                    \
+        continue;                                                                                                      \
+    }
+
         for ( const auto* c : n->cases() ) {
             if ( c->isDefault() )
                 continue;
 
             for ( const auto* e : c->expressions() ) {
                 if ( ! is_integral_and_constant_value(e) )
-                    can_use_cxx_switch = false;
+                    NO_SWITCH_AND_CONTINUE;
+
+                const hilti::Ctor* ctor = nullptr;
+
+                if ( const auto* ctor_ = e->tryAs<expression::Ctor>() ) {
+                    ctor = ctor_->ctor();
+                }
+                else if ( const auto* name = e->tryAs<expression::Name>() ) {
+                    auto* decl = name->resolvedDeclaration();
+                    if ( ! decl )
+                        NO_SWITCH_AND_CONTINUE;
+
+                    auto* constant = decl->tryAs<declaration::Constant>();
+                    if ( ! constant )
+                        NO_SWITCH_AND_CONTINUE;
+
+                    ctor = constant->value()->as<expression::Ctor>()->ctor();
+                }
+
+                if ( ! ctor )
+                    NO_SWITCH_AND_CONTINUE;
+
+                if ( const auto* val = ctor->tryAs<ctor::SignedInteger>() ) {
+                    if ( val->value() < 0 || cases_seen.contains(val->value()) )
+                        NO_SWITCH_AND_CONTINUE;
+
+                    cases_seen.insert(val->value());
+                }
+
+                else if ( const auto* val = ctor->tryAs<ctor::UnsignedInteger>() ) {
+                    if ( cases_seen.contains(val->value()) )
+                        NO_SWITCH_AND_CONTINUE;
+
+                    cases_seen.insert(val->value());
+                }
+
+                else if ( const auto* val = ctor->tryAs<ctor::Enum>() ) {
+                    auto* label = val->value();
+                    if ( ! label )
+                        NO_SWITCH_AND_CONTINUE;
+
+                    if ( cases_seen.contains(label->value()) )
+                        NO_SWITCH_AND_CONTINUE;
+
+                    cases_seen.insert(label->value());
+                }
+
+                else
+                    NO_SWITCH_AND_CONTINUE;
             }
+
+#undef NO_SWITCH_AND_CONTINUE
         }
 
         if ( can_use_cxx_switch )
