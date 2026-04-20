@@ -449,7 +449,15 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     void operator()(hilti::type::Bitfield* n) final {
-        if ( auto* field = n->parent(2)->tryAs<type::unit::item::Field>() ) {
+        Node* parent = n->parent(2);
+
+        if ( parent->isA<hilti::ctor::Bitfield>() )
+            // The ctor will have been swapped into place by the resolver,
+            // adding one level to the AST. We need need to look up one level
+            // further to get to the field declaration or type declaration.
+            parent = parent->parent();
+
+        if ( auto* field = parent->tryAs<type::unit::item::Field>() ) {
             // Transfer any "&bitorder" attribute over to the type.
             if ( auto* a = field->attributes()->find(attribute::kind::BitOrder);
                  a && ! n->attributes()->find(attribute::kind::BitOrder) ) {
@@ -458,9 +466,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             }
         }
 
-        if ( auto* decl = n->parent(2)->tryAs<hilti::declaration::Type>() ) {
+        if ( auto* type = parent->tryAs<hilti::declaration::Type>() ) {
             // Transfer any "&bitorder" attribute over to the type.
-            if ( auto* a = decl->attributes()->find(attribute::kind::BitOrder);
+            if ( auto* a = type->attributes()->find(attribute::kind::BitOrder);
                  a && ! n->attributes()->find(attribute::kind::BitOrder) ) {
                 recordChange(n, "transfer &bitorder attribute");
                 n->attributes()->add(context(), a);
