@@ -32,7 +32,7 @@ public:
         if ( _loop )
             properties = {{"loop", _loop->identity()}};
 
-        return properties + Statement::properties();
+        return std::move(properties) + Statement::properties();
     }
 
     static auto create(ASTContext* ctx, Meta meta = {}) { return ctx->make<Break>(ctx, {}, std::move(meta)); }
