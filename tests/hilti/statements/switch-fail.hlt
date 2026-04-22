@@ -1,0 +1,17 @@
+# @TEST-EXEC-FAIL: hiltic -c %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+# @TEST-DOC: Ensure we catch static errors in switch cases.
+
+module Foo {
+
+const ONE = 1;
+const TWO = 2;
+
+switch ( 3 ) {
+    case ONE: True;
+    case 1,2,3,4: True; # duplicate label
+    case 5, TWO: True; # duplicate label
+    default: True;
+}
+
+}

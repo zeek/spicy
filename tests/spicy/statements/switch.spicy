@@ -20,6 +20,18 @@ switch ( 3 ) {
 
 assert x == 2;
 
+# Make sure this compiles (regression test)
+const TLSv13_draft = 0x7F00;
+
+type ServerHelloChoice = unit() {
+ var negotiated_version: uint16;
+
+ switch (self.negotiated_version) {
+     TLSv13_draft,
+     0x7F00 -> : void;
+ };
+};
+
 @TEST-START-FILE fail.spicy
 
 module Foo;

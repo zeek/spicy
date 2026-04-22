@@ -18,9 +18,9 @@ function void f1(int<64> i) {
     # CHECK: switch
     switch ( i ) {
         # CHECK: case
-        case ONE: hilti::print("1A");
+        case ONE, ONE, 1: hilti::print("1A");
         # CHECK: case
-        case 2,3,4: hilti::print("1B");
+        case 2,3,3,4: hilti::print("1B");
         # CHECK: case
         case 5: hilti::print("1C");
         # CHECK: default:

@@ -41,7 +41,8 @@ public:
 
     /**
      * Returns the `==` operators that are internal created for each case
-     * expression. Returns an empty vector if they have not yet been created.
+     * expression. Includes only operators that are fully resolved & coerced
+     * already. Returns an empty vector if they have not yet been created.
      */
     auto preprocessedComparisonOperators() const { return children<hilti::Expression>(_end_exprs, {}); }
 
