@@ -30,7 +30,7 @@ public:
         node::Properties properties;
 
         if ( _loop )
-            properties = {{"loop", _loop->identity()}};
+            properties = {{"loop", util::fmt("%p", _loop->identity())}};
 
         return properties + Statement::properties();
     }

@@ -1,3 +1,13 @@
+1.16.0-dev.158 | 2026-04-22 11:40:41 +0200
+
+  * Fix codegen to emit missing `goto` labels. (Robin Sommer, Corelight)
+
+    If loop statements changed during AST resolving, we wouldn't update
+    any linked break statements.
+
+    Also render linked loop statements' identities in debug output in hex,
+    for easier comparison to node identities.
+
 1.16.0-dev.156 | 2026-04-20 18:29:54 +0200
 
   * Revert "Produce better C++ code for `switch` statements." (Benjamin Bannier, Corelight)
