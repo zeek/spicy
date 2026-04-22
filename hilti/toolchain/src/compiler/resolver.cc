@@ -996,18 +996,18 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     void operator()(statement::Break* n) final {
-        if ( ! n->linkedLoop() ) {
-            for ( auto* loop = n->parent(); loop; loop = loop->parent() ) {
-                if ( loop->isA<statement::For>() || loop->isA<statement::While>() ) {
+        for ( auto* loop = n->parent(); loop; loop = loop->parent() ) {
+            if ( loop->isA<statement::For>() || loop->isA<statement::While>() ) {
+                if ( loop != n->linkedLoop() ) {
                     recordChange(n, "recording the loop for break statement");
                     n->setLinkedLoop(loop->as<Statement>());
-                    break;
                 }
-            }
 
-            if ( ! n->linkedLoop() )
-                n->addError("break statement outside of loop");
+                return;
+            }
         }
+
+        n->addError("break statement outside of loop");
     }
 
     void operator()(statement::If* n) final {

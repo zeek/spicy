@@ -1,0 +1,15 @@
+# @TEST-EXEC: spicyc -j %INPUT
+#
+# @TEST-DOC: Ensure a `break` inside a loop codegens to something C++ can compile; regression test for #2337.
+
+module Test;
+
+global v: vector<uint32>;
+
+public type Root = unit {
+    on %done {
+        for (item in v) {
+            break;
+        }
+    }
+};
