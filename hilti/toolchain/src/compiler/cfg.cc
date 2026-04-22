@@ -497,7 +497,7 @@ GraphNode CFG::_addSwitch(GraphNode predecessor, const statement::Switch& switch
 
         // We work on the preprocessed expressions so we can properly
         // access e.g., reads of the switch condition.
-        const auto expressions = case_->preprocessedExpressions();
+        const auto expressions = case_->preprocessedComparisonOperators();
 
         if ( ! expressions.empty() ) {
             auto mix_expr = _getOrAddNode(_createMetaNode<Flow>());

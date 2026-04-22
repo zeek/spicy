@@ -295,11 +295,9 @@ struct Visitor : hilti::visitor::PreOrder {
                 if ( c->isDefault() )
                     continue; // will handle below
 
-                auto conditions =
-                    util::toVector(c->preprocessedExpressions() | std::views::transform([&](auto e) {
-                                       auto value = cg->compile(e->template as<expression::ResolvedOperator>()->op1());
-                                       return normalize_cxx_switch_value(value, true);
-                                   }));
+                auto conditions = util::toVector(c->preprocessedExpressions() | std::views::transform([&](auto e) {
+                                                     return normalize_cxx_switch_value(cg->compile(e), true);
+                                                 }));
 
                 cases.emplace_back(std::move(conditions), cg->compile(c->body()));
 
@@ -341,7 +339,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
                 std::string cond;
 
-                auto exprs = c->preprocessedExpressions();
+                auto exprs = c->preprocessedComparisonOperators();
 
                 if ( exprs.size() == 1 )
                     cond = cg->compile(*exprs.begin());

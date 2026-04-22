@@ -39,7 +39,24 @@ public:
     auto body() const { return child<Statement>(0); }
     bool isDefault() const { return expressions().empty(); }
 
-    auto preprocessedExpressions() const { return children<hilti::Expression>(_end_exprs, {}); }
+    /**
+     * Returns the `==` operators that are internal created for each case
+     * expression. Returns an empty vector if they have not yet been created.
+     */
+    auto preprocessedComparisonOperators() const { return children<hilti::Expression>(_end_exprs, {}); }
+
+    /**
+     * Returns the expressions for each case coerced according to the switch's
+     * condition type. Returns an empty vector if the coercions have not yet
+     * been created.
+     */
+    Expressions preprocessedExpressions() const;
+
+    /**
+     * Removes an expression from the case, including the corresponding
+     * preprocessed comparison operator.
+     */
+    void removeExpression(hilti::Expression* e);
 
     static auto create(ASTContext* ctx, const Expressions& exprs, Statement* body, Meta meta = {}) {
         return ctx->make<Case>(ctx, node::flatten(body, exprs), std::move(meta));
