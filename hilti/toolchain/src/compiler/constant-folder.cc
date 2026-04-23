@@ -363,10 +363,10 @@ Result<Ctor*> foldConstant(Builder* builder, Expression* expr, bitmask<Style> st
 Result<Ctor*> detail::constant_folder::foldExpression(Builder* builder, Expression* expr, bitmask<Style> style) {
     // By default, we don't fold away direct, top-level references to constant IDs. It's
     // likely as least as efficient to leave them as is, and potentially more.
-    // For boolean, this can still be enabled through a style flag, which the
-    // optimizer uses.
+    // However, folding this can still be enabled through style flags.
     if ( const auto* n = expr->tryAs<expression::Name>();
-         n && (! (style & Style::InlineBooleanConstants) || ! n->type()->type()->isA<type::Bool>()) )
+         n && ! (style & Style::InlineAllConstants) &&
+         (! (style & Style::InlineBooleanConstants) || ! n->type()->type()->isA<type::Bool>()) )
         return {nullptr};
 
     try {

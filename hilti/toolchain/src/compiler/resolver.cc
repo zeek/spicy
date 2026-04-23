@@ -301,7 +301,10 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
             // Fold any constants right here in case downstream resolving depends
             // on finding a constant (like for coercion).
-            if ( auto ctor = detail::constant_folder::foldExpression(builder(), resolved); ctor && *ctor ) {
+            if ( auto ctor =
+                     detail::constant_folder::foldExpression(builder(), resolved,
+                                                             detail::constant_folder::Style::InlineAllConstants);
+                 ctor && *ctor ) {
                 HILTI_DEBUG(logging::debug::Operator,
                             util::fmt("folded %s -> constant %s (%s)", *resolved, **ctor, resolved->location()));
                 resolved = builder()->expressionCtor(*ctor, resolved->meta());
@@ -1033,8 +1036,50 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
 
-    void operator()(statement::Switch* n) final { n->preprocessCases(context()); }
+    void operator()(statement::Switch* n) final {
+        n->preprocessCases(context());
 
+        // Find cases where we can statically determine that they are
+        // duplicates. If we see duplicates across cases, that's an error.
+        // Inside a single case, we filter them down to a single instance of
+        // that value.
+        std::unordered_map<std::string, statement::switch_::Case*> seen;
+        std::set<std::pair<statement::switch_::Case*, Expression*>> to_remove;
+
+        for ( auto* case_ : n->cases() ) {
+            for ( auto* cond : case_->expressions() ) {
+                if ( ! cond->isResolved() )
+                    continue;
+
+                auto ctor =
+                    detail::constant_folder::foldExpression(builder(), cond,
+                                                            detail::constant_folder::Style::InlineAllConstants |
+                                                                detail::constant_folder::Style::FoldTernaryOperator);
+                if ( ! ctor && *ctor )
+                    continue;
+
+                // TODO: This is a bit of a hack to check if two ctors yield
+                // the same value. Should be save, but ideally we'd have AST
+                // infrastructure to compare ctor values directly.
+                auto key = (*ctor)->print();
+                assert(! key.empty());
+
+                if ( auto i = seen.find(key); i != seen.end() ) {
+                    if ( i->second != case_ )
+                        case_->addError(util::fmt("duplicate case value '%s'", *cond));
+                    else
+                        to_remove.emplace(case_, cond);
+                }
+                else
+                    seen.emplace(std::move(key), case_);
+            }
+        }
+
+        for ( const auto& [case_, expr] : to_remove ) {
+            recordChange(case_, util::fmt("removing duplicate expression from case (%s)", *expr));
+            case_->removeExpression(expr);
+        }
+    }
 
     void operator()(type::bitfield::BitRange* n) final {
         if ( ! n->fullyQualifiedID() )

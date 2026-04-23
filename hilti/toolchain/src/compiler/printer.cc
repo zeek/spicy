@@ -696,6 +696,18 @@ struct Printer : visitor::PreOrder {
         _out.endLine();
     }
 
+    void operator()(statement::switch_::Case* n) final {
+        _out.beginLine();
+
+        if ( ! n->isDefault() )
+            _out << "case " << std::make_pair(n->expressions(), ", ") << ": ";
+        else
+            _out << "default: ";
+
+        _out << n->body();
+        _out.endLine();
+    }
+
     void operator()(statement::Switch* n) final {
         _out.emptyLine();
         _out.beginLine();
@@ -710,17 +722,8 @@ struct Printer : visitor::PreOrder {
         _out.incrementIndent();
         _out.endLine();
 
-        for ( const auto& c : n->cases() ) {
-            _out.beginLine();
-
-            if ( ! c->isDefault() )
-                _out << "case " << std::make_pair(c->expressions(), ", ") << ": ";
-            else
-                _out << "default: ";
-
-            _out << c->body();
-            _out.endLine();
-        }
+        for ( const auto& c : n->cases() )
+            _out << c;
 
         _out.decrementIndent();
         _out.beginLine();

@@ -57,6 +57,8 @@ Version 1.16 (in progress)
 
 - GH-2304: Produce better C++ code for switch statements
 
+  We now require that cases in a switch statement are unique.
+
 .. rubric:: Bug fixes
 
 - GH-2251: Fix coercion of enum values to bool
@@ -67,6 +69,7 @@ Version 1.16 (in progress)
 - GH-2302: Fix potential memory leak when using sinks
 - GH-2300: Fix construction of tuples from map keys
 - GH-2304: Fix operator resolving involving global constants
+- GH-2321: Fix missing application of ``&bitorder`` for bitfields coming with a constraint.
 
 .. rubric:: Documentation
 

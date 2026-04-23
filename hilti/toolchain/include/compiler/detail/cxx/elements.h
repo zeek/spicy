@@ -329,6 +329,8 @@ public:
     void addLambda(const std::string& name, const std::string& signature, Block body);
     void addSwitch(const Expression& cond, const std::vector<std::pair<Expression, Block>>& cases_,
                    std::optional<Block> default_ = {});
+    void addSwitch(const Expression& cond, const std::vector<std::pair<std::vector<Expression>, Block>>& cases_,
+                   std::optional<Block> default_ = {});
     void appendFromBlock(Block b);
     void addTry(Block body, std::vector<std::pair<declaration::Argument, Block>> catches);
     void addLabel(std::string_view label);

@@ -25,6 +25,9 @@ enum class Style {
      * feature constant will not be inlined.
      */
     InlineFeatureConstants = (1U << 0U),
+
+    /** Inline all constants. */
+    InlineAllConstants = (1U << 3U)
 };
 
 /**

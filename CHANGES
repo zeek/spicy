@@ -1,3 +1,24 @@
+1.16.0-dev.166 | 2026-04-23 15:15:54 +0200
+
+  * Extend resolver to unify duplicate case handles. (Robin Sommer, Corelight)
+
+    The resolver now (1) catches if multiple cases inside a switch use the
+    same constant, and (2) removes any duplicate constants inside a
+    single case. This then allows to codegen to assume that no duplicate
+    constants will be encountered across the cases of a switch.
+
+  * GH-2321: Fix missing application of `&bitorder` for bitfields coming with a constraint. (Robin Sommer, Corelight)
+
+    Closes #2321.
+
+  * Fix codegen to emit missing `goto` labels. (Robin Sommer, Corelight)
+
+    If loop statements changed during AST resolving, we wouldn't update
+    any linked break statements.
+
+    Also render linked loop statements' identities in debug output in hex,
+    for easier comparison to node identities.
+
 1.16.0-dev.160 | 2026-04-23 09:15:13 +0200
 
   * GH-2321: Fix missing application of `&bitorder` for bitfields coming with a constraint. (Robin Sommer, Corelight)

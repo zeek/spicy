@@ -3,6 +3,7 @@
 #include <hilti/ast/ctors/string.h>
 #include <hilti/ast/declarations/local-variable.h>
 #include <hilti/ast/expressions/ctor.h>
+#include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/statements/all.h>
 #include <hilti/ast/types/struct.h>
 #include <hilti/base/logger.h>
@@ -257,52 +258,156 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     void operator()(statement::Switch* n) final {
-        // TODO(robin): We generate if-else chain here. We could optimize the case
-        // where all expressions are integers and go with a "real" switch in
-        // that case.
         auto* cond = n->condition();
+        auto* type = n->condition()->type()->type();
         auto cxx_type = cg->compile(cond->type(), codegen::TypeUsage::Storage);
         auto cxx_id = cxx::ID(cond->id());
         auto cxx_init = cg->compile(cond->init());
 
-        bool first = true;
-        for ( const auto& c : n->cases() ) {
-            if ( c->isDefault() )
-                continue; // will handle below
+        auto throw_on_default = [n](std::string_view value) {
+            cxx::Block block;
+            block.addStatement(
+                fmt("throw ::hilti::rt::UnhandledSwitchCase(::hilti::rt::to_string_for_print(%s), \"%s\")", value,
+                    n->meta().location()));
+            return block;
+        };
 
-            std::string cond;
+        auto normalize_cxx_switch_value = [type](const cxx::Expression& e, bool is_case_label) -> cxx::Expression {
+            // C++ switch statements don't allow for non-integral types. For
+            // enums, we need to extract the underlying value.
+            if ( type->isA<type::Enum>() )
+                return fmt("(%s).value()", e);
 
-            auto exprs = c->preprocessedExpressions();
+            // We can't pass safe integers directly to a C++ switch as that
+            // leads to type ambiguity. For the individual cases, it seems to
+            // be fine though.
+            if ( (! is_case_label) && (type->isA<type::SignedInteger>() || type->isA<type::UnsignedInteger>()) )
+                return fmt("(%s).Ref()", e);
 
-            if ( exprs.size() == 1 )
-                cond = cg->compile(*exprs.begin());
-            else
-                cond = util::join(exprs | std::views::transform([&](auto e) { return cg->compile(e); }), " || ");
+            return e;
+        };
 
-            auto body = cg->compile(c->body());
+        // Emit a C++ switch for integral condition values.
+        auto add_cxx_case_switch = [&]() {
+            std::vector<std::pair<std::vector<cxx::Expression>, cxx::Block>> cases;
 
-            if ( first ) {
-                block->addIf(fmt("%s %s = %s", cxx_type, cxx_id, cxx_init), std::move(cond), std::move(body));
-                first = false;
+            for ( const auto& c : n->cases() ) {
+                if ( c->isDefault() )
+                    continue; // will handle below
+
+                auto conditions = util::toVector(c->preprocessedExpressions() | std::views::transform([&](auto e) {
+                                                     return normalize_cxx_switch_value(cg->compile(e), true);
+                                                 }));
+
+                cases.emplace_back(std::move(conditions), cg->compile(c->body()));
+
+                // Add C++ `break` statement if the case body isn't obviously
+                // terminated already. We check for a couple of existing
+                // control flow statements here that would make a `break`
+                // redundant, but this is just a heuristic to make the
+                // generated code a bit prettier. If end up generating an
+                // additional `break` even where we don't strictly need it,
+                // that's fine.
+                const Statement* last_stmt = c->body();
+
+                if ( const auto& block = last_stmt->tryAs<statement::Block>(); block && ! block->statements().empty() )
+                    last_stmt = block->statements().back();
+
+                if ( ! (last_stmt->isA<statement::Break>() || last_stmt->isA<statement::Continue>() ||
+                        last_stmt->isA<statement::Return>() || last_stmt->isA<statement::Throw>()) )
+                    cases.back().second.addStatement("break");
             }
+
+            auto cxx_switch_cond = normalize_cxx_switch_value(cxx::Expression(cxx_id), false);
+
+            std::optional<cxx::Block> default_;
+
+            if ( auto* d = n->default_() )
+                default_ = cg->compile(d->body());
             else
-                block->addElseIf(std::move(cond), std::move(body));
+                default_ = throw_on_default(static_cast<std::string>(cxx_switch_cond));
+
+            block->addSwitch(fmt("auto&& %s = %s; %s", cxx_id, cxx_init, cxx_switch_cond), cases, std::move(default_));
+        };
+
+        // Emit a C++ if/else chain for complex condition values.
+        auto add_cxx_if_else_chain = [&]() {
+            bool first = true;
+            for ( const auto& c : n->cases() ) {
+                if ( c->isDefault() )
+                    continue; // will handle below
+
+                std::string cond;
+
+                auto exprs = c->preprocessedComparisonOperators();
+
+                if ( exprs.size() == 1 )
+                    cond = cg->compile(*exprs.begin());
+                else
+                    cond = util::join(exprs | std::views::transform([&](auto e) { return cg->compile(e); }), " || ");
+
+                auto body = cg->compile(c->body());
+
+                if ( first ) {
+                    block->addIf(fmt("auto&& %s = %s", cxx_id, cxx_init), std::move(cond), std::move(body));
+                    first = false;
+                }
+                else
+                    block->addElseIf(std::move(cond), std::move(body));
+            }
+
+            std::optional<cxx::Block> default_;
+
+            if ( auto* d = n->default_() )
+                default_ = cg->compile(d->body());
+            else
+                default_ =
+                    throw_on_default(first ? static_cast<std::string>(cxx_init) : static_cast<std::string>(cxx_id));
+
+            if ( first )
+                block->addBlock(std::move(*default_));
+            else
+                block->addElse(std::move(*default_));
+        };
+
+        static auto is_integral_type = [](const UnqualifiedType* t) {
+            return t->isA<type::Enum>() || t->isA<type::SignedInteger>() || t->isA<type::UnsignedInteger>();
+        };
+
+        static auto is_integral_and_constant_value = [](const Expression* e) {
+            if ( ! is_integral_type(e->type()->type()) )
+                return false;
+
+            if ( const auto* name = e->tryAs<expression::Name>() ) {
+                if ( auto* decl = name->resolvedDeclaration(); decl->isA<declaration::Constant>() ) {
+                    return true;
+                }
+            }
+
+            if ( const auto* ctor = e->tryAs<expression::Ctor>(); ctor && ctor->isConstant() )
+                return true;
+
+            return false;
+        };
+
+        bool can_use_cxx_switch = is_integral_type(cond->type()->type());
+
+        for ( const auto* c : n->cases() ) {
+            if ( c->isDefault() )
+                continue;
+
+            for ( const auto* e : c->expressions() ) {
+                if ( ! is_integral_and_constant_value(e) ) {
+                    can_use_cxx_switch = false;
+                    break;
+                }
+            }
         }
 
-        cxx::Block default_;
-
-        if ( auto* d = n->default_() )
-            default_ = cg->compile(d->body());
+        if ( can_use_cxx_switch )
+            add_cxx_case_switch();
         else
-            default_.addStatement(
-                fmt("throw ::hilti::rt::UnhandledSwitchCase(::hilti::rt::to_string_for_print(%s), \"%s\")",
-                    (first ? static_cast<std::string>(cxx_init) : static_cast<std::string>(cxx_id)),
-                    n->meta().location()));
-
-        if ( first )
-            block->addBlock(std::move(default_));
-        else
-            block->addElse(std::move(default_));
+            add_cxx_if_else_chain();
     }
 
     void operator()(statement::Throw* n) final {
