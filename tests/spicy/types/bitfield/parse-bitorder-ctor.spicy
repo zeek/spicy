@@ -1,0 +1,32 @@
+# @TEST-EXEC: ${SCRIPTS}/printf '\xff\x00\xff\x00\xff\x00' | spicy-driver -d %INPUT >>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that bitorders are applied when parsing bitfields through ctor values; regression test for #2321.
+#
+
+module Test;
+
+import spicy;
+
+type Bitfield = bitfield(16) {
+    x: 0..7 = 255; # parses using bitfield ctor
+    y: 8..15;
+} &bit-order=spicy::BitOrder::MSB0;
+
+public type Main = unit {
+    # All three bitfields are supposed to end up with the same values.
+
+    bf1: bitfield(16) {
+        x: 0..7 = 255; # parses using a bitfield ctor
+        y: 8..15;
+    } &bit-order=spicy::BitOrder::MSB0;
+
+    bf2: Bitfield;
+
+    bf3: bitfield(16) {
+        x: 0..7; # parses using bitfield type
+        y: 8..15;
+    } &bit-order=spicy::BitOrder::MSB0;
+
+    on %done { print self; }
+};
