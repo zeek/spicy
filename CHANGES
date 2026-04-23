@@ -1,3 +1,7 @@
+1.16.0-dev.168 | 2026-04-23 15:21:26 +0200
+
+  * Fix recent issue reported by Coverity. (Benjamin Bannier, Corelight)
+
 1.16.0-dev.166 | 2026-04-23 15:15:54 +0200
 
   * Extend resolver to unify duplicate case handles. (Robin Sommer, Corelight)
