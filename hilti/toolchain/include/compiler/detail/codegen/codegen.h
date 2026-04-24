@@ -127,7 +127,7 @@ public:
      * @param n node to generate the ID for
      *
      */
-    cxx::ID uniqueID(const std::string& prefix, Node* n);
+    cxx::ID uniqueID(std::string_view prefix, Node* n);
 
     cxx::Expression self() const { return _self.back(); }
     void pushSelf(detail::cxx::Expression e) { _self.push_back(std::move(e)); }

@@ -1,3 +1,22 @@
+1.16.0-dev.171 | 2026-04-24 18:00:46 +0200
+
+  * Remove unnecessary string allocation. (Benjamin Bannier, Corelight)
+
+  * Remove reduction of entropy when computing unique IDs. (Benjamin Bannier, Corelight)
+
+    When computing unique IDs we were internally hashing locations to
+    `uint64_t`, but then reducing to `uint16_t`'s range for more readable
+    identifiers in generated code. This removes reduces entropy by about
+    75%.
+
+    Given how much of a reduction this was it still seems to have worked
+    surprisingly well up until de8db5061838a where we now suddenly see
+    deterministic hash collisions for a single test in the
+    `validate_release_tarball` task; in that case it manifests as two
+    distinct hooks being generated with identical C++ identifier. Since this
+    seemed so obscure I initially though this to be some memory corruption
+    bug, but it turned out mundane in the end.
+
 1.16.0-dev.168 | 2026-04-23 15:21:26 +0200
 
   * Fix recent issue reported by Coverity. (Benjamin Bannier, Corelight)
