@@ -1,5 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <cinttypes>
 #include <ranges>
 
 #include <hilti/ast/ast-context.h>
@@ -972,5 +973,5 @@ cxx::ID CodeGen::uniqueID(const std::string& prefix, Node* n) {
         // the offending node.
         logger().internalError("attempt to create unique codegen ID for node without location");
 
-    return {fmt("%s_%x", prefix, util::hash(n->location()) % 0xffff)};
+    return {fmt("%s_%" PRIu64, prefix, util::hash(n->location()))};
 }
