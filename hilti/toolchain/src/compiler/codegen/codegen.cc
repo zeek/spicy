@@ -2,6 +2,7 @@
 
 #include <cinttypes>
 #include <ranges>
+#include <string_view>
 
 #include <hilti/ast/ast-context.h>
 #include <hilti/ast/builder/builder.h>
@@ -966,7 +967,7 @@ std::pair<std::string, std::string> CodeGen::cxxTypeForVector(QualifiedType* ele
         return std::make_pair(fmt("::hilti::rt::Vector<%s>%s", etype, type_addl), std::string(""));
 }
 
-cxx::ID CodeGen::uniqueID(const std::string& prefix, Node* n) {
+cxx::ID CodeGen::uniqueID(std::string_view prefix, Node* n) {
     if ( ! n->location() )
         // We rely on the location for creating a unique ID. If we ever arrive
         // here, it shouldn't be too difficult to get location information into
