@@ -7,6 +7,7 @@
 #include <hilti/ast/declarations/constant.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/name.h>
+#include <hilti/ast/operators/struct.h>
 #include <hilti/base/logger.h>
 #include <hilti/compiler/detail/optimizer/optimizer.h>
 #include <hilti/compiler/detail/optimizer/pass.h>
@@ -95,7 +96,7 @@ struct Collector : public optimizer::visitor::Collector {
         used.insert({member_id, false});
 
         if ( const auto* ftype = n->type()->type()->tryAs<type::Function>() ) {
-            auto& usage = function_usage[n->fullyQualifiedID()];
+            auto& usage = function_usage[optimizer()->functionID(n)];
 
             // If the member declaration is marked `&always-emit` mark it as implemented.
             if ( n->attributes()->find(hilti::attribute::kind::AlwaysEmit) )
@@ -138,7 +139,7 @@ struct Collector : public optimizer::visitor::Collector {
         const auto& function = n->function();
 
         // Record the function if not already known.
-        auto& usage = function_usage[n->functionID(context())];
+        auto& usage = function_usage[optimizer()->functionID(n)];
 
         // If the declaration contains a function with a body mark the function as defined.
         if ( function->body() )
@@ -232,14 +233,14 @@ struct Collector : public optimizer::visitor::Collector {
             used[member_id] = true;
 
             if ( field->type()->type()->tryAs<type::Function>() ) {
-                const auto& function_id = field->fullyQualifiedID();
+                const auto& function_id = optimizer()->functionID(field);
                 assert(function_id);
                 function_usage[function_id].referenced = true;
             }
         }
 
         if ( const auto* function = n->resolvedDeclaration()->tryAs<declaration::Function>() ) {
-            const auto& function_id = function->fullyQualifiedID();
+            const auto& function_id = optimizer()->functionID(function);
             assert(function_id);
             function_usage[function_id].referenced = true;
         }
@@ -251,16 +252,11 @@ struct Collector : public optimizer::visitor::Collector {
     }
 
     void operator()(operator_::struct_::MemberCall* n) final {
-        const auto* struct_ = n->op0()->type()->type()->tryAs<type::Struct>();
-        assert(struct_);
-
-        const auto& member = n->op1()->tryAs<expression::Member>();
-        assert(member);
-
-        const auto* field = struct_->field(member->id());
+        const auto& op = static_cast<const struct_::MemberCall&>(n->operator_());
+        const auto* field = op.declaration();
         assert(field);
 
-        const auto& function_id = field->fullyQualifiedID();
+        const auto& function_id = optimizer()->functionID(field);
         assert(function_id);
 
         function_usage[function_id].referenced = true;
@@ -270,7 +266,7 @@ struct Collector : public optimizer::visitor::Collector {
         const auto* decl = n->op0()->as<expression::Name>()->resolvedDeclaration();
         assert(decl);
 
-        const auto& function_id = decl->fullyQualifiedID();
+        const auto& function_id = optimizer()->functionID(decl);
         assert(function_id);
 
         function_usage[function_id].referenced = true;
@@ -352,7 +348,7 @@ struct Mutator : public optimizer::visitor::Mutator {
             // We can remove any fully unreferenced member functions if the
             // parent type declaration is modifiable, even if the member itself
             // isn't marked `&internal` (but not if marked `&always-emit`).
-            const auto& used = collector->function_usage.at(n->fullyQualifiedID());
+            const auto& used = collector->function_usage.at(optimizer()->functionID(n));
             if ( ! used.referenced && ! used.hook && optimizer()->mayModify(parent_type->typeDeclaration()) &&
                  ! n->attributes()->find(hilti::attribute::kind::AlwaysEmit) )
                 remove = true;
@@ -364,7 +360,7 @@ struct Mutator : public optimizer::visitor::Mutator {
         }
 
         if ( n->type()->type()->tryAs<type::Function>() ) {
-            const auto& usage = collector->function_usage.at(n->fullyQualifiedID());
+            const auto& usage = collector->function_usage.at(optimizer()->functionID(n));
 
             // Remove function methods without implementation.
             if ( ! usage.defined && ! usage.referenced ) {
@@ -375,7 +371,7 @@ struct Mutator : public optimizer::visitor::Mutator {
     }
 
     void operator()(declaration::Function* n) final {
-        const auto& usage = collector->function_usage.at(n->functionID(context()));
+        const auto& usage = collector->function_usage.at(optimizer()->functionID(n));
 
         if ( usage.hook && ! usage.defined )
             removeNode(n, "removing declaration for unused hook function");
@@ -395,16 +391,11 @@ struct Mutator : public optimizer::visitor::Mutator {
     }
 
     void operator()(operator_::struct_::MemberCall* n) final {
-        const auto* struct_ = n->op0()->type()->type()->tryAs<type::Struct>();
-        assert(struct_);
-
-        const auto& member = n->op1()->tryAs<expression::Member>();
-        assert(member);
-
-        const auto* field = struct_->field(member->id());
+        const auto& op = static_cast<const struct_::MemberCall&>(n->operator_());
+        const auto* field = op.declaration();
         assert(field);
 
-        const auto& function_id = field->fullyQualifiedID();
+        const auto& function_id = optimizer()->functionID(field);
         assert(function_id);
 
         if ( const auto& usage = collector->function_usage.at(function_id); ! usage.defined )
@@ -432,7 +423,7 @@ struct Mutator : public optimizer::visitor::Mutator {
         auto* decl = n->op0()->as<expression::Name>()->resolvedDeclaration();
         assert(decl);
 
-        const auto& function_id = decl->fullyQualifiedID();
+        const auto& function_id = optimizer()->functionID(decl);
         assert(function_id);
 
         const auto& function = collector->function_usage.at(function_id);

@@ -648,11 +648,15 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             }
         }
 
-        if ( auto ns = n->id().namespace_() ) {
-            // Link namespaced function to its base type and/or prototype.
-            declaration::Type* linked_type = nullptr;
-            Declaration* linked_prototype = nullptr;
+        // Link the function to its prototype/method declaration, if
+        // applicable. For methods, also link to the struct type they belong
+        // to.
 
+        Declaration* linked_prototype = nullptr;
+        declaration::Type* linked_type = nullptr;
+
+        // First check if it's struct method.
+        if ( auto ns = n->id().namespace_() ) {
             if ( auto resolved = scope::lookupID<declaration::Type>(std::move(ns), n, "struct type") ) {
                 linked_type = resolved->first;
 
@@ -673,45 +677,48 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                     return;
                 }
             }
+        }
 
-            else {
-                for ( const auto& x : context()->root()->scope()->lookupAll(n->id()) ) {
-                    if ( auto* f = x.node->tryAs<declaration::Function>() ) {
-                        if ( areEquivalent(n->function()->ftype(), f->function()->ftype()) ) {
-                            if ( ! linked_prototype ||
-                                 ! f->function()->body() ) // prefer declarations wo/ implementation
-                                linked_prototype = f;
-                        }
+        // For free functions, look for a prototype with the same name and
+        // signature.
+        if ( ! linked_type && n->function()->body() ) {
+            auto* module = n->parent<declaration::Module>();
+            assert(module);
+
+            for ( const auto& x : module->scope()->lookupAll(n->id()) ) {
+                if ( auto* f = x.node->tryAs<declaration::Function>(); f && f != n && ! f->function()->body() ) {
+                    if ( areEquivalent(n->function()->ftype(), f->function()->ftype()) ) {
+                        linked_prototype = f;
+                        break;
                     }
                 }
             }
+        }
 
-            if ( linked_type ) {
-                if ( ! n->linkedDeclarationIndex() ) {
-                    auto index = context()->register_(linked_type);
-                    n->setLinkedDeclarationIndex(index);
-                    recordChange(n, util::fmt("set linked declaration to %s", index));
+        if ( linked_type ) {
+            if ( ! n->linkedDeclarationIndex() ) {
+                auto index = context()->register_(linked_type);
+                n->setLinkedDeclarationIndex(index);
+                recordChange(n, util::fmt("set linked declaration to %s", index));
 
-                    n->setLinkage(declaration::Linkage::Struct);
-                    recordChange(n, util::fmt("set linkage to struct"));
-                }
-                else {
-                    assert(linked_type->declarationIndex() ==
-                           n->linkedDeclarationIndex()); // shouldn't changed once bound
-                    assert(n->linkage() == declaration::Linkage::Struct);
-                }
+                n->setLinkage(declaration::Linkage::Struct);
+                recordChange(n, util::fmt("set linkage to struct"));
             }
-
-            if ( linked_prototype ) {
-                if ( ! n->linkedPrototypeIndex() ) {
-                    auto index = context()->register_(linked_prototype);
-                    n->setLinkedPrototypeIndex(index);
-                    recordChange(n, util::fmt("set linked prototype to %s", index));
-                }
-                else
-                    assert(linked_prototype->canonicalID() ==
-                           context()->lookup(n->linkedPrototypeIndex())->canonicalID()); // shouldn't changed once bound
+            else {
+                assert(linked_type->declarationIndex() == n->linkedDeclarationIndex()); // shouldn't changed once bound
+                assert(n->linkage() == declaration::Linkage::Struct);
             }
+        }
+
+        if ( linked_prototype ) {
+            if ( ! n->linkedPrototypeIndex() ) {
+                auto index = context()->register_(linked_prototype);
+                n->setLinkedPrototypeIndex(index);
+                recordChange(n, util::fmt("set linked prototype to %s", index));
+            }
+            else
+                assert(linked_prototype->canonicalID() ==
+                       context()->lookup(n->linkedPrototypeIndex())->canonicalID()); // shouldn't changed once bound
         }
 
         if ( n->linkage() != declaration::Linkage::Struct && ! n->operator_() && n->function()->type()->isResolved() ) {

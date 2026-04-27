@@ -184,7 +184,7 @@ struct CollectorPlacements : public optimizer::visitor::Collector {
 
     void collectFn(declaration::Function* n, bool revisiting) {
         assert(n);
-        auto function_id = n->functionID(context());
+        auto function_id = optimizer()->functionID(n);
         const auto* op = n->operator_();
 
         // If we don't have an operator, grab it from the field.
@@ -229,7 +229,7 @@ struct CollectorPlacements : public optimizer::visitor::Collector {
             if ( auto* ret = use->parent()->tryAs<statement::Return>(); ret && ! placements.tail_callee ) {
                 // This function isn't a tail caller, and its use immediately
                 // returns. Maybe the use is a tail caller.
-                auto opt_enclosing_fn = hilti::detail::Optimizer::enclosingFunction(context(), use);
+                auto opt_enclosing_fn = optimizer()->enclosingFunction(use);
                 if ( ! opt_enclosing_fn )
                     return;
 
@@ -298,7 +298,7 @@ struct CollectorPlacements : public optimizer::visitor::Collector {
             auto* fn_decl = parent->tryAs<declaration::Function>();
             if ( ! fn_decl )
                 return;
-            auto& from_placements = fn_placements[fn_decl->functionID(context())];
+            auto& from_placements = fn_placements[optimizer()->functionID(fn_decl)];
             mergePlacements(placements, from_placements);
         }
     }
@@ -317,7 +317,7 @@ struct CollectorPrunePlacements : public optimizer::visitor::Collector {
     CollectorPlacements* collector_placements;
 
     void operator()(expression::Name* n) final {
-        auto opt_enclosing_fn = hilti::detail::Optimizer::enclosingFunction(context(), n);
+        auto opt_enclosing_fn = optimizer()->enclosingFunction(n);
         if ( ! opt_enclosing_fn )
             return;
 
@@ -353,7 +353,7 @@ struct CollectorPrunePlacements : public optimizer::visitor::Collector {
 
     // Check to see if we're returning a tuple, and if not, clear placements.
     void operator()(statement::Return* n) final {
-        auto opt_enclosing_fn = hilti::detail::Optimizer::enclosingFunction(context(), n);
+        auto opt_enclosing_fn = optimizer()->enclosingFunction(n);
         if ( ! opt_enclosing_fn )
             return;
 
@@ -441,7 +441,7 @@ struct Mutator : public optimizer::visitor::Mutator {
     }
 
     void operator()(declaration::Function* n) final {
-        auto function_id = n->functionID(context());
+        auto function_id = optimizer()->functionID(n);
 
         const auto* op = n->operator_();
 
@@ -467,7 +467,7 @@ struct Mutator : public optimizer::visitor::Mutator {
             auto* fn_decl = parent->tryAs<declaration::Function>();
             if ( ! fn_decl )
                 return;
-            placement_ids = fn_placements[fn_decl->functionID(context())].placements;
+            placement_ids = fn_placements[optimizer()->functionID(fn_decl)].placements;
         }
 
         // Make sure at least one placement is getting removed
@@ -607,7 +607,7 @@ struct Mutator : public optimizer::visitor::Mutator {
     }
 
     void operator()(statement::Return* n) final {
-        auto opt_enclosing_fn = hilti::detail::Optimizer::enclosingFunction(context(), n);
+        auto opt_enclosing_fn = optimizer()->enclosingFunction(n);
         if ( ! opt_enclosing_fn || ! n->expression() )
             return;
 
