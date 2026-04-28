@@ -17,7 +17,7 @@ RUN [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePoin
     iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
 # Install Visual Studio 2022 Build Tools and C++ workload.
-RUN choco install -y --no-progress visualstudio2022buildtools --version=117.14.1
+RUN choco install -y --no-progress visualstudio2022buildtools --version=117.14.29
 RUN choco install -y --no-progress visualstudio2022-workload-vctools --version=1.0.0
 
 # Install build tools.
