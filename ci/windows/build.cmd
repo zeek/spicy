@@ -19,7 +19,8 @@ cmake.exe .. ^
     -DCMAKE_CXX_COMPILER=cl.exe ^
     -DVCPKG_TARGET_TRIPLET=x64-windows-static ^
     -DVCPKG_HOST_TRIPLET=x64-windows-static ^
-    -DVCPKG_OVERLAY_TRIPLETS=../vcpkg-triplets
+    -DVCPKG_OVERLAY_TRIPLETS=../vcpkg-triplets ^
+    -DUSE_CCACHE=ON
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 cmake.exe --build .
