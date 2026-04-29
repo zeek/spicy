@@ -131,6 +131,25 @@ bool isConstOperand(const expression::ResolvedOperator* operator_, const Express
 
     return false;
 }
+
+bool unionAliases(std::set<Declaration*>& a, std::set<Declaration*>& b, Declaration* a_decl, Declaration* b_decl) {
+    // Create a merged set first so they can be added in a single operation
+    auto a_size = a.size();
+    auto b_size = b.size();
+
+    std::set<Declaration*> merged;
+    merged.insert(a.begin(), a.end());
+    merged.insert(b.begin(), b.end());
+
+    // Insert all of the merged aliases, except remove their own decls. A decl does not alias itself.
+    a.insert(merged.begin(), merged.end());
+    a.erase(a_decl);
+    b.insert(merged.begin(), merged.end());
+    b.erase(b_decl);
+
+    return a.size() != a_size || b.size() != b_size;
+}
+
 } // namespace
 
 std::deque<GraphNode> CFG::postorder() const {
@@ -997,26 +1016,37 @@ void CFG::_populateDataflow() {
         // First make aliasing symmetric: to handle the case of e.g.,
         // references aliasing is stored symmetrically, i.e., if `a` aliases
         // `b`, `b` will also alias `a`.
-        for ( const auto& [n, transfer] : _dataflow ) {
-            for ( const auto& alias : transfer.maybe_alias ) {
-                const auto* stmt = _graph.getNode(alias->identity());
-                if ( ! stmt || ! stmt->get() || ! _dataflow.contains(*stmt) )
-                    util::detail::internalError(
-                        util::fmt("could not find CFG node for '%s' aliased in '%s'", alias->print(), n->print()));
+        bool aliases_changed;
+        do {
+            // Fixed point iteration
+            aliases_changed = false;
+            for ( auto& [n, transfer] : _dataflow ) {
+                for ( const auto& alias : transfer.maybe_alias ) {
+                    const auto* stmt = _graph.getNode(alias->identity());
+                    if ( ! stmt || ! stmt->get() || ! _dataflow.contains(*stmt) )
+                        util::detail::internalError(
+                            util::fmt("could not find CFG node for '%s' aliased in '%s'", alias->print(), n->print()));
 
-                // Graph nodes either directly store a `Declaration` (for
-                // globals), or `statement::Declaration` (for anything else).
-                const auto* decl = n->tryAs<Declaration>();
-                if ( ! decl ) {
-                    if ( const auto* d = n->tryAs<const statement::Declaration>() )
-                        decl = d->declaration();
+                    // Graph nodes either directly store a `Declaration` (for
+                    // globals), or `statement::Declaration` (for anything else).
+                    const auto* decl = n->tryAs<Declaration>();
+                    if ( ! decl ) {
+                        if ( const auto* d = n->tryAs<const statement::Declaration>() )
+                            decl = d->declaration();
+                    }
+                    if ( ! decl )
+                        util::detail::internalError(
+                            util::fmt("could not get declaration from CFG node '%s'", n->print()));
+
+                    auto& alias_aliases = _dataflow.at(*stmt).maybe_alias;
+                    aliases_changed |= alias_aliases.insert(const_cast<Declaration*>(decl)).second;
+
+                    // Now union them for transitive aliases (a->b->c, a also aliases c)
+                    aliases_changed |=
+                        unionAliases(alias_aliases, transfer.maybe_alias, alias, const_cast<Declaration*>(decl));
                 }
-                if ( ! decl )
-                    util::detail::internalError(util::fmt("could not get declaration from CFG node '%s'", n->print()));
-
-                _dataflow.at(*stmt).maybe_alias.insert(const_cast<Declaration*>(decl));
             }
-        }
+        } while ( aliases_changed );
 
         // Now copy the usage pattern to the aliased node.
         for ( auto& [n, transfer] : _dataflow ) {
