@@ -1055,7 +1055,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                     detail::constant_folder::foldExpression(builder(), cond,
                                                             detail::constant_folder::Style::InlineAllConstants |
                                                                 detail::constant_folder::Style::FoldTernaryOperator);
-                if ( ! ctor && *ctor )
+                if ( ! ctor || ! *ctor )
                     continue;
 
                 // TODO: This is a bit of a hack to check if two ctors yield

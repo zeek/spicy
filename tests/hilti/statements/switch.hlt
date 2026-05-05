@@ -100,4 +100,13 @@ switch ( ++i ) {
     case 4: hilti::print("C");
 }
 
+# Regression test for #2351.
+type Enum = enum { A = 10, B = 12 };
+switch ( 10 ) {
+    case cast<uint<8>>(Enum::A):
+        hilti::print("Enum::A");
+    case cast<uint<8>>(Enum::B):
+        hilti::print("Enum::B");
+}
+
 }
