@@ -121,6 +121,7 @@ struct SwitchArgs {
     detail::Fiber* switcher = nullptr;
     detail::Fiber* from = nullptr;
     detail::Fiber* to = nullptr;
+    bool target_fiber_needs_init = false;
 };
 
 // Fiber entry point for stack switcher trampoline.
@@ -142,6 +143,14 @@ void __fiber_switch_trampoline(void* argsp) {
 
     if ( from->_type == detail::Fiber::Type::SharedStack )
         from->_stack_buffer.save();
+
+    // Since both fibers share the same physical stack we can only initialize
+    // the target fiber's stack one we have performed a `save()` of the stack
+    // of fiber we are coming from.
+    if ( args->target_fiber_needs_init ) {
+        void* dummy_args; // not used, but need a non-null pointer
+        ::fiber_reserve_return(to->_fiber.get(), __fiber_run_trampoline, &dummy_args, 0);
+    }
 
     if ( to->_type == detail::Fiber::Type::SharedStack )
         to->_stack_buffer.restore();
@@ -485,7 +494,7 @@ void ASAN_NO_OPTIMIZE detail::Fiber::_executeSwitch(const char* tag, detail::Fib
     HILTI_RT_FIBER_DEBUG(tag, fmt("resuming after fiber switch returns back to %s", *from));
 }
 
-void detail::Fiber::_activate(const char* tag) {
+void detail::Fiber::_activate(const char* tag, bool init) {
     auto* context = context::detail::get();
     auto* current = context->fiber.current;
     assert(current && current != this);
@@ -503,6 +512,7 @@ void detail::Fiber::_activate(const char* tag) {
         args.switcher = stack_switcher;
         args.from = current;
         args.to = this;
+        args.target_fiber_needs_init = init;
 
         // Reinitialize fiber with same stack.
         auto* fiber = stack_switcher->_fiber.get();
@@ -586,15 +596,7 @@ void detail::Fiber::run() {
     if ( _state != State::Aborting )
         _state = State::Running;
 
-    if ( init ) {
-        // TODO: It would seem reasonable to move into this the constructor
-        // where we initialize the fiber. However, that leads to crashes; not
-        // sure why?
-        void* dummy_args; // not used, but need a non-null pointer
-        ::fiber_reserve_return(_fiber.get(), __fiber_run_trampoline, &dummy_args, 0);
-    }
-
-    _activate("run");
+    _activate("run", init);
 
     switch ( _state ) {
         case State::Yielded:
