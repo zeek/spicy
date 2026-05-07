@@ -121,6 +121,7 @@ struct SwitchArgs {
     detail::Fiber* switcher = nullptr;
     detail::Fiber* from = nullptr;
     detail::Fiber* to = nullptr;
+    bool init_target = false;
 };
 
 // Fiber entry point for stack switcher trampoline.
@@ -142,6 +143,12 @@ void __fiber_switch_trampoline(void* argsp) {
 
     if ( from->_type == detail::Fiber::Type::SharedStack )
         from->_stack_buffer.save();
+
+    // Initialize the target fiber's stack entry point if needed. This must
+    // happen after save() so we don't corrupt the outgoing fiber's stack frame
+    // (both fibers share the same physical stack).
+    if ( args->init_target )
+        to->_initRunTrampoline();
 
     if ( to->_type == detail::Fiber::Type::SharedStack )
         to->_stack_buffer.restore();
@@ -485,7 +492,7 @@ void ASAN_NO_OPTIMIZE detail::Fiber::_executeSwitch(const char* tag, detail::Fib
     HILTI_RT_FIBER_DEBUG(tag, fmt("resuming after fiber switch returns back to %s", *from));
 }
 
-void detail::Fiber::_activate(const char* tag) {
+void detail::Fiber::_activate(const char* tag, bool init) {
     auto* context = context::detail::get();
     auto* current = context->fiber.current;
     assert(current && current != this);
@@ -503,6 +510,7 @@ void detail::Fiber::_activate(const char* tag) {
         args.switcher = stack_switcher;
         args.from = current;
         args.to = this;
+        args.init_target = init;
 
         // Reinitialize fiber with same stack.
         auto* fiber = stack_switcher->_fiber.get();
@@ -517,9 +525,13 @@ void detail::Fiber::_activate(const char* tag) {
         fiber->state |= FiberGuardFlags; // fiber_init() clears these
         _executeSwitch(tag, current, stack_switcher);
     }
-    else
-        // Can jump directly.
+    else {
+        // Can jump directly (individual stacks, no shared-stack collision).
+        if ( init )
+            _initRunTrampoline();
+
         _executeSwitch(tag, current, this);
+    }
 }
 
 void detail::Fiber::_yield(const char* tag) {
@@ -580,21 +592,18 @@ std::ostream& operator<<(std::ostream& out, const detail::Fiber& fiber) {
 }
 } // namespace hilti::rt::detail
 
+void detail::Fiber::_initRunTrampoline() {
+    void* dummy_args; // not used, but need a non-null pointer
+    ::fiber_reserve_return(_fiber.get(), __fiber_run_trampoline, &dummy_args, 0);
+}
+
 void detail::Fiber::run() {
     auto init = (_state == State::Init);
 
     if ( _state != State::Aborting )
         _state = State::Running;
 
-    if ( init ) {
-        // TODO: It would seem reasonable to move into this the constructor
-        // where we initialize the fiber. However, that leads to crashes; not
-        // sure why?
-        void* dummy_args; // not used, but need a non-null pointer
-        ::fiber_reserve_return(_fiber.get(), __fiber_run_trampoline, &dummy_args, 0);
-    }
-
-    _activate("run");
+    _activate("run", init);
 
     switch ( _state ) {
         case State::Yielded:

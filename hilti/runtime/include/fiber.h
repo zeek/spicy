@@ -243,7 +243,8 @@ private:
     enum class State { Init, Running, Aborting, Yielded, Idle, Finished };
 
     void _yield(const char* tag);
-    void _activate(const char* tag);
+    void _activate(const char* tag, bool init = false);
+    void _initRunTrampoline();
 
     /** Code to run just before we switch to a fiber. */
     static void _startSwitchFiber(const char* tag, detail::Fiber* to);
