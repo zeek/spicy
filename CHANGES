@@ -1,3 +1,42 @@
+1.14.1 | 2026-04-09 10:26:24 +0200
+
+  * Drop `sonoma_homebrew` task. (Benjamin Bannier, Corelight)
+
+    This task was meant for continuously testing the Spicy Homebrew formula.
+    This recently started failing, likely due to changes in Cirrus images.
+    Since this has AFAIR never caught any issue and we run it by hand when
+    bumping the formula anyway drop the task here.
+
+    (cherry picked from commit f7a28af556f918619bc2150458b29d9d6a357a76)
+
+  * Bump CI to freebsd-13.5. (Benjamin Bannier, Corelight)
+
+    (cherry picked from commit 8f03245047d4c9c1046c58dd9bb71c5364ca3afd)
+
+  * Bump freebsd-14 image in CI. (Benjamin Bannier, Corelight)
+
+    (cherry picked from commit 0a67ebc09a2142a484c073b142460339126e372b)
+
+  * Properly clean up unit sink state. (Benjamin Bannier, Corelight)
+
+    We previously would hold unit sink state in a raw pointer inside the
+    unit. This meant that we needed to manually manage its memory which was
+    errorprone. This patch switches sink state over to a smart pointer so we
+    get correct RAII behavior on update or when exceptions are thrown. Since
+    units are copyable we need to use a `std::shared_ptr` as opposed to a
+    `std::unique_ptr` here.
+
+    (cherry picked from commit 11ea2302cab9d445d169e7f3968d37e4be129bba)
+
+  * Remove doctest minimum macOS version hack. (Robin Sommer, Corelight)
+
+    For doctest on macOS, we used to set __MAC_OS_X_VERSION_MIN_REQUIRED
+    to some dummy value if not defined otherwise. This broke for me with
+    current doctest versions (because we were using an invalid, and too
+    old, value of 1000), and it seems it's no longer necessary anyways.
+
+    (cherry picked from commit b52ee7ebcfec850d5ba2269eb846b45fa23dc131)
+
 1.14.0 | 2025-08-14 16:34:53 +0200
 
   * Release 1.14.0.
