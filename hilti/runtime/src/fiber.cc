@@ -145,7 +145,7 @@ void __fiber_switch_trampoline(void* argsp) {
 
     // If the destination fiber has type shared stack, but doesn't yet
     // have the stack set (nullptr), initialize it first. Otherwise,
-    // restore the saved stack form the buffer into the shared stack.
+    // restore the saved stack form the stack buffer into the shared stack.
     //
     // At this point, the fiber being switched to owns the shared stack.
     if ( to->_type == detail::Fiber::Type::SharedStack ) {
@@ -154,8 +154,6 @@ void __fiber_switch_trampoline(void* argsp) {
             ::fiber_init(to->_fiber.get(), shared_stack->stack, shared_stack->stack_size, fiber_bottom_abort, to);
             void* dummy_args; // not used, but need a non-null pointer
             ::fiber_reserve_return(to->_fiber.get(), __fiber_run_trampoline, &dummy_args, 0);
-
-            to->_state = detail::Fiber::State::Running;
         }
         else {
             to->_stack_buffer.restore();
@@ -257,9 +255,11 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
             // with the shared_stack->stack as it would potentially clobber it
             // while a different fiber is currently using it.
             //
-            // Ensure fiber_stack(fiber) returns a nullptr, the indicator
-            // for whether the underlying fiber has been initialized or
-            // not. There's fiber_is_alive(), too, might be better.
+            // Ensure fiber_stack(fiber) returns a nullptr, the indicator for
+            // whether the underlying fiber has been initialized or not. This
+            // is checked in __fiber_run_trampoline where the fiber will be
+            // delayed initialized and the __fiber_run_trampoline() placed on
+            // the stack.
             ::memset(_fiber.get(), '\0', sizeof(*_fiber));
 
 #ifdef HILTI_HAVE_ASAN
@@ -273,6 +273,13 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
             if ( ! ::fiber_alloc(_fiber.get(), configuration::detail::unsafeGet().fiber_individual_stack_size,
                                  fiber_bottom_abort, this, FiberGuardFlags) )
                 internalError("could not allocate individual-stack fiber");
+
+            {
+                // For the individual stack case, the fiber owns the stack,
+                // so can push __fiber_run_trampoline directly.
+                void* dummy_args; // not used, but need a non-null pointer
+                ::fiber_reserve_return(_fiber.get(), __fiber_run_trampoline, &dummy_args, 0);
+            }
 
 #ifdef HILTI_HAVE_ASAN
             _asan.stack = ::fiber_stack(_fiber.get());
