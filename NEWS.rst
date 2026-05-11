@@ -2,8 +2,8 @@ This following summarizes the most important changes in recent Spicy releases.
 For an exhaustive list of all changes, see the :repo:`CHANGES` file coming with
 the distribution.
 
-Version 1.16 (in progress)
-==========================
+Version 1.16
+============
 
 .. rubric:: New Functionality
 

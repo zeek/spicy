@@ -1,3 +1,5 @@
+1.16.0 | 2026-05-05 15:04:16 +0200
+
 1.16.0-dev.173 | 2026-05-05 15:04:03 +0200
 
   * GH-2351: Fix logic in duplicate switch case detection. (Benjamin Bannier, Corelight)
