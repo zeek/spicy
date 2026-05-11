@@ -154,6 +154,17 @@ void __fiber_switch_trampoline(void* argsp) {
             ::fiber_init(to->_fiber.get(), shared_stack->stack, shared_stack->stack_size, fiber_bottom_abort, to);
             void* dummy_args; // not used, but need a non-null pointer
             ::fiber_reserve_return(to->_fiber.get(), __fiber_run_trampoline, &dummy_args, 0);
+
+            // For fibers with their own or shared stacks, set boundaries from the
+            // allocated stack region.
+            //
+            // This is just the same as done in the constructor.
+#ifdef _WIN32
+            to->_teb.stack_base =
+                reinterpret_cast<char*>(::fiber_stack(to->_fiber.get())) + ::fiber_stack_size(to->_fiber.get());
+            to->_teb.stack_limit = ::fiber_stack(to->_fiber.get());
+            to->_teb.deallocation_stack = ::fiber_stack(to->_fiber.get());
+#endif
         }
         else {
             to->_stack_buffer.restore();
