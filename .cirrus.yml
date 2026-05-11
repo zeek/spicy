@@ -684,8 +684,16 @@ windows_task:
 
   env:
     CTEST_OUTPUT_ON_FAILURE: 1
+    CCACHE_DIR: C:\tmp\ccache
 
   sync_submodules_script: git submodule update --recursive --init
+
+  always:
+    ccache_cache:
+      folder: C:\tmp\ccache
+      fingerprint_script: echo ccache-$ZEEK_CCACHE_EPOCH-$CIRRUS_TASK_NAME-$CIRRUS_OS
+      reupload_on_changes: true
+
   prepare_script: ci/windows/prepare.cmd
   build_script: ci/windows/build.cmd
   test_script: ci/windows/test.cmd

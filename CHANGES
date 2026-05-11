@@ -1,3 +1,11 @@
+1.17.0-dev.3 | 2026-05-11 17:08:26 +0200
+
+  * Bump visualstudio2022buildtools to 117.14.29 in CI (Benjamin Bannier, Corelight)
+
+  * Add ccache to Windows CI. (Benjamin Bannier, Corelight)
+
+  * Start of v1.17.0 development. (Benjamin Bannier, Corelight)
+
 1.16.0 | 2026-05-05 15:04:16 +0200
 
 1.16.0-dev.173 | 2026-05-05 15:04:03 +0200
