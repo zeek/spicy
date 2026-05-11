@@ -143,8 +143,24 @@ void __fiber_switch_trampoline(void* argsp) {
     if ( from->_type == detail::Fiber::Type::SharedStack )
         from->_stack_buffer.save();
 
-    if ( to->_type == detail::Fiber::Type::SharedStack )
-        to->_stack_buffer.restore();
+    // If the destination fiber has type shared stack, but doesn't yet
+    // have the stack set (nullptr), initialize it first. Otherwise,
+    // restore the saved stack form the buffer into the shared stack.
+    //
+    // At this point, the fiber being switched to owns the shared stack.
+    if ( to->_type == detail::Fiber::Type::SharedStack ) {
+        if ( ::fiber_stack(to->_fiber.get()) == nullptr ) {
+            auto* shared_stack = context::detail::get()->fiber.shared_stack.get();
+            ::fiber_init(to->_fiber.get(), shared_stack->stack, shared_stack->stack_size, fiber_bottom_abort, to);
+            void* dummy_args; // not used, but need a non-null pointer
+            ::fiber_reserve_return(to->_fiber.get(), __fiber_run_trampoline, &dummy_args, 0);
+
+            to->_state = detail::Fiber::State::Running;
+        }
+        else {
+            to->_stack_buffer.restore();
+        }
+    }
 
     detail::Fiber::_executeSwitch("stack-switcher", args->switcher, to);
 
@@ -237,11 +253,17 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
             break;
 
         case Type::SharedStack: {
-            auto* shared_stack = context::detail::get()->fiber.shared_stack.get();
-            ::fiber_init(_fiber.get(), shared_stack->stack, shared_stack->stack_size, fiber_bottom_abort, this);
+            // When running with a shared stack, do not use fiber_init() here
+            // with the shared_stack->stack as it would potentially clobber it
+            // while a different fiber is currently using it.
+            //
+            // Ensure fiber_stack(fiber) returns a nullptr, the indicator
+            // for whether the underlying fiber has been initialized or
+            // not. There's fiber_is_alive(), too, might be better.
+            ::memset(_fiber.get(), '\0', sizeof(*_fiber));
 
 #ifdef HILTI_HAVE_ASAN
-            _asan.stack = ::fiber_stack(_fiber.get());
+            _asan.stack = context::detail::get()->fiber.shared_stack->stack;
             _asan.stack_size = configuration::get().fiber_shared_stack_size;
 #endif
             break;
@@ -581,18 +603,8 @@ std::ostream& operator<<(std::ostream& out, const detail::Fiber& fiber) {
 } // namespace hilti::rt::detail
 
 void detail::Fiber::run() {
-    auto init = (_state == State::Init);
-
     if ( _state != State::Aborting )
         _state = State::Running;
-
-    if ( init ) {
-        // TODO: It would seem reasonable to move into this the constructor
-        // where we initialize the fiber. However, that leads to crashes; not
-        // sure why?
-        void* dummy_args; // not used, but need a non-null pointer
-        ::fiber_reserve_return(_fiber.get(), __fiber_run_trampoline, &dummy_args, 0);
-    }
 
     _activate("run");
 
