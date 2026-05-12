@@ -38,7 +38,7 @@ jobs:
               zlib1g-dev
 
       - name: ccache
-        uses: hendrikmuhs/ccache-action@33522472633dbd32578e909b315f5ee43ba878ce
+        uses: hendrikmuhs/ccache-action@d62db5f07c26379fc4b4e0916f098a92573c3b03
         with:
           create-symlink: true
           key: ${{ github.job }}
