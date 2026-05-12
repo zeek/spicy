@@ -1,3 +1,24 @@
+1.17.0-dev.11 | 2026-05-12 15:25:29 -0400
+
+  * Prefer worklist algorithm to fixed point iteration. (Evan Typanski, Corelight)
+
+    Talked with Gemini to get the worklist idea
+
+    When aliasing, we know which nodes will need their aliases recalculated.
+    Use that info to create a worklist, rather than unconditionally running
+    another N^2 times.
+
+  * GH-2258: Fix transitive aliases. (Evan Typanski, Corelight)
+
+    Fixes #2258
+
+    Consider a program where a has two direct aliases: b and p. Then, b has
+    an alias c. p and c must alias, or else writes to p might be removed.
+    This forces that by unioning alias sets until convergence.
+
+    There are other ways to ensure aliases are unioned (see: union-find) but
+    this is the simplest way, albeit a little slow.
+
 1.17.0-dev.3 | 2026-05-11 17:08:26 +0200
 
   * Bump visualstudio2022buildtools to 117.14.29 in CI (Benjamin Bannier, Corelight)

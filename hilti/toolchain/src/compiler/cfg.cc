@@ -131,6 +131,25 @@ bool isConstOperand(const expression::ResolvedOperator* operator_, const Express
 
     return false;
 }
+
+bool unionAliases(std::set<Declaration*>& a, std::set<Declaration*>& b, Declaration* a_decl, Declaration* b_decl) {
+    // Create a merged set first so they can be added in a single operation
+    auto a_size = a.size();
+    auto b_size = b.size();
+
+    std::set<Declaration*> merged;
+    merged.insert(a.begin(), a.end());
+    merged.insert(b.begin(), b.end());
+
+    // Insert all of the merged aliases, except remove their own decls. A decl does not alias itself.
+    a.insert(merged.begin(), merged.end());
+    a.erase(a_decl);
+    b.insert(merged.begin(), merged.end());
+    b.erase(b_decl);
+
+    return a.size() != a_size || b.size() != b_size;
+}
+
 } // namespace
 
 std::deque<GraphNode> CFG::postorder() const {
@@ -994,11 +1013,22 @@ void CFG::_populateDataflow() {
 
     { // Encode aliasing information.
 
-        // First make aliasing symmetric: to handle the case of e.g.,
-        // references aliasing is stored symmetrically, i.e., if `a` aliases
-        // `b`, `b` will also alias `a`.
-        for ( const auto& [n, transfer] : _dataflow ) {
-            for ( const auto& alias : transfer.maybe_alias ) {
+        // Aliases must be symmetric and transitive, i.e., if `a` aliases
+        // `b`, `b` will also alias `a`. If `c` aliases `b`, then `a` also
+        // aliases `c`.
+        auto worklist = postorder();
+        // Reverse postorder will converge quickest for this forward dataflow
+        // analysis. Dependent statements are further down in the ordering.
+        std::ranges::reverse(worklist);
+
+        while ( ! worklist.empty() ) {
+            auto n = worklist.front();
+            worklist.pop_front();
+
+            auto& transfer = _dataflow.at(n);
+            auto& current_aliases = transfer.maybe_alias;
+
+            for ( const auto& alias : current_aliases ) {
                 const auto* stmt = _graph.getNode(alias->identity());
                 if ( ! stmt || ! stmt->get() || ! _dataflow.contains(*stmt) )
                     util::detail::internalError(
@@ -1014,7 +1044,14 @@ void CFG::_populateDataflow() {
                 if ( ! decl )
                     util::detail::internalError(util::fmt("could not get declaration from CFG node '%s'", n->print()));
 
-                _dataflow.at(*stmt).maybe_alias.insert(const_cast<Declaration*>(decl));
+                auto& alias_aliases = _dataflow.at(*stmt).maybe_alias;
+                auto changed = alias_aliases.insert(const_cast<Declaration*>(decl)).second;
+
+                // Now union them for transitive aliases (a->b->c, a also aliases c)
+                changed |= unionAliases(alias_aliases, current_aliases, alias, const_cast<Declaration*>(decl));
+
+                if ( changed )
+                    worklist.push_back(*stmt);
             }
         }
 

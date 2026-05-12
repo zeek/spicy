@@ -1,0 +1,26 @@
+# @TEST-DOC: Ensures transitive aliases prevent dead code elimination. Regression test for #2258
+#
+# @TEST-EXEC: hiltic -j %INPUT
+
+module Test {
+
+import hilti;
+
+function void f() {
+    # Chain a few together to ensure transitive aliases work
+    local a = new 10;
+    local b = a;
+    local c = b;
+    local d = c;
+
+    # Now change an alias to the first in the chain
+    local p = a;
+    *p = 20;
+
+    # The last in the chain should still react to that change
+    assert(d == 20);
+}
+
+f();
+
+}
