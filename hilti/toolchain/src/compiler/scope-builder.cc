@@ -83,6 +83,7 @@ struct Visitor : visitor::PostOrder {
                 assert(current_module);
 
                 auto* decl = builder->context()->lookup(index)->as<declaration::Module>();
+                decl->setImported(true);
                 modified |= current_module->getOrCreateScope()->insert(decl);
             }
         }

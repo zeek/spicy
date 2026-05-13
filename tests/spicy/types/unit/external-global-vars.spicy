@@ -16,7 +16,7 @@ public type Test = unit {
 
 module Mini;
 
-global mini_here_i_am = True;
+public global mini_here_i_am = True;
 
 public type Foo = unit {
 	a: bytes &size=4;

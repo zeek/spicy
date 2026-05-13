@@ -43,9 +43,13 @@ public:
 
     /** Retrieves the module's `%skip-implementation` flag. */
     bool skipImplementation() const { return _skip_implementation; }
+    /** Retrieves if this module was generated from an ImportedModule. */
+    bool imported() const { return _imported; }
 
     /** Sets the module's `%skip-implementation` flag. */
     void setSkipImplementation(bool skip_implementation) { _skip_implementation = skip_implementation; }
+    /** Sets if this module was generated from an ImportedModule. */
+    void setImported(bool imported) { _imported = imported; }
 
     auto cxxUnit() const { return _cxx_unit; }
     void setCxxUnit(std::shared_ptr<::hilti::detail::cxx::Unit> unit) { _cxx_unit = std::move(unit); }
@@ -136,6 +140,7 @@ private:
     ID _scope_path;
     std::set<declaration::module::UID> _dependencies;
     bool _skip_implementation = true;
+    bool _imported = false;
     std::shared_ptr<::hilti::detail::cxx::Unit> _cxx_unit;
 };
 

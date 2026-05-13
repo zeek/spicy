@@ -106,10 +106,14 @@ std::vector<Scope::Referee> Scope::_findID(const Scope* scope, const ID& id, boo
             for ( const auto& v : (*i).second ) {
                 Scope* scope_ = v->scope();
 
-                if ( auto* m = v->tryAs<declaration::Module>() )
-                    scope_ = m->scope();
+                auto e = false;
 
-                auto e = v->isA<declaration::ImportedModule>();
+                if ( auto* m = v->tryAs<declaration::Module>() ) {
+                    e = e || m->imported();
+                    scope_ = m->scope();
+                }
+
+                e = e || v->isA<declaration::ImportedModule>();
 
                 if ( auto x = _findID(scope_, ID(t), external || e); ! x.empty() )
                     return createRefs(x, h, external);

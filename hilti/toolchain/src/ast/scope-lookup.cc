@@ -2,6 +2,7 @@
 
 #include <hilti/ast/ctors/enum.h>
 #include <hilti/ast/declarations/constant.h>
+#include <hilti/ast/declarations/field.h>
 #include <hilti/ast/declarations/imported-module.h>
 #include <hilti/ast/declarations/local-variable.h>
 #include <hilti/ast/declarations/module.h>
@@ -48,9 +49,11 @@ std::pair<bool, Result<std::pair<Declaration*, ID>>> hilti::scope::detail::looku
 
             // We allow access to types (and type-derived constants) to
             // make it less cumbersome to define external hooks.
+            ok |= d->isA<declaration::Type>();
 
-            if ( d->isA<declaration::Type>() )
-                ok = true;
+            // While not exactly public, struct linkage can be selected from outside of
+            // the module.
+            ok |= d->isA<declaration::Field>() && d->linkage() == declaration::Linkage::Struct;
 
             if ( auto* c = d->tryAs<declaration::Constant>() ) {
                 if ( auto* ctor = c->value()->tryAs<expression::Ctor>(); ctor && ctor->ctor()->isA<ctor::Enum>() )

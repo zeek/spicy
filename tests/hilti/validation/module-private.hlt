@@ -1,0 +1,38 @@
+# @TEST-DOC: Ensures private imported declarations can't be used; regression test for #2340
+#
+# @TEST-EXEC-FAIL: ${HILTIC} -j imported.hlt %INPUT > output 2>&1
+# @TEST-EXEC: btest-diff output
+
+# @TEST-START-FILE imported.hlt
+
+module Imported {
+
+global private_glob = 0;
+public global public_glob = 0;
+
+private function void private_func() {}
+public function void public_func() {}
+
+}
+# @TEST-END-FILE
+
+module User {
+
+import Imported;
+
+global err = Imported::private_glob; # error
+global works = Imported::public_glob;
+
+}
+
+# @TEST-START-NEXT
+
+module User {
+
+import Imported;
+
+# Function calls validate at a different time, so they're in a separate test.
+Imported::private_func(); # error
+Imported::public_func();
+
+}
