@@ -1,3 +1,12 @@
+1.17.0-dev.13 | 2026-05-13 15:04:46 +0200
+
+  * GH-1829: Switch back to upstream version of 3rdparty/SafeInt. (Benjamin Bannier, Corelight)
+
+    We moved to our own fork of SafeInt because of #1829. It looks like
+    upstream has fixed enough for us to switch back to them. It might be
+    that more related changes are incoming, but we can follow up on them
+    separately.
+
 1.17.0-dev.11 | 2026-05-12 15:25:29 -0400
 
   * Prefer worklist algorithm to fixed point iteration. (Evan Typanski, Corelight)
