@@ -11,4 +11,6 @@ function void f() {
     local re2 = /gh(i/;
 }
 
+global regexp re2 = //;
+
 }
