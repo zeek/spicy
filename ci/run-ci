@@ -24,7 +24,7 @@ color_cyan=$'\e[1;36m'
 color_normal=$'\e[0m'
 
 function usage {
-cat <<EOF
+    cat <<EOF
 Usage: ${mame} [<global options>] <stage> [<command options>]
 
 Stages
@@ -51,7 +51,7 @@ Configure options:
 
 EOF
 
-exit 1
+    exit 1
 }
 
 function log_colored {
@@ -106,37 +106,37 @@ function run_configure {
             --cxx-compiler)
                 test $# -gt 0 || usage
                 configure="${configure} --with-cxx-compiler=$2"
-                shift 2;
+                shift 2
                 ;;
 
             --clang-tidy)
                 test $# -gt 0 || usage
                 clang_tidy="$2"
                 test -x ${clang_tidy} || error "clang-tidy not found in $2"
-                shift 2;
+                shift 2
                 ;;
 
             --build-toolchain)
                 configure="${configure} --build-toolchain=$2"
-                shift 2;
+                shift 2
                 ;;
 
             --disable-precompiled-headers)
                 configure="${configure} --disable-precompiled-headers"
-                shift 1;
+                shift 1
                 ;;
 
             --enable-werror)
                 configure="${configure} --enable-werror"
-                shift 1;
+                shift 1
                 ;;
 
             --build-static-libs)
                 configure="${configure} --build-static-libs"
-                shift 1;
+                shift 1
                 ;;
 
-            *)  usage;;
+            *) usage ;;
         esac
     done
 
@@ -197,17 +197,16 @@ function execute_btest {
         group=""
     fi
 
-
     log_stage "Running ${name} tests ... (${btest_alternative} ${btest_group})"
     pushd ${cwd} >/dev/null
 
     eval ${preload} \
         btest -j 5 \
-              -f ${artifacts}/diag.log \
-              -x ${artifacts}/diag.xml \
-              -z 3 \
-              ${alternative} \
-              ${group}
+        -f ${artifacts}/diag.log \
+        -x ${artifacts}/diag.xml \
+        -z 3 \
+        ${alternative} \
+        ${group}
 
     rc=$?
 
@@ -282,7 +281,7 @@ while getopts "r:b:" opt; do
             ;;
     esac
 done
-shift $((OPTIND-1))
+shift $((OPTIND - 1))
 
 if [ -z "${build}" ]; then
     build=${root}/build-ci
@@ -302,12 +301,12 @@ cd ${root}
 test -e CMakeLists.txt || error "${root} is not the project's root git repository"
 
 case "${cmd}" in
-    configure)           (run_configure $@);;
-    build)               (run_build $@);;
-    install)             (run_install $@);;
-    test-build)          (run_test_build $@);;
-    test-install)        (run_test_install $@);;
-    test-code)           (run_test_code $@);;
-    cleanup)             (run_cleanup $@);;
-    *)       usage;;
+    configure) (run_configure $@) ;;
+    build) (run_build $@) ;;
+    install) (run_install $@) ;;
+    test-build) (run_test_build $@) ;;
+    test-install) (run_test_install $@) ;;
+    test-code) (run_test_code $@) ;;
+    cleanup) (run_cleanup $@) ;;
+    *) usage ;;
 esac

@@ -3,7 +3,7 @@
 # Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 usage() {
-    cat << EOF
+    cat <<EOF
 $(basename "$0") [options] <input files>
 
     -d          Build a debug version.
@@ -22,7 +22,7 @@ mktmp() {
     base=$(basename "$1")
     ext=$2
     cnt=0
-    while : ; do
+    while :; do
         tmp=${dest}/${base}.${cnt}.tmp.${ext}
         test -e "${tmp}" || break
         cnt=$((cnt + 1))
@@ -43,7 +43,7 @@ execute() {
 }
 
 cleanup() {
-   test "${delete_tmps}" = 1 && rm -rf "${dest}"
+    test "${delete_tmps}" = 1 && rm -rf "${dest}"
 }
 
 ### Main
@@ -58,21 +58,27 @@ out=a.out
 while getopts "ghdo:Stv" opt; do
     case "$opt" in
         d)
-           hiltic_flags="${hiltic_flags} -d"
-           spicy_config_flags="--debug"
-           ;;
+            hiltic_flags="${hiltic_flags} -d"
+            spicy_config_flags="--debug"
+            ;;
 
         g)
-           hiltic_flags="${hiltic_flags} -g"
-           ;;
+            hiltic_flags="${hiltic_flags} -g"
+            ;;
 
-        o) out=$OPTARG;;
-        S) compile_spicy_driver=0;;
-        t) delete_tmps=0;;
-        v) verbose=1;;
+        o) out=$OPTARG ;;
+        S) compile_spicy_driver=0 ;;
+        t) delete_tmps=0 ;;
+        v) verbose=1 ;;
 
-        h) usage; exit 0;;
-        *) usage; exit 1;;
+        h)
+            usage
+            exit 0
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
     esac
 done
 
@@ -108,11 +114,11 @@ mkdir -p "${dest}"
 trap cleanup EXIT
 
 for i in $(which hilti-config 2>/dev/null) ${base}/bin/hilti-config ${base}/build/bin/hilti-config; do
-   test -x "$i" && hilti_config=$i && break
+    test -x "$i" && hilti_config=$i && break
 done
 
 for i in $(which spicy-config 2>/dev/null) ${base}/bin/spicy-config ${base}/build/bin/spicy-config; do
-   test -x "$i" && spicy_config=$i && break
+    test -x "$i" && spicy_config=$i && break
 done
 
 if [ -z "${hilti_config}" ]; then
@@ -152,7 +158,6 @@ for i in ${inputs}; do
             ;;
     esac
 done
-
 
 # Generate C++ output files. We pass `cc_inputs` here as well even though its
 # only effect is to cause emitting of generated files.

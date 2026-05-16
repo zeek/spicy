@@ -21,9 +21,9 @@ VERSION=$(cat VERSION)
 mkdir "${SCRATCH}/spicy-${VERSION}"
 (
     cd "${SCRATCH}/spicy-${VERSION}" &&
-    tar xf "${TARBALL}" &&
-    rm -f "${TARBALL}" &&
-    cd .. &&
-    tar czf "${TARBALL}.gz" "spicy-${VERSION}"
+        tar xf "${TARBALL}" &&
+        rm -f "${TARBALL}" &&
+        cd .. &&
+        tar czf "${TARBALL}.gz" "spicy-${VERSION}"
 )
 rm -rf "${SCRATCH}"

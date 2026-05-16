@@ -8,7 +8,10 @@ set -o nounset
 BINDIR=$(dirname "$0")
 while [ $# -ne 0 ]; do
     case "$1" in
-        --bindir) BINDIR=$2; shift 2;;
+        --bindir)
+            BINDIR=$2
+            shift 2
+            ;;
     esac
 done
 
@@ -25,7 +28,7 @@ done
 # Helper function to from a given Spicy `*-config` executable determine the location of a header.
 search_header() {
     config=$1
-    header=$2;
+    header=$2
 
     for flag in $(${config} --cxxflags); do
         if ! echo "${flag}" | grep -q '^-I'; then

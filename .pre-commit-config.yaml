@@ -99,4 +99,10 @@ repos:
     args: [ --fix ]
   - id: ruff-format
 
+- repo: https://github.com/maxwinterstein/shfmt-py
+  rev: 85cc16bc0319e182d7b62b0a2de351358083ce4c  # frozen: v4.0.0
+  hooks:
+    - id: shfmt
+      args: ["-w", "-i", "4", "-ci"]
+
 exclude: 3rdparty/|doc/(autogen|.*examples)/|/Baseline/|(\.svg$)|(\.dat$)

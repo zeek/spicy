@@ -12,7 +12,7 @@ BEGIN {cls[base] = base}
 /^ *\/\/ *CHECK:/ { if ( $5 == base ) cls[$3] = 1; }
 !/class.* *: *public / { next; }
 $2 in cls { next; } { for ( c in cls ) if ( $0 ~ c ) print $2;}
-' | while read i; do echo ${ns}::$i; done;
+' | while read i; do echo ${ns}::$i; done
     done | grep -v expression::ResolvedOperatorBase
 }
 
@@ -47,7 +47,6 @@ error() {
     have_errors=1
 }
 
-
 ### Main
 
 if [ $# != 1 ]; then
@@ -69,7 +68,7 @@ for file in hilti/include/hilti/ast/nodes.decl hilti/src/compiler/visitors/print
 done
 
 for n in $(getOperators hilti/include/ast/operators); do
-      find_visitor ${n} hilti/src/compiler/codegen/operators.cc
+    find_visitor ${n} hilti/src/compiler/codegen/operators.cc
 done
 
 for file in spicy/include/spicy/ast/nodes.decl spicy/src/compiler/visitors/validator.cc; do
