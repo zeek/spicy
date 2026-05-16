@@ -57,6 +57,7 @@ if [[ ! -x ${BUILDDIR}/bin/spicy-doc ]]; then
     exit 0
 fi
 
+# shellcheck disable=SC2064
 trap "rm -rf '${AUTOGEN_STAGE}'" EXIT
 rm -rf "${AUTOGEN_STAGE}" && mkdir -p "${AUTOGEN_STAGE}"
 
@@ -69,11 +70,11 @@ SPICY_TYPES=address,bitfield,bool,bytes,enum,exception,integer,interval,list,map
 ("${SPICYDOC}" | ${SPICYDTR} -t "${SPICY_TYPES}" -d "${AUTOGEN_STAGE}/types") || exit 1
 
 # Create list of reserved keywords.
-cat ${ROOTDIR}/spicy/toolchain/src/compiler/parser/scanner.ll |
+cat "${ROOTDIR}"/spicy/toolchain/src/compiler/parser/scanner.ll |
     grep "return.*token::" |
     grep '^[a-zA-Z_]\{2,\}[^{}]* ' |
     awk '{print $1}' |
-    sort >${AUTOGEN_STAGE}/reserved-keywords.txt
+    sort >"${AUTOGEN_STAGE}"/reserved-keywords.txt
 
 update_architecture_diagram
 

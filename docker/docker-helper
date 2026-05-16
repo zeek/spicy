@@ -6,7 +6,7 @@
 set -e
 
 usage() {
-    echo "usage: $(basename $0) build|run <platform>"
+    echo "usage: $(basename "$0") build|run <platform>"
     exit 1
 }
 

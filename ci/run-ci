@@ -10,22 +10,19 @@
 
 set -o pipefail
 
-name=$(basename $0)
-root=$(cd $(dirname $0)/.. && pwd)
+name=$(basename "$0")
+root=$(cd "$(dirname "$0")"/.. && pwd)
 build=
 install=
 
 color_red=$'\e[1;31m'
-color_green=$'\e[1;32m'
 color_yellow=$'\e[1;33m'
-color_blue=$'\e[1;34m'
 color_magenta=$'\e[1;35m'
-color_cyan=$'\e[1;36m'
 color_normal=$'\e[0m'
 
 function usage {
     cat <<EOF
-Usage: ${mame} [<global options>] <stage> [<command options>]
+Usage: ${name} [<global options>] <stage> [<command options>]
 
 Stages
 
@@ -64,23 +61,23 @@ function log_colored {
 
 function log_stage {
     echo
-    log_colored "${color_magenta}" "### $@"
+    log_colored "${color_magenta}" "### $*"
 }
 
 function log_warning {
-    log_colored "${color_yellow}" "### $@"
+    log_colored "${color_yellow}" "### $*"
 }
 
 function log_error {
-    log_colored "${color_red}" "### $@"
+    log_colored "${color_red}" "### $*"
 }
 
 function log_diag {
-    log_colored "${color_yellow}" "--- $@"
+    log_colored "${color_yellow}" "--- $*"
 }
 
 function error {
-    echo "### Error: $@"
+    echo "### Error: $*"
     exit 1
 }
 
@@ -88,7 +85,7 @@ function run_configure {
     build_type="$1"
     shift
 
-    mkdir -p ${install}
+    mkdir -p "${install}"
     configure="./configure --builddir=${build} --prefix=${install} --generator=Ninja --enable-werror --enable-ccache --with-hilti-compiler-launcher=ccache"
 
     clang_tidy=$(which clang-tidy 2>/dev/null)
@@ -112,7 +109,7 @@ function run_configure {
             --clang-tidy)
                 test $# -gt 0 || usage
                 clang_tidy="$2"
-                test -x ${clang_tidy} || error "clang-tidy not found in $2"
+                test -x "${clang_tidy}" || error "clang-tidy not found in $2"
                 shift 2
                 ;;
 
@@ -140,7 +137,7 @@ function run_configure {
         esac
     done
 
-    if [ -e ${build} ]; then
+    if [ -e "${build}" ]; then
         error "Build directory ${build} already exists, delete first"
     fi
 
@@ -152,9 +149,9 @@ function run_configure {
     log_stage "Running configure ... (${configure})"
 
     ${configure} || exit 1
-    mkdir -p ${artifacts}
+    mkdir -p "${artifacts}"
 
-    echo "${clang_tidy}" >${build}/.clang_tidy
+    echo "${clang_tidy}" >"${build}"/.clang_tidy
 
     if [ -x "${clang_tidy}" ]; then
         pushd "${build}" >/dev/null || exit 1
@@ -169,15 +166,15 @@ function run_build {
     # The level of parallelism chosen here is tuned for what's configured
     # in `.cirrus.yml` so that (1) we align with number of CPUs, and (2) we
     # do not trigger OOM kills in the Docker environments.
-    (cd ${build} && ninja -j4 all) || exit 1
+    (cd "${build}" && ninja -j4 all) || exit 1
 
     log_stage "Building docs ..."
-    (cd ${root}/doc && make BUILDDIR=${build} DESTDIR=${artifacts}/doc doxygen html) || exit 1
+    (cd "${root}"/doc && make BUILDDIR="${build}" DESTDIR="${artifacts}"/doc doxygen html) || exit 1
 }
 
 function run_install {
     log_stage "Installing code ..."
-    (cd ${build} && ninja install) || exit 1
+    (cd "${build}" && ninja install) || exit 1
 }
 
 function execute_btest {
@@ -192,33 +189,32 @@ function execute_btest {
     fi
 
     if [ -n "${SPICY_BTEST_GROUPS}" ]; then
-        group="-g ${SPICY_BTEST_GROUPS}"
+        btest_group="-g ${SPICY_BTEST_GROUPS}"
     else
-        group=""
+        btest_group=""
     fi
 
     log_stage "Running ${name} tests ... (${btest_alternative} ${btest_group})"
-    pushd ${cwd} >/dev/null
+    pushd "${cwd}" >/dev/null || exit
 
-    eval ${preload} \
-        btest -j 5 \
-        -f ${artifacts}/diag.log \
-        -x ${artifacts}/diag.xml \
+    btest -j 5 \
+        -f "${artifacts}"/diag.log \
+        -x "${artifacts}"/diag.xml \
         -z 3 \
-        ${alternative} \
-        ${group}
+        "${alternative}" \
+        "${btest_group}"
 
     rc=$?
 
     if [ ${rc} != 0 ]; then
-        cp -a .tmp ${artifacts}/btest-tmp
+        cp -a .tmp "${artifacts}"/btest-tmp
         log_diag "Begin diagnostics"
-        cat ${artifacts}/diag.log
+        cat "${artifacts}"/diag.log
         log_diag "End diagnostics (complete test output in 'btest-tmp')"
         log_error "Tests have failed"
     fi
 
-    popd >/dev/null
+    popd >/dev/null || exit
     return ${rc}
 }
 
@@ -258,13 +254,13 @@ function run_test_install {
 
 function run_cleanup {
     log_stage "Cleaning up ..."
-    (cd ${build} && ninja clean) || exit 1
+    (cd "${build}" && ninja clean) || exit 1
     (cd doc && make clean) || exit 1
 }
 
 ### Main
 
-while getopts "r:b:" opt; do
+while getopts "hr:b:" opt; do
     case "${opt}" in
         h)
             usage
@@ -287,9 +283,9 @@ if [ -z "${build}" ]; then
     build=${root}/build-ci
 fi
 
-install=/tmp/ci-install-$(basename ${build})
-root=$(realpath ${root})
-build=$(realpath ${build})
+install=/tmp/ci-install-$(basename "${build}")
+root=$(realpath "${root}")
+build=$(realpath "${build}")
 artifacts=${build}/ci
 
 cmd=$1
@@ -297,16 +293,16 @@ shift
 
 test -n "${cmd}" || usage
 
-cd ${root}
+cd "${root}" || exit
 test -e CMakeLists.txt || error "${root} is not the project's root git repository"
 
 case "${cmd}" in
-    configure) (run_configure $@) ;;
-    build) (run_build $@) ;;
-    install) (run_install $@) ;;
-    test-build) (run_test_build $@) ;;
-    test-install) (run_test_install $@) ;;
-    test-code) (run_test_code $@) ;;
-    cleanup) (run_cleanup $@) ;;
+    configure) (run_configure "$@") ;;
+    build) (run_build "$@") ;;
+    install) (run_install "$@") ;;
+    test-build) (run_test_build "$@") ;;
+    test-install) (run_test_install "$@") ;;
+    test-code) (run_test_code "$@") ;;
+    cleanup) (run_cleanup "$@") ;;
     *) usage ;;
 esac
