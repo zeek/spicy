@@ -160,8 +160,8 @@ struct Collector : public optimizer::visitor::Collector {
     }
 
     void operator()(operator_::struct_::Unset* n) final {
-        auto* field = fieldForOperator(n);
-        field->unsets.push_back(n);
+        if ( auto* field = fieldForOperator(n) )
+            field->unsets.push_back(n);
     }
 };
 
