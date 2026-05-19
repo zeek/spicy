@@ -482,6 +482,10 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         for ( const auto& pattern : n->patterns() ) {
             if ( auto rc = pattern.validate(); ! rc )
                 error(rc.error(), n);
+
+            static std::locale c_locale("C");
+            if ( ! std::ranges::all_of(pattern.value(), [&](auto&& c) { return std::isprint(c, c_locale); }) )
+                error("invalid pattern: patterns must only contain ASCII characters", n);
         }
 
         if ( n->attributes()->find(hilti::attribute::kind::Anchor) )

@@ -1,3 +1,9 @@
+1.17.0-dev.17 | 2026-05-19 15:51:00 +0200
+
+  * GH-2358: Reject patterns containing non-ASCII characters. (Benjamin Bannier, Corelight)
+
+    Closes #2358.
+
 1.17.0-dev.15 | 2026-05-18 16:01:42 +0200
 
   * Fix potential nullptr dereference in remove-unused-fields pass. (Benjamin Bannier, Corelight)
