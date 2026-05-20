@@ -1,3 +1,19 @@
+1.17.0-dev.19 | 2026-05-20 14:41:28 +0200
+
+  * Fix Fiber constructor clobbering shared stack. (Arne Welzel, Corelight)
+
+    Previously, when constructing a Fiber with type SharedStack, we'd
+    initialize the underlying fiber with the global shared stack. This
+    isn't safe: The fiber_init() call writes to the shared stack, but
+    there's no guarantee that the shared stack isn't being used by
+    another fiber when this happens.
+
+    Circumvent this by moving the underlying fiber initialization into
+    __fiber_switch_trampoline(), where it is guaranteed that the previously
+    executing fiber has saved() the shared stack so that it is now free
+    to be used by a different fiber. Use the nullptr fiber_stack() return
+    as the indicator, that the initialization still needs to happen.
+
 1.17.0-dev.17 | 2026-05-19 15:51:00 +0200
 
   * GH-2358: Reject patterns containing non-ASCII characters. (Benjamin Bannier, Corelight)
