@@ -1,0 +1,421 @@
+# Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
+
+name: Check
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [master]
+    tags: ["*"]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  GIT_CONFIG_PARAMETERS: "'safe.directory=*'"
+
+  GITHUB_WORKSPACE: "${{ github.workspace }}"
+
+  CCACHE_DIR: ${{ github.workspace }}/ccache
+  CCACHE_MAXSIZE: "1G"
+  CCACHE_BASEDIR: "${{ github.workspace }}"
+  CCACHE_COMPRESS: "1"
+  HILTI_CXX_COMPILER_LAUNCHER: "ccache"
+
+  # Enforce sequential JIT'ing of files for controlled memory usage.
+  # HILTI_JIT_SEQUENTIAL: 1
+
+  # Always report any C++ compiler errors to stderr.
+  HILTI_JIT_SHOW_CXX_OUTPUT: 1
+
+  # Prevent Docker build steps from posting to the summary.
+  DOCKER_BUILD_SUMMARY: false
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - id: lint
+          file: ci/Dockerfile
+          env:
+            LD_LIBRARY_PATH: /usr/lib/llvm-21/lib/clang/21/lib/linux/
+          run: |
+            ./ci/run-ci -b build -j "$NPROCS" configure debug --cxx-compiler clang++-21 --clang-tidy /usr/bin/clang-tidy-21
+            ./ci/run-ci -b build -j "$NPROCS" build
+            ./ci/run-ci -b build -j "$NPROCS" test-code
+
+        - id: clang21-ubuntu-debug
+          file: ci/Dockerfile
+          env:
+            LD_LIBRARY_PATH: /usr/lib/llvm-21/lib/clang/21/lib/linux/
+          run: |
+            ./ci/run-ci -b build -j "$NPROCS" configure debug --cxx-compiler clang++-21
+            ./ci/run-ci -b build -j "$NPROCS" build
+            ./ci/run-ci -b build -j "$NPROCS" test-build
+            ./ci/run-ci -b build -j "$NPROCS" install
+            ninja -C build package
+
+        - id: clang21-lts-ubuntu-release
+          file: ci/Dockerfile
+          env:
+            LD_LIBRARY_PATH: /usr/lib/llvm-21/lib/clang/21/lib/linux/
+          run: |
+            ./ci/run-ci -b build -j "$NPROCS" configure release --cxx-compiler clang++-21
+            ./ci/run-ci -b build -j "$NPROCS" build
+            ./ci/run-ci -b build -j "$NPROCS" test-build
+            ./ci/run-ci -b build -j "$NPROCS" install
+            ./ci/run-ci -b build -j "$NPROCS" cleanup
+            ./ci/run-ci -b build -j "$NPROCS" test-install
+            ninja -C build package
+
+        - id: clang21-lts-ubuntu-release-static
+          file: ci/Dockerfile
+          env:
+            LD_LIBRARY_PATH: /usr/lib/llvm-21/lib/clang/21/lib/linux/
+          run: |
+            ./ci/run-ci -b build -j "$NPROCS" configure release --cxx-compiler clang++-21
+            ./ci/run-ci -b build -j "$NPROCS" build
+            ./ci/run-ci -b build -j "$NPROCS" test-build
+            ./ci/run-ci -b build -j "$NPROCS" install
+            ./ci/run-ci -b build -j "$NPROCS" cleanup
+            ./ci/run-ci -b build -j "$NPROCS" test-install
+
+        - id: no-toolchain
+          file: ci/Dockerfile
+          run: |
+            ./ci/run-ci -b build -j "$NPROCS" configure release --build-toolchain no
+            ./ci/run-ci -b build -j "$NPROCS" build
+            ./ci/run-ci -b build -j "$NPROCS" install
+            ninja -C build package
+
+        - id: validate-release-tarball
+          file: ci/Dockerfile
+          run: |
+            scripts/make-tarball.sh
+
+            mkdir /tmp/spicy-tarball
+            tar xf spicy*.tar.gz -C /tmp/spicy-tarball
+
+            cd /tmp/spicy-tarball/spicy-*
+            ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror --with-hilti-compiler-launcher=ccache
+
+            cd /tmp/spicy-tarball/spicy-*
+            ninja -j "$NPROCS" -C build
+
+            cd /tmp/spicy-tarball/spicy-*
+            btest -j "$NPROCS" -d -c tests/btest.cfg
+
+        - id: alpine-3.23
+          file: docker/Dockerfile.alpine-3.23
+          run: |
+            ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
+            ninja -j "$NPROCS" -C build install
+            SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -j "$NPROCS" -d -c tests/btest.cfg -a installation
+            ninja -j "$NPROCS" -C build package
+
+        - id: docker-centos-stream-9
+          file: docker/Dockerfile.centos-stream-9
+          run: |
+            ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
+            ninja -j "$NPROCS" -C build check all package
+            cp build/spicy*.rpm .
+            rpm -i ./spicy*.rpm
+            rm -rf build
+            SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -j "$NPROCS" -d -c tests/btest.cfg -a installation
+
+        - id: docker-debian12
+          file: docker/Dockerfile.debian-12
+          run: |
+            ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
+
+            ninja -j "$NPROCS" -C build check all package
+            cp build/spicy*.deb .
+            dpkg --install ./spicy*.deb
+            rm -rf build
+
+            SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -j "$NPROCS" -d -c tests/btest.cfg -a installation
+
+        - id: docker-debian13
+          file: docker/Dockerfile.debian-13
+          run: |
+            ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
+
+            ninja -j "$NPROCS" -C build check all package
+            cp build/spicy*.deb .
+            dpkg --install ./spicy*.deb
+            rm -rf build
+
+            SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -j "$NPROCS" -d -c tests/btest.cfg -a installation
+
+        - id: docker-ubuntu22
+          file: docker/Dockerfile.ubuntu-22
+          run: |
+            ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
+
+            ninja -j "$NPROCS" -C build check all package
+            cp build/spicy*.deb .
+            dpkg --install ./spicy*.deb
+            rm -rf build
+
+            SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -j "$NPROCS" -d -c tests/btest.cfg -a installation
+
+        - id: docker-ubuntu24
+          file: docker/Dockerfile.ubuntu-24
+          run: |
+            ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
+
+            ninja -j "$NPROCS" -C build check all package
+            cp build/spicy*.deb .
+            dpkg --install ./spicy*.deb
+            rm -rf build
+
+            SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -j "$NPROCS" -d -c tests/btest.cfg -a installation
+
+        - id: docker-fedora42
+          file: docker/Dockerfile.fedora-42
+          run: |
+            ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
+
+            ninja -j "$NPROCS" -C build check all package
+            cp build/spicy*.rpm .
+            rpm -i ./spicy*.rpm
+            rm -rf build
+
+            SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -j "$NPROCS" -d -c tests/btest.cfg -a installation
+
+        - id: docker-fedora43
+          file: docker/Dockerfile.fedora-43
+          run: |
+            ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
+
+            ninja -j"$NPROCS" -C build check all package
+            cp build/spicy*.rpm .
+            rpm -i ./spicy*.rpm
+            rm -rf build
+
+            SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -j "$NPROCS" -d -c tests/btest.cfg -a installation
+
+        - id: docker-opensuse15.6
+          file: docker/Dockerfile.opensuse-15.6
+          run: |
+            ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
+
+            ninja -j"$NPROCS" -C build check all package
+            cp build/spicy*.rpm .
+            rpm -i ./spicy*.rpm
+            rm -rf build
+
+            SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -j "$NPROCS" -d -c tests/btest.cfg -a installation
+
+    name: ${{ matrix.id }}
+
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        submodules: recursive
+        persist-credentials: false
+
+    - name: Cache Docker image
+      # uses: ScribeMD/docker-cache@0.5.0
+      uses: AndreKurait/docker-cache@0fe76702a40db986d9663c24954fc14c6a6031b7 # 0.6.0
+      id: docker-cache
+      with:
+        key: docker-${{ matrix.id }}-${{ hashFiles(matrix.file) }}
+
+    - name: Build Docker image
+      uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
+      with:
+        file: ${{ matrix.file }}
+        context: . # Reuse the current checkout instead of doing a full recursive clone again.
+        tags: ci-${{ hashFiles(matrix.file) }}
+        load: true
+        push: false
+
+    - name: Setup ccache
+      uses: hendrikmuhs/ccache-action@d62db5f07c26379fc4b4e0916f098a92573c3b03 # v1.2.23
+      with:
+        key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.id }}
+
+    - name: Configure environment
+      run: |
+        echo "NPROCS=$(nproc)" >> "$GITHUB_ENV"
+
+    - name: Run CI
+      env:
+          # We convert the environment variable dictionaries to JSON to work
+          # around potential issues with shell quoting.
+          _GHA_ENV: ${{ toJSON(env) }}
+          _MATRIX_ENV: ${{ toJSON(matrix.env) }}
+      run: |
+        # Assemble environment variables for the script. We support both global
+        # as well as job variables with the latter taking precedence. We also
+        # allow either of them to be empty.
+        python3 -c '
+        import os, json
+
+        gha = json.loads(os.environ.get("_GHA_ENV") or "{}") or {}
+        mat = json.loads(os.environ.get("_MATRIX_ENV") or "{}") or {}
+        merged = {**gha, **mat}
+        with open("container.env", "w") as f:
+            for k, v in merged.items():
+                # Handle multiline flattening
+                val = " ".join(str(v).splitlines())
+                f.write(f"{k}={val}\n")
+        '
+
+        docker run --rm \
+            --env-file container.env \
+            -v ${{ github.workspace }}:${{ github.workspace }} \
+            -v ${CCACHE_DIR}:${CCACHE_DIR} \
+            -w ${{ github.workspace }} \
+            ci-${{ hashFiles(matrix.file) }} \
+            bash -c "set -e; ${{ matrix.run }}"
+
+    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: ${{ matrix.id }}-artifacts
+        path: |
+          ./spicy*.deb
+          ./spicy*.rpm
+          build/spicy*.tar.gz
+          build/ci
+          test/artifacts
+        if-no-files-found: ignore
+
+  freebsd:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: freebsd-13
+            release: 13.5
+          - id: freebsd-14
+            release: 14.4
+
+    name: ${{ matrix.id }}
+
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        submodules: recursive
+        persist-credentials: false
+
+    - name: Setup ccache
+      uses: hendrikmuhs/ccache-action@d62db5f07c26379fc4b4e0916f098a92573c3b03 # v1.2.23
+      with:
+        key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.id }}
+
+    - uses: vmactions/freebsd-vm@d1e65811565151536c0c894fff74f06351ed26e6 # v1.4.5
+      with:
+        release: ${{ matrix.release }}
+        prepare: ./ci/prepare_freebsd.sh
+        # TODO: set up ccache.
+        run: |
+          ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --with-flex=/usr/local --with-bison=/usr/local --enable-werror
+          ninja -C build install
+          SPICY_INSTALLATION_DIRECTORY=/opt/spicy make -C tests test
+          ninja -C build package
+
+    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: ${{ matrix.id }}-artifacts
+        path: |
+          ./spicy*.deb
+          ./spicy*.rpm
+          build/spicy*.tar.gz
+          build/ci
+          test/artifacts
+        if-no-files-found: ignore
+
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - release: macos-15
+          - release: macos-26
+
+    runs-on: ${{ matrix.release }}
+
+    name: ${{ matrix.release }}
+
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        submodules: recursive
+        persist-credentials: false
+
+    - name: Setup ccache
+      uses: hendrikmuhs/ccache-action@d62db5f07c26379fc4b4e0916f098a92573c3b03 # v1.2.23
+      with:
+        key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.release }}
+
+    - uses: tecolicom/actions-use-homebrew-tools@b9c066b79607fa3d71e0be05d7003bb75fd9ff34 # v1.3
+      with:
+        tools: >
+          bison
+          cmake
+          flex
+          ninja
+          ccache
+          pipx
+
+    - uses: threeal/pipx-install-action@b0bf0add7d5aefda03a3d4e47d651df807889e10 # v2.0.0
+      with:
+        packages: >
+          btest
+
+    - name: Configure
+      run: |
+        ./configure --with-flex="$(brew --prefix flex)" --with-bison="$(brew --prefix bison)" --generator=Ninja --enable-ccache --build-type=Debug
+    - name: Build
+      run: |
+        ninja -C build
+    - name: Test
+      run: |
+        btest -djc tests/btest.cfg
+
+  windows:
+    runs-on: windows-2025
+
+    steps:
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        submodules: recursive
+        persist-credentials: false
+
+    - name: Setup ccache
+      uses: hendrikmuhs/ccache-action@d62db5f07c26379fc4b4e0916f098a92573c3b03 # v1.2.23
+      with:
+        key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.release }}
+
+    - name: Set up MSVC Dev Cmd
+      uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
+      with:
+        sdk: "10.0.26100.0"
+
+    - name: Install dependencies
+      run: |
+        choco install -y --no-progress winflexbison3 ccache msysgit python ccache
+
+    - name: Set up environment
+      run: |
+        echo "C:\Program Files\Git\bin" >> $env:GITHUB_PATH
+        echo "C:\btest-venv\Scripts" >> $env:GITHUB_PATH
+
+    - name: Prepare
+      run: ci/windows/prepare.cmd
+
+    - name: Build
+      run: ci/windows/build.cmd
+
+    # TODO: Currently a number of tests fail, look into that and reenable test running in CI.
+    # - name: Test
+    #   run: ci/windows/test.cmd
