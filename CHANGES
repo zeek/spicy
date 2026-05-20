@@ -4,8 +4,8 @@
 
     This task was meant for continuously testing the Spicy Homebrew formula.
     This recently started failing, likely due to changes in Cirrus images.
-    Since this has AFAIR never caught any issue and we run it by hand when
-    bumping the formula anyway drop the task here.
+    Since this has as far as I recall never caught any issue and we run it by
+    hand when bumping the formula anyway drop the task here.
 
     (cherry picked from commit f7a28af556f918619bc2150458b29d9d6a357a76)
 
