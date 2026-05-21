@@ -1,3 +1,8 @@
+1.17.0-dev.22 | 2026-05-21 15:43:16 +0200
+
+  * Bump 3rdparty/vcpkg from `940f587` to `41ff869` (dependabot[bot])
+  * Bump 3rdparty/utfcpp from `9dd9052` to `660314d` (dependabot[bot])
+
 1.17.0-dev.19 | 2026-05-20 14:41:28 +0200
 
   * Fix Fiber constructor clobbering shared stack. (Arne Welzel, Corelight)
