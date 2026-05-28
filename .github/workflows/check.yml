@@ -413,12 +413,13 @@ jobs:
         echo "C:\Program Files\Git\bin" >> $env:GITHUB_PATH
         echo "C:\btest-venv\Scripts" >> $env:GITHUB_PATH
 
+        Set-ExecutionPolicy Unrestricted -Force
+
     - name: Prepare
       run: ci/windows/prepare.cmd
 
     - name: Build
       run: ci/windows/build.cmd
 
-    # TODO: Currently a number of tests fail, look into that and reenable test running in CI.
-    # - name: Test
-    #   run: ci/windows/test.cmd
+    - name: Test
+      run: ci/windows/test.cmd
