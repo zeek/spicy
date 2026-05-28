@@ -1,3 +1,7 @@
+1.17.0-dev.26 | 2026-05-28 16:58:12 +0200
+
+  * Also run CI on `main` branch ¯\_(ツ)_/¯. (Benjamin Bannier, Corelight)
+
 1.17.0-dev.24 | 2026-05-28 16:15:58 +0200
 
   * Add Github Actions CI. (Benjamin Bannier, Corelight)
