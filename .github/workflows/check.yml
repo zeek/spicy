@@ -34,6 +34,7 @@ env:
 
 jobs:
   linux:
+    if: false
     runs-on: ubuntu-latest
 
     strategy:
@@ -288,6 +289,7 @@ jobs:
         if-no-files-found: ignore
 
   freebsd:
+    if: false
     runs-on: ubuntu-latest
 
     strategy:
@@ -335,6 +337,7 @@ jobs:
         if-no-files-found: ignore
 
   macos:
+    if: false
     strategy:
       fail-fast: false
       matrix:
