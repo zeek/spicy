@@ -18,10 +18,14 @@
   <tr>
     <td>Build status</td>
     <td>
-      <a href="https://cirrus-ci.com/github/zeek/spicy/release/1.16"><img src="https://api.cirrus-ci.com/github/zeek/spicy.svg?branch=release/1.16" alt="Build status release"></a>
+      <a href="https://github.com/zeek/spicy/actions/workflows/check.yml">
+        <img src="https://github.com/zeek/spicy/actions/workflows/check.yml/badge.svg?branch=release%2F1.16" alt="Status">
+      </a>
     </td>
     <td>
-      <a href="https://cirrus-ci.com/github/zeek/spicy/main"><img src="https://api.cirrus-ci.com/github/zeek/spicy.svg" alt="Build status development"></a>
+      <a href="https://github.com/zeek/spicy/actions/workflows/check.yml">
+        <img src="https://github.com/zeek/spicy/actions/workflows/check.yml/badge.svg" alt="Status">
+      </a>
     </td>
   </tr>
 </table>
