@@ -35,11 +35,11 @@ type ExportedType = struct {
 
 export ExportedType;
 
-public function extern void member_const(X x) {
+public function extern void member_const(X x) &always-emit {
     assert x.only_reads == ""; # read access
 }
 
-public function extern void member_non_const(inout X x) {
+public function extern void member_non_const(inout X x) &always-emit {
     assert x.only_reads == ""; # read access
     x.only_writes = "write"; # write access
 }

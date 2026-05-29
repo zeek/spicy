@@ -27,7 +27,7 @@
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]       - deleting function state: fn
 [debug/optimizer] pass: value-propagation (round 1, pass iteration 2)
-[debug/optimizer] pass: remove-unused-parameters (round 1, pass iteration 1)
+[debug/optimizer] pass: optimize-parameters (round 1, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 1, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 2, pass iteration 1)
@@ -52,7 +52,7 @@
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]       - deleting function state: fn
 [debug/optimizer] pass: value-propagation (round 2, pass iteration 1)
-[debug/optimizer] pass: remove-unused-parameters (round 2, pass iteration 1)
+[debug/optimizer] pass: optimize-parameters (round 2, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 2, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 3, pass iteration 1)
@@ -77,7 +77,7 @@
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]       - deleting function state: fn
 [debug/optimizer] pass: value-propagation (round 3, pass iteration 1)
-[debug/optimizer] pass: remove-unused-parameters (round 3, pass iteration 1)
+[debug/optimizer] pass: optimize-parameters (round 3, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 3, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 3, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 4, pass iteration 1)
@@ -94,7 +94,7 @@
 [debug/optimizer] pass: flatten-blocks (round 4, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 4, pass iteration 1)
 [debug/optimizer] pass: value-propagation (round 4, pass iteration 1)
-[debug/optimizer] pass: remove-unused-parameters (round 4, pass iteration 1)
+[debug/optimizer] pass: optimize-parameters (round 4, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 4, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 4, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 5, pass iteration 1)
@@ -102,6 +102,6 @@
 [debug/optimizer] pass: flatten-blocks (round 5, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 5, pass iteration 1)
 [debug/optimizer] pass: value-propagation (round 5, pass iteration 1)
-[debug/optimizer] pass: remove-unused-parameters (round 5, pass iteration 1)
+[debug/optimizer] pass: optimize-parameters (round 5, pass iteration 1)
 [debug/optimizer] pass: propagate-function-returns (round 5, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 5, pass iteration 1)

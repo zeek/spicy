@@ -13,6 +13,7 @@
 [debug/optimizer] pass: dead-code-static (round 3, pass iteration 1)
 [debug/optimizer]   [unused_function.hlt:14:1-14:48] declaration::Function "function bool private_unused() { return False; }" -> null (removing declaration for unused function)
 [debug/optimizer]   [unused_function.hlt:15:1-15:60] declaration::Function "function bool private_unused1() { return private_unused(); }" -> null (removing declaration for unused function)
+[debug/optimizer]   [unused_function.hlt:26:1-26:55] declaration::Function "function extern bool extern_unused2() { return False; }" -> null (removing declaration for unused function)
 [debug/optimizer]       - deleting module state: Foo
 [debug/optimizer] pass: feature-requirements (round 1, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 1, pass iteration 1)
@@ -22,6 +23,9 @@
 [debug/optimizer]     -> modified
 [debug/optimizer]     * module changed: Foo
 [debug/optimizer]     * module changed: Foo
+[debug/optimizer] pass: optimize-parameters (round 1, pass iteration 1)
+[debug/optimizer] pass: optimize-parameters (round 2, pass iteration 1)
+[debug/optimizer] pass: optimize-parameters (round 3, pass iteration 1)
 [debug/optimizer] pass: peephole (round 1, pass iteration 1)
 [debug/optimizer] pass: peephole (round 2, pass iteration 1)
 [debug/optimizer] pass: peephole (round 3, pass iteration 1)
@@ -31,9 +35,6 @@
 [debug/optimizer] pass: remove-unused-fields (round 1, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 2, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 3, pass iteration 1)
-[debug/optimizer] pass: remove-unused-parameters (round 1, pass iteration 1)
-[debug/optimizer] pass: remove-unused-parameters (round 2, pass iteration 1)
-[debug/optimizer] pass: remove-unused-parameters (round 3, pass iteration 1)
 [debug/optimizer]     * resolver
 [debug/optimizer]     * resolver
 [debug/optimizer]       - updating module: Foo

@@ -1,5 +1,5 @@
-# @TEST-EXEC: ${HILTIC} -P "" -o Foo.h %INPUT
-# @TEST-EXEC: ${HILTIC} -j -D compiler,jit %INPUT driver.cc >output
+# @TEST-EXEC: hiltic --strict-public-api -P "" -o Foo.h %INPUT
+# @TEST-EXEC: hiltic --strict-public-api -j -D compiler,jit %INPUT driver.cc >output
 # @TEST-EXEC: btest-diff output
 
 module Foo {
@@ -8,7 +8,7 @@ import hilti;
 
 public type MyException = exception;
 
-function extern void test() {
+public function extern void test() {
     hilti::print("HILTI - Begin");
     throw MyException("test exception");
     hilti::print("HILTI - End - Not reached");

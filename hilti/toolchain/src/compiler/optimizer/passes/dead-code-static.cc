@@ -144,8 +144,11 @@ struct Collector : public optimizer::visitor::Collector {
         if ( function->body() )
             usage.defined = true;
 
-        // If the function cannot be modified, mark it as referenced.
-        if ( ! optimizer()->mayModify(n) )
+        // If the declaration has a `&cxxname` it is defined in C++.
+        else if ( function->attributes()->find(hilti::attribute::kind::Cxxname) )
+            usage.defined = true;
+
+        if ( ! optimizer()->mayRemove(n) )
             usage.referenced = true;
 
         if ( function->ftype()->flavor() == type::function::Flavor::Hook )
@@ -154,7 +157,7 @@ struct Collector : public optimizer::visitor::Collector {
         if ( const auto* decl = n->linkedDeclaration(context()) ) {
             // Mark it a referenced if the declaration must not be modified, so
             // that we don't remove it.
-            usage.referenced |= (! optimizer()->mayModify(decl));
+            usage.referenced |= (! optimizer()->mayModifyOrRemove(decl));
 
             // As this type is referenced by a function declaration it is used.
             used[decl->fullyQualifiedID()] = true;
@@ -203,7 +206,7 @@ struct Collector : public optimizer::visitor::Collector {
 
         // Record the type if not already known. If the type is not modifiable,
         // record it as used.
-        used.insert({type_id, (! optimizer()->mayModify(n))});
+        used.insert({type_id, (! optimizer()->mayModifyOrRemove(n))});
     }
 
     void operator()(expression::Member* n) final {
@@ -341,7 +344,7 @@ struct Mutator : public optimizer::visitor::Mutator {
             }
         }
 
-        if ( ! optimizer()->mayModify(n) )
+        if ( ! optimizer()->mayModifyOrRemove(n) )
             remove = false;
 
         // We only remove members marked `&internal`.
@@ -353,7 +356,7 @@ struct Mutator : public optimizer::visitor::Mutator {
             // parent type declaration is modifiable, even if the member itself
             // isn't marked `&internal` (but not if marked `&always-emit`).
             const auto& used = collector->function_usage.at(n->fullyQualifiedID());
-            if ( ! used.referenced && ! used.hook && optimizer()->mayModify(parent_type->typeDeclaration()) &&
+            if ( ! used.referenced && ! used.hook && optimizer()->mayModifyOrRemove(parent_type->typeDeclaration()) &&
                  ! n->attributes()->find(hilti::attribute::kind::AlwaysEmit) )
                 remove = true;
         }

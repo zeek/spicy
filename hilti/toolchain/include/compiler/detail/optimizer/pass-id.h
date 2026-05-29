@@ -19,7 +19,7 @@ enum PassID {
     FlattenBlocks,
     DeadCodeCFG,
     ValuePropagation,
-    RemoveUnusedParameters,
+    OptimizeParameters,
     PropagateFunctionReturns,
     RemoveUnusedFields,
 };
@@ -31,9 +31,9 @@ constexpr util::enum_::Value<PassID> PassIDs[] = {
     {.value = PassID::FeatureRequirements, .name = "feature-requirements"},
     {.value = PassID::FlattenBlocks, .name = "flatten-blocks"},
     {.value = PassID::Peephole, .name = "peephole"},
+    {.value = PassID::OptimizeParameters, .name = "optimize-parameters"},
     {.value = PassID::PropagateFunctionReturns, .name = "propagate-function-returns"},
     {.value = PassID::RemoveUnusedFields, .name = "remove-unused-fields"},
-    {.value = PassID::RemoveUnusedParameters, .name = "remove-unused-parameters"},
     {.value = PassID::ValuePropagation, .name = "value-propagation"},
 };
 }

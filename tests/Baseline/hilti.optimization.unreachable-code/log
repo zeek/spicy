@@ -23,6 +23,9 @@
 [debug/optimizer]     * function changed: foo
 [debug/optimizer]     -> modified
 [debug/optimizer]     -> modified
+[debug/optimizer] pass: optimize-parameters (round 1, pass iteration 1)
+[debug/optimizer] pass: optimize-parameters (round 2, pass iteration 1)
+[debug/optimizer] pass: optimize-parameters (round 3, pass iteration 1)
 [debug/optimizer] pass: peephole (round 1, pass iteration 1)
 [debug/optimizer] pass: peephole (round 2, pass iteration 1)
 [debug/optimizer] pass: peephole (round 3, pass iteration 1)
@@ -32,9 +35,6 @@
 [debug/optimizer] pass: remove-unused-fields (round 1, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 2, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 3, pass iteration 1)
-[debug/optimizer] pass: remove-unused-parameters (round 1, pass iteration 1)
-[debug/optimizer] pass: remove-unused-parameters (round 2, pass iteration 1)
-[debug/optimizer] pass: remove-unused-parameters (round 3, pass iteration 1)
 [debug/optimizer]   [unreachable-code.hlt:16:5-16:32] statement::Expression "hilti::print("after1", True);" -> null (unreachable code)
 [debug/optimizer]   [unreachable-code.hlt:17:5-17:32] statement::Expression "hilti::print("after2", True);" -> null (unreachable code)
 [debug/optimizer]   [unreachable-code.hlt:23:5-26:36] statement::If "if ( x ) { hilti::print("True", True); } else { hilti::print("False", True); }" -> null (unreachable code)

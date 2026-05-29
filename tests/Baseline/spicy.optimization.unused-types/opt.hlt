@@ -21,13 +21,13 @@ public type Pub2 = struct {
 };
 type Priv5 = struct {
     optional<hilti::RecoverableFailure> _t_error &always-emit &internal;
-    method optional<hilti::RecoverableFailure> _t_parse_stage1(copy optional<hilti::RecoverableFailure> _t_error);
-    method optional<hilti::RecoverableFailure> _t_parse_foo__Priv5_stage2(copy optional<hilti::RecoverableFailure> _t_error);
+    method optional<hilti::RecoverableFailure> _t_parse_stage1(optional<hilti::RecoverableFailure> _t_error);
+    method optional<hilti::RecoverableFailure> _t_parse_foo__Priv5_stage2(optional<hilti::RecoverableFailure> _t_error);
 };
 type Priv6 = struct {
     optional<hilti::RecoverableFailure> _t_error &always-emit &internal;
-    method optional<hilti::RecoverableFailure> _t_parse_stage1(copy optional<hilti::RecoverableFailure> _t_error);
-    method optional<hilti::RecoverableFailure> _t_parse_foo__Priv6_stage2(copy optional<hilti::RecoverableFailure> _t_error);
+    method optional<hilti::RecoverableFailure> _t_parse_stage1(optional<hilti::RecoverableFailure> _t_error);
+    method optional<hilti::RecoverableFailure> _t_parse_foo__Priv6_stage2(optional<hilti::RecoverableFailure> _t_error);
 };
 public type Pub3 = struct {
     Priv5 _anon_2 &optional &anonymous &no-emit="private";
@@ -232,13 +232,13 @@ init function void _t_register_foo_Priv3() {
 init function void _t_register_foo_Priv4() {
 }
 
-method optional<hilti::RecoverableFailure> foo::Priv5::_t_parse_stage1(copy optional<hilti::RecoverableFailure> _t_error) {
+method optional<hilti::RecoverableFailure> foo::Priv5::_t_parse_stage1(optional<hilti::RecoverableFailure> _t_error) {
     # "<...>/unused-types.spicy:27:14-27:20"
     hilti::debugIndent("spicy");
     return (*self)._t_parse_foo__Priv5_stage2(_t_error);
 }
 
-method optional<hilti::RecoverableFailure> foo::Priv5::_t_parse_foo__Priv5_stage2(copy optional<hilti::RecoverableFailure> _t_error) {
+method optional<hilti::RecoverableFailure> foo::Priv5::_t_parse_foo__Priv5_stage2(optional<hilti::RecoverableFailure> _t_error) {
     # "<...>/unused-types.spicy:27:14-27:20"
     hilti::debugDedent("spicy");
     return _t_error;
@@ -247,13 +247,13 @@ method optional<hilti::RecoverableFailure> foo::Priv5::_t_parse_foo__Priv5_stage
 init function void _t_register_foo_Priv5() {
 }
 
-method optional<hilti::RecoverableFailure> foo::Priv6::_t_parse_stage1(copy optional<hilti::RecoverableFailure> _t_error) {
+method optional<hilti::RecoverableFailure> foo::Priv6::_t_parse_stage1(optional<hilti::RecoverableFailure> _t_error) {
     # "<...>/unused-types.spicy:28:14-28:20"
     hilti::debugIndent("spicy");
     return (*self)._t_parse_foo__Priv6_stage2(_t_error);
 }
 
-method optional<hilti::RecoverableFailure> foo::Priv6::_t_parse_foo__Priv6_stage2(copy optional<hilti::RecoverableFailure> _t_error) {
+method optional<hilti::RecoverableFailure> foo::Priv6::_t_parse_foo__Priv6_stage2(optional<hilti::RecoverableFailure> _t_error) {
     # "<...>/unused-types.spicy:28:14-28:20"
     hilti::debugDedent("spicy");
     return _t_error;
