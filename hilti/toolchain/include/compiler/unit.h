@@ -160,7 +160,6 @@ public:
     // Must already be part of AST.
     static std::shared_ptr<Unit> fromExistingUID(const std::shared_ptr<Context>& context, declaration::module::UID uid);
 
-
     /**
      * Entry point for the HILTI linker, The linker combines meta data from
      * several compiled HILTI modules and creates an additional unit from it,

@@ -12,7 +12,6 @@ using namespace hilti::rt::detail;
 #include <iostream>
 #include <utility>
 
-
 using namespace hilti::rt;
 
 detail::DebugLogger::DebugLogger(hilti::rt::filesystem::path output) : _path(std::move(output)) {}

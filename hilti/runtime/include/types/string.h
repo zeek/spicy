@@ -73,7 +73,6 @@ public:
         return *this;
     }
 
-
     // Methods borrowed from `std::string`.
     using S::empty;
     using S::find;

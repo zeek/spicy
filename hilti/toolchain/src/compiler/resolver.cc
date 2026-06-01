@@ -870,7 +870,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         }
     }
 
-
     void operator()(expression::Name* n) final {
         if ( ! n->resolvedDeclarationIndex() ) {
             // If the expression has received a fully qualified ID, we look
@@ -907,7 +906,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             }
         }
     }
-
 
     void operator()(expression::UnresolvedOperator* n) final {
         if ( n->kind() == operator_::Kind::Cast && n->areOperandsUnified() ) {
@@ -1034,7 +1032,6 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             n->local()->setType(context(), et);
         }
     }
-
 
     void operator()(statement::Switch* n) final {
         n->preprocessCases(context());
@@ -1443,7 +1440,6 @@ struct VisitorPass3 : visitor::MutatingPostOrder {
                                                                                builder()->integer(i)},
                                                                               n->meta()),
                                                              rhs_elem_type);
-
 
                         if ( auto* x = coerceTo(n, rhs_elem, lhs_elem_type, false, true) )
                             new_elems.push_back(x);

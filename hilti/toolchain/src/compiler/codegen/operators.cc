@@ -713,7 +713,6 @@ struct Visitor : hilti::visitor::PreOrder {
         result = fmt("%s.find(%s)", self, args[0]);
     }
 
-
     void operator()(operator_::stream::view::At* n) final {
         auto [self, args] = methodArguments(n);
         result = fmt("%s.at(%s)", self, args[0]);
@@ -738,7 +737,6 @@ struct Visitor : hilti::visitor::PreOrder {
         auto [self, args] = methodArguments(n);
         result = fmt("%s.sub(%s, %s)", self, args[0], args[1]);
     }
-
 
     // Stream
 

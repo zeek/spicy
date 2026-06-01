@@ -24,7 +24,6 @@ public:
     std::string& c;
 };
 
-
 TEST_SUITE_BEGIN("fiber");
 
 TEST_CASE("init") { hilti::rt::init(); }

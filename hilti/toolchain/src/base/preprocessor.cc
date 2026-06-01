@@ -50,7 +50,6 @@ hilti::Result<hilti::util::SourceCodePreprocessor::State> hilti::util::SourceCod
     return state();
 }
 
-
 hilti::Result<bool> hilti::util::SourceCodePreprocessor::_parseIf(const std::string_view& expression) {
     bool negate = false;
 

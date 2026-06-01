@@ -24,7 +24,6 @@ public:
         return ctx->make<Expression>(ctx, {expr, AttributeSet::create(ctx)}, std::move(id), linkage, std::move(meta));
     }
 
-
 protected:
     Expression(ASTContext* ctx, Nodes children, ID id, declaration::Linkage linkage, Meta meta)
         : Declaration(ctx, NodeTags, std::move(children), std::move(id), linkage, std::move(meta)) {}

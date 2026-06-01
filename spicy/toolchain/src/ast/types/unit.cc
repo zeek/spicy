@@ -59,7 +59,6 @@ unit::item::Properties Unit::propertyItems(const std::string& name) const {
     return props;
 }
 
-
 bool Unit::isResolved(node::CycleDetector* cd) const {
     if ( isWildcard() )
         return true;

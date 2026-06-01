@@ -513,7 +513,6 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         result = CxxTypes{.base_type = fmt("%s", t)};
     }
 
-
     void operator()(type::vector::Iterator* n) final {
         auto [cxx_type, _] = cg->cxxTypeForVector(n->dereferencedType(), true);
         result = CxxTypes{.base_type = cxx_type};

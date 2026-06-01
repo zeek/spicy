@@ -118,7 +118,6 @@ std::string printOperator(operator_::Kind kind, const Expressions& operands, boo
             return printOperator(kind, {operands[0]->print(), util::fmt("(%s)", args)}, meta);
         }
 
-
         default:
             return printOperator(kind, toVector(operands | std::views::transform([&render_one](const auto& op) {
                                                     return render_one(op->type());
@@ -162,7 +161,6 @@ std::string printOperator(operator_::Kind kind, const Operands& operands, const 
 
             return printOperator(kind, {render_one(operands[0]), util::fmt("(%s)", args)}, meta);
         }
-
 
         default: return printOperator(kind, toVector(operands | std::views::transform(render_one)), meta);
     }
@@ -320,7 +318,6 @@ QualifiedType* Operator::result(Builder* builder, const Expressions& operands, c
     else
         logger().internalError("operator::Operator::result() not overridden for dynamic operator result");
 }
-
 
 std::string Operator::print() const {
     if ( ! hasOperands() )

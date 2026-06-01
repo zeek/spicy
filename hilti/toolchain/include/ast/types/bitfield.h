@@ -177,5 +177,4 @@ private:
     unsigned int _width = 0;
 };
 
-
 } // namespace hilti::type

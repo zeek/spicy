@@ -66,7 +66,6 @@ const TypeInfo hilti::rt::type_info::uint64{std::nullopt, "uint64", TO_STRING(hi
 const TypeInfo hilti::rt::type_info::void_{std::nullopt, "void", TO_STRING_CONST("void"),
                                            new hilti::rt::type_info::Void()};
 
-
 std::vector<std::pair<const hilti::rt::type_info::bitfield::Bits&, hilti::rt::type_info::Value>> hilti::rt::type_info::
     Bitfield::iterate(const hilti::rt::type_info::Value& v) const {
     auto elements = _tuple_ti->tuple->iterate(v);

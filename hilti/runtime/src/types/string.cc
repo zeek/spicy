@@ -258,7 +258,6 @@ hilti::rt::String hilti::rt::strftime(std::string_view format, const hilti::rt::
     if ( ! localtime )
         throw InvalidArgument(hilti::rt::fmt("cannot convert timestamp to local time: %s", std::strerror(errno)));
 
-
     auto n = std::strftime(mbstr, size, std::string(format).c_str(), localtime);
 
     if ( ! n )

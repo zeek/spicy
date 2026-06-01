@@ -270,7 +270,6 @@ struct VisitorConstantFolder : public visitor::PreOrder {
         });
     }
 
-
     void operator()(operator_::time::CtorUnsignedIntegerSecs* n) final {
         result = tryReplaceCtorExpression<ctor::UnsignedInteger>(n, [this](auto* ctor) {
             return builder->ctorTime(hilti::rt::Time(ctor->value(), hilti::rt::Time::SecondTag()));

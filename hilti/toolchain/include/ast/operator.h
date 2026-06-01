@@ -161,7 +161,6 @@ constexpr util::enum_::Value<Kind> Kinds[] =
 /** Render an operator with its operand expressions. */
 extern std::string print(Kind kind, const Expressions& operands);
 
-
 /** Render an operator with its operand types. */
 extern std::string printSignature(Kind kind, const Expressions& operands, const Meta& meta);
 

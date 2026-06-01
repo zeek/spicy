@@ -634,7 +634,6 @@ TEST_CASE("strptime") {
     CHECK_THROWS_WITH_AS(strptime("Thursday Thu Jan  1 00:00:00 1969", "%A %c"),
                          "value cannot be represented as a time", const OutOfRange&);
 
-
     CHECK_THROWS_WITH_AS(strptime("Thursday Thu Jan  1 00:00:00 1970", "%S"), "could not parse time string",
                          const InvalidArgument&);
 }

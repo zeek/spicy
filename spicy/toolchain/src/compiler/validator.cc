@@ -905,7 +905,6 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                 error("skip field cannot have sinks attached", n);
         }
 
-
         auto* const count_attr = n->attributes()->find(attribute::kind::Count);
         auto* const repeat = n->repeatCount();
         if ( count_attr && (repeat && ! repeat->type()->type()->isA<hilti::type::Null>()) )

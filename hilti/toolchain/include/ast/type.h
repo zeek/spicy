@@ -127,7 +127,6 @@ inline bool operator!=(const Unification& u1, const Unification& u2) { return ! 
 
 } // namespace type
 
-
 namespace type {
 /**
  * Follows any `type::Name` reference chains to the actual, eventual type.

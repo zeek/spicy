@@ -258,7 +258,6 @@ public:
         return operands[0]->type()->type()->as<type::Map>()->valueType()->recreateAsConst(builder->context());
     }
 
-
     HILTI_OPERATOR(hilti, map::IndexConst)
 };
 HILTI_OPERATOR_IMPLEMENTATION(IndexConst);

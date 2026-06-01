@@ -260,7 +260,6 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
             cxx::declaration::Constant({cxxNamespace(), n->id()}, cg->compile(n->type(), codegen::TypeUsage::Storage),
                                        cg->compile(n->value()));
 
-
         // Literal integer values we can emit as `constexpr` so our safeints
         // can be used in C++ constant expressions. We likely can do this for
         // other simple types as well, but punt on that for now.

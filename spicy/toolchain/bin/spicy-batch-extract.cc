@@ -47,7 +47,6 @@ static void processPreBatchedInput(std::string needle, std::istream& in, std::os
             if ( m.size() != 7 )
                 error("unexpected number of argument for @begin-conn");
 
-
             if ( const auto& cid = std::string(m[1]); is_needle(cid) ) {
                 auto orig_id = std::string(m[3]);
                 auto resp_id = std::string(m[5]);

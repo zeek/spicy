@@ -60,5 +60,4 @@ protected:
     SPICY_NODE_1(ctor::Unit, Ctor, final);
 };
 
-
 } // namespace spicy::ctor

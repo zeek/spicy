@@ -36,9 +36,7 @@ protected:
     Optional(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"optional(*)"}, std::move(children), std::move(meta)) {}
 
-
     HILTI_NODE_1(type::Optional, UnqualifiedType, final);
 };
-
 
 } // namespace hilti::type

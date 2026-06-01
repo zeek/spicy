@@ -140,7 +140,6 @@ public:
                                                          std::move(meta));
     }
 
-
 private:
     ASTContext* _context;
 };

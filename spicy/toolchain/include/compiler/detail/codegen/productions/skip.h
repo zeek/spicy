@@ -47,7 +47,6 @@ public:
             return {};
     };
 
-
     Expression* expression() const final { return _ctor ? _ctor->expression() : nullptr; }
 
     QualifiedType* type() const final { return _void; };

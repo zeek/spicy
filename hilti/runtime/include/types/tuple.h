@@ -382,7 +382,6 @@ void print(const Tuple<Ts...>& x, bool newline = true) {
         cout.flush();
 }
 
-
 } // namespace tuple
 
 namespace detail::adl {

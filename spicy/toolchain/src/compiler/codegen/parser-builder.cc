@@ -41,7 +41,6 @@ using namespace spicy::detail;
 using namespace spicy::detail::codegen;
 using hilti::util::fmt;
 
-
 namespace spicy::logging::debug {
 inline const hilti::logging::DebugStream ParserBuilder("parser-builder");
 } // namespace spicy::logging::debug
@@ -926,7 +925,6 @@ struct ProductionVisitor : public production::Visitor {
                                      {builder()->difference(builder()->memberCall(limited, "offset"),
                                                             builder()->memberCall(cur, "offset"))});
     }
-
 
     void postParseField(const Production& p, const production::Meta& meta, Expression* pre_container_offset,
                         Expression* ncur, Expression* ncur_max_size, Expression* need_copy_from) {
@@ -3023,7 +3021,6 @@ std::shared_ptr<Builder> ParserBuilder::_featureCodeIf(const type::Unit* unit,
                                                        const std::vector<std::string_view>& features) {
     auto flags = hilti::util::toVector(
         features | std::views::transform([&](const auto& feature) { return featureConstant(unit, feature); }));
-
 
     auto* cond = std::accumulate(++flags.begin(), flags.end(), flags.front(),
                                  [this](const auto& a, const auto& b) { return builder()->expressionLogicalOr(a, b); });

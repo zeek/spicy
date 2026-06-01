@@ -271,7 +271,6 @@ Result<Ctor*> coerceCtor(Builder* builder, Ctor* c, QualifiedType* dst,
 Result<QualifiedType*> coerceType(Builder* builder, QualifiedType* src_, QualifiedType* dst_,
                                   bitmask<CoercionStyle> style = CoercionStyle::TryAllForAssignment);
 
-
 namespace coercer::detail {
 
 /** Implements the corresponding functionality for the default HILTI compiler plugin. */

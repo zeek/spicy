@@ -81,7 +81,6 @@
     HILTI_RT_ENUM_TYPE(name, __VA_ARGS__);                                                                             \
     inline name Enum(name::Value value) { return name(value); }
 
-
 /**
  * On Linux `__thread` is faster than C++'s `thread_local`. However, on macOS
  * `__thread` doesn't work. Also see this for a lot of detail:

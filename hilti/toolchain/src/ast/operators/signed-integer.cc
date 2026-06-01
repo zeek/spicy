@@ -57,7 +57,6 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(DecrPostfix);
 
-
 class DecrPrefix : public Operator {
 public:
     Signature signature(Builder* builder) const final {
@@ -77,7 +76,6 @@ public:
     HILTI_OPERATOR(hilti, signed_integer::DecrPrefix)
 };
 HILTI_OPERATOR_IMPLEMENTATION(DecrPrefix);
-
 
 class IncrPostfix : public Operator {
 public:
@@ -99,7 +97,6 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(IncrPostfix);
 
-
 class IncrPrefix : public Operator {
 public:
     Signature signature(Builder* builder) const final {
@@ -120,7 +117,6 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(IncrPrefix);
 
-
 class SignNeg : public Operator {
 public:
     Signature signature(Builder* builder) const final {
@@ -140,7 +136,6 @@ public:
     HILTI_OPERATOR(hilti, signed_integer::SignNeg)
 };
 HILTI_OPERATOR_IMPLEMENTATION(SignNeg);
-
 
 class Difference : public Operator {
 public:
@@ -169,7 +164,6 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(Difference);
 
-
 class DifferenceAssign : public Operator {
 public:
     Signature signature(Builder* builder) const final {
@@ -196,7 +190,6 @@ public:
     HILTI_OPERATOR(hilti, signed_integer::DifferenceAssign)
 };
 HILTI_OPERATOR_IMPLEMENTATION(DifferenceAssign);
-
 
 class Division : public Operator {
 public:
@@ -225,7 +218,6 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(Division);
 
-
 class DivisionAssign : public Operator {
 public:
     Signature signature(Builder* builder) const final {
@@ -253,7 +245,6 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(DivisionAssign);
 
-
 class Equal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
@@ -276,7 +267,6 @@ public:
     HILTI_OPERATOR(hilti, signed_integer::Equal)
 };
 HILTI_OPERATOR_IMPLEMENTATION(Equal);
-
 
 class Greater : public Operator {
 public:
@@ -301,7 +291,6 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(Greater);
 
-
 class GreaterEqual : public Operator {
 public:
     Signature signature(Builder* builder) const final {
@@ -324,7 +313,6 @@ public:
     HILTI_OPERATOR(hilti, signed_integer::GreaterEqual)
 };
 HILTI_OPERATOR_IMPLEMENTATION(GreaterEqual);
-
 
 class Lower : public Operator {
 public:
@@ -349,7 +337,6 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(Lower);
 
-
 class LowerEqual : public Operator {
 public:
     Signature signature(Builder* builder) const final {
@@ -372,7 +359,6 @@ public:
     HILTI_OPERATOR(hilti, signed_integer::LowerEqual)
 };
 HILTI_OPERATOR_IMPLEMENTATION(LowerEqual);
-
 
 class Modulo : public Operator {
 public:
@@ -401,7 +387,6 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(Modulo);
 
-
 class Multiple : public Operator {
 public:
     Signature signature(Builder* builder) const final {
@@ -428,7 +413,6 @@ public:
     HILTI_OPERATOR(hilti, signed_integer::Multiple)
 };
 HILTI_OPERATOR_IMPLEMENTATION(Multiple);
-
 
 class MultipleAssign : public Operator {
 public:
@@ -457,7 +441,6 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(MultipleAssign);
 
-
 class Power : public Operator {
 public:
     Signature signature(Builder* builder) const final {
@@ -484,7 +467,6 @@ public:
     HILTI_OPERATOR(hilti, signed_integer::Power)
 };
 HILTI_OPERATOR_IMPLEMENTATION(Power);
-
 
 class Sum : public Operator {
 public:
@@ -513,7 +495,6 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(Sum);
 
-
 class SumAssign : public Operator {
 public:
     Signature signature(Builder* builder) const final {
@@ -541,7 +522,6 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(SumAssign);
 
-
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
@@ -564,7 +544,6 @@ public:
     HILTI_OPERATOR(hilti, signed_integer::Unequal)
 };
 HILTI_OPERATOR_IMPLEMENTATION(Unequal);
-
 
 class CastToSigned : public Operator {
 public:
@@ -589,7 +568,6 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(CastToSigned);
 
-
 class CastToUnsigned : public Operator {
 public:
     Signature signature(Builder* builder) const final {
@@ -613,7 +591,6 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(CastToUnsigned);
 
-
 class CastToReal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
@@ -631,7 +608,6 @@ public:
     HILTI_OPERATOR(hilti, signed_integer::CastToReal)
 };
 HILTI_OPERATOR_IMPLEMENTATION(CastToReal);
-
 
 class CastToEnum : public Operator {
 public:
@@ -658,7 +634,6 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(CastToEnum);
 
-
 class CastToInterval : public Operator {
 public:
     Signature signature(Builder* builder) const final {
@@ -676,7 +651,6 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(CastToInterval);
 
-
 class CastToBool : public Operator {
 public:
     Signature signature(Builder* builder) const final {
@@ -693,7 +667,6 @@ public:
     HILTI_OPERATOR(hilti, signed_integer::CastToBool)
 };
 HILTI_OPERATOR_IMPLEMENTATION(CastToBool);
-
 
 class CtorSigned8 : public Operator {
 public:

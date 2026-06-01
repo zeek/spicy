@@ -113,7 +113,6 @@ public:
                              std::string_view>)>>
     explicit ID(const T&... s) : Base(s...) {}
 
-
     /** Concatenates multiple strings into a single ID, separating them with `::`. */
     ID(std::initializer_list<std::string_view> x) : Base(x) {}
 
@@ -357,7 +356,6 @@ private:
 };
 
 namespace declaration {
-
 
 /** Declaration of a C++ function. */
 struct Function : public DeclarationBase {

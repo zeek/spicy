@@ -39,7 +39,6 @@ protected:
     Iterator(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"iterator(set(*))"}, std::move(children), std::move(meta)) {}
 
-
     HILTI_NODE_1(type::set::Iterator, UnqualifiedType, final);
 };
 
@@ -75,7 +74,6 @@ protected:
         : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
     Set(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"set(*)"}, std::move(children), std::move(meta)) {}
-
 
     void newlyQualified(const QualifiedType* qtype) const final { elementType()->setConst(qtype->constness()); }
 

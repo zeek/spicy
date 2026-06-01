@@ -84,7 +84,6 @@ public:
         return f;
     }
 
-
 protected:
     UnresolvedField(ASTContext* ctx, Nodes children, size_t args_start, size_t args_end, size_t sinks_start,
                     size_t sinks_end, size_t hooks_start, size_t hooks_end, ID id, bool skip, Meta meta)

@@ -153,7 +153,6 @@ TEST_CASE("unpack") {
         CHECK_EQ(address::unpack("\x01\x02\x03\x04"_b, AddressFamily::IPv4, ByteOrder::Undef),
                  Result<Tuple<Address, Bytes>>(result::Error("undefined byte order")));
 
-
         CHECK_EQ(address::unpack("\x01\x02\x03"_b, AddressFamily::IPv4, ByteOrder::Big),
                  Result<Tuple<Address, Bytes>>(result::Error("insufficient data to unpack IPv4 address")));
 

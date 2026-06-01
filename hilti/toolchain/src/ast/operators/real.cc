@@ -328,7 +328,6 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(CastToUnsignedInteger);
 
-
 class CastToSignedInteger : public Operator {
 public:
     Signature signature(Builder* builder) const final {
@@ -351,7 +350,6 @@ public:
     HILTI_OPERATOR(hilti, real::CastToSignedInteger)
 };
 HILTI_OPERATOR_IMPLEMENTATION(CastToSignedInteger);
-
 
 class CastToTime : public Operator {
 public:

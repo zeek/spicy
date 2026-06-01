@@ -86,7 +86,6 @@ public:
     bool isCompact() const { return state().compact; }
     void setCompact(bool compact) { state().compact = compact; }
 
-
     bool isFirstInBlock() const { return state().first_in_block; }
     bool isLastInBlock() const { return state().last_in_block; }
     void setPositionInBlock(bool first, bool last) {

@@ -25,7 +25,6 @@ TEST_CASE("encode") {
     CHECK_THROWS_WITH_AS(string::encode("\xc3\x28"_hs, unicode::Charset::UTF8, unicode::DecodeErrorStrategy::STRICT),
                          "illegal UTF8 sequence in string", const RuntimeError&);
 
-
     CHECK_EQ(string::encode("\xF0\x9F\x98\x85"_hs, unicode::Charset::ASCII, unicode::DecodeErrorStrategy::REPLACE),
              "????"_b);
     CHECK_EQ(string::encode("\xF0\x9F\x98\x85"_hs, unicode::Charset::ASCII, unicode::DecodeErrorStrategy::IGNORE),

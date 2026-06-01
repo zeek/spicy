@@ -10,7 +10,6 @@
 //
 //   Replace checks for constants with a hasSideEffect() that may take flow into account as well.
 
-
 #include <hilti/ast/attribute.h>
 #include <hilti/ast/builder/builder.h>
 #include <hilti/ast/ctors/bool.h>

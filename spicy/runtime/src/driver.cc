@@ -443,7 +443,6 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             else
                 return hilti::rt::result::Error(hilti::rt::fmt("unknown session type '%s'", m[2]));
 
-
             create_state(type, parser_name, id, {}, {});
         }
         else if ( m[0] == "@begin-conn" ) {
@@ -591,7 +590,6 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
         else
             return hilti::rt::result::Error(hilti::rt::fmt("unknown command '%s'", m[0]));
     }
-
 
     DRIVER_DEBUG_STATS(flows.size(), connections.size());
 

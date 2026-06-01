@@ -129,7 +129,6 @@ public:
         _preprocessed = true;
     }
 
-
     void addCase(ASTContext* ctx, switch_::Case* c) {
         addChild(ctx, c);
         _preprocessed = false;

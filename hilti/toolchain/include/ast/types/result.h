@@ -36,7 +36,6 @@ protected:
     Result(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"result(*)"}, std::move(children), std::move(meta)) {}
 
-
     HILTI_NODE_1(type::Result, UnqualifiedType, final);
 };
 

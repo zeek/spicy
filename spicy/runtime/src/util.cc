@@ -23,7 +23,6 @@ std::string spicy::rt::version() {
 #endif
 }
 
-
 static inline void byte_to_hex(unsigned char byte, char* hex_out) {
     static constexpr char hex_chars[] = "0123456789ABCDEF";
     hex_out[0] = hex_chars[(byte & 0xf0) >> 4];

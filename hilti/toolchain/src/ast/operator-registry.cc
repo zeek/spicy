@@ -78,7 +78,6 @@ void Registry::debugEnforceBuiltInsAreResolved(Builder* builder) const {
         logger().fatalError("Aborting.");
 }
 
-
 std::pair<bool, std::optional<std::vector<const Operator*>>> Registry::functionCallCandidates(
     const expression::UnresolvedOperator* op) {
     assert(op->operands().size() > 0);

@@ -96,7 +96,6 @@ protected:
     Map(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"map(*)"}, std::move(children), std::move(meta)) {}
 
-
     void newlyQualified(const QualifiedType* qtype) const final {
         valueType()->setConst(qtype->constness());
         iteratorType()->type()->dereferencedType()->setConst(qtype->constness());

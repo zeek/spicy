@@ -950,7 +950,6 @@ Result<std::pair<bool, Expressions>> hilti::coerceOperands(Builder* builder, ope
     return std::make_pair(changed, std::move(transformed));
 }
 
-
 // If an expression is a reference, dereference it; otherwise return the
 // expression itself.
 static Expression* skipReferenceValue(Builder* builder, Expression* op) {

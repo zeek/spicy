@@ -71,7 +71,6 @@ public:
         return operands[0]->type();
     }
 
-
     HILTI_OPERATOR(hilti, set::iterator::IncrPrefix)
 };
 HILTI_OPERATOR_IMPLEMENTATION(IncrPrefix);

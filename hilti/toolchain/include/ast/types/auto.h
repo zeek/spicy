@@ -21,7 +21,6 @@ public:
 protected:
     Auto(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {}, std::move(meta)) {}
 
-
     HILTI_NODE_1(type::Auto, UnqualifiedType, final);
 };
 

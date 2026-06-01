@@ -96,7 +96,6 @@ exception::DisableAbortOnExceptions::~DisableAbortOnExceptions() {
     detail::globalState()->disable_abort_on_exceptions--;
 }
 
-
 void exception::printUncaught(const Exception& e) { printException("Uncaught exception", e, std::cerr); }
 
 void exception::printUncaught(const Exception& e, std::ostream& out) { printException("Uncaught exception", e, out); }

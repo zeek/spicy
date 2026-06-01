@@ -317,7 +317,6 @@ public:
         return i;
     }
 
-
     /** Returns the meta data associated with the node. */
     const auto& meta() const { return *_meta; }
 

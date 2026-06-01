@@ -346,7 +346,6 @@ hilti::Result<Nothing> Optimizer::run() {
     return Nothing();
 }
 
-
 std::optional<std::pair<ID, std::string>> Optimizer::idFeatureFromConstant(const ID& feature_constant) {
     const auto& id = feature_constant.local();
 

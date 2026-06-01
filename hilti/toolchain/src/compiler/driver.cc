@@ -227,7 +227,6 @@ Result<Nothing> Driver::writeOutput(std::ifstream& in, const hilti::rt::filesyst
     return Nothing();
 }
 
-
 void Driver::dumpUnit(const Unit& unit) {
     if ( auto* module = unit.module() ) {
         auto output_path = util::fmt("dbg.%s%s.ast", unit.uid().str(), unit.uid().process_extension.generic_string());
@@ -549,7 +548,6 @@ void Driver::updateProcessExtension(const declaration::module::UID& uid, const h
         logger().internalError(
             util::fmt("attempt to update process extension of unit %s to %s, but that already exists", uid,
                       ext.generic_string()));
-
 
     HILTI_DEBUG(logging::debug::Driver, fmt("updating process extension of unit %s (%s) to %s", unit->uid(),
                                             unit->uid().path.generic_string(), ext.generic_string()));

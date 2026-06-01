@@ -240,7 +240,6 @@ int main(int argc, char** argv) try {
             continue;
         }
 
-
         if ( opt == "--using-build-dir" )
             exit(hilti::configuration().uses_build_directory ? 0 : 1);
 

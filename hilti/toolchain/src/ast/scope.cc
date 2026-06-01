@@ -14,7 +14,6 @@
 #include <hilti/ast/scope.h>
 #include <hilti/ast/type.h>
 
-
 using namespace hilti;
 
 bool Scope::ItemOrder::operator()(const Declaration* a, const Declaration* b) const {
@@ -81,7 +80,6 @@ static auto createRefs(const NodeSet& refs, const std::string& id, bool external
 
     return result;
 }
-
 
 std::vector<Scope::Referee> Scope::_findID(const Scope* scope, const ID& id, bool external) const {
     if ( ! scope )

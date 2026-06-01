@@ -96,7 +96,6 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(Equal);
 
-
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
@@ -275,7 +274,6 @@ public:
     HILTI_OPERATOR(hilti, vector::SumAssign)
 };
 HILTI_OPERATOR_IMPLEMENTATION(SumAssign)
-
 
 class Assign : public BuiltInMemberCall {
 public:

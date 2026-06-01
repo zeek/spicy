@@ -522,7 +522,6 @@ private:
     const std::vector<enum_::Label> _labels;
 };
 
-
 /** Auxiliary type information for type ``error`. */
 class Error : public detail::AtomicType<hilti::rt::result::Error> {};
 
@@ -917,7 +916,6 @@ public:
         };
     }
 };
-
 
 class Struct;
 
@@ -1793,7 +1791,6 @@ const Type* auxType(const type_info::Value& v) {
     }
 }
 } // namespace value
-
 
 // Forward declare static built-in type information objects.
 extern HILTI_JIT_IMPORT const TypeInfo address;

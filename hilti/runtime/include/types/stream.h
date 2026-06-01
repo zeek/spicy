@@ -1155,7 +1155,6 @@ inline const Byte* Chain::data(const Offset& offset, Chunk* hint_prev) const {
     return c->data(offset);
 }
 
-
 } // namespace detail
 
 inline SafeConstIterator::SafeConstIterator(const UnsafeConstIterator& i)
@@ -1799,7 +1798,6 @@ public:
      * @param len length of the data to append
      */
     void append(const char* data, size_t len);
-
 
     /**
      * Appends the content of a raw memory area, *not* copying the data. This

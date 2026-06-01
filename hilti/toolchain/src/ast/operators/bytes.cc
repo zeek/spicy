@@ -78,7 +78,6 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(Equal);
 
-
 class Unequal : public Operator {
 public:
     Signature signature(Builder* builder) const final {
@@ -650,7 +649,6 @@ Returns true if the bytes value ends with *suffix*.
     HILTI_OPERATOR(hilti, bytes::EndsWith);
 };
 HILTI_OPERATOR_IMPLEMENTATION(EndsWith);
-
 
 class Strip : public BuiltInMemberCall {
 public:
