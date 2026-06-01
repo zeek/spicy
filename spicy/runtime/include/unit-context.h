@@ -46,7 +46,8 @@ public:
     hilti::rt::StrongReference<Context> as(const hilti::rt::TypeInfo* ti) const {
         if ( ti != _type_info )
             throw ContextMismatch(hilti::rt::fmt("context mismatch between related units: expected %s, but got %s",
-                                                 _type_info->display, ti->display));
+                                                 _type_info->display,
+                                                 ti->display));
 
         return hilti::rt::any_cast<hilti::rt::StrongReference<Context>>(_object);
     }
@@ -90,8 +91,10 @@ inline UnitContext createContext(Context ctx, const hilti::rt::TypeInfo* ti) {
  * will be thrown
  */
 template<typename Context>
-inline void setContext(hilti::rt::StrongReference<Context>& context, const hilti::rt::TypeInfo* context_type,
-                       const hilti::rt::Optional<UnitContext>& new_ctx, const hilti::rt::TypeInfo* ti) {
+inline void setContext(hilti::rt::StrongReference<Context>& context,
+                       const hilti::rt::TypeInfo* context_type,
+                       const hilti::rt::Optional<UnitContext>& new_ctx,
+                       const hilti::rt::TypeInfo* ti) {
     if ( new_ctx )
         context = new_ctx->as<Context>(ti);
     else

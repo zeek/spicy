@@ -194,8 +194,11 @@ struct CoercedExpression {
  * @return the *result* will evaluate to true if coercion was successful; if
  * so, the contained fields will provide more information
  */
-CoercedExpression coerceExpression(Builder* builder, Expression* e, QualifiedType* dst,
-                                   bitmask<CoercionStyle> style = CoercionStyle::TryAllForAssignment, bool lhs = false);
+CoercedExpression coerceExpression(Builder* builder,
+                                   Expression* e,
+                                   QualifiedType* dst,
+                                   bitmask<CoercionStyle> style = CoercionStyle::TryAllForAssignment,
+                                   bool lhs = false);
 
 /**
  * Coerces an expression to a given target type. This returns a struct with
@@ -218,8 +221,12 @@ CoercedExpression coerceExpression(Builder* builder, Expression* e, QualifiedTyp
  * @return the *result* will evaluate to true if coercion was successful; if
  * so, the contained fields will provide more information
  */
-CoercedExpression coerceExpression(Builder* builder, Expression* e, QualifiedType* src_, QualifiedType* dst_,
-                                   bitmask<CoercionStyle> style = CoercionStyle::TryAllForAssignment, bool lhs = false);
+CoercedExpression coerceExpression(Builder* builder,
+                                   Expression* e,
+                                   QualifiedType* src_,
+                                   QualifiedType* dst_,
+                                   bitmask<CoercionStyle> style = CoercionStyle::TryAllForAssignment,
+                                   bool lhs = false);
 
 /**
  * Matches a set of expressions against a set of operands, coercing them as
@@ -240,8 +247,11 @@ CoercedExpression coerceExpression(Builder* builder, Expression* e, QualifiedTyp
  * available (missing expressions for optional operands without defaults will
  * remain left out). If unsuccessful, an error.
  */
-Result<std::pair<bool, Expressions>> coerceOperands(Builder* builder, operator_::Kind kind, const Expressions& exprs,
-                                                    const operator_::Operands& operands, bitmask<CoercionStyle> style);
+Result<std::pair<bool, Expressions>> coerceOperands(Builder* builder,
+                                                    operator_::Kind kind,
+                                                    const Expressions& exprs,
+                                                    const operator_::Operands& operands,
+                                                    bitmask<CoercionStyle> style);
 
 /**
  * Coerces a constructor to a given target type. This returns the coerced
@@ -254,7 +264,9 @@ Result<std::pair<bool, Expressions>> coerceOperands(Builder* builder, operator_:
  * @param style coercion style to use
  * @return if the coercion was successful, the returned new value (which may be the same as the old)
  */
-Result<Ctor*> coerceCtor(Builder* builder, Ctor* c, QualifiedType* dst,
+Result<Ctor*> coerceCtor(Builder* builder,
+                         Ctor* c,
+                         QualifiedType* dst,
                          bitmask<CoercionStyle> style = CoercionStyle::TryAllForAssignment);
 
 /**
@@ -268,7 +280,9 @@ Result<Ctor*> coerceCtor(Builder* builder, Ctor* c, QualifiedType* dst,
  * @param style coercion style to use
  * @return if the coercion was successful, the returned new value (which may be the same as the old)
  */
-Result<QualifiedType*> coerceType(Builder* builder, QualifiedType* src_, QualifiedType* dst_,
+Result<QualifiedType*> coerceType(Builder* builder,
+                                  QualifiedType* src_,
+                                  QualifiedType* dst_,
                                   bitmask<CoercionStyle> style = CoercionStyle::TryAllForAssignment);
 
 namespace coercer::detail {

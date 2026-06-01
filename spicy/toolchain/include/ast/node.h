@@ -62,8 +62,11 @@
     namespace ns {                                                                                                     \
     class cls : public hilti::expression::ResolvedOperator {                                                           \
     public:                                                                                                            \
-        static cls* create(hilti::ASTContext* ctx, const hilti::Operator* op, hilti::QualifiedType* result,            \
-                           const hilti::Expressions& operands, hilti::Meta meta) {                                     \
+        static cls* create(hilti::ASTContext* ctx,                                                                     \
+                           const hilti::Operator* op,                                                                  \
+                           hilti::QualifiedType* result,                                                               \
+                           const hilti::Expressions& operands,                                                         \
+                           hilti::Meta meta) {                                                                         \
             return ctx->make<cls>(ctx, op, result, operands, std::move(meta));                                         \
         }                                                                                                              \
                                                                                                                        \

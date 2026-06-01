@@ -167,7 +167,9 @@ int main(int argc, char** argv) {
         hilti::rt::done();
 
     } catch ( const std::exception& e ) {
-        fatalError(prog, hilti::rt::fmt("terminating with uncaught exception of type %s: %s",
-                                        hilti::rt::demangle(typeid(e).name()), e.what()));
+        fatalError(prog,
+                   hilti::rt::fmt("terminating with uncaught exception of type %s: %s",
+                                  hilti::rt::demangle(typeid(e).name()),
+                                  e.what()));
     }
 }

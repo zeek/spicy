@@ -47,7 +47,8 @@ public:
     QualifiedType* iteratorType() const final { return child<QualifiedType>(0); }
 
     static auto create(ASTContext* ctx, const Meta& meta = {}) {
-        return ctx->make<View>(ctx, {QualifiedType::create(ctx, Iterator::create(ctx, meta), Constness::Mutable)},
+        return ctx->make<View>(ctx,
+                               {QualifiedType::create(ctx, Iterator::create(ctx, meta), Constness::Mutable)},
                                meta);
     }
 
@@ -74,7 +75,8 @@ public:
     QualifiedType* viewType() const final { return child<QualifiedType>(0); }
 
     static auto create(ASTContext* ctx, const Meta& meta = {}) {
-        return ctx->make<Stream>(ctx, {QualifiedType::create(ctx, stream::View::create(ctx, meta), Constness::Mutable)},
+        return ctx->make<Stream>(ctx,
+                                 {QualifiedType::create(ctx, stream::View::create(ctx, meta), Constness::Mutable)},
                                  meta);
     }
 

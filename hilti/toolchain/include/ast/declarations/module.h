@@ -103,8 +103,12 @@ public:
         return hilti::Declaration::properties() + std::move(p);
     }
 
-    static auto create(ASTContext* ctx, const declaration::module::UID& uid, const ID& scope, const Declarations& decls,
-                       const Statements& stmts, Meta meta = {}) {
+    static auto create(ASTContext* ctx,
+                       const declaration::module::UID& uid,
+                       const ID& scope,
+                       const Declarations& decls,
+                       const Statements& stmts,
+                       Meta meta = {}) {
         Nodes nodes = {statement::Block::create(ctx, stmts, meta)};
         for ( auto* d : decls )
             nodes.push_back(d);
@@ -116,7 +120,10 @@ public:
         return create(ctx, uid, scope, {}, {}, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, const declaration::module::UID& uid, const ID& scope, const Declarations& decls,
+    static auto create(ASTContext* ctx,
+                       const declaration::module::UID& uid,
+                       const ID& scope,
+                       const Declarations& decls,
                        Meta meta = {}) {
         return create(ctx, uid, scope, decls, {}, std::move(meta));
     }

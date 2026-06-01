@@ -48,7 +48,8 @@ public:
 
         return ctx->make<RegExp>(ctx,
                                  {QualifiedType::create(ctx, type::RegExp::create(ctx, meta), Constness::Const), attrs},
-                                 std::move(v), meta);
+                                 std::move(v),
+                                 meta);
     }
 
 protected:

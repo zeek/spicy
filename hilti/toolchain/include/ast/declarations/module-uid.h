@@ -63,7 +63,10 @@ struct UID {
           in_memory(true) {
         assert(this->id && ! this->parse_extension.empty() && ! this->process_extension.empty());
         //  just make up a path
-        path = util::fmt("/tmp/hilti/%s.%" PRIu64 ".%s.%s", unique, ++_no_file_counter, this->process_extension,
+        path = util::fmt("/tmp/hilti/%s.%" PRIu64 ".%s.%s",
+                         unique,
+                         ++_no_file_counter,
+                         this->process_extension,
                          this->parse_extension);
     }
 
@@ -73,7 +76,8 @@ struct UID {
 
     /** Hashes the UID. */
     size_t hash() const {
-        return rt::hashCombine(std::hash<std::string>{}(id.str()), std::hash<std::string_view>{}(unique.str()),
+        return rt::hashCombine(std::hash<std::string>{}(id.str()),
+                               std::hash<std::string_view>{}(unique.str()),
                                std::hash<std::string>{}(path.generic_string()),
                                std::hash<std::string>{}(parse_extension.generic_string()),
                                std::hash<std::string>{}(process_extension.generic_string()));

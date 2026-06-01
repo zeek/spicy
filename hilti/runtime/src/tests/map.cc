@@ -96,7 +96,8 @@ TEST_CASE("Iterator") {
         CHECK_NE(m1.begin(), m1.end());
 
         Map<int, std::string> m2({{1, "1"}});
-        CHECK_THROWS_WITH_AS(operator==(m1.begin(), m2.begin()), "cannot compare iterators into different maps",
+        CHECK_THROWS_WITH_AS(operator==(m1.begin(), m2.begin()),
+                             "cannot compare iterators into different maps",
                              const InvalidArgument&);
     }
 

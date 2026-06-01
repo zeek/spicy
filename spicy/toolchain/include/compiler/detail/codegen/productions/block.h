@@ -24,9 +24,13 @@ namespace spicy::detail::codegen::production {
  */
 class Block : public Production {
 public:
-    Block(ASTContext* /* ctx */, const std::string& symbol, std::vector<std::unique_ptr<Production>> prods,
-          Expression* condition = nullptr, std::vector<std::unique_ptr<Production>> else_prods = {},
-          AttributeSet* attributes = nullptr, const Location& l = location::None)
+    Block(ASTContext* /* ctx */,
+          const std::string& symbol,
+          std::vector<std::unique_ptr<Production>> prods,
+          Expression* condition = nullptr,
+          std::vector<std::unique_ptr<Production>> else_prods = {},
+          AttributeSet* attributes = nullptr,
+          const Location& l = location::None)
         : Production(symbol, l),
           _prods(std::move(prods)),
           _else_prods(std::move(else_prods)),

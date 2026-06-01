@@ -634,7 +634,12 @@ void SafeConstIterator::debugPrint(std::ostream& out) const {
         // Can happen if trimmed off.
         chunk = -1;
 
-    out << fmt("iterator %p: chain=%p chunk=#%d/%p offset=%llu is_end=%d\n", this, _chain.get(), chunk, c, _offset,
+    out << fmt("iterator %p: chain=%p chunk=#%d/%p offset=%llu is_end=%d\n",
+               this,
+               _chain.get(),
+               chunk,
+               c,
+               _offset,
                static_cast<int>(isEnd()));
 }
 
@@ -673,7 +678,12 @@ void UnsafeConstIterator::debugPrint(std::ostream& out) const {
         // Can happen if trimmed off.
         chunk = -1;
 
-    out << fmt("unsafe iterator %p: parent=%p chunk=#%d/%p offset=%llu is_end=%d\n", this, _chain, chunk, c, _offset,
+    out << fmt("unsafe iterator %p: parent=%p chunk=#%d/%p offset=%llu is_end=%d\n",
+               this,
+               _chain,
+               chunk,
+               c,
+               _offset,
                static_cast<int>(isEnd()));
 }
 

@@ -40,9 +40,12 @@ void production::While::preprocessLookAhead(ASTContext* ctx, Grammar* grammar) {
     auto unresolved = std::make_unique<production::Deferred>(ctx);
     auto* unresolved_ptr = unresolved.get();
 
-    auto l1 = std::make_unique<production::LookAhead>(ctx, symbol() + "_l1",
+    auto l1 = std::make_unique<production::LookAhead>(ctx,
+                                                      symbol() + "_l1",
                                                       std::make_unique<production::Epsilon>(ctx, location()),
-                                                      std::move(unresolved), nullptr, location());
+                                                      std::move(unresolved),
+                                                      nullptr,
+                                                      location());
     auto l1_ref = std::make_unique<production::Reference>(ctx, l1.get());
 
     auto body_ref = std::make_unique<production::Reference>(ctx, _body.get());

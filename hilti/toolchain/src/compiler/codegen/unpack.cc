@@ -23,7 +23,11 @@ namespace {
 struct Visitor : hilti::visitor::PreOrder {
     enum class Kind { Pack, Unpack };
 
-    Visitor(CodeGen* cg, Kind kind, QualifiedType* src, QualifiedType* data_type, cxx::Expression data,
+    Visitor(CodeGen* cg,
+            Kind kind,
+            QualifiedType* src,
+            QualifiedType* data_type,
+            cxx::Expression data,
             const std::vector<cxx::Expression>& args)
         : cg(cg), kind(kind), src(src), data_type(data_type), data(std::move(data)), args(args) {}
 
@@ -64,13 +68,16 @@ struct Visitor : hilti::visitor::PreOrder {
         auto unpacked = cg->addTmp(
             "x",
             cxx::Type(util::fmt("::hilti::rt::Result<::hilti::rt::Tuple<::hilti::rt::integer::safe<uint%d_t>, %s>>",
-                                n->width(), cg->compile(data_type, codegen::TypeUsage::Storage))));
+                                n->width(),
+                                cg->compile(data_type, codegen::TypeUsage::Storage))));
         auto unpack_uint =
             fmt("%s = ::hilti::rt::integer::unpack<uint%d_t>(%s, %s)", unpacked, n->width(), data, args[0]);
 
         auto bf_value = cg->unsignedIntegerToBitfield(src, fmt("::hilti::rt::tuple::get<0>(*%s)", unpacked), bitorder);
         result = fmt("(%s, ::hilti::rt::make_result(::hilti::rt::tuple::make(%s, ::hilti::rt::tuple::get<1>(*%s))))",
-                     unpack_uint, bf_value, unpacked);
+                     unpack_uint,
+                     bf_value,
+                     unpacked);
     }
 
     void operator()(type::UnsignedInteger* n) final {
@@ -106,7 +113,10 @@ cxx::Expression CodeGen::pack(QualifiedType* t, const cxx::Expression& data, con
     logger().internalError("pack failed to compile", t);
 }
 
-cxx::Expression CodeGen::unpack(QualifiedType* t, QualifiedType* data_type, Expression* data, const Expressions& args,
+cxx::Expression CodeGen::unpack(QualifiedType* t,
+                                QualifiedType* data_type,
+                                Expression* data,
+                                const Expressions& args,
                                 bool throw_on_error) {
     auto cxx_args = util::toVector(args | std::views::transform([&](const auto& e) { return compile(e, false); }));
     auto v = Visitor(this, Visitor::Kind::Unpack, t, data_type, compile(data), cxx_args);
@@ -120,8 +130,11 @@ cxx::Expression CodeGen::unpack(QualifiedType* t, QualifiedType* data_type, Expr
     logger().internalError("unpack failed to compile", t);
 }
 
-cxx::Expression CodeGen::unpack(QualifiedType* t, QualifiedType* data_type, const cxx::Expression& data,
-                                const std::vector<cxx::Expression>& args, bool throw_on_error) {
+cxx::Expression CodeGen::unpack(QualifiedType* t,
+                                QualifiedType* data_type,
+                                const cxx::Expression& data,
+                                const std::vector<cxx::Expression>& args,
+                                bool throw_on_error) {
     auto v = Visitor(this, Visitor::Kind::Unpack, t, data_type, data, args);
     if ( auto result = hilti::visitor::dispatch(v, t->type(), [](const auto& v) -> const auto& { return v.result; }) ) {
         if ( throw_on_error )

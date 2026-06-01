@@ -75,8 +75,10 @@ void Unit::_addModuleInitFunction() {
 
         cxx::Block register_;
         register_.addStatement(fmt("::hilti::rt::Library::setScope(&%s)", scope));
-        register_.addStatement(fmt("::hilti::rt::detail::registerModule({ \"%s\", %s, %s, %s, %s, %s})", cxxModuleID(),
-                                   scope, _init_module ? "&" HILTI_INTERNAL_ID("init_module") : "nullptr",
+        register_.addStatement(fmt("::hilti::rt::detail::registerModule({ \"%s\", %s, %s, %s, %s, %s})",
+                                   cxxModuleID(),
+                                   scope,
+                                   _init_module ? "&" HILTI_INTERNAL_ID("init_module") : "nullptr",
                                    _uses_globals ? "&" HILTI_INTERNAL_ID("init_globals") : "nullptr",
                                    _uses_globals && ! context()->options().cxx_enable_dynamic_globals ?
                                        "&" HILTI_INTERNAL_ID("destroy_globals") :
@@ -93,10 +95,17 @@ void Unit::_addModuleInitFunction() {
     }
 }
 
-void Unit::_emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase phase, bool prototypes_only,
+void Unit::_emitDeclarations(const cxxDeclaration& decl,
+                             Formatter& f,
+                             Phase phase,
+                             bool prototypes_only,
                              bool include_all_implementations) {
     struct Visitor {
-        Visitor(Context* ctx, Unit* unit, Formatter& f, Phase phase, bool prototypes_only,
+        Visitor(Context* ctx,
+                Unit* unit,
+                Formatter& f,
+                Phase phase,
+                bool prototypes_only,
                 bool include_all_implementations)
             : ctx(ctx),
               unit(unit),
@@ -210,8 +219,14 @@ void Unit::_emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase pha
 }
 
 void Unit::_generateCode(Formatter& f, bool prototypes_only, bool include_all_implementations) {
-    const Phase phases[] = {Phase::TypeInfoForwards, Phase::Forwards,      Phase::Enums,   Phase::Types,
-                            Phase::Constants,        Phase::PublicAliases, Phase::Globals, Phase::Functions,
+    const Phase phases[] = {Phase::TypeInfoForwards,
+                            Phase::Forwards,
+                            Phase::Enums,
+                            Phase::Types,
+                            Phase::Constants,
+                            Phase::PublicAliases,
+                            Phase::Globals,
+                            Phase::Functions,
                             Phase::TypeInfos};
 
     for ( const auto& [_, decl] : _declarations )

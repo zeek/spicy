@@ -65,5 +65,6 @@ int main(int argc, char** argv) try { return hilti::main(argc, argv); } catch ( 
 int HILTI_WEAK main(int argc, char** argv) try { return hilti::main(argc, argv); } catch ( const std::exception& e ) {
 #endif
     hilti::rt::fatalError(hilti::rt::fmt("terminating with uncaught exception of type %s: %s",
-                                         hilti::rt::demangle(typeid(e).name()), e.what()));
+                                         hilti::rt::demangle(typeid(e).name()),
+                                         e.what()));
 }

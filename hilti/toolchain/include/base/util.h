@@ -351,7 +351,8 @@ std::list<std::pair<A, B>> zip2(const std::list<A>& lhs, const std::list<B>& rhs
     for ( std::pair<typename std::list<A>::const_iterator, typename std::list<B>::const_iterator> iter =
               std::pair<typename std::list<A>::const_iterator, typename std::list<B>::const_iterator>(lhs.cbegin(),
                                                                                                       rhs.cbegin());
-          iter.first != lhs.end() && iter.second != rhs.end(); ++iter.first, ++iter.second )
+          iter.first != lhs.end() && iter.second != rhs.end();
+          ++iter.first, ++iter.second )
         result.emplace_back(*iter.first, *iter.second);
     return result;
 }
@@ -367,7 +368,8 @@ std::vector<std::pair<A, B>> zip2(const std::vector<A>& lhs, const std::vector<B
     for ( std::pair<typename std::vector<A>::const_iterator, typename std::vector<B>::const_iterator> iter =
               std::pair<typename std::vector<A>::const_iterator, typename std::vector<B>::const_iterator>(lhs.cbegin(),
                                                                                                           rhs.cbegin());
-          iter.first != lhs.end() && iter.second != rhs.end(); ++iter.first, ++iter.second )
+          iter.first != lhs.end() && iter.second != rhs.end();
+          ++iter.first, ++iter.second )
         result.emplace_back(*iter.first, *iter.second);
     return result;
 }

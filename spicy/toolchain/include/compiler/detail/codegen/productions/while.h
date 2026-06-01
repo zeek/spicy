@@ -23,7 +23,10 @@ public:
     /**
      * Constructor for a while-loop using an expression as the condition for termination.
      */
-    While(ASTContext* /* ctx */, const std::string& symbol, Expression* e, std::unique_ptr<Production> body,
+    While(ASTContext* /* ctx */,
+          const std::string& symbol,
+          Expression* e,
+          std::unique_ptr<Production> body,
           const Location& l = location::None)
         : Production(symbol, l), _body(std::move(body)), _expression(e) {}
 

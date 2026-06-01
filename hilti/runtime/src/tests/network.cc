@@ -44,9 +44,11 @@ TEST_CASE("construct") {
 
         CHECK_EQ(Network(addr, 4), Network(to_string(addr), 4));
 
-        CHECK_THROWS_WITH_AS(to_string(Network(addr, -1)), "prefix length -1 is invalid for IPv4 networks",
+        CHECK_THROWS_WITH_AS(to_string(Network(addr, -1)),
+                             "prefix length -1 is invalid for IPv4 networks",
                              const InvalidArgument&);
-        CHECK_THROWS_WITH_AS(to_string(Network(addr, 33)), "prefix length 33 is invalid for IPv4 networks",
+        CHECK_THROWS_WITH_AS(to_string(Network(addr, 33)),
+                             "prefix length 33 is invalid for IPv4 networks",
                              const InvalidArgument&);
     }
 
@@ -65,9 +67,11 @@ TEST_CASE("construct") {
 
         CHECK_EQ(Network(addr, 4), Network(to_string(addr), 4));
 
-        CHECK_THROWS_WITH_AS(to_string(Network(addr, -1)), "prefix length -1 is invalid for IPv6 networks",
+        CHECK_THROWS_WITH_AS(to_string(Network(addr, -1)),
+                             "prefix length -1 is invalid for IPv6 networks",
                              const InvalidArgument&);
-        CHECK_THROWS_WITH_AS(to_string(Network(addr, 129)), "prefix length 129 is invalid for IPv6 networks",
+        CHECK_THROWS_WITH_AS(to_string(Network(addr, 129)),
+                             "prefix length 129 is invalid for IPv6 networks",
                              const InvalidArgument&);
     }
 

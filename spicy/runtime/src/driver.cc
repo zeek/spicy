@@ -61,7 +61,11 @@ void Driver::_debugStats(const hilti::rt::ValueReference<hilti::rt::Stream>& dat
 #endif
 
     DRIVER_DEBUG(fmt("input : size-current=%s size-total=%s chunks-cur=%s offset-head=%" PRIu64 " offset-tail=%" PRIu64,
-                     data_size_cur, data_size_total, data_chunks, data_begin, data_end));
+                     data_size_cur,
+                     data_size_total,
+                     data_chunks,
+                     data_begin,
+                     data_end));
 
 #ifndef NDEBUG
     auto ru = hilti::rt::resource_usage();
@@ -72,8 +76,12 @@ void Driver::_debugStats(const hilti::rt::ValueReference<hilti::rt::Stream>& dat
     auto cached_stacks = pretty_print_number(ru.cached_fibers);
 #endif
 
-    DRIVER_DEBUG(fmt("memory: heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s fiber-stack-max=%s", memory_heap,
-                     num_stacks, cached_stacks, max_stacks, max_stack_size));
+    DRIVER_DEBUG(fmt("memory: heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s fiber-stack-max=%s",
+                     memory_heap,
+                     num_stacks,
+                     cached_stacks,
+                     max_stacks,
+                     max_stack_size));
 }
 
 void Driver::_debugStats(size_t current_flows, size_t current_connections) {
@@ -84,8 +92,11 @@ void Driver::_debugStats(size_t current_flows, size_t current_connections) {
     auto total_connections = pretty_print_number(_total_connections);
 #endif
 
-    DRIVER_DEBUG(fmt("state: current_flows=%s total_flows=%s current_connections=%s total_connections=%s", num_flows,
-                     total_flows, num_connections, total_connections));
+    DRIVER_DEBUG(fmt("state: current_flows=%s total_flows=%s current_connections=%s total_connections=%s",
+                     num_flows,
+                     total_flows,
+                     num_connections,
+                     total_connections));
 
 #ifndef NDEBUG
     auto stats = hilti::rt::resource_usage();
@@ -96,8 +107,12 @@ void Driver::_debugStats(size_t current_flows, size_t current_connections) {
     auto cached_stacks = pretty_print_number(stats.cached_fibers);
 #endif
 
-    DRIVER_DEBUG(fmt("memory  : heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s fiber-stack-max=%s", memory_heap,
-                     num_stacks, cached_stacks, max_stacks, max_stack_size));
+    DRIVER_DEBUG(fmt("memory  : heap=%s fibers-cur=%s fibers-cached=%s fibers-max=%s fiber-stack-max=%s",
+                     memory_heap,
+                     num_stacks,
+                     cached_stacks,
+                     max_stacks,
+                     max_stack_size));
 }
 
 Result<Nothing> Driver::listParsers(std::ostream& out, bool verbose) {
@@ -155,7 +170,8 @@ Result<Nothing> Driver::listParsers(std::ostream& out, bool verbose) {
     return Nothing();
 }
 
-Result<spicy::rt::ParsedUnit> Driver::processInput(const spicy::rt::Parser& parser, std::istream& in,
+Result<spicy::rt::ParsedUnit> Driver::processInput(const spicy::rt::Parser& parser,
+                                                   std::istream& in,
                                                    int increment) try {
     if ( ! hilti::rt::isInitialized() )
         return Error("runtime not initialized");
@@ -398,14 +414,18 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
     std::unordered_map<hilti::rt::String, driver::ConnectionState> connections;
 
     // Helper to add flows to the map.
-    auto create_state = [&](driver::ParsingType type, const hilti::rt::String& parser_name, const hilti::rt::String& id,
-                            hilti::rt::Optional<hilti::rt::String> cid, hilti::rt::Optional<UnitContext> context) {
+    auto create_state = [&](driver::ParsingType type,
+                            const hilti::rt::String& parser_name,
+                            const hilti::rt::String& id,
+                            hilti::rt::Optional<hilti::rt::String> cid,
+                            hilti::rt::Optional<UnitContext> context) {
         if ( auto parser = lookupParser(parser_name) ) {
             if ( ! context )
                 context = (*parser)->createContext();
 
-            auto x = flows.insert_or_assign(id, driver::ParsingStateForDriver(type, *parser, id, std::move(cid),
-                                                                              context, this));
+            auto x =
+                flows.insert_or_assign(id,
+                                       driver::ParsingStateForDriver(type, *parser, id, std::move(cid), context, this));
             if ( x.second )
                 _total_flows++;
 

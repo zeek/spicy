@@ -39,7 +39,9 @@ public:
         return Node::properties() + std::move(p);
     }
 
-    static auto create(ASTContext* ctx, const Expressions& exprs, type::unit::item::Block* block,
+    static auto create(ASTContext* ctx,
+                       const Expressions& exprs,
+                       type::unit::item::Block* block,
                        const Meta& m = Meta()) {
         return ctx->make<Case>(ctx, node::flatten(block, exprs), false, m);
     }
@@ -93,16 +95,25 @@ public:
 
     std::string_view displayName() const final { return "unit switch"; }
 
-    static auto create(ASTContext* ctx, Expression* expr, type::unit::item::switch_::Cases cases, Expression* cond,
-                       spicy::declaration::Hooks hooks, AttributeSet* attrs, Meta meta = {}) {
+    static auto create(ASTContext* ctx,
+                       Expression* expr,
+                       type::unit::item::switch_::Cases cases,
+                       Expression* cond,
+                       spicy::declaration::Hooks hooks,
+                       AttributeSet* attrs,
+                       Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
         return ctx->make<Switch>(ctx,
-                                 node::flatten(expr, cond, attrs,
-                                               QualifiedType::create(ctx, hilti::type::Void::create(ctx),
+                                 node::flatten(expr,
+                                               cond,
+                                               attrs,
+                                               QualifiedType::create(ctx,
+                                                                     hilti::type::Void::create(ctx),
                                                                      hilti::Constness::Const),
-                                               std::move(cases), std::move(hooks)),
+                                               std::move(cases),
+                                               std::move(hooks)),
                                  std::move(meta));
     }
 

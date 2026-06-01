@@ -166,8 +166,11 @@ public:
      *
      * @param driver driver owning this state
      */
-    ParsingStateForDriver(ParsingType type, const Parser* parser, hilti::rt::String id,
-                          hilti::rt::Optional<std::string> cid, hilti::rt::Optional<UnitContext> context,
+    ParsingStateForDriver(ParsingType type,
+                          const Parser* parser,
+                          hilti::rt::String id,
+                          hilti::rt::Optional<std::string> cid,
+                          hilti::rt::Optional<UnitContext> context,
                           Driver* driver)
         : ParsingState(type, parser, std::move(context)),
           _id(std::move(std::move(id))),
@@ -250,7 +253,8 @@ public:
      *
      * @return error if the input couldn't be fed to the parser or parsing failed
      */
-    hilti::rt::Result<spicy::rt::ParsedUnit> processInput(const spicy::rt::Parser& parser, std::istream& in,
+    hilti::rt::Result<spicy::rt::ParsedUnit> processInput(const spicy::rt::Parser& parser,
+                                                          std::istream& in,
                                                           int increment = 0);
 
     /**

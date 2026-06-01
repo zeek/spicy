@@ -46,12 +46,14 @@ TEST_CASE("decode") {
     CHECK_EQ("€100"_b.decode(unicode::Charset::ASCII, unicode::DecodeErrorStrategy::REPLACE), "???100"_hs);
     CHECK_EQ("€100"_b.decode(unicode::Charset::ASCII, unicode::DecodeErrorStrategy::IGNORE), "100"_hs);
     CHECK_THROWS_WITH_AS("123ä4"_b.decode(unicode::Charset::ASCII, unicode::DecodeErrorStrategy::STRICT),
-                         "illegal ASCII character in string", const RuntimeError&);
+                         "illegal ASCII character in string",
+                         const RuntimeError&);
 
     CHECK_EQ("\xc3\x28"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::REPLACE), "\ufffd("_hs);
     CHECK_EQ("\xc3\x28"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::IGNORE), "("_hs);
     CHECK_THROWS_WITH_AS("\xc3\x28"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::STRICT),
-                         "illegal UTF8 sequence in string", const RuntimeError&);
+                         "illegal UTF8 sequence in string",
+                         const RuntimeError&);
 
     CHECK_EQ(Bytes("\0a\0b\0c"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::STRICT), "abc"_hs);
     CHECK_EQ(Bytes("a\0b\0c\0"s).decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), "abc"_hs);
@@ -70,7 +72,8 @@ TEST_CASE("decode") {
 
     // Decoding of too few bytes for UTF16 (expected even number, provided uneven).
     CHECK_THROWS_WITH_AS(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::STRICT),
-                         "illegal UTF16 character in string", const RuntimeError&);
+                         "illegal UTF16 character in string",
+                         const RuntimeError&);
     CHECK_EQ(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::IGNORE), "ab"_hs);
     CHECK_EQ(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::REPLACE),
              "ab\ufffd"_hs);
@@ -81,7 +84,8 @@ TEST_CASE("decode") {
     // TODO(bbannier): Test rejection of invalid UTF16 (but with even length).
     CHECK_EQ(Bytes("\x00\xd8").decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), ""_hs);
 
-    CHECK_THROWS_WITH_AS("123"_b.decode(unicode::Charset::Undef), "unknown character set for decoding",
+    CHECK_THROWS_WITH_AS("123"_b.decode(unicode::Charset::Undef),
+                         "unknown character set for decoding",
                          const RuntimeError&);
 }
 
@@ -215,7 +219,8 @@ TEST_CASE("lower") {
     CHECK_EQ("Gänsefüßchen"_b.lower(unicode::Charset::ASCII).str(), "g??nsef????chen");
 
     // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
-    CHECK_THROWS_WITH_AS("123"_b.lower(unicode::Charset::Undef), "unknown character set for decoding",
+    CHECK_THROWS_WITH_AS("123"_b.lower(unicode::Charset::Undef),
+                         "unknown character set for decoding",
                          const RuntimeError&);
 
     // No case change expected for these Japanese codepoints.
@@ -371,7 +376,8 @@ TEST_CASE("sub") {
         CHECK_EQ(b.sub(3, 0), "456"_b);
 
         CHECK_THROWS_WITH_AS(b.sub(b.size() + 1024, b.size() + 2048),
-                             "start index 1030 out of range for bytes with length 6", const OutOfRange);
+                             "start index 1030 out of range for bytes with length 6",
+                             const OutOfRange);
     }
 
     SUBCASE("end iterator") {
@@ -380,7 +386,8 @@ TEST_CASE("sub") {
         CHECK_EQ(b.sub(++b.end()), b);
 
         const auto bb = "123"_b;
-        CHECK_THROWS_WITH_AS(b.sub(bb.begin()), "start and end iterator cannot belong to different bytes",
+        CHECK_THROWS_WITH_AS(b.sub(bb.begin()),
+                             "start and end iterator cannot belong to different bytes",
                              const InvalidArgument&);
     }
 
@@ -388,14 +395,17 @@ TEST_CASE("sub") {
         CHECK_EQ(b.sub(b.begin(), b.end()), b);
         CHECK_EQ(b.sub(b.begin(), b.begin()), ""_b);
         CHECK_EQ(b.sub(b.end(), b.begin()), ""_b);
-        CHECK_THROWS_WITH_AS(b.sub(++b.end(), ++b.begin()), "start index 7 out of range for bytes with length 6",
+        CHECK_THROWS_WITH_AS(b.sub(++b.end(), ++b.begin()),
+                             "start index 7 out of range for bytes with length 6",
                              const OutOfRange&);
-        CHECK_THROWS_WITH_AS(b.sub(++b.end(), ++b.end()), "start index 7 out of range for bytes with length 6",
+        CHECK_THROWS_WITH_AS(b.sub(++b.end(), ++b.end()),
+                             "start index 7 out of range for bytes with length 6",
                              const OutOfRange&);
 
         const auto bb = "123"_b;
         // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
-        CHECK_THROWS_WITH_AS(b.sub(b.begin(), bb.begin()), "start and end iterator cannot belong to different bytes",
+        CHECK_THROWS_WITH_AS(b.sub(b.begin(), bb.begin()),
+                             "start and end iterator cannot belong to different bytes",
                              const InvalidArgument&);
     }
 }
@@ -431,13 +441,16 @@ TEST_CASE("toInt") {
         else
             CHECK_EQ("100"_b.toInt(ByteOrder::Big), 3223600);
 
-        CHECK_THROWS_WITH_AS(""_b.toInt(Enum(ByteOrder::Big)), "not enough bytes for conversion to integer",
+        CHECK_THROWS_WITH_AS(""_b.toInt(Enum(ByteOrder::Big)),
+                             "not enough bytes for conversion to integer",
                              const InvalidValue&);
 
         CHECK_THROWS_WITH_AS("1234567890"_b.toInt(Enum(ByteOrder::Big)),
-                             "more than max of 8 bytes for conversion to integer (have 10)", const InvalidValue&);
+                             "more than max of 8 bytes for conversion to integer (have 10)",
+                             const InvalidValue&);
 
-        CHECK_THROWS_WITH_AS("100"_b.toInt(Enum(ByteOrder::Undef)), "cannot convert value to undefined byte order",
+        CHECK_THROWS_WITH_AS("100"_b.toInt(Enum(ByteOrder::Undef)),
+                             "cannot convert value to undefined byte order",
                              const InvalidArgument&);
     }
 }
@@ -457,13 +470,16 @@ TEST_CASE("toUInt") {
         CHECK_EQ("100"_b.toUInt(Enum(ByteOrder::Little)), 3158065U);
         CHECK_EQ("100"_b.toUInt(Enum(ByteOrder::Host)), 3158065U);
 
-        CHECK_THROWS_WITH_AS(""_b.toUInt(Enum(ByteOrder::Big)), "not enough bytes for conversion to integer",
+        CHECK_THROWS_WITH_AS(""_b.toUInt(Enum(ByteOrder::Big)),
+                             "not enough bytes for conversion to integer",
                              const InvalidValue&);
 
         CHECK_THROWS_WITH_AS("1234567890"_b.toUInt(Enum(ByteOrder::Big)),
-                             "more than max of 8 bytes for conversion to integer (have 10)", const InvalidValue&);
+                             "more than max of 8 bytes for conversion to integer (have 10)",
+                             const InvalidValue&);
 
-        CHECK_THROWS_WITH_AS("100"_b.toInt(Enum(ByteOrder::Undef)), "cannot convert value to undefined byte order",
+        CHECK_THROWS_WITH_AS("100"_b.toInt(Enum(ByteOrder::Undef)),
+                             "cannot convert value to undefined byte order",
                              const InvalidArgument&);
     }
 }
@@ -546,7 +562,8 @@ TEST_CASE("toTime") {
 
     CHECK_EQ("\x04\x4B\x80\x00\x00"_b.toTime(Enum(ByteOrder::Big)),
              Time(18446548992, Time::SecondTag())); // Value near end of `Time` range.
-    CHECK_THROWS_WITH_AS("\x04\x4B\x90\x00\x00"_b.toTime(Enum(ByteOrder::Big)), "integer overflow",
+    CHECK_THROWS_WITH_AS("\x04\x4B\x90\x00\x00"_b.toTime(Enum(ByteOrder::Big)),
+                         "integer overflow",
                          const RuntimeError&); // Value beyond end of `Time` range.
 }
 
@@ -560,7 +577,8 @@ TEST_CASE("upper") {
              Bytes("A\0B\0C\0"s).upper(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT));
 
     // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
-    CHECK_THROWS_WITH_AS("123"_b.upper(unicode::Charset::Undef), "unknown character set for decoding",
+    CHECK_THROWS_WITH_AS("123"_b.upper(unicode::Charset::Undef),
+                         "unknown character set for decoding",
                          const RuntimeError&);
 
     // No case change expected for these Japanese codepoints.
@@ -660,7 +678,8 @@ TEST_CASE("Iterator") {
         CHECK_EQ(b.begin(), b.begin());
         CHECK_NE(b.begin(), b.end());
 
-        CHECK_THROWS_WITH_AS(operator==(b.begin(), bb.begin()), "cannot compare iterators into different bytes",
+        CHECK_THROWS_WITH_AS(operator==(b.begin(), bb.begin()),
+                             "cannot compare iterators into different bytes",
                              const InvalidArgument&);
     }
 
@@ -671,7 +690,8 @@ TEST_CASE("Iterator") {
         CHECK_EQ(b.begin() - b.begin(), 0);
 
         CHECK_THROWS_WITH_AS(operator-(b.begin(), bb.begin()),
-                             "cannot perform arithmetic with iterators into different bytes", const InvalidArgument&);
+                             "cannot perform arithmetic with iterators into different bytes",
+                             const InvalidArgument&);
     }
 
     SUBCASE("ordering") {
@@ -680,7 +700,8 @@ TEST_CASE("Iterator") {
 
             CHECK_LT(b.begin(), b.end());
             CHECK_FALSE(operator<(b.end(), b.begin()));
-            CHECK_THROWS_WITH_AS(operator<(b.begin(), bb.begin()), "cannot compare iterators into different bytes",
+            CHECK_THROWS_WITH_AS(operator<(b.begin(), bb.begin()),
+                                 "cannot compare iterators into different bytes",
                                  const InvalidArgument&);
         }
 
@@ -690,7 +711,8 @@ TEST_CASE("Iterator") {
             CHECK_LE(b.begin(), b.end());
             CHECK_LE(b.begin(), b.begin());
             CHECK_FALSE(operator<=(b.end(), b.begin()));
-            CHECK_THROWS_WITH_AS(operator<=(b.begin(), bb.begin()), "cannot compare iterators into different bytes",
+            CHECK_THROWS_WITH_AS(operator<=(b.begin(), bb.begin()),
+                                 "cannot compare iterators into different bytes",
                                  const InvalidArgument&);
         }
 
@@ -699,7 +721,8 @@ TEST_CASE("Iterator") {
 
             CHECK_GT(b.end(), b.begin());
             CHECK_FALSE(operator>(b.begin(), b.end()));
-            CHECK_THROWS_WITH_AS(operator>(b.begin(), bb.begin()), "cannot compare iterators into different bytes",
+            CHECK_THROWS_WITH_AS(operator>(b.begin(), bb.begin()),
+                                 "cannot compare iterators into different bytes",
                                  const InvalidArgument&);
         }
 
@@ -709,7 +732,8 @@ TEST_CASE("Iterator") {
             CHECK_GE(b.end(), b.begin());
             CHECK_GE(b.begin(), b.begin());
             CHECK_FALSE(operator>=(b.begin(), b.end()));
-            CHECK_THROWS_WITH_AS(operator>=(b.begin(), bb.begin()), "cannot compare iterators into different bytes",
+            CHECK_THROWS_WITH_AS(operator>=(b.begin(), bb.begin()),
+                                 "cannot compare iterators into different bytes",
                                  const InvalidArgument&);
         }
     }

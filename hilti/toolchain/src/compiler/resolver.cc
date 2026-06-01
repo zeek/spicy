@@ -98,7 +98,8 @@ struct VisitorPass1 : visitor::MutatingPostOrder {
 
                         if ( replace ) {
                             auto* rt = builder()->typeValueReference(qtype, Location("<on-heap-replacement>"));
-                            replaceNode(qtype, builder()->qualifiedType(rt, qtype->constness(), qtype->side()),
+                            replaceNode(qtype,
+                                        builder()->qualifiedType(rt, qtype->constness(), qtype->side()),
                                         "&on-heap replacement");
                         }
                     }
@@ -246,7 +247,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
     // Matches an unresolved operator against a set of operator candidates,
     // returning instantiations of all matches.
-    Expressions matchOperators(expression::UnresolvedOperator* u, const std::vector<const Operator*>& candidates,
+    Expressions matchOperators(expression::UnresolvedOperator* u,
+                               const std::vector<const Operator*>& candidates,
                                bool disallow_type_changes = false) {
         const std::array<bitmask<CoercionStyle>, 7> styles = {
             CoercionStyle::TryExactMatch,
@@ -258,7 +260,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             CoercionStyle::TryConstPromotion | CoercionStyle::TryCoercion,
         };
 
-        auto coerce_operands = [&](const Operator* candidate, const auto& operands, const auto& expressions,
+        auto coerce_operands = [&](const Operator* candidate,
+                                   const auto& operands,
+                                   const auto& expressions,
                                    bitmask<CoercionStyle> style) {
             // First, match the operands against the operator's general signature.
             auto result = coerceOperands(builder(), candidate->kind(), operands, expressions, style);
@@ -274,8 +278,11 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             return result;
         };
 
-        auto try_candidate = [&](const Operator* candidate, const node::Range<Expression>& operands, auto style,
-                                 const Meta& meta, const auto& dbg_msg) -> Expression* {
+        auto try_candidate = [&](const Operator* candidate,
+                                 const node::Range<Expression>& operands,
+                                 auto style,
+                                 const Meta& meta,
+                                 const auto& dbg_msg) -> Expression* {
             auto noperands = coerce_operands(candidate, operands, candidate->operands(), style);
             if ( ! noperands ) {
                 HILTI_DEBUG(logging::debug::Operator, util::fmt("-> cannot coerce operands: %s", noperands.error()));
@@ -302,7 +309,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             // Fold any constants right here in case downstream resolving depends
             // on finding a constant (like for coercion).
             if ( auto ctor =
-                     detail::constant_folder::foldExpression(builder(), resolved,
+                     detail::constant_folder::foldExpression(builder(),
+                                                             resolved,
                                                              detail::constant_folder::Style::InlineAllConstants);
                  ctor && *ctor ) {
                 HILTI_DEBUG(logging::debug::Operator,
@@ -314,56 +322,57 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             return resolved;
         };
 
-        auto try_all_candidates = [&](Expressions* resolved, std::set<operator_::Kind>* kinds_resolved,
-                                      operator_::Priority priority) {
-            for ( auto style : styles ) {
-                if ( disallow_type_changes )
-                    style |= CoercionStyle::DisallowTypeChanges;
+        auto try_all_candidates =
+            [&](Expressions* resolved, std::set<operator_::Kind>* kinds_resolved, operator_::Priority priority) {
+                for ( auto style : styles ) {
+                    if ( disallow_type_changes )
+                        style |= CoercionStyle::DisallowTypeChanges;
 
-                HILTI_DEBUG(logging::debug::Operator, util::fmt("style: %s", to_string(style)));
-                logging::DebugPushIndent _(logging::debug::Operator);
-
-                for ( const auto& c : candidates ) {
-                    if ( priority != c->signature().priority )
-                        // Not looking at operators of this priority right now.
-                        continue;
-
-                    if ( priority == operator_::Priority::Low && kinds_resolved->contains(c->kind()) )
-                        // Already have a higher priority match for this operator kind.
-                        continue;
-
-                    HILTI_DEBUG(logging::debug::Operator, util::fmt("candidate: %s (%s)", c->name(), c->print()));
+                    HILTI_DEBUG(logging::debug::Operator, util::fmt("style: %s", to_string(style)));
                     logging::DebugPushIndent _(logging::debug::Operator);
 
-                    if ( auto* r = try_candidate(c, u->operands(), style, u->meta(), "candidate matches") ) {
-                        if ( c->signature().priority == operator_::Priority::Normal )
-                            kinds_resolved->insert(c->kind());
+                    for ( const auto& c : candidates ) {
+                        if ( priority != c->signature().priority )
+                            // Not looking at operators of this priority right now.
+                            continue;
 
-                        resolved->push_back(r);
-                    }
-                    else {
-                        auto operands = u->operands();
-                        // Try to swap the operators for commutative operators.
-                        if ( operator_::isCommutative(c->kind()) && operands.size() == 2 ) {
-                            Nodes new_operands = {operands[1], operands[0]};
-                            if ( auto* r =
-                                     try_candidate(c,
-                                                   hilti::node::Range<Expression>(new_operands.begin(),
-                                                                                  new_operands.end()),
-                                                   style, u->meta(), "candidate matches with operands swapped") ) {
-                                if ( c->signature().priority == operator_::Priority::Normal )
-                                    kinds_resolved->insert(c->kind());
+                        if ( priority == operator_::Priority::Low && kinds_resolved->contains(c->kind()) )
+                            // Already have a higher priority match for this operator kind.
+                            continue;
 
-                                resolved->emplace_back(r);
+                        HILTI_DEBUG(logging::debug::Operator, util::fmt("candidate: %s (%s)", c->name(), c->print()));
+                        logging::DebugPushIndent _(logging::debug::Operator);
+
+                        if ( auto* r = try_candidate(c, u->operands(), style, u->meta(), "candidate matches") ) {
+                            if ( c->signature().priority == operator_::Priority::Normal )
+                                kinds_resolved->insert(c->kind());
+
+                            resolved->push_back(r);
+                        }
+                        else {
+                            auto operands = u->operands();
+                            // Try to swap the operators for commutative operators.
+                            if ( operator_::isCommutative(c->kind()) && operands.size() == 2 ) {
+                                Nodes new_operands = {operands[1], operands[0]};
+                                if ( auto* r = try_candidate(c,
+                                                             hilti::node::Range<Expression>(new_operands.begin(),
+                                                                                            new_operands.end()),
+                                                             style,
+                                                             u->meta(),
+                                                             "candidate matches with operands swapped") ) {
+                                    if ( c->signature().priority == operator_::Priority::Normal )
+                                        kinds_resolved->insert(c->kind());
+
+                                    resolved->emplace_back(r);
+                                }
                             }
                         }
                     }
-                }
 
-                if ( resolved->size() )
-                    return;
-            }
-        };
+                    if ( resolved->size() )
+                        return;
+                }
+            };
 
         HILTI_DEBUG(logging::debug::Operator,
                     util::fmt("trying to resolve: %s (%s)", u->printSignature(), u->location()));
@@ -503,8 +512,10 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         if ( ! n->type()->isResolved() ) {
             Declarations fields;
             for ( const auto& f : n->fields() )
-                fields.emplace_back(builder()->declarationField(f->id(), f->expression()->type(),
-                                                                builder()->attributeSet({}), f->meta()));
+                fields.emplace_back(builder()->declarationField(f->id(),
+                                                                f->expression()->type(),
+                                                                builder()->attributeSet({}),
+                                                                f->meta()));
 
             auto* ntype =
                 builder()->qualifiedType(builder()->typeStruct(type::Struct::AnonymousStruct(), fields, n->meta()),
@@ -746,8 +757,12 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             auto* current_module = n->parent<declaration::Module>();
             assert(current_module);
 
-            auto uid = context()->importModule(builder(), n->id(), n->scope(), n->parseExtension(),
-                                               current_module->uid().process_extension, n->searchDirectories());
+            auto uid = context()->importModule(builder(),
+                                               n->id(),
+                                               n->scope(),
+                                               n->parseExtension(),
+                                               current_module->uid().process_extension,
+                                               n->searchDirectories());
 
             if ( ! uid ) {
                 logger().error(util::fmt("cannot import module '%s': %s", n->id(), uid.error()), n->meta().location());
@@ -823,8 +838,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         if ( auto* x = n->type()->type()->tryAs<type::Library>();
              x && ! n->attributes()->find(hilti::attribute::kind::Cxxname) )
             // Transfer the C++ name into an attribute.
-            n->attributes()->add(context(), builder()->attribute(hilti::attribute::kind::Cxxname,
-                                                                 builder()->stringLiteral(x->cxxName())));
+            n->attributes()->add(context(),
+                                 builder()->attribute(hilti::attribute::kind::Cxxname,
+                                                      builder()->stringLiteral(x->cxxName())));
     }
 
     void operator()(Expression* n) final {
@@ -913,7 +929,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             // legal coercion. This helps in cases where we need to force a
             // specific coercion to take place.
             static const auto* casted_coercion = operator_::get("generic::CastedCoercion");
-            if ( hilti::coerceExpression(builder(), n->operands()[0],
+            if ( hilti::coerceExpression(builder(),
+                                         n->operands()[0],
                                          n->op1()->type()->type()->as<type::Type_>()->typeValue(),
                                          CoercionStyle::TryAllForMatching | CoercionStyle::ContextualConversion) ) {
                 replaceNode(n, *casted_coercion->instantiate(builder(), n->operands(), n->meta()));
@@ -1049,7 +1066,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                     continue;
 
                 auto ctor =
-                    detail::constant_folder::foldExpression(builder(), cond,
+                    detail::constant_folder::foldExpression(builder(),
+                                                            cond,
                                                             detail::constant_folder::Style::InlineAllConstants |
                                                                 detail::constant_folder::Style::FoldTernaryOperator);
                 if ( ! ctor || ! *ctor )
@@ -1144,7 +1162,9 @@ struct VisitorPass3 : visitor::MutatingPostOrder {
         auto src = builder()->expressionCtor(builder()->ctorTuple(std::move(exprs)));
         auto dst = type::OperandList::fromParameters(context(), std::move(params));
 
-        auto coerced = coerceExpression(builder(), src, builder()->qualifiedType(dst, Constness::Const),
+        auto coerced = coerceExpression(builder(),
+                                        src,
+                                        builder()->qualifiedType(dst, Constness::Const),
                                         CoercionStyle::TryAllForFunctionCall);
         if ( ! coerced )
             return result::Error("coercion failed");
@@ -1238,7 +1258,8 @@ struct VisitorPass3 : visitor::MutatingPostOrder {
             }
 
             auto* index_assign = builder()->expressionUnresolvedOperator(hilti::operator_::Kind::IndexAssign,
-                                                                         {map, key, value}, n->meta());
+                                                                         {map, key, value},
+                                                                         n->meta());
 
             replaceNode(n, index_assign);
         }
@@ -1295,16 +1316,22 @@ struct VisitorPass3 : visitor::MutatingPostOrder {
 
     void operator()(expression::ConditionTest* n) final {
         if ( n->condition()->isResolved() && ! n->condition()->type()->type()->isA<type::Bool>() ) {
-            if ( auto* x = coerceTo(n, n->condition(),
-                                    builder()->qualifiedType(builder()->typeBool(), Constness::Const), true, false) ) {
+            if ( auto* x = coerceTo(n,
+                                    n->condition(),
+                                    builder()->qualifiedType(builder()->typeBool(), Constness::Const),
+                                    true,
+                                    false) ) {
                 recordChange(n, x, "condition");
                 n->setCondition(context(), x);
             }
         }
 
         if ( n->error()->isResolved() && ! n->error()->type()->type()->isA<type::Error>() ) {
-            if ( auto* x = coerceTo(n, n->error(), builder()->qualifiedType(builder()->typeError(), Constness::Const),
-                                    true, false) ) {
+            if ( auto* x = coerceTo(n,
+                                    n->error(),
+                                    builder()->qualifiedType(builder()->typeError(), Constness::Const),
+                                    true,
+                                    false) ) {
                 recordChange(n, x, "error");
                 n->setError(context(), x);
             }
@@ -1464,9 +1491,11 @@ struct VisitorPass3 : visitor::MutatingPostOrder {
             // Need to coerce the element here as the normal overload resolution
             // couldn't know the element type yet.
             auto* etype = n->op0()->type()->type()->as<type::Vector>()->elementType();
-            if ( auto* x =
-                     coerceTo(n, n->op2(), builder()->qualifiedType(builder()->typeTuple({etype}), Constness::Const),
-                              false, true) ) {
+            if ( auto* x = coerceTo(n,
+                                    n->op2(),
+                                    builder()->qualifiedType(builder()->typeTuple({etype}), Constness::Const),
+                                    false,
+                                    true) ) {
                 recordChange(n, x, "element type");
                 n->setOp2(context(), x);
             }
@@ -1475,8 +1504,11 @@ struct VisitorPass3 : visitor::MutatingPostOrder {
 
     void operator()(statement::Assert* n) final {
         if ( ! n->expectException() && ! n->expression()->type()->type()->isA<type::Result>() ) {
-            if ( auto* x = coerceTo(n, n->expression(),
-                                    builder()->qualifiedType(builder()->typeBool(), Constness::Const), true, false) ) {
+            if ( auto* x = coerceTo(n,
+                                    n->expression(),
+                                    builder()->qualifiedType(builder()->typeBool(), Constness::Const),
+                                    true,
+                                    false) ) {
                 recordChange(n, x, "expression");
                 n->setExpression(context(), x);
             }
@@ -1485,7 +1517,10 @@ struct VisitorPass3 : visitor::MutatingPostOrder {
 
     void operator()(statement::If* n) final {
         if ( auto* cond = n->condition() ) {
-            if ( auto* x = coerceTo(n, cond, builder()->qualifiedType(builder()->typeBool(), Constness::Const), true,
+            if ( auto* x = coerceTo(n,
+                                    cond,
+                                    builder()->qualifiedType(builder()->typeBool(), Constness::Const),
+                                    true,
                                     false) ) {
                 recordChange(n, x, "condition");
                 n->setCondition(context(), x);
@@ -1518,7 +1553,10 @@ struct VisitorPass3 : visitor::MutatingPostOrder {
 
     void operator()(statement::While* n) final {
         if ( auto* cond = n->condition() ) {
-            if ( auto* x = coerceTo(n, cond, builder()->qualifiedType(builder()->typeBool(), Constness::Const), true,
+            if ( auto* x = coerceTo(n,
+                                    cond,
+                                    builder()->qualifiedType(builder()->typeBool(), Constness::Const),
+                                    true,
                                     false) ) {
                 recordChange(n, x, "condition");
                 n->setCondition(context(), x);

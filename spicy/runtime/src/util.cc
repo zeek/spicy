@@ -59,8 +59,9 @@ hilti::rt::String spicy::rt::bytes_to_mac(const hilti::rt::Bytes& value) {
     return hilti::rt::String(result);
 }
 
-const hilti::rt::Map<hilti::rt::String, hilti::rt::Tuple<hilti::rt::integer::safe<uint64_t>,
-                                                         hilti::rt::Optional<hilti::rt::integer::safe<uint64_t>>>>*
+const hilti::rt::Map<
+    hilti::rt::String,
+    hilti::rt::Tuple<hilti::rt::integer::safe<uint64_t>, hilti::rt::Optional<hilti::rt::integer::safe<uint64_t>>>>*
 spicy::rt::get_offsets_for_unit(const hilti::rt::type_info::Struct& struct_, const hilti::rt::type_info::Value& value) {
     for ( const auto& [f, v] : struct_.iterate(value, /*include_internal=*/true) ) {
         if ( f.name == HILTI_INTERNAL_ID("offsets") )

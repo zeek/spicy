@@ -182,7 +182,8 @@ Tuple<String, String> split1(const String& s, const String& sep);
  * @param errors how to handle errors when decoding the data
  * @return bytes instances encoding *s* in character set *cs*
  */
-rt::Bytes encode(const String& s, unicode::Charset cs,
+rt::Bytes encode(const String& s,
+                 unicode::Charset cs,
                  unicode::DecodeErrorStrategy errors = unicode::DecodeErrorStrategy::REPLACE);
 
 inline namespace literals {
@@ -214,14 +215,16 @@ namespace hilti::rt {
 
 template<>
 inline std::string detail::to_string_for_print<String>(const String& x) {
-    return escapeUTF8(x.str(), render_style::UTF8::NoEscapeHex | render_style::UTF8::NoEscapeControl |
-                                   render_style::UTF8::NoEscapeBackslash);
+    return escapeUTF8(x.str(),
+                      render_style::UTF8::NoEscapeHex | render_style::UTF8::NoEscapeControl |
+                          render_style::UTF8::NoEscapeBackslash);
 }
 
 template<>
 inline std::string detail::to_string_for_print<std::string_view>(const std::string_view& x) {
-    return escapeUTF8(x, render_style::UTF8::NoEscapeHex | render_style::UTF8::NoEscapeControl |
-                             render_style::UTF8::NoEscapeBackslash);
+    return escapeUTF8(x,
+                      render_style::UTF8::NoEscapeHex | render_style::UTF8::NoEscapeControl |
+                          render_style::UTF8::NoEscapeBackslash);
 }
 
 template<>

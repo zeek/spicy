@@ -133,8 +133,11 @@ public:
         return hilti::UnqualifiedType::properties() + std::move(p);
     }
 
-    static auto create(ASTContext* ctx, const hilti::declaration::Parameters& params, const type::unit::Items& items,
-                       AttributeSet* attrs, Meta meta = {}) {
+    static auto create(ASTContext* ctx,
+                       const hilti::declaration::Parameters& params,
+                       const type::unit::Items& items,
+                       AttributeSet* attrs,
+                       Meta meta = {}) {
         if ( ! attrs )
             attrs = hilti::AttributeSet::create(ctx);
 
@@ -148,7 +151,9 @@ public:
     }
 
     static auto create(ASTContext* ctx, hilti::type::Wildcard _, Meta meta = {}) {
-        return ctx->make<Unit>(ctx, hilti::type::Wildcard(), {nullptr, AttributeSet::create(ctx), nullptr},
+        return ctx->make<Unit>(ctx,
+                               hilti::type::Wildcard(),
+                               {nullptr, AttributeSet::create(ctx), nullptr},
                                std::move(meta));
     }
 

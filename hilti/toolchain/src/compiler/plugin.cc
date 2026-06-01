@@ -68,11 +68,15 @@ Plugin hilti::detail::createHiltiPlugin() {
                 return parser::parseSource(builder, in, path.generic_string());
             },
 
-        .coerce_ctor = [](Builder* builder, Ctor* c, QualifiedType* dst,
-                          bitmask<CoercionStyle> style) { return coercer::detail::coerceCtor(builder, c, dst, style); },
+        .coerce_ctor =
+            [](Builder* builder, Ctor* c, QualifiedType* dst, bitmask<CoercionStyle> style) {
+                return coercer::detail::coerceCtor(builder, c, dst, style);
+            },
 
-        .coerce_type = [](Builder* builder, QualifiedType* t, QualifiedType* dst,
-                          bitmask<CoercionStyle> style) { return coercer::detail::coerceType(builder, t, dst, style); },
+        .coerce_type =
+            [](Builder* builder, QualifiedType* t, QualifiedType* dst, bitmask<CoercionStyle> style) {
+                return coercer::detail::coerceType(builder, t, dst, style);
+            },
 
         .ast_init =
             [](Builder* builder, ASTRoot* root) {

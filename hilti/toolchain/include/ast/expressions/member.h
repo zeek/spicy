@@ -28,7 +28,9 @@ public:
     }
 
     static auto create(ASTContext* ctx, const hilti::ID& id, const Meta& meta = {}) {
-        return create(ctx, QualifiedType::create(ctx, type::Member::create(ctx, id, meta), Constness::Const, meta), id,
+        return create(ctx,
+                      QualifiedType::create(ctx, type::Member::create(ctx, id, meta), Constness::Const, meta),
+                      id,
                       meta);
     }
 

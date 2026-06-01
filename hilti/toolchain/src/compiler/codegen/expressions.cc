@@ -55,9 +55,10 @@ struct Visitor : hilti::visitor::PreOrder {
             else
                 cxx_init = cg->typeDefaultValue(local->type());
 
-            auto cxx_local =
-                cxx::declaration::Local(cxx::ID(local->id()), cg->compile(local->type(), codegen::TypeUsage::Storage),
-                                        {}, std::move(cxx_init));
+            auto cxx_local = cxx::declaration::Local(cxx::ID(local->id()),
+                                                     cg->compile(local->type(), codegen::TypeUsage::Storage),
+                                                     {},
+                                                     std::move(cxx_init));
 
             block.addTmp(cxx_local);
 
@@ -103,8 +104,14 @@ struct Visitor : hilti::visitor::PreOrder {
             pred = fmt(", [](auto&& %s) -> bool { return %s; }", id, cg->compile(c));
 
         auto [cxx_type, cxx_default] = cg->cxxTypeForVector(n->output()->type());
-        result = fmt("::hilti::rt::vector::make(%s({}%s), %s, [](auto&& %s) -> %s { return %s; }%s)", cxx_type,
-                     cxx_default, input, id, otype, output, pred);
+        result = fmt("::hilti::rt::vector::make(%s({}%s), %s, [](auto&& %s) -> %s { return %s; }%s)",
+                     cxx_type,
+                     cxx_default,
+                     input,
+                     id,
+                     otype,
+                     output,
+                     pred);
     }
 
     void operator()(expression::Member* n) final {
@@ -205,7 +212,8 @@ struct Visitor : hilti::visitor::PreOrder {
                 auto derefed = fmt("%s.derefAsValue()", arg);
                 if ( auto* strong_ref = param->type()->type()->tryAs<type::StrongReference>() )
                     result = fmt("::hilti::rt::StrongReference<%s>(%s)",
-                                 cg->compile(strong_ref->dereferencedType(), codegen::TypeUsage::Ctor), derefed);
+                                 cg->compile(strong_ref->dereferencedType(), codegen::TypeUsage::Ctor),
+                                 derefed);
                 else
                     result = derefed;
             }
@@ -220,7 +228,8 @@ struct Visitor : hilti::visitor::PreOrder {
 
     void operator()(expression::ConditionTest* n) final {
         auto type = cg->compile(n->type()->type()->as<type::Result>()->dereferencedType(), codegen::TypeUsage::Storage);
-        result = fmt("(%s ? ::hilti::rt::make_result(::hilti::rt::Nothing{}) : %s)", cg->compile(n->condition()),
+        result = fmt("(%s ? ::hilti::rt::make_result(::hilti::rt::Nothing{}) : %s)",
+                     cg->compile(n->condition()),
                      cg->compile(n->error()));
     }
 

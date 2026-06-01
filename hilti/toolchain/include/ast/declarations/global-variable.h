@@ -30,23 +30,41 @@ public:
 
     std::string_view displayName() const final { return "global variable"; }
 
-    static auto create(ASTContext* ctx, ID id, QualifiedType* type, Expressions args, hilti::Expression* init = nullptr,
-                       declaration::Linkage linkage = Linkage::Private, Meta meta = {}) {
-        return ctx->make<GlobalVariable>(ctx, node::flatten(type->recreateAsLhs(ctx), init, std::move(args)),
-                                         std::move(id), linkage, std::move(meta));
+    static auto create(ASTContext* ctx,
+                       ID id,
+                       QualifiedType* type,
+                       Expressions args,
+                       hilti::Expression* init = nullptr,
+                       declaration::Linkage linkage = Linkage::Private,
+                       Meta meta = {}) {
+        return ctx->make<GlobalVariable>(ctx,
+                                         node::flatten(type->recreateAsLhs(ctx), init, std::move(args)),
+                                         std::move(id),
+                                         linkage,
+                                         std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, QualifiedType* type, hilti::Expression* init = nullptr,
-                       declaration::Linkage linkage = Linkage::Private, Meta meta = {}) {
+    static auto create(ASTContext* ctx,
+                       ID id,
+                       QualifiedType* type,
+                       hilti::Expression* init = nullptr,
+                       declaration::Linkage linkage = Linkage::Private,
+                       Meta meta = {}) {
         return create(ctx, std::move(id), type->recreateAsLhs(ctx), {}, init, linkage, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, QualifiedType* type, declaration::Linkage linkage = Linkage::Private,
+    static auto create(ASTContext* ctx,
+                       ID id,
+                       QualifiedType* type,
+                       declaration::Linkage linkage = Linkage::Private,
                        Meta meta = {}) {
         return create(ctx, std::move(id), type->recreateAsLhs(ctx), {}, nullptr, linkage, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, hilti::Expression* init, declaration::Linkage linkage = Linkage::Private,
+    static auto create(ASTContext* ctx,
+                       ID id,
+                       hilti::Expression* init,
+                       declaration::Linkage linkage = Linkage::Private,
                        const Meta& meta = {}) {
         return create(ctx, std::move(id), QualifiedType::createAuto(ctx, meta), {}, init, linkage, meta);
     }

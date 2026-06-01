@@ -48,8 +48,10 @@ hilti::rt::Result<hilti::rt::library::Version> hilti::rt::library::Version::from
 
 void hilti::rt::library::Version::checkCompatibility() const {
     if ( hilti_version != PROJECT_VERSION_NUMBER )
-        warning(fmt("module %s was compiled with HILTI version %d, but using HILTI version %d", path.filename(),
-                    hilti_version, PROJECT_VERSION_NUMBER));
+        warning(fmt("module %s was compiled with HILTI version %d, but using HILTI version %d",
+                    path.filename(),
+                    hilti_version,
+                    PROJECT_VERSION_NUMBER));
 }
 
 hilti::rt::Library::Library(const hilti::rt::filesystem::path& path) : _path(hilti::rt::filesystem::canonical(path)) {}
@@ -79,7 +81,8 @@ hilti::rt::Result<hilti::rt::library::Version> hilti::rt::Library::open() const 
         // and LOAD_LIBRARY_SEARCH_USER_DIRS to find dependencies via
         // AddDllDirectory (where we place hardlinks of the current exe).
         // This avoids loading separate executables from the app directory.
-        HMODULE handle = ::LoadLibraryExA(path.c_str(), NULL,
+        HMODULE handle = ::LoadLibraryExA(path.c_str(),
+                                          NULL,
                                           LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_USER_DIRS |
                                               LOAD_LIBRARY_SEARCH_SYSTEM32);
 
@@ -183,8 +186,10 @@ hilti::rt::Result<hilti::rt::Nothing> hilti::rt::Library::save(const hilti::rt::
 
     // Create the file taking into account the active umask. Since clang creates
     // shared libraries with executable bit we assume default permissions of 777.
-    hilti::rt::filesystem::permissions(path, hilti::rt::filesystem::perms(0777 - default_perms),
-                                       hilti::rt::filesystem::perm_options::replace, ec);
+    hilti::rt::filesystem::permissions(path,
+                                       hilti::rt::filesystem::perms(0777 - default_perms),
+                                       hilti::rt::filesystem::perm_options::replace,
+                                       ec);
 
     if ( ec )
         rt::fatalError(fmt("could not preserve permissions of file %s: %s", path, ec.message()));

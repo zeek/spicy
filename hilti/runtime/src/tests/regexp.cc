@@ -159,7 +159,8 @@ TEST_CASE("find") {
 TEST_CASE("matchGroups") {
     SUBCASE("min-matcher") {
         CHECK_THROWS_WITH_AS(RegExp({"abc"_p, "123"_p}).matchGroups("abc"_b),
-                             "cannot capture groups during set matching", const NotSupported&);
+                             "cannot capture groups during set matching",
+                             const NotSupported&);
     }
 
     SUBCASE("std-matcher") {
@@ -167,7 +168,8 @@ TEST_CASE("matchGroups") {
         CHECK_EQ(RegExp("123"_p, regexp::Flags{.use_std = 1}).matchGroups(" abc "_b), Vector<Bytes>());
 
         CHECK_THROWS_WITH_AS(RegExp({"abc"_p, "123"_p}).matchGroups("abc"_b),
-                             "cannot capture groups during set matching", const NotSupported&);
+                             "cannot capture groups during set matching",
+                             const NotSupported&);
 
         CHECK_EQ(RegExp(".*(a)bc"_p, regexp::Flags{.use_std = 1}).matchGroups(" abc "_b),
                  Vector<Bytes>({" abc"_b, "a"_b}));
@@ -218,9 +220,11 @@ TEST_CASE("advance") {
         CHECK_THROWS_WITH_AS(re.advance("123"_b, true), "matching already complete", const MatchStateReuse&);
 
         CHECK_THROWS_WITH_AS(regexp::MatchState().advance("123"_b, true),
-                             "no regular expression associated with match state", const PatternError&);
+                             "no regular expression associated with match state",
+                             const PatternError&);
         CHECK_THROWS_WITH_AS(regexp::MatchState().advance(Stream("123"_b).view()),
-                             "no regular expression associated with match state", const PatternError&);
+                             "no regular expression associated with match state",
+                             const PatternError&);
 
         const auto re_std = RegExp("a(b+)c(d.f)g"_p, regexp::Flags{.use_std = true});
         const auto re_no_sub = RegExp("a(b+)c(d.f)g"_p, regexp::Flags{.no_sub = true});
@@ -420,11 +424,13 @@ TEST_CASE("reassign") {
         const auto re = RegExp("123"_p, regexp::Flags({.no_sub = false}));
         const auto ms1 = re.tokenMatcher();
 
-        CHECK_THROWS_WITH_AS(regexp::MatchState{ms1}, "cannot copy match state of regexp with sub-expressions support",
+        CHECK_THROWS_WITH_AS(regexp::MatchState{ms1},
+                             "cannot copy match state of regexp with sub-expressions support",
                              const InvalidArgument&);
 
         auto ms2 = regexp::MatchState();
-        CHECK_THROWS_WITH_AS(ms2.operator=(ms1), "cannot copy match state of regexp with sub-expressions support",
+        CHECK_THROWS_WITH_AS(ms2.operator=(ms1),
+                             "cannot copy match state of regexp with sub-expressions support",
                              const InvalidArgument&);
     }
 

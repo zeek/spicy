@@ -30,8 +30,12 @@ public:
 
     void setValue(ASTContext* ctx, hilti::Expression* e) { setChild(ctx, 1, e); }
 
-    static auto create(ASTContext* ctx, ID id, QualifiedType* type, hilti::Expression* value,
-                       declaration::Linkage linkage = Linkage::Private, Meta meta = {}) {
+    static auto create(ASTContext* ctx,
+                       ID id,
+                       QualifiedType* type,
+                       hilti::Expression* value,
+                       declaration::Linkage linkage = Linkage::Private,
+                       Meta meta = {}) {
         QualifiedType* t = type;
 
         if ( t )
@@ -40,8 +44,11 @@ public:
         return ctx->make<Constant>(ctx, {t, value}, std::move(id), linkage, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, hilti::Expression* value,
-                       declaration::Linkage linkage = Linkage::Private, Meta meta = {}) {
+    static auto create(ASTContext* ctx,
+                       ID id,
+                       hilti::Expression* value,
+                       declaration::Linkage linkage = Linkage::Private,
+                       Meta meta = {}) {
         return create(ctx, std::move(id), {}, value, linkage, std::move(meta));
     }
 

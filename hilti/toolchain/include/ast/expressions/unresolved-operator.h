@@ -51,12 +51,17 @@ public:
     static auto create(ASTContext* ctx, operator_::Kind kind, Expressions operands, const Meta& meta = {}) {
         return ctx->make<UnresolvedOperator>(ctx,
                                              node::flatten(QualifiedType::createAuto(ctx, meta), std::move(operands)),
-                                             kind, meta);
+                                             kind,
+                                             meta);
     }
 
-    static auto create(ASTContext* ctx, operator_::Kind kind, hilti::node::Range<Expression> operands,
+    static auto create(ASTContext* ctx,
+                       operator_::Kind kind,
+                       hilti::node::Range<Expression> operands,
                        const Meta& meta = {}) {
-        return ctx->make<UnresolvedOperator>(ctx, node::flatten(QualifiedType::createAuto(ctx, meta), operands), kind,
+        return ctx->make<UnresolvedOperator>(ctx,
+                                             node::flatten(QualifiedType::createAuto(ctx, meta), operands),
+                                             kind,
                                              meta);
     }
 

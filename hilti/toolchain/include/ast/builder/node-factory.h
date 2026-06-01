@@ -161,12 +161,17 @@ public:
     auto ctorWeakReference(QualifiedType* t, const Meta& meta = {}) {
         return hilti::ctor::WeakReference::create(context(), t, meta);
     }
-    auto declarationConstant(ID id, Expression* value, declaration::Linkage linkage = declaration::Linkage::Private,
+    auto declarationConstant(ID id,
+                             Expression* value,
+                             declaration::Linkage linkage = declaration::Linkage::Private,
                              Meta meta = {}) {
         return hilti::declaration::Constant::create(context(), std::move(id), value, linkage, std::move(meta));
     }
-    auto declarationConstant(ID id, QualifiedType* type, Expression* value,
-                             declaration::Linkage linkage = declaration::Linkage::Private, Meta meta = {}) {
+    auto declarationConstant(ID id,
+                             QualifiedType* type,
+                             Expression* value,
+                             declaration::Linkage linkage = declaration::Linkage::Private,
+                             Meta meta = {}) {
         return hilti::declaration::Constant::create(context(), std::move(id), type, value, linkage, std::move(meta));
     }
     auto declarationExport(ID id, Meta meta = {}) {
@@ -184,36 +189,60 @@ public:
     auto declarationField(const ID& id, Function* inline_func, AttributeSet* attrs, Meta meta = {}) {
         return hilti::declaration::Field::create(context(), id, inline_func, attrs, std::move(meta));
     }
-    auto declarationFunction(hilti::Function* function, declaration::Linkage linkage = declaration::Linkage::Private,
+    auto declarationFunction(hilti::Function* function,
+                             declaration::Linkage linkage = declaration::Linkage::Private,
                              Meta meta = {}) {
         return hilti::declaration::Function::create(context(), function, linkage, std::move(meta));
     }
-    auto declarationGlobalVariable(ID id, Expression* init,
+    auto declarationGlobalVariable(ID id,
+                                   Expression* init,
                                    declaration::Linkage linkage = declaration::Linkage::Private,
                                    const Meta& meta = {}) {
         return hilti::declaration::GlobalVariable::create(context(), std::move(id), init, linkage, meta);
     }
-    auto declarationGlobalVariable(ID id, QualifiedType* type, Expression* init = nullptr,
-                                   declaration::Linkage linkage = declaration::Linkage::Private, Meta meta = {}) {
-        return hilti::declaration::GlobalVariable::create(context(), std::move(id), type, init, linkage,
+    auto declarationGlobalVariable(ID id,
+                                   QualifiedType* type,
+                                   Expression* init = nullptr,
+                                   declaration::Linkage linkage = declaration::Linkage::Private,
+                                   Meta meta = {}) {
+        return hilti::declaration::GlobalVariable::create(context(),
+                                                          std::move(id),
+                                                          type,
+                                                          init,
+                                                          linkage,
                                                           std::move(meta));
     }
-    auto declarationGlobalVariable(ID id, QualifiedType* type, Expressions args, Expression* init = nullptr,
-                                   declaration::Linkage linkage = declaration::Linkage::Private, Meta meta = {}) {
-        return hilti::declaration::GlobalVariable::create(context(), std::move(id), type, std::move(args), init,
-                                                          linkage, std::move(meta));
+    auto declarationGlobalVariable(ID id,
+                                   QualifiedType* type,
+                                   Expressions args,
+                                   Expression* init = nullptr,
+                                   declaration::Linkage linkage = declaration::Linkage::Private,
+                                   Meta meta = {}) {
+        return hilti::declaration::GlobalVariable::create(context(),
+                                                          std::move(id),
+                                                          type,
+                                                          std::move(args),
+                                                          init,
+                                                          linkage,
+                                                          std::move(meta));
     }
-    auto declarationGlobalVariable(ID id, QualifiedType* type,
-                                   declaration::Linkage linkage = declaration::Linkage::Private, Meta meta = {}) {
+    auto declarationGlobalVariable(ID id,
+                                   QualifiedType* type,
+                                   declaration::Linkage linkage = declaration::Linkage::Private,
+                                   Meta meta = {}) {
         return hilti::declaration::GlobalVariable::create(context(), std::move(id), type, linkage, std::move(meta));
     }
-    auto declarationGlobalVariable(ID id, declaration::Linkage linkage = declaration::Linkage::Private,
+    auto declarationGlobalVariable(ID id,
+                                   declaration::Linkage linkage = declaration::Linkage::Private,
                                    const Meta& meta = {}) {
         return hilti::declaration::GlobalVariable::create(context(), std::move(id), linkage, meta);
     }
     auto declarationImportedModule(ID id, const std::string& parse_extension, ID search_scope, Meta meta = {}) {
-        return hilti::declaration::ImportedModule::create(context(), std::move(id), parse_extension,
-                                                          std::move(search_scope), std::move(meta));
+        return hilti::declaration::ImportedModule::create(context(),
+                                                          std::move(id),
+                                                          parse_extension,
+                                                          std::move(search_scope),
+                                                          std::move(meta));
     }
     auto declarationImportedModule(ID id, const std::string& parse_extension, Meta meta = {}) {
         return hilti::declaration::ImportedModule::create(context(), std::move(id), parse_extension, std::move(meta));
@@ -230,9 +259,16 @@ public:
     auto declarationLocalVariable(ID id, QualifiedType* type, Expression* init, Meta meta = {}) {
         return hilti::declaration::LocalVariable::create(context(), std::move(id), type, init, std::move(meta));
     }
-    auto declarationLocalVariable(ID id, QualifiedType* type, Expressions args, Expression* init = nullptr,
+    auto declarationLocalVariable(ID id,
+                                  QualifiedType* type,
+                                  Expressions args,
+                                  Expression* init = nullptr,
                                   Meta meta = {}) {
-        return hilti::declaration::LocalVariable::create(context(), std::move(id), type, std::move(args), init,
+        return hilti::declaration::LocalVariable::create(context(),
+                                                         std::move(id),
+                                                         type,
+                                                         std::move(args),
+                                                         init,
                                                          std::move(meta));
     }
     auto declarationLocalVariable(ID id, QualifiedType* type, Meta meta = {}) {
@@ -241,23 +277,48 @@ public:
     auto declarationModule(const declaration::module::UID& uid, const ID& scope = {}, Meta meta = {}) {
         return hilti::declaration::Module::create(context(), uid, scope, std::move(meta));
     }
-    auto declarationModule(const declaration::module::UID& uid, const ID& scope, const Declarations& decls,
-                           const Statements& stmts, Meta meta = {}) {
+    auto declarationModule(const declaration::module::UID& uid,
+                           const ID& scope,
+                           const Declarations& decls,
+                           const Statements& stmts,
+                           Meta meta = {}) {
         return hilti::declaration::Module::create(context(), uid, scope, decls, stmts, std::move(meta));
     }
-    auto declarationModule(const declaration::module::UID& uid, const ID& scope, const Declarations& decls,
+    auto declarationModule(const declaration::module::UID& uid,
+                           const ID& scope,
+                           const Declarations& decls,
                            Meta meta = {}) {
         return hilti::declaration::Module::create(context(), uid, scope, decls, std::move(meta));
     }
-    auto declarationParameter(ID id, UnqualifiedType* type, parameter::Kind kind, hilti::Expression* default_,
-                              AttributeSet* attrs, Meta meta = {}) {
-        return hilti::declaration::Parameter::create(context(), std::move(id), type, kind, default_, attrs,
+    auto declarationParameter(ID id,
+                              UnqualifiedType* type,
+                              parameter::Kind kind,
+                              hilti::Expression* default_,
+                              AttributeSet* attrs,
+                              Meta meta = {}) {
+        return hilti::declaration::Parameter::create(context(),
+                                                     std::move(id),
+                                                     type,
+                                                     kind,
+                                                     default_,
+                                                     attrs,
                                                      std::move(meta));
     }
-    auto declarationParameter(ID id, UnqualifiedType* type, parameter::Kind kind, hilti::Expression* default_,
-                              bool is_type_param, AttributeSet* attrs, Meta meta = {}) {
-        return hilti::declaration::Parameter::create(context(), std::move(id), type, kind, default_, is_type_param,
-                                                     attrs, std::move(meta));
+    auto declarationParameter(ID id,
+                              UnqualifiedType* type,
+                              parameter::Kind kind,
+                              hilti::Expression* default_,
+                              bool is_type_param,
+                              AttributeSet* attrs,
+                              Meta meta = {}) {
+        return hilti::declaration::Parameter::create(context(),
+                                                     std::move(id),
+                                                     type,
+                                                     kind,
+                                                     default_,
+                                                     is_type_param,
+                                                     attrs,
+                                                     std::move(meta));
     }
     auto declarationProperty(ID id, Meta meta = {}) {
         return hilti::declaration::Property::create(context(), std::move(id), std::move(meta));
@@ -265,11 +326,16 @@ public:
     auto declarationProperty(ID id, Expression* expr, Meta meta = {}) {
         return hilti::declaration::Property::create(context(), std::move(id), expr, std::move(meta));
     }
-    auto declarationType(ID id, QualifiedType* type, AttributeSet* attrs,
-                         declaration::Linkage linkage = declaration::Linkage::Private, Meta meta = {}) {
+    auto declarationType(ID id,
+                         QualifiedType* type,
+                         AttributeSet* attrs,
+                         declaration::Linkage linkage = declaration::Linkage::Private,
+                         Meta meta = {}) {
         return hilti::declaration::Type::create(context(), std::move(id), type, attrs, linkage, std::move(meta));
     }
-    auto declarationType(ID id, QualifiedType* type, declaration::Linkage linkage = declaration::Linkage::Private,
+    auto declarationType(ID id,
+                         QualifiedType* type,
+                         declaration::Linkage linkage = declaration::Linkage::Private,
                          Meta meta = {}) {
         return hilti::declaration::Type::create(context(), std::move(id), type, linkage, std::move(meta));
     }
@@ -300,7 +366,10 @@ public:
     auto expressionKeyword(expression::keyword::Kind kind, QualifiedType* type, Meta meta = {}) {
         return hilti::expression::Keyword::create(context(), kind, type, std::move(meta));
     }
-    auto expressionListComprehension(Expression* input, Expression* output, const ID& id, Expression* cond,
+    auto expressionListComprehension(Expression* input,
+                                     Expression* output,
+                                     const ID& id,
+                                     Expression* cond,
                                      Meta meta = {}) {
         return hilti::expression::ListComprehension::create(context(), input, output, id, cond, std::move(meta));
     }
@@ -346,12 +415,16 @@ public:
     auto expressionUnresolvedOperator(operator_::Kind kind, Expressions operands, const Meta& meta = {}) {
         return hilti::expression::UnresolvedOperator::create(context(), kind, std::move(operands), meta);
     }
-    auto expressionUnresolvedOperator(operator_::Kind kind, hilti::node::Range<Expression> operands,
+    auto expressionUnresolvedOperator(operator_::Kind kind,
+                                      hilti::node::Range<Expression> operands,
                                       const Meta& meta = {}) {
         return hilti::expression::UnresolvedOperator::create(context(), kind, operands, meta);
     }
     auto expressionVoid(const Meta& meta = {}) { return hilti::expression::Void::create(context(), meta); }
-    auto function(const ID& id, type::Function* ftype, statement::Block* body, AttributeSet* attrs = nullptr,
+    auto function(const ID& id,
+                  type::Function* ftype,
+                  statement::Block* body,
+                  AttributeSet* attrs = nullptr,
                   const Meta& meta = {}) {
         return hilti::Function::create(context(), id, ftype, body, attrs, meta);
     }
@@ -364,9 +437,16 @@ public:
     auto statementAssert(Expression* expr, Expression* msg = nullptr, Meta meta = {}) {
         return hilti::statement::Assert::create(context(), expr, msg, std::move(meta));
     }
-    auto statementAssert(statement::assert::Exception /* except */, Expression* expr, UnqualifiedType* except,
-                         Expression* msg = nullptr, Meta meta = {}) {
-        return hilti::statement::Assert::create(context(), statement::assert::Exception{}, expr, except, msg,
+    auto statementAssert(statement::assert::Exception /* except */,
+                         Expression* expr,
+                         UnqualifiedType* except,
+                         Expression* msg = nullptr,
+                         Meta meta = {}) {
+        return hilti::statement::Assert::create(context(),
+                                                statement::assert::Exception{},
+                                                expr,
+                                                except,
+                                                msg,
                                                 std::move(meta));
     }
     auto statementBlock(const Meta& meta = {}) { return hilti::statement::Block::create(context(), meta); }
@@ -430,7 +510,10 @@ public:
     auto statementTryCatch(Statement* body, Meta meta = {}) {
         return hilti::statement::try_::Catch::create(context(), body, std::move(meta));
     }
-    auto statementWhile(Declaration* init, Expression* cond, Statement* body, Statement* else_ = nullptr,
+    auto statementWhile(Declaration* init,
+                        Expression* cond,
+                        Statement* body,
+                        Statement* else_ = nullptr,
                         Meta meta = {}) {
         return hilti::statement::While::create(context(), init, cond, body, else_, std::move(meta));
     }
@@ -450,14 +533,34 @@ public:
     auto typeBitfield(type::Wildcard _, const Meta& m = Meta()) {
         return hilti::type::Bitfield::create(context(), _, m);
     }
-    auto typeBitfieldBitRange(const ID& id, int lower, int upper, int field_width, AttributeSet* attrs = {},
-                              Expression* ctor_value = nullptr, Meta meta = Meta()) {
-        return hilti::type::bitfield::BitRange::create(context(), id, lower, upper, field_width, attrs, ctor_value,
+    auto typeBitfieldBitRange(const ID& id,
+                              int lower,
+                              int upper,
+                              int field_width,
+                              AttributeSet* attrs = {},
+                              Expression* ctor_value = nullptr,
+                              Meta meta = Meta()) {
+        return hilti::type::bitfield::BitRange::create(context(),
+                                                       id,
+                                                       lower,
+                                                       upper,
+                                                       field_width,
+                                                       attrs,
+                                                       ctor_value,
                                                        std::move(meta));
     }
-    auto typeBitfieldBitRange(const ID& id, int lower, int upper, int field_width, AttributeSet* attrs = {},
+    auto typeBitfieldBitRange(const ID& id,
+                              int lower,
+                              int upper,
+                              int field_width,
+                              AttributeSet* attrs = {},
                               Meta meta = Meta()) {
-        return hilti::type::bitfield::BitRange::create(context(), id, lower, upper, field_width, attrs,
+        return hilti::type::bitfield::BitRange::create(context(),
+                                                       id,
+                                                       lower,
+                                                       upper,
+                                                       field_width,
+                                                       attrs,
                                                        std::move(meta));
     }
     auto typeBool(Meta meta = {}) { return hilti::type::Bool::create(context(), std::move(meta)); }
@@ -484,7 +587,8 @@ public:
     auto typeException(type::Wildcard _, const Meta& m = Meta()) {
         return hilti::type::Exception::create(context(), _, m);
     }
-    auto typeFunction(QualifiedType* result, const declaration::Parameters& params,
+    auto typeFunction(QualifiedType* result,
+                      const declaration::Parameters& params,
                       type::function::Flavor flavor = type::function::Flavor::Function,
                       type::function::CallingConvention cc = type::function::CallingConvention::Standard,
                       Meta meta = {}) {
@@ -531,24 +635,60 @@ public:
     auto typeOperandList(type::operand_list::Operands operands, Meta meta = {}) {
         return hilti::type::OperandList::create(context(), std::move(operands), std::move(meta));
     }
-    auto typeOperandListOperand(ID id, parameter::Kind kind, UnqualifiedType* type, bool optional = false,
-                                std::string doc = "", Meta meta = {}) {
-        return hilti::type::operand_list::Operand::create(context(), std::move(id), kind, type, optional,
-                                                          std::move(doc), std::move(meta));
+    auto typeOperandListOperand(ID id,
+                                parameter::Kind kind,
+                                UnqualifiedType* type,
+                                bool optional = false,
+                                std::string doc = "",
+                                Meta meta = {}) {
+        return hilti::type::operand_list::Operand::create(context(),
+                                                          std::move(id),
+                                                          kind,
+                                                          type,
+                                                          optional,
+                                                          std::move(doc),
+                                                          std::move(meta));
     }
-    auto typeOperandListOperand(ID id, parameter::Kind kind, UnqualifiedType* type, Expression* default_, bool optional,
-                                std::string doc = "", Meta meta = {}) {
-        return hilti::type::operand_list::Operand::create(context(), std::move(id), kind, type, default_, optional,
-                                                          std::move(doc), std::move(meta));
+    auto typeOperandListOperand(ID id,
+                                parameter::Kind kind,
+                                UnqualifiedType* type,
+                                Expression* default_,
+                                bool optional,
+                                std::string doc = "",
+                                Meta meta = {}) {
+        return hilti::type::operand_list::Operand::create(context(),
+                                                          std::move(id),
+                                                          kind,
+                                                          type,
+                                                          default_,
+                                                          optional,
+                                                          std::move(doc),
+                                                          std::move(meta));
     }
-    auto typeOperandListOperand(ID id, parameter::Kind kind, UnqualifiedType* type, Expression* default_,
-                                std::string doc = "", Meta meta = {}) {
-        return hilti::type::operand_list::Operand::create(context(), std::move(id), kind, type, default_,
-                                                          std::move(doc), std::move(meta));
+    auto typeOperandListOperand(ID id,
+                                parameter::Kind kind,
+                                UnqualifiedType* type,
+                                Expression* default_,
+                                std::string doc = "",
+                                Meta meta = {}) {
+        return hilti::type::operand_list::Operand::create(context(),
+                                                          std::move(id),
+                                                          kind,
+                                                          type,
+                                                          default_,
+                                                          std::move(doc),
+                                                          std::move(meta));
     }
-    auto typeOperandListOperand(parameter::Kind kind, UnqualifiedType* type, bool optional = false,
-                                std::string doc = "", Meta meta = {}) {
-        return hilti::type::operand_list::Operand::create(context(), kind, type, optional, std::move(doc),
+    auto typeOperandListOperand(parameter::Kind kind,
+                                UnqualifiedType* type,
+                                bool optional = false,
+                                std::string doc = "",
+                                Meta meta = {}) {
+        return hilti::type::operand_list::Operand::create(context(),
+                                                          kind,
+                                                          type,
+                                                          optional,
+                                                          std::move(doc),
                                                           std::move(meta));
     }
     auto typeOptional(QualifiedType* t, Meta m = Meta()) {

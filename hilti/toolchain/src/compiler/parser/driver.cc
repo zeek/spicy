@@ -15,14 +15,16 @@
 using namespace hilti;
 using namespace hilti::detail::parser;
 
-Result<declaration::Module*> detail::parser::parseSource(Builder* builder, std::istream& in,
+Result<declaration::Module*> detail::parser::parseSource(Builder* builder,
+                                                         std::istream& in,
                                                          const std::string& filename) {
     util::timing::Collector _("hilti/compiler/ast/parser");
 
     return Driver().parse(builder, in, filename);
 }
 
-Result<declaration::Module*> detail::parser::Driver::parse(Builder* builder, std::istream& in,
+Result<declaration::Module*> detail::parser::Driver::parse(Builder* builder,
+                                                           std::istream& in,
                                                            const std::string& filename) {
     _builder = builder;
 

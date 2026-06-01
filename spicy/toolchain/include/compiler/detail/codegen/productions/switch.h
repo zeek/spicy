@@ -21,8 +21,13 @@ class Switch : public Production {
 public:
     using Cases = std::vector<std::pair<std::vector<Expression*>, std::unique_ptr<Production>>>;
 
-    Switch(ASTContext* /* ctx */, const std::string& symbol, Expression* expr, Cases cases,
-           std::unique_ptr<Production> default_, AttributeSet* attributes, Expression* condition,
+    Switch(ASTContext* /* ctx */,
+           const std::string& symbol,
+           Expression* expr,
+           Cases cases,
+           std::unique_ptr<Production> default_,
+           AttributeSet* attributes,
+           Expression* condition,
            const Location& l = location::None)
         : Production(symbol, l),
           _expression(expr),

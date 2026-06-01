@@ -123,7 +123,8 @@ TEST_CASE("equal") {
 
     Set<int> e1;
     Set<int> e2;
-    CHECK_THROWS_WITH_AS(operator==(e1.begin(), e2.begin()), "cannot compare iterators into different sets",
+    CHECK_THROWS_WITH_AS(operator==(e1.begin(), e2.begin()),
+                         "cannot compare iterators into different sets",
                          const InvalidArgument&);
 }
 
@@ -131,7 +132,8 @@ TEST_CASE("iterator") {
     Set<int> s1({1, 2, 3});
     Set<int> s2({1, 2, 3});
 
-    CHECK_THROWS_WITH_AS(operator==(s1.begin(), s2.begin()), "cannot compare iterators into different sets",
+    CHECK_THROWS_WITH_AS(operator==(s1.begin(), s2.begin()),
+                         "cannot compare iterators into different sets",
                          const InvalidArgument&);
 
     CHECK_THROWS_WITH_AS(*s1.end(), "iterator is invalid", const IndexError&);

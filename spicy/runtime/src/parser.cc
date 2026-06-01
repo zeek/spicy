@@ -97,11 +97,15 @@ hilti::rt::Result<const spicy::rt::Parser*> spicy::rt::lookupParser(const hilti:
     return hilti::rt::result::Error("no matching parser available");
 }
 
-void detail::printParserState(std::string_view unit_id, const hilti::rt::ValueReference<hilti::rt::Stream>& data,
+void detail::printParserState(std::string_view unit_id,
+                              const hilti::rt::ValueReference<hilti::rt::Stream>& data,
                               const hilti::rt::Optional<hilti::rt::stream::SafeConstIterator>& begin,
-                              const hilti::rt::stream::View& cur, int64_t lahead,
-                              const hilti::rt::stream::SafeConstIterator& lahead_end, std::string_view literal_mode,
-                              bool trim, const hilti::rt::Optional<hilti::rt::RecoverableFailure>& error) {
+                              const hilti::rt::stream::View& cur,
+                              int64_t lahead,
+                              const hilti::rt::stream::SafeConstIterator& lahead_end,
+                              std::string_view literal_mode,
+                              bool trim,
+                              const hilti::rt::Optional<hilti::rt::RecoverableFailure>& error) {
     auto msg = [&]() {
         auto str = [&](const hilti::rt::stream::SafeConstIterator& begin,
                        const hilti::rt::stream::SafeConstIterator& end) {
@@ -145,7 +149,8 @@ void detail::printParserState(std::string_view unit_id, const hilti::rt::ValueRe
     SPICY_RT_DEBUG_VERBOSE(msg());
 }
 
-void detail::waitForEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
+void detail::waitForEod(hilti::rt::ValueReference<hilti::rt::Stream>& data,
+                        const hilti::rt::stream::View& cur,
                         hilti::rt::StrongReference<spicy::rt::filter::detail::Filters> filters) {
     auto min = std::numeric_limits<uint64_t>::max();
 
@@ -155,8 +160,11 @@ void detail::waitForEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, cons
     waitForInputOrEod(data, cur, min, std::move(filters));
 }
 
-void detail::waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
-                          uint64_t min, std::string_view error_msg, std::string_view location,
+void detail::waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data,
+                          const hilti::rt::stream::View& cur,
+                          uint64_t min,
+                          std::string_view error_msg,
+                          std::string_view location,
                           hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>
                               filters) { // NOLINT(performance-unnecessary-value-param)
     while ( min > cur.size() )
@@ -169,7 +177,8 @@ void detail::waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, co
         }
 }
 
-bool detail::waitForInputNoThrow(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
+bool detail::waitForInputNoThrow(hilti::rt::ValueReference<hilti::rt::Stream>& data,
+                                 const hilti::rt::stream::View& cur,
                                  uint64_t min,
                                  hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>
                                      filters) { // NOLINT(performance-unnecessary-value-param)
@@ -183,7 +192,8 @@ bool detail::waitForInputNoThrow(hilti::rt::ValueReference<hilti::rt::Stream>& d
     return true;
 }
 
-bool detail::waitForInputOrEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
+bool detail::waitForInputOrEod(hilti::rt::ValueReference<hilti::rt::Stream>& data,
+                               const hilti::rt::stream::View& cur,
                                uint64_t min,
                                hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>
                                    filters) { // NOLINT(performance-unnecessary-value-param)
@@ -195,7 +205,8 @@ bool detail::waitForInputOrEod(hilti::rt::ValueReference<hilti::rt::Stream>& dat
     return true;
 }
 
-bool detail::waitForInputOrEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
+bool detail::waitForInputOrEod(hilti::rt::ValueReference<hilti::rt::Stream>& data,
+                               const hilti::rt::stream::View& cur,
                                const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters) {
     auto old = cur.size();
     auto new_ = cur.size();
@@ -205,7 +216,8 @@ bool detail::waitForInputOrEod(hilti::rt::ValueReference<hilti::rt::Stream>& dat
             return false;
 
         SPICY_RT_DEBUG_VERBOSE(hilti::rt::fmt("suspending to wait for more input for stream %p, currently have %lu",
-                                              data.get(), cur.size()));
+                                              data.get(),
+                                              cur.size()));
         hilti::rt::detail::yield();
 
         if ( filters ) {
@@ -222,8 +234,10 @@ bool detail::waitForInputOrEod(hilti::rt::ValueReference<hilti::rt::Stream>& dat
     return true;
 }
 
-void detail::waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
-                          std::string_view error_msg, std::string_view location,
+void detail::waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data,
+                          const hilti::rt::stream::View& cur,
+                          std::string_view error_msg,
+                          std::string_view location,
                           const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters) {
     if ( ! waitForInputOrEod(data, cur, filters) ) {
         SPICY_RT_DEBUG_VERBOSE(
@@ -234,7 +248,8 @@ void detail::waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, co
     }
 }
 
-bool detail::atEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
+bool detail::atEod(hilti::rt::ValueReference<hilti::rt::Stream>& data,
+                   const hilti::rt::stream::View& cur,
                    const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters) {
     if ( cur.size() > 0 )
         return false;
@@ -249,8 +264,10 @@ bool detail::atEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hil
 }
 
 hilti::rt::Optional<hilti::rt::stream::SafeConstIterator> detail::unitFind(
-    const hilti::rt::stream::SafeConstIterator& begin, const hilti::rt::stream::SafeConstIterator& end,
-    const hilti::rt::Optional<hilti::rt::stream::SafeConstIterator>& i, const hilti::rt::Bytes& needle,
+    const hilti::rt::stream::SafeConstIterator& begin,
+    const hilti::rt::stream::SafeConstIterator& end,
+    const hilti::rt::Optional<hilti::rt::stream::SafeConstIterator>& i,
+    const hilti::rt::Bytes& needle,
     hilti::rt::stream::Direction d) {
     hilti::rt::Tuple<bool, hilti::rt::stream::SafeConstIterator> v;
     if ( i )
@@ -265,7 +282,9 @@ hilti::rt::Optional<hilti::rt::stream::SafeConstIterator> detail::unitFind(
 }
 
 hilti::rt::Bytes detail::extractBytes(hilti::rt::ValueReference<hilti::rt::Stream>& data,
-                                      const hilti::rt::stream::View& cur, uint64_t size, bool eod_ok,
+                                      const hilti::rt::stream::View& cur,
+                                      uint64_t size,
+                                      bool eod_ok,
                                       std::string_view location,
                                       const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters) {
     if ( eod_ok )
@@ -278,13 +297,17 @@ hilti::rt::Bytes detail::extractBytes(hilti::rt::ValueReference<hilti::rt::Strea
     return cur.sub(cur.begin() + size).data();
 }
 
-void detail::expectBytesLiteral(hilti::rt::ValueReference<hilti::rt::Stream>& data, const hilti::rt::stream::View& cur,
-                                const hilti::rt::Bytes& literal, std::string_view location,
+void detail::expectBytesLiteral(hilti::rt::ValueReference<hilti::rt::Stream>& data,
+                                const hilti::rt::stream::View& cur,
+                                const hilti::rt::Bytes& literal,
+                                std::string_view location,
                                 const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters) {
     if ( ! detail::waitForInputNoThrow(data, cur, literal.size(), filters) ) {
         auto msg = hilti::rt::fmt("expected %" PRIu64 R"( bytes for bytes literal "%s")"
                                   " (%" PRIu64 " available))",
-                                  literal.size(), literal, cur.size());
+                                  literal.size(),
+                                  literal,
+                                  cur.size());
         throw ParseError(msg, std::string(location));
     }
 

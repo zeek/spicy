@@ -194,8 +194,10 @@ public:
                 n->addError(util::fmt("cannot assign to expression: %s", *lhs_elem));
 
             if ( ! type::sameExceptForConstness(lhs_elem_type, rhs_elem_type) )
-                n->addError(util::fmt("type mismatch for element %d in assignment, expected type %s but got %s", j,
-                                      *lhs_elem_type, *rhs_elem_type));
+                n->addError(util::fmt("type mismatch for element %d in assignment, expected type %s but got %s",
+                                      j,
+                                      *lhs_elem_type,
+                                      *rhs_elem_type));
         }
     }
 

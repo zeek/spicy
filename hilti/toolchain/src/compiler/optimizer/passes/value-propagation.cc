@@ -321,7 +321,8 @@ struct Mutator : public optimizer::visitor::Mutator {
         }
 
         HILTI_DEBUG(logging::debug::OptimizerPasses,
-                    util::fmt("function %s took %d iterations before constant propagation convergence", function->id(),
+                    util::fmt("function %s took %d iterations before constant propagation convergence",
+                              function->id(),
                               num_processed));
     }
 

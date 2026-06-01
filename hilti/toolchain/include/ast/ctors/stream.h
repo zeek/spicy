@@ -23,8 +23,10 @@ public:
     }
 
     static auto create(ASTContext* ctx, std::string value, const Meta& meta = {}) {
-        return ctx->make<Stream>(ctx, {QualifiedType::create(ctx, type::Stream::create(ctx, meta), Constness::Const)},
-                                 std::move(value), meta);
+        return ctx->make<Stream>(ctx,
+                                 {QualifiedType::create(ctx, type::Stream::create(ctx, meta), Constness::Const)},
+                                 std::move(value),
+                                 meta);
     }
 
 protected:

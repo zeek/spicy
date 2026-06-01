@@ -24,8 +24,10 @@ public:
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return ctx->make<Type_>(ctx, Wildcard(),
-                                {QualifiedType::create(ctx, type::Unknown::create(ctx, m), Constness::Const)}, m);
+        return ctx->make<Type_>(ctx,
+                                Wildcard(),
+                                {QualifiedType::create(ctx, type::Unknown::create(ctx, m), Constness::Const)},
+                                m);
     }
 
 protected:

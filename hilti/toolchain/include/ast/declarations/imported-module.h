@@ -54,24 +54,36 @@ public:
     }
 
     static auto create(ASTContext* ctx, ID id, const std::string& parse_extension, Meta meta = {}) {
-        return ctx->make<ImportedModule>(ctx, std::move(id), hilti::rt::filesystem::path{}, parse_extension, ID{},
+        return ctx->make<ImportedModule>(ctx,
+                                         std::move(id),
+                                         hilti::rt::filesystem::path{},
+                                         parse_extension,
+                                         ID{},
                                          std::move(meta));
     }
 
     static auto create(ASTContext* ctx, ID id, const std::string& parse_extension, ID search_scope, Meta meta = {}) {
-        return ctx->make<ImportedModule>(ctx, std::move(id), hilti::rt::filesystem::path{}, parse_extension,
-                                         std::move(search_scope), std::move(meta));
+        return ctx->make<ImportedModule>(ctx,
+                                         std::move(id),
+                                         hilti::rt::filesystem::path{},
+                                         parse_extension,
+                                         std::move(search_scope),
+                                         std::move(meta));
     }
 
     static auto create(ASTContext* ctx, ID id, hilti::rt::filesystem::path path, Meta meta = {}) {
         auto extension = path.extension();
-        return ctx->make<ImportedModule>(ctx, std::move(id), std::move(path), std::move(extension), ID{},
-                                         std::move(meta));
+        return ctx
+            ->make<ImportedModule>(ctx, std::move(id), std::move(path), std::move(extension), ID{}, std::move(meta));
     }
 
 protected:
-    ImportedModule(ASTContext* ctx, ID id, hilti::rt::filesystem::path path,
-                   hilti::rt::filesystem::path parse_extension, ID search_scope, Meta meta)
+    ImportedModule(ASTContext* ctx,
+                   ID id,
+                   hilti::rt::filesystem::path path,
+                   hilti::rt::filesystem::path parse_extension,
+                   ID search_scope,
+                   Meta meta)
         : Declaration(ctx, NodeTags, {}, std::move(id), Linkage::Private, std::move(meta)),
           _path(std::move(path)),
           _parse_extension(std::move(parse_extension)),

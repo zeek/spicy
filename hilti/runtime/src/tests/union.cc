@@ -17,20 +17,25 @@ TEST_SUITE_BEGIN("union");
 
 TEST_CASE("get") {
     CHECK_EQ(union_::get<0>(Union<int>()), std::monostate());
-    CHECK_THROWS_WITH_AS(union_::get<1>(Union<int>()), "access to union member that does not hold value",
+    CHECK_THROWS_WITH_AS(union_::get<1>(Union<int>()),
+                         "access to union member that does not hold value",
                          const UnsetUnionMember&);
 
-    CHECK_THROWS_WITH_AS(union_::get<0>(Union<int>(42)), "access to union member that does not hold value",
+    CHECK_THROWS_WITH_AS(union_::get<0>(Union<int>(42)),
+                         "access to union member that does not hold value",
                          const UnsetUnionMember&);
     CHECK_EQ(union_::get<1>(Union<int>(42)), 42);
 
     CHECK_THROWS_WITH_AS(union_::get<0>(Union<int, String, double>("abc"_hs)),
-                         "access to union member that does not hold value", const UnsetUnionMember&);
+                         "access to union member that does not hold value",
+                         const UnsetUnionMember&);
     CHECK_THROWS_WITH_AS(union_::get<1>(Union<int, String, double>("abc"_hs)),
-                         "access to union member that does not hold value", const UnsetUnionMember&);
+                         "access to union member that does not hold value",
+                         const UnsetUnionMember&);
     CHECK_EQ(union_::get<2>(Union<int, String, double>("abc"_hs)), "abc");
     CHECK_THROWS_WITH_AS(union_::get<3>(Union<int, String, double>("abc"_hs)),
-                         "access to union member that does not hold value", const UnsetUnionMember&);
+                         "access to union member that does not hold value",
+                         const UnsetUnionMember&);
 }
 
 TEST_CASE("get_proxy") {

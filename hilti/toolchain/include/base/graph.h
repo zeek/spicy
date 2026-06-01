@@ -177,7 +177,8 @@ private:
                                                             neighbor->second.neighbors_downstream.end());
             else
                 neighbor->second.neighbors_upstream.erase(std::remove(neighbor->second.neighbors_upstream.begin(),
-                                                                      neighbor->second.neighbors_upstream.end(), id),
+                                                                      neighbor->second.neighbors_upstream.end(),
+                                                                      id),
                                                           neighbor->second.neighbors_upstream.end());
         }
     }

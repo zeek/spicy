@@ -33,13 +33,15 @@ static auto sequence(hilti::ASTContext* ctx, const std::string& symbol, Ps l) {
 
 static auto variable(hilti::ASTContext* ctx, const std::string& symbol, hilti::UnqualifiedType* t) {
     return std::make_unique<
-        spicy::detail::codegen::production::Variable>(ctx, symbol,
+        spicy::detail::codegen::production::Variable>(ctx,
+                                                      symbol,
                                                       hilti::QualifiedType::create(ctx, t, hilti::Constness::Mutable));
 }
 
 static auto typeLiteral(hilti::ASTContext* ctx, const std::string& symbol, spicy::UnqualifiedType* t) {
     return std::make_unique<
-        spicy::detail::codegen::production::TypeLiteral>(ctx, symbol,
+        spicy::detail::codegen::production::TypeLiteral>(ctx,
+                                                         symbol,
                                                          hilti::QualifiedType::create(ctx, t, hilti::Constness::Const));
 }
 
@@ -53,11 +55,16 @@ static auto reference(hilti::ASTContext* ctx, const std::unique_ptr<T>& p) {
     return std::make_unique<spicy::detail::codegen::production::Reference>(ctx, p.get());
 }
 
-static auto lookAhead(hilti::ASTContext* ctx, const std::string& symbol,
+static auto lookAhead(hilti::ASTContext* ctx,
+                      const std::string& symbol,
                       std::unique_ptr<spicy::detail::codegen::Production> a1,
-                      std::unique_ptr<spicy::detail::codegen::Production> a2, hilti::Expression* condition = nullptr) {
+                      std::unique_ptr<spicy::detail::codegen::Production> a2,
+                      hilti::Expression* condition = nullptr) {
     return std::make_unique<
-        spicy::detail::codegen::production::LookAhead>(ctx, symbol, std::move(a1), std::move(a2),
+        spicy::detail::codegen::production::LookAhead>(ctx,
+                                                       symbol,
+                                                       std::move(a1),
+                                                       std::move(a2),
                                                        spicy::detail::codegen::production::look_ahead::Default::None,
                                                        condition);
 }
@@ -186,9 +193,14 @@ TEST_CASE("example3") {
     auto ws_r1 = reference(&ctx, ws);
     auto nl = literal(&ctx, "nl", "[\r\n]");
     auto nl_r1 = reference(&ctx, nl);
-    auto header = sequence(&ctx, "Header",
-                           makeProds(std::move(hdrkey), std::move(ws), std::move(colon), std::move(ws_r1),
-                                     std::move(hdrval), std::move(nl)));
+    auto header = sequence(&ctx,
+                           "Header",
+                           makeProds(std::move(hdrkey),
+                                     std::move(ws),
+                                     std::move(colon),
+                                     std::move(ws_r1),
+                                     std::move(hdrval),
+                                     std::move(nl)));
     auto [list1_, list1] = resolved(&ctx);
     auto list2 = lookAhead(&ctx, "List2", std::move(list1), epsilon(&ctx));
     auto list2_r1 = reference(&ctx, list2);

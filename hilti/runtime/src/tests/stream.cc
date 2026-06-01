@@ -1069,7 +1069,8 @@ TEST_CASE("View") {
         SUBCASE("trimmed too much") {
             s.trim(s.begin() + 5);
             Byte dst[1] = {'0'};
-            CHECK_THROWS_WITH_AS(v.extract(dst, sizeof(dst)), "view starts before available range",
+            CHECK_THROWS_WITH_AS(v.extract(dst, sizeof(dst)),
+                                 "view starts before available range",
                                  const InvalidIterator&);
         }
 

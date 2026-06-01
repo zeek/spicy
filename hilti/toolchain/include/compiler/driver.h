@@ -356,7 +356,8 @@ protected:
      * @param append true to append to existing file
      * @return set if successful, or an appropriate error result
      */
-    Result<std::unique_ptr<std::ostream>> openOutput(const hilti::rt::filesystem::path& p, bool binary = false,
+    Result<std::unique_ptr<std::ostream>> openOutput(const hilti::rt::filesystem::path& p,
+                                                     bool binary = false,
                                                      bool append = false);
 
     /**
@@ -498,25 +499,35 @@ private:
     Result<Nothing> _optimizeUnits();
 
     // Sends a debug dump of a unit's AST to the global logger.
-    void _dumpAST(const std::shared_ptr<Unit>& unit, const logging::DebugStream& stream, const Plugin& plugin,
-                  const std::string& prefix, int round);
+    void _dumpAST(const std::shared_ptr<Unit>& unit,
+                  const logging::DebugStream& stream,
+                  const Plugin& plugin,
+                  const std::string& prefix,
+                  int round);
 
     // Sends a debug dump of a unit's AST to the global logger.
     void _dumpAST(const std::shared_ptr<Unit>& unit, const logging::DebugStream& stream, const std::string& prefix);
 
     // Sends a debug dump of a unit's AST to an output stream.
-    void _dumpAST(const std::shared_ptr<Unit>& unit, std::ostream& stream, const Plugin& plugin,
-                  const std::string& prefix, int round);
+    void _dumpAST(const std::shared_ptr<Unit>& unit,
+                  std::ostream& stream,
+                  const Plugin& plugin,
+                  const std::string& prefix,
+                  int round);
 
     // Records a reduced debug dump of a unit's AST limited to just declarations.
     void _dumpDeclarations(const std::shared_ptr<Unit>& unit, const Plugin& plugin);
 
     // Records a debug dump of a unit's AST to disk.
-    void _saveIterationAST(const std::shared_ptr<Unit>& unit, const Plugin& plugin, const std::string& prefix,
+    void _saveIterationAST(const std::shared_ptr<Unit>& unit,
+                           const Plugin& plugin,
+                           const std::string& prefix,
                            int round);
 
     // Records a debug dump of a unit's AST to disk.
-    void _saveIterationAST(const std::shared_ptr<Unit>& unit, const Plugin& plugin, const std::string& prefix,
+    void _saveIterationAST(const std::shared_ptr<Unit>& unit,
+                           const Plugin& plugin,
+                           const std::string& prefix,
                            const std::string& tag);
 
     // Sets the C++ namespaces for generated code from -x/-P prefix options.

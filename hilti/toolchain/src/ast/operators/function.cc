@@ -23,7 +23,8 @@ operator_::Signature hilti::function::Call::signature(Builder* builder) const {
     };
 }
 
-Result<expression::ResolvedOperator*> hilti::function::Call::instantiate(Builder* builder, Expressions operands,
+Result<expression::ResolvedOperator*> hilti::function::Call::instantiate(Builder* builder,
+                                                                         Expressions operands,
                                                                          Meta meta) const {
     assert(_fdecl->fullyQualifiedID());
     auto* callee = operands[0]->as<expression::Name>();

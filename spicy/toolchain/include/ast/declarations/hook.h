@@ -113,23 +113,33 @@ public:
     std::string_view displayName() const override { return "Spicy hook"; }
     node::Properties properties() const final;
 
-    static auto create(ASTContext* ctx, const hilti::declaration::Parameters& parameters, hilti::statement::Block* body,
-                       AttributeSet* attrs, const Meta& m = Meta()) {
+    static auto create(ASTContext* ctx,
+                       const hilti::declaration::Parameters& parameters,
+                       hilti::statement::Block* body,
+                       AttributeSet* attrs,
+                       const Meta& m = Meta()) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
         auto* ftype = hilti::type::Function::create(ctx,
-                                                    QualifiedType::create(ctx, hilti::type::Void::create(ctx, m),
+                                                    QualifiedType::create(ctx,
+                                                                          hilti::type::Void::create(ctx, m),
                                                                           hilti::Constness::Const),
-                                                    parameters, hilti::type::function::Flavor::Hook,
-                                                    hilti::type::function::CallingConvention::Standard, m);
+                                                    parameters,
+                                                    hilti::type::function::Flavor::Hook,
+                                                    hilti::type::function::CallingConvention::Standard,
+                                                    m);
         auto* func = hilti::Function::create(ctx, hilti::ID(), ftype, body, attrs, m);
         return ctx->make<Hook>(ctx, {func, nullptr}, m);
     }
 
 protected:
     Hook(ASTContext* ctx, Nodes children, Meta m = Meta())
-        : Declaration(ctx, NodeTags, std::move(children), hilti::ID(), hilti::declaration::Linkage::Private,
+        : Declaration(ctx,
+                      NodeTags,
+                      std::move(children),
+                      hilti::ID(),
+                      hilti::declaration::Linkage::Private,
                       std::move(m)) {}
 
     SPICY_NODE_1(declaration::Hook, Declaration, final);

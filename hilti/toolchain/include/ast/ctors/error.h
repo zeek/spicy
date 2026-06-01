@@ -23,8 +23,10 @@ public:
     }
 
     static auto create(ASTContext* ctx, std::string v, const Meta& meta = {}) {
-        return ctx->make<Error>(ctx, {QualifiedType::create(ctx, type::Error::create(ctx, meta), Constness::Const)},
-                                std::move(v), meta);
+        return ctx->make<Error>(ctx,
+                                {QualifiedType::create(ctx, type::Error::create(ctx, meta), Constness::Const)},
+                                std::move(v),
+                                meta);
     }
 
 protected:

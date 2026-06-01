@@ -64,21 +64,40 @@ public:
         return Declaration::properties() + std::move(p);
     }
 
-    static auto create(ASTContext* ctx, ID id, UnqualifiedType* type, parameter::Kind kind, hilti::Expression* default_,
-                       AttributeSet* attrs, Meta meta = {}) {
+    static auto create(ASTContext* ctx,
+                       ID id,
+                       UnqualifiedType* type,
+                       parameter::Kind kind,
+                       hilti::Expression* default_,
+                       AttributeSet* attrs,
+                       Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        return ctx->make<Parameter>(ctx, {_qtype(ctx, type, kind), default_, attrs}, std::move(id), kind, false,
+        return ctx->make<Parameter>(ctx,
+                                    {_qtype(ctx, type, kind), default_, attrs},
+                                    std::move(id),
+                                    kind,
+                                    false,
                                     std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, UnqualifiedType* type, parameter::Kind kind, hilti::Expression* default_,
-                       bool is_type_param, AttributeSet* attrs, Meta meta = {}) {
+    static auto create(ASTContext* ctx,
+                       ID id,
+                       UnqualifiedType* type,
+                       parameter::Kind kind,
+                       hilti::Expression* default_,
+                       bool is_type_param,
+                       AttributeSet* attrs,
+                       Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        return ctx->make<Parameter>(ctx, {_qtype(ctx, type, kind), default_, attrs}, std::move(id), kind, is_type_param,
+        return ctx->make<Parameter>(ctx,
+                                    {_qtype(ctx, type, kind), default_, attrs},
+                                    std::move(id),
+                                    kind,
+                                    is_type_param,
                                     std::move(meta));
     }
 

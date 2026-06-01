@@ -60,7 +60,8 @@ struct SizeVisitor : hilti::visitor::PreOrder {
 
         result =
             builder->ternary(builder->equal(*type->valueAsExpression(), builder->id("spicy::RealType::IEEE754_Single")),
-                             builder->integer(4U), builder->integer(8U));
+                             builder->integer(4U),
+                             builder->integer(8U));
     }
 };
 
@@ -70,8 +71,9 @@ Expression* spicy::type::unit::item::Field::size(ASTContext* ctx) const {
     if ( const auto& size = attributes()->find(attribute::kind::Size) )
         return *size->valueAsExpression();
 
-    if ( auto* size = hilti::visitor::dispatch(SizeVisitor(&builder, *this), parseType()->type(),
-                                               [](const auto& v) { return v.result; }) )
+    if ( auto* size = hilti::visitor::dispatch(SizeVisitor(&builder, *this), parseType()->type(), [](const auto& v) {
+             return v.result;
+         }) )
         return size;
 
     return nullptr;

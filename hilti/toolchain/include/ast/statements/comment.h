@@ -35,7 +35,9 @@ public:
         return Statement::properties() + std::move(p);
     }
 
-    static auto create(ASTContext* ctx, std::string comment, comment::Separator separator = comment::Separator::Before,
+    static auto create(ASTContext* ctx,
+                       std::string comment,
+                       comment::Separator separator = comment::Separator::Before,
                        Meta meta = {}) {
         return ctx->make<Comment>(ctx, {}, std::move(comment), separator, std::move(meta));
     }

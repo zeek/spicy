@@ -142,7 +142,8 @@ public:
      * @param path path to parse the module from
      * @return instantiated unit, or an appropriate error result if operation failed
      */
-    static Result<std::shared_ptr<Unit>> fromSource(const std::shared_ptr<Context>& context, Builder* builder,
+    static Result<std::shared_ptr<Unit>> fromSource(const std::shared_ptr<Context>& context,
+                                                    Builder* builder,
                                                     const hilti::rt::filesystem::path& path);
 
     /**
@@ -178,7 +179,8 @@ private:
     // `from*()` factory functions instead to instantiate a unit.
     Unit(const std::shared_ptr<Context>& context, declaration::module::UID uid)
         : _context(context), _uid(std::move(uid)) {}
-    Unit(const std::shared_ptr<Context>& context, declaration::module::UID uid,
+    Unit(const std::shared_ptr<Context>& context,
+         declaration::module::UID uid,
          std::shared_ptr<detail::cxx::Unit> cxx_unit)
         : _context(context), _uid(std::move(uid)), _cxx_unit(std::move(cxx_unit)) {}
 

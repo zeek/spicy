@@ -46,10 +46,16 @@ public:
 
     std::string_view displayName() const final { return "local variable"; }
 
-    static auto create(ASTContext* ctx, ID id, QualifiedType* type, Expressions args, hilti::Expression* init = nullptr,
+    static auto create(ASTContext* ctx,
+                       ID id,
+                       QualifiedType* type,
+                       Expressions args,
+                       hilti::Expression* init = nullptr,
                        Meta meta = {}) {
-        return ctx->make<LocalVariable>(ctx, node::flatten(type->recreateAsLhs(ctx), init, std::move(args)),
-                                        std::move(id), std::move(meta));
+        return ctx->make<LocalVariable>(ctx,
+                                        node::flatten(type->recreateAsLhs(ctx), init, std::move(args)),
+                                        std::move(id),
+                                        std::move(meta));
     }
 
     static auto create(ASTContext* ctx, ID id, QualifiedType* type, hilti::Expression* init, Meta meta = {}) {
@@ -70,7 +76,11 @@ public:
 
 protected:
     LocalVariable(ASTContext* ctx, Nodes children, ID id, Meta meta)
-        : Declaration(ctx, NodeTags, std::move(children), std::move(id), declaration::Linkage::Private,
+        : Declaration(ctx,
+                      NodeTags,
+                      std::move(children),
+                      std::move(id),
+                      declaration::Linkage::Private,
                       std::move(meta)) {}
 
     HILTI_NODE_1(declaration::LocalVariable, Declaration, final);

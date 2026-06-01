@@ -42,5 +42,6 @@ int main(int argc, char** argv) try {
     }
 } catch ( const std::exception& e ) {
     hilti::logger().fatalError(hilti::util::fmt("terminating with uncaught exception of type %s: %s",
-                                                hilti::util::demangle(typeid(e).name()), e.what()));
+                                                hilti::util::demangle(typeid(e).name()),
+                                                e.what()));
 }

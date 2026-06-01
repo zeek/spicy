@@ -54,20 +54,32 @@ struct X {
 namespace HILTI_INTERNAL_NS::type_info {
 namespace {
 const hilti::rt::TypeInfo __ti_Test_X =
-    {"Test::X", "Test::X", nullptr,
+    {"Test::X",
+     "Test::X",
+     nullptr,
      new hilti::rt::type_info::Struct(std::vector<hilti::rt::type_info::struct_::Field>(
-         {hilti::rt::type_info::struct_::Field{"i", &hilti::rt::type_info::int32, offsetof(Test::X, i), false, false,
-                                               true},
-          hilti::rt::type_info::struct_::Field{"s", &hilti::rt::type_info::string, offsetof(Test::X, s), false, false,
-                                               true},
+         {hilti::rt::type_info::struct_::
+              Field{"i", &hilti::rt::type_info::int32, offsetof(Test::X, i), false, false, true},
+          hilti::rt::type_info::struct_::
+              Field{"s", &hilti::rt::type_info::string, offsetof(Test::X, s), false, false, true},
           hilti::rt::type_info::struct_::Field{"y", &__ti_Test_Y, offsetof(Test::X, y), false, false, true}}))};
-const hilti::rt::TypeInfo __ti_Test_Y =
-    {"Test::Y", "Test::Y", nullptr,
-     new hilti::rt::type_info::Struct(std::vector<hilti::rt::type_info::struct_::Field>(
-         {hilti::rt::type_info::struct_::Field{"b", &hilti::rt::type_info::bool_, offsetof(Test::Y, b), false, false,
-                                               true},
-          hilti::rt::type_info::struct_::Field{"r", &hilti::rt::type_info::real, offsetof(Test::Y, r), false, false,
-                                               true}}))};
+const hilti::rt::TypeInfo __ti_Test_Y = {"Test::Y",
+                                         "Test::Y",
+                                         nullptr,
+                                         new hilti::rt::type_info::Struct(
+                                             std::vector<hilti::rt::type_info::struct_::Field>(
+                                                 {hilti::rt::type_info::struct_::Field{"b",
+                                                                                       &hilti::rt::type_info::bool_,
+                                                                                       offsetof(Test::Y, b),
+                                                                                       false,
+                                                                                       false,
+                                                                                       true},
+                                                  hilti::rt::type_info::struct_::Field{"r",
+                                                                                       &hilti::rt::type_info::real,
+                                                                                       offsetof(Test::Y, r),
+                                                                                       false,
+                                                                                       false,
+                                                                                       true}}))};
 } // namespace
 } // namespace HILTI_INTERNAL_NS::type_info
 
@@ -141,15 +153,28 @@ TEST_CASE("internal fields") {
         bool __internal;
     };
 
-    const TypeInfo ti = {"A", "A", nullptr,
+    const TypeInfo ti = {"A",
+                         "A",
+                         nullptr,
                          new hilti::rt::type_info::Struct(
-                             {hilti::rt::type_info::struct_::Field{"f1", &hilti::rt::type_info::int32, offsetof(A, f1),
-                                                                   false, false, true},
-                              hilti::rt::type_info::struct_::Field{"f2", &hilti::rt::type_info::string, offsetof(A, f2),
-                                                                   false, false, true},
+                             {hilti::rt::type_info::struct_::Field{"f1",
+                                                                   &hilti::rt::type_info::int32,
+                                                                   offsetof(A, f1),
+                                                                   false,
+                                                                   false,
+                                                                   true},
+                              hilti::rt::type_info::struct_::Field{"f2",
+                                                                   &hilti::rt::type_info::string,
+                                                                   offsetof(A, f2),
+                                                                   false,
+                                                                   false,
+                                                                   true},
                               hilti::rt::type_info::struct_::Field{HILTI_INTERNAL_ID("internal"),
                                                                    &hilti::rt::type_info::bool_,
-                                                                   offsetof(A, __internal), true, false, true}})};
+                                                                   offsetof(A, __internal),
+                                                                   true,
+                                                                   false,
+                                                                   true}})};
 
     auto sx = StrongReference<A>({42, "foo", true});
     auto p = hilti::rt::type_info::value::Parent(sx);
@@ -171,10 +196,16 @@ TEST_CASE("anonymous fields") {
         std::string f1;
     };
 
-    const TypeInfo ti = {"A", "A", nullptr,
+    const TypeInfo ti = {"A",
+                         "A",
+                         nullptr,
                          new hilti::rt::type_info::Struct(
-                             {hilti::rt::type_info::struct_::Field{"f1", &hilti::rt::type_info::int32, offsetof(A, f1),
-                                                                   false, true, true}})};
+                             {hilti::rt::type_info::struct_::Field{"f1",
+                                                                   &hilti::rt::type_info::int32,
+                                                                   offsetof(A, f1),
+                                                                   false,
+                                                                   true,
+                                                                   true}})};
 
     auto sx = StrongReference<A>({"foo"});
     auto p = hilti::rt::type_info::value::Parent(sx);
@@ -192,10 +223,16 @@ TEST_CASE("no-emit fields") {
         std::string f1;
     };
 
-    const TypeInfo ti = {"A", "A", nullptr,
+    const TypeInfo ti = {"A",
+                         "A",
+                         nullptr,
                          new hilti::rt::type_info::Struct(
-                             {hilti::rt::type_info::struct_::Field{"f1", &hilti::rt::type_info::int32, offsetof(A, f1),
-                                                                   false, false, false}})};
+                             {hilti::rt::type_info::struct_::Field{"f1",
+                                                                   &hilti::rt::type_info::int32,
+                                                                   offsetof(A, f1),
+                                                                   false,
+                                                                   false,
+                                                                   false}})};
 
     auto sx = StrongReference<A>({"foo"});
     auto p = hilti::rt::type_info::value::Parent(sx);

@@ -12,7 +12,8 @@
 
 using namespace hilti;
 
-std::pair<bool, Result<std::pair<Declaration*, ID>>> hilti::scope::detail::lookupID(const ID& id, const Node* n,
+std::pair<bool, Result<std::pair<Declaration*, ID>>> hilti::scope::detail::lookupID(const ID& id,
+                                                                                    const Node* n,
                                                                                     const Node* orig_node) {
     assert(n);
 

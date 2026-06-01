@@ -44,7 +44,8 @@ Expression* Builder::addTmp(const std::string& prefix, QualifiedType* t, Express
 }
 
 std::pair<expression::Name*, expression::Grouping*> Builder::groupingWithTmp(const std::string& prefix,
-                                                                             Expression* init, const Meta& m) {
+                                                                             Expression* init,
+                                                                             const Meta& m) {
     auto tmp = _makeTmpID(prefix);
     auto* decl = declarationLocalVariable(tmp, init, m);
     return std::make_pair(id(tmp), expressionGrouping(decl, nullptr, m));

@@ -8,7 +8,8 @@
 using namespace hilti::util;
 
 hilti::Result<hilti::util::SourceCodePreprocessor::State> hilti::util::SourceCodePreprocessor::processLine(
-    std::string_view directive, std::string_view expression) {
+    std::string_view directive,
+    std::string_view expression) {
     if ( directive == "@if" ) {
         if ( state() == State::Include ) {
             auto result = _parseIf(expression);

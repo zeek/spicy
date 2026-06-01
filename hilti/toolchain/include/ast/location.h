@@ -26,7 +26,10 @@ public:
      * @param from_character first character number of the described range; -1 if not available.
      * @param to_character first character number of the described range; -1 if not available.
      */
-    constexpr Location(std::string file = "", int from_line = -1, int to_line = -1, int from_character = -1,
+    constexpr Location(std::string file = "",
+                       int from_line = -1,
+                       int to_line = -1,
+                       int from_character = -1,
                        int to_character = -1)
         : _file(std::move(file)),
           _from_line(from_line),
@@ -110,7 +113,10 @@ namespace std {
 template<>
 struct hash<hilti::Location> {
     size_t operator()(const hilti::Location& x) const {
-        return hilti::rt::hashCombine(std::hash<std::string>()(x._file), x._from_line, x._to_line, x._from_character,
+        return hilti::rt::hashCombine(std::hash<std::string>()(x._file),
+                                      x._from_line,
+                                      x._to_line,
+                                      x._from_character,
                                       x._to_character);
     }
 };

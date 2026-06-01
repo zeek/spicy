@@ -67,10 +67,12 @@ TEST_CASE("operator+") {
 
     CHECK_THROWS_WITH_AS(Time(std::numeric_limits<uint64_t>::max(), Time::NanosecondTag{}) +
                              Interval(std::numeric_limits<uint64_t>::max(), Interval::NanosecondTag{}),
-                         "integer overflow", const Overflow&);
+                         "integer overflow",
+                         const Overflow&);
 
     CHECK_THROWS_WITH_AS(Time(0, Time::NanosecondTag{}) + Interval(-1, Interval::NanosecondTag{}),
-                         "operation yielded negative time 0 -1", const RuntimeError&);
+                         "operation yielded negative time 0 -1",
+                         const RuntimeError&);
 }
 
 TEST_CASE("operator-") {
@@ -81,7 +83,8 @@ TEST_CASE("operator-") {
         CHECK_EQ(Time(1, Time::SecondTag{}) - Interval(1, Interval::SecondTag{}), Time(0, Time::SecondTag{}));
 
         CHECK_THROWS_WITH_AS(Time(1, Time::NanosecondTag{}) - Interval(1, Interval::SecondTag{}),
-                             "operation yielded negative time", const RuntimeError&);
+                             "operation yielded negative time",
+                             const RuntimeError&);
     }
 
     SUBCASE("Time") {
@@ -104,9 +107,11 @@ TEST_CASE("construct") {
 
     SUBCASE("from seconds") {
         CHECK_EQ(Time(42, Time::SecondTag{}).seconds(), 42);
-        CHECK_THROWS_WITH_AS(Time(-1, Time::SecondTag{}).seconds(), "value cannot be represented as a time",
+        CHECK_THROWS_WITH_AS(Time(-1, Time::SecondTag{}).seconds(),
+                             "value cannot be represented as a time",
                              const RuntimeError&);
-        CHECK_THROWS_WITH_AS(Time(1e42, Time::SecondTag{}).seconds(), "value cannot be represented as a time",
+        CHECK_THROWS_WITH_AS(Time(1e42, Time::SecondTag{}).seconds(),
+                             "value cannot be represented as a time",
                              const RuntimeError&);
     }
 }

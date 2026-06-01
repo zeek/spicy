@@ -22,7 +22,9 @@ public:
     }
 
     static auto create(ASTContext* ctx, double v, const Meta& meta = {}) {
-        return ctx->make<Real>(ctx, {QualifiedType::create(ctx, type::Real::create(ctx, meta), Constness::Const)}, v,
+        return ctx->make<Real>(ctx,
+                               {QualifiedType::create(ctx, type::Real::create(ctx, meta), Constness::Const)},
+                               v,
                                meta);
     }
 

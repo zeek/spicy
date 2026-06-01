@@ -184,7 +184,10 @@ detail::FiberContext::FiberContext() {
 
     // Instantiate an unused fiber just to create the shared stack.
     shared_stack = std::make_unique<::Fiber>();
-    if ( ! ::fiber_alloc(shared_stack.get(), configuration::get().fiber_shared_stack_size, fiber_bottom_abort, this,
+    if ( ! ::fiber_alloc(shared_stack.get(),
+                         configuration::get().fiber_shared_stack_size,
+                         fiber_bottom_abort,
+                         this,
                          FiberGuardFlags) )
         throw RuntimeError("could not allocate shared stack");
 }
@@ -250,8 +253,11 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
         }
 
         case Type::SwitchTrampoline:
-            if ( ! ::fiber_alloc(_fiber.get(), configuration::detail::unsafeGet().fiber_individual_stack_size,
-                                 fiber_bottom_abort, this, FiberGuardFlags) )
+            if ( ! ::fiber_alloc(_fiber.get(),
+                                 configuration::detail::unsafeGet().fiber_individual_stack_size,
+                                 fiber_bottom_abort,
+                                 this,
+                                 FiberGuardFlags) )
                 internalError("could not allocate individual-stack fiber");
 
 #ifdef HILTI_HAVE_ASAN
@@ -281,8 +287,11 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
         }
 
         case Type::IndividualStack: {
-            if ( ! ::fiber_alloc(_fiber.get(), configuration::detail::unsafeGet().fiber_individual_stack_size,
-                                 fiber_bottom_abort, this, FiberGuardFlags) )
+            if ( ! ::fiber_alloc(_fiber.get(),
+                                 configuration::detail::unsafeGet().fiber_individual_stack_size,
+                                 fiber_bottom_abort,
+                                 this,
+                                 FiberGuardFlags) )
                 internalError("could not allocate individual-stack fiber");
 
             {
@@ -423,8 +432,11 @@ void detail::StackBuffer::save() {
     want_buffer_size = ((want_buffer_size >> 10) + 1) << 10;
 
     if ( want_buffer_size != _buffer_size ) {
-        HILTI_RT_FIBER_DEBUG("stack-switcher", fmt("%sallocating %zu bytes of swap space for stack %s",
-                                                   (_buffer ? "re" : ""), want_buffer_size, *this));
+        HILTI_RT_FIBER_DEBUG("stack-switcher",
+                             fmt("%sallocating %zu bytes of swap space for stack %s",
+                                 (_buffer ? "re" : ""),
+                                 want_buffer_size,
+                                 *this));
 
         if ( _buffer )
             free(_buffer);
@@ -461,8 +473,11 @@ void ASAN_NO_OPTIMIZE detail::Fiber::_startSwitchFiber(const char* tag, detail::
     __sanitizer_start_switch_fiber(&current->_asan.fake_stack, to->_asan.stack, to->_asan.stack_size);
 
     assert(to->_asan.stack);
-    HILTI_RT_FIBER_DEBUG(tag, fmt("asan-start: new-stack=%p:%zu fake-stack=%p", to->_asan.stack, to->_asan.stack_size,
-                                  current->_asan.fake_stack));
+    HILTI_RT_FIBER_DEBUG(tag,
+                         fmt("asan-start: new-stack=%p:%zu fake-stack=%p",
+                             to->_asan.stack,
+                             to->_asan.stack_size,
+                             current->_asan.fake_stack));
 #endif
 }
 

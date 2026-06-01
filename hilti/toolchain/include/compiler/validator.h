@@ -35,7 +35,9 @@ public:
     void error(std::string msg, Node* n, node::ErrorPriority priority = node::ErrorPriority::Normal);
 
     /** Record error with given node, providing additional context for the error report. */
-    void error(std::string msg, std::vector<std::string> context, Node* n,
+    void error(std::string msg,
+               std::vector<std::string> context,
+               Node* n,
                node::ErrorPriority priority = node::ErrorPriority::Normal);
 
     /* Record error with given node but use another's location for reporting. */
@@ -48,8 +50,11 @@ public:
     auto errors() const { return _errors; }
 
     /** Validates if provided type arguments match a type's expectation. */
-    void checkTypeArguments(const node::Range<Expression>& have, const node::Set<type::function::Parameter>& want,
-                            Node* n, bool allow_no_arguments = false, bool do_not_check_types = false);
+    void checkTypeArguments(const node::Range<Expression>& have,
+                            const node::Set<type::function::Parameter>& want,
+                            Node* n,
+                            bool allow_no_arguments = false,
+                            bool do_not_check_types = false);
 
 private:
     Builder* _builder;

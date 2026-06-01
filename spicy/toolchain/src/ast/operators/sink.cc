@@ -72,7 +72,8 @@ public:
                     .type = {.kind = hilti::parameter::Kind::In,
                              .type = builder.typeStrongReference(
                                  builder.qualifiedType(builder.typeUnit(hilti::type::Wildcard()),
-                                                       hilti::Constness::Mutable, hilti::Side::LHS))},
+                                                       hilti::Constness::Mutable,
+                                                       hilti::Side::LHS))},
                 },
             .result = {.constness = hilti::Constness::Const, .type = builder.typeVoid()},
             .ns = "sink",
@@ -159,7 +160,8 @@ public:
                     .type = {.kind = hilti::parameter::Kind::In,
                              .type = builder.typeStrongReference(
                                  builder.qualifiedType(builder.typeUnit(hilti::type::Wildcard()),
-                                                       hilti::Constness::Mutable, hilti::Side::LHS))},
+                                                       hilti::Constness::Mutable,
+                                                       hilti::Side::LHS))},
                 },
             .result = {.constness = hilti::Constness::Const, .type = builder.typeVoid()},
             .ns = "sink",

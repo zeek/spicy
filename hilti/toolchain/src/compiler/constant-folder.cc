@@ -350,8 +350,9 @@ struct VisitorConstantFolder : public visitor::PreOrder {
 };
 
 Result<Ctor*> foldConstant(Builder* builder, Expression* expr, bitmask<Style> style) {
-    if ( auto* result = hilti::visitor::dispatch(VisitorConstantFolder(builder, style), expr,
-                                                 [](const auto& v) { return v.result; }) )
+    if ( auto* result = hilti::visitor::dispatch(VisitorConstantFolder(builder, style), expr, [](const auto& v) {
+             return v.result;
+         }) )
         return result;
     else
         return result::Error("not a foldable constant expression");
@@ -369,8 +370,9 @@ Result<Ctor*> detail::constant_folder::foldExpression(Builder* builder, Expressi
         return {nullptr};
 
     try {
-        if ( auto* result = hilti::visitor::dispatch(VisitorConstantFolder(builder, style), expr,
-                                                     [](const auto& v) { return v.result; }) )
+        if ( auto* result = hilti::visitor::dispatch(VisitorConstantFolder(builder, style), expr, [](const auto& v) {
+                 return v.result;
+             }) )
             return result;
         else
             return {nullptr};

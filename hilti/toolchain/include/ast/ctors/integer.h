@@ -40,9 +40,12 @@ class SignedInteger : public detail::IntegerBase<int64_t> {
 public:
     static auto create(ASTContext* ctx, int64_t value, unsigned int width, const Meta& meta = {}) {
         return ctx->make<SignedInteger>(ctx,
-                                        {QualifiedType::create(ctx, type::SignedInteger::create(ctx, width, meta),
+                                        {QualifiedType::create(ctx,
+                                                               type::SignedInteger::create(ctx, width, meta),
                                                                Constness::Const)},
-                                        value, width, meta);
+                                        value,
+                                        width,
+                                        meta);
     }
 
 protected:
@@ -57,13 +60,19 @@ class UnsignedInteger : public detail::IntegerBase<uint64_t> {
 public:
     static auto create(ASTContext* ctx, uint64_t value, unsigned int width, const Meta& meta = {}) {
         return ctx->make<UnsignedInteger>(ctx,
-                                          {QualifiedType::create(ctx, type::UnsignedInteger::create(ctx, width, meta),
+                                          {QualifiedType::create(ctx,
+                                                                 type::UnsignedInteger::create(ctx, width, meta),
                                                                  Constness::Const)},
-                                          value, width, meta);
+                                          value,
+                                          width,
+                                          meta);
     }
 
     static auto create(ASTContext* ctx, uint64_t value, unsigned int width, UnqualifiedType* t, Meta meta = {}) {
-        return ctx->make<UnsignedInteger>(ctx, {QualifiedType::create(ctx, t, Constness::Const)}, value, width,
+        return ctx->make<UnsignedInteger>(ctx,
+                                          {QualifiedType::create(ctx, t, Constness::Const)},
+                                          value,
+                                          width,
                                           std::move(meta));
     }
 

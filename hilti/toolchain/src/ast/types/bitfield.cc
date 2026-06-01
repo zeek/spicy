@@ -40,7 +40,9 @@ Ctor* type::Bitfield::ctorValue(ASTContext* ctx) {
     }
 
     if ( ! values.empty() )
-        return ctor::Bitfield::create(ctx, values, QualifiedType::create(ctx, as<UnqualifiedType>(), Constness::Const),
+        return ctor::Bitfield::create(ctx,
+                                      values,
+                                      QualifiedType::create(ctx, as<UnqualifiedType>(), Constness::Const),
                                       meta());
     else
         return {};

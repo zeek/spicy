@@ -70,7 +70,9 @@ public:
 
     QualifiedType* type() const final { return child<QualifiedType>(0); }
 
-    static auto create(ASTContext* ctx, const ctor::bitfield::BitRanges& bits, QualifiedType* type,
+    static auto create(ASTContext* ctx,
+                       const ctor::bitfield::BitRanges& bits,
+                       QualifiedType* type,
                        const Meta& m = Meta()) {
         return ctx->make<Bitfield>(ctx, node::flatten(type, bits), m);
     }

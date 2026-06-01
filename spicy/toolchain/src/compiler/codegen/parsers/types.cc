@@ -53,8 +53,12 @@ struct TypeParser {
         return builder()->addTmp("x", t);
     }
 
-    Expression* performUnpack(Expression* target, UnqualifiedType* t, unsigned int len, const Expressions& unpack_args,
-                              const Meta& m, bool is_try) {
+    Expression* performUnpack(Expression* target,
+                              UnqualifiedType* t,
+                              unsigned int len,
+                              const Expressions& unpack_args,
+                              const Meta& m,
+                              bool is_try) {
         auto* qt = builder()->qualifiedType(t, hilti::Constness::Mutable);
 
         if ( ! is_try ) {
@@ -129,16 +133,24 @@ struct Visitor : public visitor::PreOrder {
                 assert(! (v4 && v6));
 
                 if ( v4 )
-                    result = tp->performUnpack(tp->destination(n), builder()->typeAddress(), 4,
-                                               {state().cur, builder()->id("hilti::AddressFamily::IPv4"),
+                    result = tp->performUnpack(tp->destination(n),
+                                               builder()->typeAddress(),
+                                               4,
+                                               {state().cur,
+                                                builder()->id("hilti::AddressFamily::IPv4"),
                                                 tp->fieldByteOrder()},
-                                               n->meta(), tp->mode == TypesMode::Try);
+                                               n->meta(),
+                                               tp->mode == TypesMode::Try);
 
                 else
-                    result = tp->performUnpack(tp->destination(n), builder()->typeAddress(), 16,
-                                               {state().cur, builder()->id("hilti::AddressFamily::IPv6"),
+                    result = tp->performUnpack(tp->destination(n),
+                                               builder()->typeAddress(),
+                                               16,
+                                               {state().cur,
+                                                builder()->id("hilti::AddressFamily::IPv6"),
                                                 tp->fieldByteOrder()},
-                                               n->meta(), tp->mode == TypesMode::Try);
+                                               n->meta(),
+                                               tp->mode == TypesMode::Try);
 
                 return;
             }
@@ -165,7 +177,11 @@ struct Visitor : public visitor::PreOrder {
                 }
 
                 auto* target = tp->destination(n);
-                tp->performUnpack(target, n, n->width() / 8, {state().cur, tp->fieldByteOrder(), bitorder}, n->meta(),
+                tp->performUnpack(target,
+                                  n,
+                                  n->width() / 8,
+                                  {state().cur, tp->fieldByteOrder(), bitorder},
+                                  n->meta(),
                                   tp->mode == TypesMode::Try);
 
                 if ( pb()->options().debug ) {
@@ -173,12 +189,14 @@ struct Visitor : public visitor::PreOrder {
                     pushBuilder(std::move(have_value), [&]() {
                         // Print all the bit ranges individually so that we can include
                         // their IDs, which the standard tuple output wouldn't show.
-                        builder()->addDebugMsg("spicy", fmt("%s = %%s", tp->meta.field()->id()),
+                        builder()->addDebugMsg("spicy",
+                                               fmt("%s = %%s", tp->meta.field()->id()),
                                                {builder()->member(target, HILTI_INTERNAL_ID("value"))});
 
                         builder()->addDebugIndent("spicy");
                         for ( const auto& bits : n->bits() )
-                            builder()->addDebugMsg("spicy", fmt("%s = %%s", bits->id()),
+                            builder()->addDebugMsg("spicy",
+                                                   fmt("%s = %%s", bits->id()),
                                                    {builder()->member(target, bits->id())});
 
                         builder()->addDebugDedent("spicy");
@@ -202,8 +220,11 @@ struct Visitor : public visitor::PreOrder {
             case TypesMode::Default: {
                 auto* type = tp->meta.field()->attributes()->find(attribute::kind::Type);
                 assert(type);
-                result = tp->performUnpack(tp->destination(n), builder()->typeReal(), 4,
-                                           {state().cur, *type->valueAsExpression(), tp->fieldByteOrder()}, n->meta(),
+                result = tp->performUnpack(tp->destination(n),
+                                           builder()->typeReal(),
+                                           4,
+                                           {state().cur, *type->valueAsExpression(), tp->fieldByteOrder()},
+                                           n->meta(),
                                            false);
                 return;
             }
@@ -222,8 +243,12 @@ struct Visitor : public visitor::PreOrder {
         switch ( tp->mode ) {
             case TypesMode::Default:
             case TypesMode::Try: {
-                result = tp->performUnpack(tp->destination(n), builder()->typeSignedInteger(n->width()), n->width() / 8,
-                                           {state().cur, tp->fieldByteOrder()}, n->meta(), tp->mode == TypesMode::Try);
+                result = tp->performUnpack(tp->destination(n),
+                                           builder()->typeSignedInteger(n->width()),
+                                           n->width() / 8,
+                                           {state().cur, tp->fieldByteOrder()},
+                                           n->meta(),
+                                           tp->mode == TypesMode::Try);
                 return;
             }
 
@@ -239,9 +264,12 @@ struct Visitor : public visitor::PreOrder {
         switch ( tp->mode ) {
             case TypesMode::Default:
             case TypesMode::Try: {
-                result =
-                    tp->performUnpack(tp->destination(n), builder()->typeUnsignedInteger(n->width()), n->width() / 8,
-                                      {state().cur, tp->fieldByteOrder()}, n->meta(), tp->mode == TypesMode::Try);
+                result = tp->performUnpack(tp->destination(n),
+                                           builder()->typeUnsignedInteger(n->width()),
+                                           n->width() / 8,
+                                           {state().cur, tp->fieldByteOrder()},
+                                           n->meta(),
+                                           tp->mode == TypesMode::Try);
                 return;
             }
 
@@ -387,8 +415,9 @@ struct Visitor : public visitor::PreOrder {
                         auto* it = builder()->id(it_id);
                         builder()->addLocal(std::move(found_id),
                                             builder()->qualifiedType(builder()->typeBool(), hilti::Constness::Mutable));
-                        builder()->addLocal(std::move(it_id), builder()->qualifiedType(builder()->typeStreamIterator(),
-                                                                                       hilti::Constness::Mutable));
+                        builder()->addLocal(std::move(it_id),
+                                            builder()->qualifiedType(builder()->typeStreamIterator(),
+                                                                     hilti::Constness::Mutable));
                         builder()->addAssign(builder()->tuple({found, it}), find);
 
                         Expression* match = builder()->memberCall(state().cur, "sub", {it});
@@ -425,10 +454,13 @@ struct Visitor : public visitor::PreOrder {
                 if ( size_attr && parse_attrs.size() == 0 ) {
                     auto* length = pb()->evaluateAttributeExpression(size_attr, "size");
                     auto* eod_ok = builder()->bool_(eod_attr ? true : false);
-                    auto* value =
-                        builder()->call("spicy_rt::extractBytes", {state().data, state().cur, length, eod_ok,
-                                                                   builder()->expression(tp->meta.field()->meta()),
-                                                                   pb()->currentFilters(state())});
+                    auto* value = builder()->call("spicy_rt::extractBytes",
+                                                  {state().data,
+                                                   state().cur,
+                                                   length,
+                                                   eod_ok,
+                                                   builder()->expression(tp->meta.field()->meta()),
+                                                   pb()->currentFilters(state())});
                     builder()->addAssign(target, value);
                     pb()->advanceInput(length);
                     result = target;
@@ -449,7 +481,10 @@ Expression* TypeParser::buildParser(UnqualifiedType* t) {
 
 } // namespace
 
-Expression* ParserBuilder::parseType(UnqualifiedType* t, const production::Meta& meta, Expression* dst, TypesMode mode,
+Expression* ParserBuilder::parseType(UnqualifiedType* t,
+                                     const production::Meta& meta,
+                                     Expression* dst,
+                                     TypesMode mode,
                                      bool no_trim) {
     if ( auto* e = TypeParser(this, meta, dst, mode).buildParser(t); e || mode == TypesMode::Optimize ) {
         if ( mode == TypesMode::Default && ! no_trim )

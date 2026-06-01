@@ -360,7 +360,9 @@ struct VisitorCtor : visitor::PreOrder {
             coerced.reserve(vc.size());
 
             for ( auto i = std::make_pair(vc.begin(), ve.begin()); i.first != vc.end(); ++i.first, ++i.second ) {
-                if ( auto x = hilti::coerceExpression(builder, *i.first, (*i.second)->type(),
+                if ( auto x = hilti::coerceExpression(builder,
+                                                      *i.first,
+                                                      (*i.second)->type(),
                                                       CoercionStyle::TryAllForAssignment) ) {
                     coerced.push_back(*x.coerced);
                 }
@@ -727,7 +729,9 @@ Result<Ctor*> hilti::coerceCtor(Builder* builder, Ctor* c, QualifiedType* dst, b
     return result::Error("could not coerce type for constructor");
 }
 
-static Result<QualifiedType*> coerceTypeBackend(Builder* builder, QualifiedType* src_, QualifiedType* dst_,
+static Result<QualifiedType*> coerceTypeBackend(Builder* builder,
+                                                QualifiedType* src_,
+                                                QualifiedType* dst_,
                                                 bitmask<CoercionStyle> style) {
     // TODO(robin): Not sure if this should/must replicate all the type coercion
     // login in coerceExpression(). If so, we should factor that out.
@@ -798,7 +802,9 @@ static Result<QualifiedType*> coerceTypeBackend(Builder* builder, QualifiedType*
 }
 
 // Public version going through all plugins.
-Result<QualifiedType*> hilti::coerceType(Builder* builder, QualifiedType* src, QualifiedType* dst,
+Result<QualifiedType*> hilti::coerceType(Builder* builder,
+                                         QualifiedType* src,
+                                         QualifiedType* dst,
                                          bitmask<CoercionStyle> style) {
     return coerceTypeBackend(builder, src, dst, style);
 }
@@ -836,7 +842,8 @@ std::string hilti::to_string(bitmask<CoercionStyle> style) {
     return util::join(labels, ",");
 };
 
-Result<std::pair<bool, Expressions>> hilti::coerceOperands(Builder* builder, operator_::Kind kind,
+Result<std::pair<bool, Expressions>> hilti::coerceOperands(Builder* builder,
+                                                           operator_::Kind kind,
                                                            const Expressions& exprs,
                                                            const operator_::Operands& operands,
                                                            bitmask<CoercionStyle> style) {
@@ -911,15 +918,21 @@ Result<std::pair<bool, Expressions>> hilti::coerceOperands(Builder* builder, ope
 
         if ( ! result ) {
             HILTI_DEBUG(logging::debug::Coercer,
-                        util::fmt("  [param %d] matching %s against %s -> failure [%s vs %s]", i, *exprs[i]->type(),
-                                  *oat, exprs[i]->type()->type()->unification().str(),
+                        util::fmt("  [param %d] matching %s against %s -> failure [%s vs %s]",
+                                  i,
+                                  *exprs[i]->type(),
+                                  *oat,
+                                  exprs[i]->type()->type()->unification().str(),
                                   oat->type()->unification().str()));
             return result::Error("could not match coercion operands");
         }
 
         HILTI_DEBUG(logging::debug::Coercer,
-                    util::fmt("  [param %d] matching %s against %s -> success: %s (coerced expression is %s) (%s)", i,
-                              *exprs[i]->type(), *oat, *(*result.coerced)->type(),
+                    util::fmt("  [param %d] matching %s against %s -> success: %s (coerced expression is %s) (%s)",
+                              i,
+                              *exprs[i]->type(),
+                              *oat,
+                              *(*result.coerced)->type(),
                               ((*result.coerced)->type()->isConstant() ? "const" : "non-const"),
                               (result.consider_type_changed ? "type changed" : "type not changed")));
 
@@ -978,8 +991,12 @@ static Expression* skipReferenceValue(Builder* builder, Expression* op) {
     return deref;
 }
 
-static CoercedExpression coerceExpressionBackend(Builder* builder, Expression* e, QualifiedType* src_,
-                                                 QualifiedType* dst_, bitmask<CoercionStyle> style, bool lhs) {
+static CoercedExpression coerceExpressionBackend(Builder* builder,
+                                                 Expression* e,
+                                                 QualifiedType* src_,
+                                                 QualifiedType* dst_,
+                                                 bitmask<CoercionStyle> style,
+                                                 bool lhs) {
     const auto& no_change = e;
     CoercedExpression _result;
     int _line = 0;
@@ -1139,8 +1156,9 @@ static CoercedExpression coerceExpressionBackend(Builder* builder, Expression* e
 
         if ( c ) {
             if ( auto nc = hilti::coerceCtor(builder, c->ctor(), dst, style) )
-                RETURN(CoercedExpression(src_, builder->expressionCtor(builder->ctorCoerced(c->ctor(), *nc, c->meta()),
-                                                                       e->meta())));
+                RETURN(CoercedExpression(src_,
+                                         builder->expressionCtor(builder->ctorCoerced(c->ctor(), *nc, c->meta()),
+                                                                 e->meta())));
         }
 
         if ( auto t = hilti::coerceType(builder, src_, dst_, style) )
@@ -1155,14 +1173,20 @@ static CoercedExpression coerceExpressionBackend(Builder* builder, Expression* e
 exit:
     if ( logger().isEnabled(logging::debug::Coercer) )
         HILTI_DEBUG(logging::debug::Coercer,
-                    util::fmt("coercing %s (%s) to %s (%s) -> %s [%s] (%s) (#%d)", *src,
-                              util::replace(src->type()->unification(), "hilti::type::", ""), *dst,
+                    util::fmt("coercing %s (%s) to %s (%s) -> %s [%s] (%s) (#%d)",
+                              *src,
+                              util::replace(src->type()->unification(), "hilti::type::", ""),
+                              *dst,
                               util::replace(dst->type()->unification(), "hilti::type::", ""),
-                              (_result ? util::fmt("%s (%s)", *(*_result.coerced)->type(),
+                              (_result ? util::fmt("%s (%s)",
+                                                   *(*_result.coerced)->type(),
                                                    util::replace((*_result.coerced)->type()->type()->unification(),
-                                                                 "hilti::type::", "")) :
+                                                                 "hilti::type::",
+                                                                 "")) :
                                          "fail"),
-                              to_string(style), e->meta().location(), _line));
+                              to_string(style),
+                              e->meta().location(),
+                              _line));
 
 #undef RETURN
 
@@ -1170,14 +1194,21 @@ exit:
 }
 
 // Public version going through all plugins.
-CoercedExpression hilti::coerceExpression(Builder* builder, Expression* e, QualifiedType* src, QualifiedType* dst,
-                                          bitmask<CoercionStyle> style, bool lhs) {
+CoercedExpression hilti::coerceExpression(Builder* builder,
+                                          Expression* e,
+                                          QualifiedType* src,
+                                          QualifiedType* dst,
+                                          bitmask<CoercionStyle> style,
+                                          bool lhs) {
     return coerceExpressionBackend(builder, e, src, dst, style, lhs);
 }
 
 // Public version going through all plugins.
-CoercedExpression hilti::coerceExpression(Builder* builder, Expression* e, QualifiedType* dst,
-                                          bitmask<CoercionStyle> style, bool lhs) {
+CoercedExpression hilti::coerceExpression(Builder* builder,
+                                          Expression* e,
+                                          QualifiedType* dst,
+                                          bitmask<CoercionStyle> style,
+                                          bool lhs) {
     return coerceExpressionBackend(builder, e, e->type(), dst, style, lhs);
 }
 
@@ -1194,7 +1225,9 @@ Ctor* hilti::coercer::detail::coerceCtor(Builder* builder, Ctor* c, QualifiedTyp
 }
 
 // Plugin-specific version just kicking off the local visitor.
-QualifiedType* coercer::detail::coerceType(Builder* builder, QualifiedType* t, QualifiedType* dst,
+QualifiedType* coercer::detail::coerceType(Builder* builder,
+                                           QualifiedType* t,
+                                           QualifiedType* dst,
                                            bitmask<CoercionStyle> style) {
     util::timing::Collector _("hilti/compiler/ast/coercer");
 

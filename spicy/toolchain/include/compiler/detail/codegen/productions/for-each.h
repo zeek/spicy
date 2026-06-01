@@ -16,7 +16,10 @@ namespace spicy::detail::codegen::production {
 /** A production executing until interrupted by a foreach hook. */
 class ForEach : public Production {
 public:
-    ForEach(ASTContext* /* ctx */, const std::string& symbol, std::unique_ptr<Production> body, bool eod_ok,
+    ForEach(ASTContext* /* ctx */,
+            const std::string& symbol,
+            std::unique_ptr<Production> body,
+            bool eod_ok,
             const Location& l = location::None)
         : Production(symbol, l), _body(std::move(body)), _eod_ok(eod_ok) {}
 

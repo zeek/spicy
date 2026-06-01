@@ -19,7 +19,9 @@ namespace spicy::detail::codegen::production {
  */
 class Enclosure : public Production {
 public:
-    Enclosure(ASTContext* /* ctx */, const std::string& symbol, std::unique_ptr<Production> child,
+    Enclosure(ASTContext* /* ctx */,
+              const std::string& symbol,
+              std::unique_ptr<Production> child,
               const Location& l = location::None)
         : Production(symbol, l), _child(std::move(child)) {}
 

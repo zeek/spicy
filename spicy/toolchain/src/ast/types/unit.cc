@@ -90,7 +90,8 @@ unit::Item* Unit::itemByName(const ID& id) const {
 }
 
 static std::pair<unit::item::Field*, hilti::type::bitfield::BitRange*> findRangeInAnonymousBitField(
-    const hilti::node::Set<type::unit::Item>& items, const ID& id) {
+    const hilti::node::Set<type::unit::Item>& items,
+    const ID& id) {
     for ( const auto& item : items ) {
         if ( auto* field = item->tryAs<type::unit::item::Field>() ) {
             if ( ! field->isAnonymous() )

@@ -21,7 +21,8 @@ inline const DebugStream AstCodegen("ast-codegen");
 inline const DebugStream Compiler("compiler");
 } // namespace hilti::logging::debug
 
-Result<std::shared_ptr<Unit>> Unit::fromSource(const std::shared_ptr<Context>& context, Builder* builder,
+Result<std::shared_ptr<Unit>> Unit::fromSource(const std::shared_ptr<Context>& context,
+                                               Builder* builder,
                                                const hilti::rt::filesystem::path& path) {
     auto uid = context->astContext()->parseSource(builder, path);
     if ( ! uid )

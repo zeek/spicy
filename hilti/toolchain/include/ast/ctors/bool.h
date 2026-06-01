@@ -22,7 +22,9 @@ public:
     }
 
     static auto create(ASTContext* ctx, bool v, const Meta& meta = {}) {
-        return ctx->make<Bool>(ctx, {QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::Const)}, v,
+        return ctx->make<Bool>(ctx,
+                               {QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::Const)},
+                               v,
                                meta);
     }
 

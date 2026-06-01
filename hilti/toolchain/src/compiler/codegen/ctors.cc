@@ -74,7 +74,9 @@ struct Visitor : hilti::visitor::PreOrder {
         }
 
         result = fmt("::hilti::rt::Bitfield<%s>(hilti::rt::tuple::make_from_optionals(%s), %s)",
-                     util::join(types, ", "), util::join(values, ", "), cg->typeInfo(n->type()));
+                     util::join(types, ", "),
+                     util::join(values, ", "),
+                     cg->typeInfo(n->type()));
     }
     void operator()(ctor::Bool* n) final { result = fmt("::hilti::rt::Bool(%s)", n->value() ? "true" : "false"); }
 
@@ -88,7 +90,8 @@ struct Visitor : hilti::visitor::PreOrder {
         // If type arguments are provided, call the corresponding constructor.
         // If they aren't, we'll use the default constructor instead.
         if ( ! n->typeArguments().empty() ) {
-            auto exprs = cg->compileCallArguments(n->typeArguments(), n->type()->type()->parameters(),
+            auto exprs = cg->compileCallArguments(n->typeArguments(),
+                                                  n->type()->type()->parameters(),
                                                   hilti::detail::CodeGen::CtorKind::Parameters);
             args = util::join(exprs, ", ");
         }
@@ -131,7 +134,8 @@ struct Visitor : hilti::visitor::PreOrder {
         else {
             auto [cxx_type, cxx_default] = cg->cxxTypeForVector(n->elementType());
             result =
-                fmt("%s({%s}%s)", cxx_type,
+                fmt("%s({%s}%s)",
+                    cxx_type,
                     util::join(n->value() | std::views::transform([this](auto e) { return cg->compile(e); }), ", "),
                     cxx_default);
         }
@@ -149,8 +153,10 @@ struct Visitor : hilti::visitor::PreOrder {
 
         if ( const auto size = n->value().size(); size > ThresholdBigContainerCtrUnroll ) {
             auto elems = util::join(n->value() | std::views::transform([this](const auto& e) {
-                                        return fmt("%s.index_assign(%s, %s);", HILTI_INTERNAL_ID("xs"),
-                                                   cg->compile(e->key()), cg->compile(e->value()));
+                                        return fmt("%s.index_assign(%s, %s);",
+                                                   HILTI_INTERNAL_ID("xs"),
+                                                   cg->compile(e->key()),
+                                                   cg->compile(e->value()));
                                     }),
                                     " ");
 
@@ -166,7 +172,9 @@ struct Visitor : hilti::visitor::PreOrder {
         }
 
         else
-            result = fmt("::hilti::rt::Map<%s, %s>({%s})", k, v,
+            result = fmt("::hilti::rt::Map<%s, %s>({%s})",
+                         k,
+                         v,
                          util::join(n->value() | std::views::transform([this](const auto& e) {
                                         return fmt("{%s, %s}", cg->compile(e->key()), cg->compile(e->value()));
                                     }),
@@ -224,7 +232,8 @@ struct Visitor : hilti::visitor::PreOrder {
                      util::join(n->patterns() | std::views::transform([&](const auto& p) {
                                     return fmt("::hilti::rt::regexp::Pattern{\"%s\", %s, %s}",
                                                util::escapeUTF8(p.value(), hilti::rt::render_style::UTF8::EscapeQuotes),
-                                               (p.isCaseInsensitive() ? "true" : "false"), p.matchID());
+                                               (p.isCaseInsensitive() ? "true" : "false"),
+                                               p.matchID());
                                 }),
                                 ", "),
                      util::join(flags, ", "));
@@ -256,7 +265,8 @@ struct Visitor : hilti::visitor::PreOrder {
         }
 
         else
-            result = fmt("::hilti::rt::Set<%s>({%s})", k,
+            result = fmt("::hilti::rt::Set<%s>({%s})",
+                         k,
                          util::join(n->value() | std::views::transform(
                                                      [this](const auto& e) { return fmt("%s", cg->compile(e)); }),
                                     ", "));
@@ -332,7 +342,8 @@ struct Visitor : hilti::visitor::PreOrder {
 
     void operator()(ctor::ValueReference* n) final {
         result = fmt("::hilti::rt::reference::make_value<%s>(%s)",
-                     cg->compile(n->dereferencedType(), codegen::TypeUsage::Ctor), cg->compile(n->expression()));
+                     cg->compile(n->dereferencedType(), codegen::TypeUsage::Ctor),
+                     cg->compile(n->expression()));
     }
 
     void operator()(ctor::Vector* n) final {
@@ -357,12 +368,20 @@ struct Visitor : hilti::visitor::PreOrder {
             // can be referenced without capturing.
             const auto* captures = (cg->cxxBlock() == nullptr) ? "" : "&";
             const auto* xs = HILTI_INTERNAL_ID("xs");
-            result = fmt("[%s]() { auto %s = %s({}%s); %s.reserve(%d); %s return %s; }()", captures, xs, cxx_type,
-                         cxx_default, xs, size, elems, xs);
+            result = fmt("[%s]() { auto %s = %s({}%s); %s.reserve(%d); %s return %s; }()",
+                         captures,
+                         xs,
+                         cxx_type,
+                         cxx_default,
+                         xs,
+                         size,
+                         elems,
+                         xs);
         }
 
         else
-            result = fmt("%s({%s}%s)", cxx_type,
+            result = fmt("%s({%s}%s)",
+                         cxx_type,
                          util::join(n->value() | std::views::transform(
                                                      [this](const auto& e) { return fmt("%s", cg->compile(e)); }),
                                     ", "),

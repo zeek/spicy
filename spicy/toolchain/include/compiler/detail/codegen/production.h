@@ -232,7 +232,8 @@ public:
             return p;
 
         std::cerr << hilti::util::fmt("internal error: unexpected production, want %s but have %s",
-                                      hilti::util::typename_<T>(), typename_())
+                                      hilti::util::typename_<T>(),
+                                      typename_())
                   << std::endl;
 
         hilti::util::abortWithBacktrace();
@@ -249,7 +250,8 @@ public:
             return p;
 
         std::cerr << hilti::util::fmt("internal error: unexpected production, want %s but have %s",
-                                      hilti::util::typename_<T>(), typename_())
+                                      hilti::util::typename_<T>(),
+                                      typename_())
                   << std::endl;
 
         hilti::util::abortWithBacktrace();

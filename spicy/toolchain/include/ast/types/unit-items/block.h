@@ -38,8 +38,11 @@ public:
 
     std::string_view displayName() const final { return "unit block"; }
 
-    static auto create(ASTContext* ctx, const type::unit::Items& items, Expression* condition = nullptr,
-                       const type::unit::Items& else_items = {}, AttributeSet* attrs = nullptr,
+    static auto create(ASTContext* ctx,
+                       const type::unit::Items& items,
+                       Expression* condition = nullptr,
+                       const type::unit::Items& else_items = {},
+                       AttributeSet* attrs = nullptr,
                        const Meta& m = Meta()) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
@@ -49,10 +52,12 @@ public:
 
 protected:
     Block(ASTContext* ctx, int else_start, const Nodes& children, Meta meta)
-        : unit::Item(ctx, NodeTags,
+        : unit::Item(ctx,
+                     NodeTags,
                      node::flatten(QualifiedType::create(ctx, hilti::type::Void::create(ctx), hilti::Constness::Const),
                                    children),
-                     ID(), std::move(meta)),
+                     ID(),
+                     std::move(meta)),
           _else_start(else_start) {}
 
     SPICY_NODE_2(type::unit::item::Block, type::unit::Item, Declaration, final);

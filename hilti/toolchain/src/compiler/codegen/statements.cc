@@ -28,7 +28,8 @@ static auto traceStatement(CodeGen* cg, cxx::Block* b, Statement* s, bool skip_l
         if ( s->meta().location() )
             location = fmt("%s: ", s->meta().location().dump(true));
 
-        b->addStatement(fmt(R"(HILTI_RT_DEBUG("hilti-trace", "%s: %s"))", location,
+        b->addStatement(fmt(R"(HILTI_RT_DEBUG("hilti-trace", "%s: %s"))",
+                            location,
                             util::escapeUTF8(s->printRaw(), hilti::rt::render_style::UTF8::EscapeQuotes)));
     }
 }
@@ -63,7 +64,8 @@ struct Visitor : hilti::visitor::PreOrder {
 
     void operator()(statement::Assert* n) final {
         auto throw_with_msg = [&](const cxx::Expression& msg) {
-            return fmt("throw ::hilti::rt::AssertionFailure(::hilti::rt::to_string_for_print(%s), \"%s\")", msg,
+            return fmt("throw ::hilti::rt::AssertionFailure(::hilti::rt::to_string_for_print(%s), \"%s\")",
+                       msg,
                        n->meta().location());
         };
 
@@ -113,10 +115,11 @@ struct Visitor : hilti::visitor::PreOrder {
             cxx::Block catch_cont;
             catch_cont.addStatement(""); // dummy to  make it non-empty;
 
-            block->addTry(std::move(try_body), {
-                                                   {{{}, "const ::hilti::rt::AssertionFailure&"}, catch_rethrow},
-                                                   {{{}, "const ::hilti::rt::Exception&"}, catch_cont},
-                                               });
+            block->addTry(std::move(try_body),
+                          {
+                              {{{}, "const ::hilti::rt::AssertionFailure&"}, catch_rethrow},
+                              {{{}, "const ::hilti::rt::Exception&"}, catch_cont},
+                          });
         }
     }
 
@@ -172,14 +175,17 @@ struct Visitor : hilti::visitor::PreOrder {
 
         else {
             if ( auto* s = d->type()->type()->tryAs<type::Struct>() )
-                args = cg->compileCallArguments(d->typeArguments(), s->parameters(),
+                args = cg->compileCallArguments(d->typeArguments(),
+                                                s->parameters(),
                                                 hilti::detail::CodeGen::CtorKind::Parameters);
 
             init = cg->typeDefaultValue(d->type());
         }
 
-        auto l = cxx::declaration::Local(cxx::ID(d->id()), cg->compile(d->type(), codegen::TypeUsage::Storage),
-                                         std::move(args), std::move(init));
+        auto l = cxx::declaration::Local(cxx::ID(d->id()),
+                                         cg->compile(d->type(), codegen::TypeUsage::Storage),
+                                         std::move(args),
+                                         std::move(init));
 
         block->addLocal(l);
     }
@@ -267,7 +273,8 @@ struct Visitor : hilti::visitor::PreOrder {
         auto throw_on_default = [n](std::string_view value) {
             cxx::Block block;
             block.addStatement(
-                fmt("throw ::hilti::rt::UnhandledSwitchCase(::hilti::rt::to_string_for_print(%s), \"%s\")", value,
+                fmt("throw ::hilti::rt::UnhandledSwitchCase(::hilti::rt::to_string_for_print(%s), \"%s\")",
+                    value,
                     n->meta().location()));
             return block;
         };

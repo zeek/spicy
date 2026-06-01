@@ -33,7 +33,11 @@ public:
 
     std::string_view displayName() const final { return "unit variable"; }
 
-    static auto create(ASTContext* ctx, ID id, QualifiedType* type, Expression* default_, AttributeSet* attrs,
+    static auto create(ASTContext* ctx,
+                       ID id,
+                       QualifiedType* type,
+                       Expression* default_,
+                       AttributeSet* attrs,
                        Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);

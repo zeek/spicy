@@ -159,7 +159,9 @@ production::Set Grammar::_computeClosure(Production* p) {
     return c;
 }
 
-bool Grammar::_add(std::map<std::string, std::set<std::string>>* tbl, Production* dst, const std::set<std::string>& src,
+bool Grammar::_add(std::map<std::string, std::set<std::string>>* tbl,
+                   Production* dst,
+                   const std::set<std::string>& src,
                    bool changed) {
     const auto& idx = dst->symbol();
     auto t = tbl->find(idx);
@@ -336,7 +338,8 @@ hilti::Result<hilti::Nothing> Grammar::_check() {
 
         if ( isect.size() )
             return hilti::result::Error(fmt("%s is ambiguous for look-ahead symbol(s) { %s }\n",
-                                            _productionLocation(lap), hilti::util::join(isect, ", ")));
+                                            _productionLocation(lap),
+                                            hilti::util::join(isect, ", ")));
 
         for ( const auto& q : hilti::util::setUnion(laheads.first, laheads.second) ) {
             if ( ! q->isTerminal() )

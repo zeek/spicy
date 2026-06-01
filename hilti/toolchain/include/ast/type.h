@@ -321,7 +321,11 @@ protected:
           _context(ctx),
           _unification(std::move(u)),
           _is_wildcard(true) {}
-    UnqualifiedType(ASTContext* ctx, node::Tags node_tags, type::Wildcard _, type::Unification&& u, Nodes children,
+    UnqualifiedType(ASTContext* ctx,
+                    node::Tags node_tags,
+                    type::Wildcard _,
+                    type::Unification&& u,
+                    Nodes children,
                     Meta meta)
         : Node::Node(ctx, node_tags, std::move(children), std::move(meta)),
           _context(ctx),
@@ -482,7 +486,10 @@ public:
      * @param side the type's "sideness"
      * @param m meta data to attach
      */
-    static QualifiedType* createExternal(ASTContext* ctx, UnqualifiedType* t, Constness const_, Side sideness,
+    static QualifiedType* createExternal(ASTContext* ctx,
+                                         UnqualifiedType* t,
+                                         Constness const_,
+                                         Side sideness,
                                          const Meta& m = Meta());
 
     /**

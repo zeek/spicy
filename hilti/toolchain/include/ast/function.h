@@ -34,12 +34,18 @@ public:
         return Node::properties() + std::move(p);
     }
 
-    static auto create(ASTContext* ctx, const ID& id, type::Function* ftype, statement::Block* body,
-                       AttributeSet* attrs = nullptr, const Meta& meta = {}) {
+    static auto create(ASTContext* ctx,
+                       const ID& id,
+                       type::Function* ftype,
+                       statement::Block* body,
+                       AttributeSet* attrs = nullptr,
+                       const Meta& meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        return ctx->make<Function>(ctx, {QualifiedType::create(ctx, ftype, Constness::Const, meta), body, attrs}, id,
+        return ctx->make<Function>(ctx,
+                                   {QualifiedType::create(ctx, ftype, Constness::Const, meta), body, attrs},
+                                   id,
                                    meta);
     }
 

@@ -56,7 +56,8 @@ namespace detail::parser {
  *
  * Returns: The parsed AST, or a corresponding error if parsing failed.
  */
-extern hilti::Result<hilti::declaration::Module*> parseSource(Builder* builder, std::istream& in,
+extern hilti::Result<hilti::declaration::Module*> parseSource(Builder* builder,
+                                                              std::istream& in,
                                                               const std::string& filename);
 
 /**

@@ -54,15 +54,20 @@ struct Collector : public optimizer::visitor::Collector {
 
         HILTI_DEBUG(logging::debug::OptimizerPasses, "Functions:");
         for ( const auto& [id, uses] : function_usage )
-            HILTI_DEBUG(logging::debug::OptimizerPasses, util::fmt("    %s: defined=%d referenced=%d hook=%d", id,
-                                                                   uses.defined, uses.referenced, uses.hook));
+            HILTI_DEBUG(logging::debug::OptimizerPasses,
+                        util::fmt("    %s: defined=%d referenced=%d hook=%d",
+                                  id,
+                                  uses.defined,
+                                  uses.referenced,
+                                  uses.hook));
     }
 
     void run(Node* node = nullptr) override {
         // Helper to compute the total number of collected features over all types.
         auto num_features = [&]() {
-            return std::accumulate(features.begin(), features.end(), 0U,
-                                   [](auto acc, auto&& f) { return acc + f.second.size(); });
+            return std::accumulate(features.begin(), features.end(), 0U, [](auto acc, auto&& f) {
+                return acc + f.second.size();
+            });
         };
 
         init();
@@ -409,7 +414,8 @@ struct Mutator : public optimizer::visitor::Mutator {
 
         if ( const auto& usage = collector->function_usage.at(function_id); ! usage.defined )
             // Replace call node referencing unimplemented member function with default value.
-            replaceNode(n, builder()->expressionCtor(builder()->ctorDefault(n->result()->type())),
+            replaceNode(n,
+                        builder()->expressionCtor(builder()->ctorDefault(n->result()->type())),
                         "replacing call to unimplemented method with default value");
     }
 

@@ -68,7 +68,10 @@ public:
         addChildren(ctx, exprs);
     }
 
-    static auto create(ASTContext* ctx, QualifiedType* key, QualifiedType* value, const map::Elements& elements,
+    static auto create(ASTContext* ctx,
+                       QualifiedType* key,
+                       QualifiedType* value,
+                       const map::Elements& elements,
                        Meta meta = {}) {
         auto* mtype = QualifiedType::create(ctx, type::Map::create(ctx, key, value, meta), Constness::Mutable, meta);
         return ctx->make<Map>(ctx, node::flatten(mtype, elements), std::move(meta));

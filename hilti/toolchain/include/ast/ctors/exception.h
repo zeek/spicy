@@ -22,13 +22,18 @@ public:
 
     /** Constructs a exception value of a given type. */
     static auto create(ASTContext* ctx, UnqualifiedType* type, Expression* value, const Meta& meta = {}) {
-        return ctx->make<Exception>(ctx, {QualifiedType::create(ctx, type, Constness::Const, meta), value, nullptr},
+        return ctx->make<Exception>(ctx,
+                                    {QualifiedType::create(ctx, type, Constness::Const, meta), value, nullptr},
                                     meta);
     }
 
-    static auto create(ASTContext* ctx, UnqualifiedType* type, Expression* value, Expression* location,
+    static auto create(ASTContext* ctx,
+                       UnqualifiedType* type,
+                       Expression* value,
+                       Expression* location,
                        const Meta& meta = {}) {
-        return ctx->make<Exception>(ctx, {QualifiedType::create(ctx, type, Constness::Const, meta), value, location},
+        return ctx->make<Exception>(ctx,
+                                    {QualifiedType::create(ctx, type, Constness::Const, meta), value, location},
                                     meta);
     }
 

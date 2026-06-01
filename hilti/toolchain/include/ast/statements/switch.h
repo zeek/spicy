@@ -81,7 +81,8 @@ protected:
     void _preprocessExpressions(ASTContext* ctx, const std::string& id) {
         Expressions exprs;
         for ( const auto& e : expressions() ) {
-            auto* n = expression::UnresolvedOperator::create(ctx, operator_::Kind::Equal,
+            auto* n = expression::UnresolvedOperator::create(ctx,
+                                                             operator_::Kind::Equal,
                                                              {expression::Name::create(ctx, ID(id), e->meta()), e},
                                                              e->meta());
 
@@ -139,7 +140,9 @@ public:
     }
 
     static auto create(ASTContext* ctx, hilti::Expression* cond, const switch_::Cases& cases, Meta meta = {}) {
-        return create(ctx, declaration::LocalVariable::create(ctx, ID(HILTI_INTERNAL_ID("x")), cond), cases,
+        return create(ctx,
+                      declaration::LocalVariable::create(ctx, ID(HILTI_INTERNAL_ID("x")), cond),
+                      cases,
                       std::move(meta));
     }
 

@@ -201,7 +201,9 @@ public:
             if ( type::Unification(serial) != n->unification() ) {
                 HILTI_DEBUG(logging::debug::TypeUnifier,
                             util::fmt("validation: type unification out of date for type %s: have %s, need %s",
-                                      n->typename_(), n->unification().str(), serial));
+                                      n->typename_(),
+                                      n->unification().str(),
+                                      serial));
 
                 validation_result = false;
             }
@@ -277,15 +279,17 @@ void type_unifier::Unifier::add(const std::string& s) { _serial += s; }
 bool type_unifier::unify(Builder* builder, Node* node) {
     util::timing::Collector _("hilti/compiler/ast/type-unifier");
 
-    return hilti::visitor::visit(VisitorTypeUnifier(builder->context(), false), node, {},
-                                 [](const auto& v) { return v.isModified(); });
+    return hilti::visitor::visit(VisitorTypeUnifier(builder->context(), false), node, {}, [](const auto& v) {
+        return v.isModified();
+    });
 }
 
 bool type_unifier::check(Builder* builder, ASTRoot* root) {
     util::timing::Collector _("hilti/compiler/ast/type-unifier");
 
-    return hilti::visitor::visit(VisitorTypeUnifier(builder->context(), true), root, {},
-                                 [](const auto& v) { return v.validation_result; });
+    return hilti::visitor::visit(VisitorTypeUnifier(builder->context(), true), root, {}, [](const auto& v) {
+        return v.validation_result;
+    });
 }
 
 // Public entry function going through all plugins.

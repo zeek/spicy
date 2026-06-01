@@ -534,7 +534,8 @@ struct Mutator : public optimizer::visitor::Mutator {
             ;
 
             // Build out the LHS expressions in the replacement
-            std::ranges::copy_if(tup_ctor->value(), std::back_inserter(new_tup_assign_exprs),
+            std::ranges::copy_if(tup_ctor->value(),
+                                 std::back_inserter(new_tup_assign_exprs),
                                  [&](const Expression* expr) {
                                      const auto* name = expr->tryAs<expression::Name>();
                                      if ( ! name )
@@ -549,11 +550,13 @@ struct Mutator : public optimizer::visitor::Mutator {
                 // Replace void return with just the call
                 case 0: replaceNode(tup_assign, use, "removing assignment from propagated return"); break;
                 case 1:
-                    replaceNode(tup_assign, builder()->assign(new_tup_assign_exprs[0], use),
+                    replaceNode(tup_assign,
+                                builder()->assign(new_tup_assign_exprs[0], use),
                                 "removing tuple from propagated return");
                     break;
                 default:
-                    replaceNode(tup_assign, builder()->assign(builder()->tuple(new_tup_assign_exprs), use),
+                    replaceNode(tup_assign,
+                                builder()->assign(builder()->tuple(new_tup_assign_exprs), use),
                                 "removing elements from propagated tuple");
                     break;
             }

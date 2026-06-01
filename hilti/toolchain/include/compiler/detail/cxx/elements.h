@@ -160,8 +160,11 @@ struct IncludeFile : public DeclarationBase {
 
 /** Declaration of a local C++ variable. */
 struct Local : public DeclarationBase {
-    Local(cxx::ID id = {}, cxx::Type type = {}, std::vector<cxx::Expression> args = {},
-          std::optional<cxx::Expression> init = {}, Linkage linkage = {})
+    Local(cxx::ID id = {},
+          cxx::Type type = {},
+          std::vector<cxx::Expression> args = {},
+          std::optional<cxx::Expression> init = {},
+          Linkage linkage = {})
         : DeclarationBase(std::move(id)),
           type(std::move(type)),
           args(std::move(args)),
@@ -207,8 +210,11 @@ struct Global : public DeclarationBase {
     std::optional<cxx::Expression> init;
     Linkage linkage;
 
-    Global(cxx::ID id = {}, cxx::Type type = {}, std::vector<cxx::Expression> args = {},
-           std::optional<cxx::Expression> init = {}, Linkage linkage = {})
+    Global(cxx::ID id = {},
+           cxx::Type type = {},
+           std::vector<cxx::Expression> args = {},
+           std::optional<cxx::Expression> init = {},
+           Linkage linkage = {})
         : DeclarationBase(std::move(id)),
           type(std::move(type)),
           args(std::move(args)),
@@ -280,7 +286,9 @@ struct Argument : public DeclarationBase {
     cxx::Type internal_type = "";
     operator std::string() const { return id ? util::fmt("%s %s", type, id) : std::string(type); }
 
-    Argument(cxx::ID id = {}, cxx::Type type = {}, std::optional<cxx::Expression> default_ = {},
+    Argument(cxx::ID id = {},
+             cxx::Type type = {},
+             std::optional<cxx::Expression> default_ = {},
              cxx::Type internal_type = "")
         : DeclarationBase(std::move(id)),
           type(std::move(type)),
@@ -326,9 +334,11 @@ public:
     // C++20 ...
     void addWhile(const Expression& cond, const Block& body);
     void addLambda(const std::string& name, const std::string& signature, Block body);
-    void addSwitch(const Expression& cond, const std::vector<std::pair<Expression, Block>>& cases_,
+    void addSwitch(const Expression& cond,
+                   const std::vector<std::pair<Expression, Block>>& cases_,
                    std::optional<Block> default_ = {});
-    void addSwitch(const Expression& cond, const std::vector<std::pair<std::vector<Expression>, Block>>& cases_,
+    void addSwitch(const Expression& cond,
+                   const std::vector<std::pair<std::vector<Expression>, Block>>& cases_,
                    std::optional<Block> default_ = {});
     void appendFromBlock(Block b);
     void addTry(Block body, std::vector<std::pair<declaration::Argument, Block>> catches);
@@ -378,7 +388,11 @@ struct Function : public DeclarationBase {
     std::string prototype(bool qualify) const;
     std::string parameters() const;
 
-    Function(Type ftype, cxx::Type result, cxx::ID id, std::vector<Argument> args, Linkage linkage,
+    Function(Type ftype,
+             cxx::Type result,
+             cxx::ID id,
+             std::vector<Argument> args,
+             Linkage linkage,
              std::optional<Block> body = {})
         : DeclarationBase(std::move(id)),
           ftype(ftype),
@@ -387,7 +401,12 @@ struct Function : public DeclarationBase {
           linkage(std::move(linkage)),
           body(std::move(body)) {}
 
-    Function(Type ftype, cxx::Type result, cxx::ID id, std::vector<Argument> args, Linkage linkage, Inline,
+    Function(Type ftype,
+             cxx::Type result,
+             cxx::ID id,
+             std::vector<Argument> args,
+             Linkage linkage,
+             Inline,
              Block inline_body)
         : DeclarationBase(std::move(id)),
           ftype(ftype),

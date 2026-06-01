@@ -21,8 +21,9 @@ static auto ast() {
     auto builder = hilti::Builder(ctx.get());
     auto* s =
         builder.declarationType(hilti::ID("s"), builder.qualifiedType(builder.typeString(), hilti::Constness::Mutable));
-    auto* i32 = builder.declarationType(hilti::ID("i32"), builder.qualifiedType(builder.typeSignedInteger(32),
-                                                                                hilti::Constness::Mutable));
+    auto* i32 =
+        builder.declarationType(hilti::ID("i32"),
+                                builder.qualifiedType(builder.typeSignedInteger(32), hilti::Constness::Mutable));
     auto* d =
         builder.declarationType(hilti::ID("d"), builder.qualifiedType(builder.typeReal(), hilti::Constness::Mutable));
     auto* e = builder.declarationLocalVariable(hilti::ID("e"),

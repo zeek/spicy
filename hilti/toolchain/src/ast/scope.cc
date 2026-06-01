@@ -75,8 +75,9 @@ static auto createRefs(const NodeSet& refs, const std::string& id, bool external
     std::vector<Scope::Referee> result;
     result.reserve(refs.size());
 
-    std::transform(refs.begin(), refs.end(), std::back_inserter(result),
-                   [&](const auto& n) { return Scope::Referee{.node = n, .qualified = id, .external = external}; });
+    std::transform(refs.begin(), refs.end(), std::back_inserter(result), [&](const auto& n) {
+        return Scope::Referee{.node = n, .qualified = id, .external = external};
+    });
 
     return result;
 }
@@ -141,7 +142,8 @@ void Scope::dump(std::ostream& out, const std::string& prefix) const {
 
             if ( x ) {
                 if ( auto* d = x->tryAs<declaration::Expression>() )
-                    s += util::fmt(" (type: [@e:%s] [@t:%s])", d->expression()->type()->identity(),
+                    s += util::fmt(" (type: [@e:%s] [@t:%s])",
+                                   d->expression()->type()->identity(),
                                    d->expression()->type()->identity());
                 else
                     s += util::fmt(" ([@d:%p])", x->identity());

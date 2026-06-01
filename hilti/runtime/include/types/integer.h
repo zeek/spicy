@@ -308,7 +308,9 @@ HILTI_RT_ENUM(BitOrder, LSB0, MSB0);
 
 /** Extracts a range of bits from an integer value, shifting them to the very left before returning. */
 template<typename UINT>
-inline hilti::rt::integer::safe<UINT> bits(hilti::rt::integer::safe<UINT> v, uint64_t lower, uint64_t upper,
+inline hilti::rt::integer::safe<UINT> bits(hilti::rt::integer::safe<UINT> v,
+                                           uint64_t lower,
+                                           uint64_t upper,
                                            BitOrder bo) {
     constexpr auto width = std::numeric_limits<UINT>::digits;
 

@@ -32,14 +32,18 @@ operator_::Signature hilti::struct_::MemberCall::signature(Builder* builder) con
     };
 }
 
-Result<expression::ResolvedOperator*> hilti::struct_::MemberCall::instantiate(Builder* builder, Expressions operands,
+Result<expression::ResolvedOperator*> hilti::struct_::MemberCall::instantiate(Builder* builder,
+                                                                              Expressions operands,
                                                                               Meta meta) const {
     auto* callee = operands[0];
     auto* member = operands[1];
     auto* args = operands[2];
     auto* result = _fdecl->type()->type()->as<type::Function>()->result();
 
-    return {operator_::struct_::MemberCall::create(builder->context(), this, result, {callee, member, args},
+    return {operator_::struct_::MemberCall::create(builder->context(),
+                                                   this,
+                                                   result,
+                                                   {callee, member, args},
                                                    std::move(meta))};
 }
 

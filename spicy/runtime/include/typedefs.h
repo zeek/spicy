@@ -25,7 +25,8 @@ using Parse1Function = hilti::rt::Resumable (*)(hilti::rt::ValueReference<hilti:
 
 /** Defines the type of the generic version of units' public parsing functions. */
 template<typename T>
-using Parse2Function = hilti::rt::Resumable (*)(UnitType<T>&, hilti::rt::ValueReference<hilti::rt::Stream>&,
+using Parse2Function = hilti::rt::Resumable (*)(UnitType<T>&,
+                                                hilti::rt::ValueReference<hilti::rt::Stream>&,
                                                 const hilti::rt::Optional<hilti::rt::stream::View>&,
                                                 const hilti::rt::Optional<UnitContext>& context);
 

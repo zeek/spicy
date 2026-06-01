@@ -14,8 +14,11 @@
 #define HILTI_OPERATOR(ns, cls)                                                                                        \
     Result<hilti::expression::ResolvedOperator*> instantiate(hilti::Builder* builder, Expressions operands, Meta meta) \
         const final {                                                                                                  \
-        return {ns::operator_::cls::create(builder->context(), this, result(builder, operands, meta),                  \
-                                           std::move(operands), meta)};                                                \
+        return {ns::operator_::cls::create(builder->context(),                                                         \
+                                           this,                                                                       \
+                                           result(builder, operands, meta),                                            \
+                                           std::move(operands),                                                        \
+                                           meta)};                                                                     \
     }                                                                                                                  \
                                                                                                                        \
     std::string name() const final { return hilti::util::replace(#cls, "_::", "::"); }                                 \

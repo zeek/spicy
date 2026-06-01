@@ -19,10 +19,10 @@ public:
     QualifiedType* type() const final { return child<QualifiedType>(0); }
 
     static auto create(ASTContext* ctx, QualifiedType* type, const Meta& meta = {}) {
-        return ctx->make<Type_>(ctx,
-                                {QualifiedType::create(ctx, type::Type_::create(ctx, type, meta), Constness::Const,
-                                                       meta)},
-                                meta);
+        return ctx
+            ->make<Type_>(ctx,
+                          {QualifiedType::create(ctx, type::Type_::create(ctx, type, meta), Constness::Const, meta)},
+                          meta);
     }
 
 protected:
