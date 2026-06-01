@@ -1,3 +1,12 @@
+1.17.0-dev.31 | 2026-06-01 12:39:23 +0200
+
+  * Stop requiring git commit titles to end in `.` [skip ci] (Benjamin Bannier, Corelight)
+
+    This deviated from the convention in all other Zeek projects and
+    always tripped me up. In the past the trailing dot also made downstream
+    use harder, e.g., proper PR titles would have it autoadded which I
+    always tried to remove, or when assembling release notes.
+
 1.17.0-dev.29 | 2026-06-01 12:37:57 +0200
 
   * Update build status links in README. (Benjamin Bannier, Corelight)
