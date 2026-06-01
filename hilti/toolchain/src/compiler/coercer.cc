@@ -1,5 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <limits>
 #include <utility>
 
 #include <hilti/ast/builder/builder.h>
@@ -229,7 +230,12 @@ struct VisitorCtor : visitor::PreOrder {
         }
 
         if ( dst->type()->isA<type::Real>() ) {
-            if ( static_cast<int64_t>(static_cast<double>(n->value())) == n->value() ) {
+            const auto int_value = n->value();
+            const auto double_value = static_cast<double>(int_value);
+
+            if ( static_cast<double>(std::numeric_limits<int64_t>::min()) < double_value &&
+                 double_value < static_cast<double>(std::numeric_limits<uint64_t>::max()) &&
+                 static_cast<int64_t>(double_value) == int_value ) {
                 result = builder->ctorReal(static_cast<double>(n->value()));
                 return;
             }
@@ -309,8 +315,12 @@ struct VisitorCtor : visitor::PreOrder {
         }
 
         if ( dst->type()->isA<type::Real>() ) {
-            if ( static_cast<uint64_t>(static_cast<double>(n->value())) == n->value() ) {
-                result = builder->ctorReal(static_cast<double>(n->value()));
+            const auto int_value = n->value();
+            const auto double_value = static_cast<double>(int_value);
+
+            if ( double_value < static_cast<double>(std::numeric_limits<uint64_t>::max()) &&
+                 static_cast<uint64_t>(double_value) == int_value ) {
+                result = builder->ctorReal(static_cast<double>(int_value));
                 return;
             }
         }
