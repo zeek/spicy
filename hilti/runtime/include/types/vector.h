@@ -109,12 +109,12 @@ public:
 };
 
 template<class T, class U>
-bool operator==(Allocator<T> const&, Allocator<U> const&) noexcept {
+bool operator==(const Allocator<T>&, const Allocator<U>&) noexcept {
     return true;
 }
 
 template<class T, class U>
-bool operator!=(Allocator<T> const&, Allocator<U> const&) noexcept {
+bool operator!=(const Allocator<T>&, const Allocator<U>&) noexcept {
     return false;
 }
 

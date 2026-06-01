@@ -361,7 +361,7 @@ std::string util::toIdentifier(std::string s) {
                 if ( std::isalnum(c) || c == '_' )
                     *p++ = c;
                 else {
-                    static char const* const hex = "0123456789abcdef";
+                    static const char* const hex = "0123456789abcdef";
                     *p++ = 'x';
                     *p++ = hex[c >> 4U];
                     *p++ = hex[c % 0x0f];

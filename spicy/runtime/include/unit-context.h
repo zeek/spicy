@@ -60,6 +60,7 @@ public:
     UnitContext& operator=(UnitContext&&) = default;
 
     virtual ~UnitContext(); // trigger vtable
+
 private:
     hilti::rt::any _object;
     const hilti::rt::TypeInfo* _type_info;
