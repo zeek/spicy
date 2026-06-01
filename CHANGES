@@ -1,3 +1,14 @@
+1.17.0-dev.29 | 2026-06-01 12:37:57 +0200
+
+  * Update build status links in README. (Benjamin Bannier, Corelight)
+
+  * Remove Cirrus CI setup. (Benjamin Bannier, Corelight)
+
+    With the introduction of a GH actions CI setup we updated some scripts
+    used by the Cirrus CI setup so they work on CI images provided by GH
+    actions; this caused Windows CI to break on Cirrus CI. In any case
+    Cirrus CI will go away in a couple days anyway.
+
 1.17.0-dev.26 | 2026-05-28 16:58:12 +0200
 
   * Also run CI on `main` branch ¯\_(ツ)_/¯. (Benjamin Bannier, Corelight)
