@@ -1,3 +1,9 @@
+1.17.0-dev.35 | 2026-06-02 19:26:51 +0200
+
+  * Handle overflows when checking whether an integer can coerce to `real`. (Benjamin Bannier, Corelight)
+
+    We were already handling the loss of precision, but not overflow.
+
 1.17.0-dev.33 | 2026-06-02 11:12:13 -0400
 
   * Bump 3rdparty/benchmark to 1.9.5 (Evan Typanski)
