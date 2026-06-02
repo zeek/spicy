@@ -128,6 +128,16 @@ jobs:
             rm -rf build
             SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -j "$NPROCS" -d -c tests/btest.cfg -a installation
 
+        - id: docker-centos-stream-10
+          file: docker/Dockerfile.centos-stream-10
+          run: |
+            ./configure --generator=Ninja --enable-ccache --prefix=/opt/spicy --enable-werror
+            ninja -j "$NPROCS" -C build check all package
+            cp build/spicy*.rpm .
+            rpm -i ./spicy*.rpm
+            rm -rf build
+            SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -j "$NPROCS" -d -c tests/btest.cfg -a installation
+
         - id: docker-debian12
           file: docker/Dockerfile.debian-12
           run: |

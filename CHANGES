@@ -1,3 +1,9 @@
+1.17.0-dev.37 | 2026-06-02 19:27:22 +0200
+
+  * Add centos-stream-10 to CI (Benjamin Bannier, Corelight)
+
+    This was added by Zeek, but never added here.
+
 1.17.0-dev.35 | 2026-06-02 19:26:51 +0200
 
   * Handle overflows when checking whether an integer can coerce to `real`. (Benjamin Bannier, Corelight)
