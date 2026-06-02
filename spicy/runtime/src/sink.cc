@@ -23,7 +23,9 @@ void Sink::_init() {
     _chunks.clear();
 }
 
-Sink::ChunkList::iterator Sink::_addAndCheck(hilti::rt::Optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_t rupper,
+Sink::ChunkList::iterator Sink::_addAndCheck(hilti::rt::Optional<hilti::rt::Bytes> data,
+                                             uint64_t rseq,
+                                             uint64_t rupper,
                                              ChunkList::iterator c) {
     assert(! _chunks.empty());
 
@@ -342,7 +344,9 @@ void Sink::_reportUndeliveredUpTo(uint64_t rupper) const {
     }
 }
 
-void Sink::_debugReassembler(std::string_view msg, const hilti::rt::Optional<hilti::rt::Bytes>& data, uint64_t rseq,
+void Sink::_debugReassembler(std::string_view msg,
+                             const hilti::rt::Optional<hilti::rt::Bytes>& data,
+                             uint64_t rseq,
                              uint64_t len) const {
     if ( ! debug::wantVerbose() )
         return;
@@ -353,7 +357,12 @@ void Sink::_debugReassembler(std::string_view msg, const hilti::rt::Optional<hil
             escaped = escaped.substr(0, 50) + "...";
 
         SPICY_RT_DEBUG_VERBOSE(fmt("reassembler/%p: %s rseq=% " PRIu64 " upper=%" PRIu64 " |%s| (%" PRIu64 " bytes)",
-                                   this, msg, rseq, rseq + len, escaped, data->size()));
+                                   this,
+                                   msg,
+                                   rseq,
+                                   rseq + len,
+                                   escaped,
+                                   data->size()));
     }
     else
         SPICY_RT_DEBUG_VERBOSE(
@@ -374,7 +383,11 @@ void Sink::_debugReassemblerBuffer(std::string_view msg) const {
             "cur_rseq=%" PRIu64 " "
             "last_reassem_rseq=%" PRIu64 " "
             "trim_rseq=%" PRIu64 ")",
-            this, msg, _cur_rseq, _last_reassem_rseq, _trim_rseq));
+            this,
+            msg,
+            _cur_rseq,
+            _last_reassem_rseq,
+            _trim_rseq));
 
     for ( const auto&& [i, c] : hilti::rt::enumerate(_chunks) ) // not auto&, always copied anyways
         _debugReassembler(fmt("  * chunk %d:", i), c.data, c.rseq, (c.rupper - c.rseq));
@@ -393,8 +406,11 @@ void Sink::connect_mime_type(const MIMEType& mt, uint64_t scope) {
                     auto m = (*p->__parse_sink)(); // using a structured binding here triggers what seems to be a
                                                    // clang-tidy false positive
 
-                    SPICY_RT_DEBUG_VERBOSE(fmt("connecting parser %s [%p] to sink %p for MIME type %s", p->name,
-                                               &m.first, this, hilti::rt::to_string(mt)));
+                    SPICY_RT_DEBUG_VERBOSE(fmt("connecting parser %s [%p] to sink %p for MIME type %s",
+                                               p->name,
+                                               &m.first,
+                                               this,
+                                               hilti::rt::to_string(mt)));
                     _units.emplace_back(std::move(m.first));
                     _states.emplace_back(std::move(m.second));
                 }

@@ -155,7 +155,6 @@ struct Mutator : public optimizer::visitor::Mutator {
                     may_have_side_effects = true;
             }
 
-
             if ( ! may_have_side_effects ) {
                 recordChange(n, "removing local variable from grouping");
                 NameReplacer(optimizer(), local, init).run(n);

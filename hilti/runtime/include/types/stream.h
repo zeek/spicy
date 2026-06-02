@@ -1155,7 +1155,6 @@ inline const Byte* Chain::data(const Offset& offset, Chunk* hint_prev) const {
     return c->data(offset);
 }
 
-
 } // namespace detail
 
 inline SafeConstIterator::SafeConstIterator(const UnsafeConstIterator& i)
@@ -1353,7 +1352,8 @@ public:
      * if no, then with forward searching, the 2nd element points to the first byte so that no earlier
      * position has even a partial match of *v*
      */
-    Tuple<bool, SafeConstIterator> find(const Bytes& v, const SafeConstIterator& n,
+    Tuple<bool, SafeConstIterator> find(const Bytes& v,
+                                        const SafeConstIterator& n,
                                         Direction d = Direction::Forward) const {
         _ensureValid();
         _ensureSameChain(n);
@@ -1372,7 +1372,8 @@ public:
      * if no, then with forward searching, the 2nd element points to the first byte so that no earlier
      * position has even a partial match of *v*
      */
-    Tuple<bool, UnsafeConstIterator> find(const Bytes& v, UnsafeConstIterator n,
+    Tuple<bool, UnsafeConstIterator> find(const Bytes& v,
+                                          UnsafeConstIterator n,
                                           Direction d = Direction::Forward) const {
         if ( d == Direction::Forward )
             return _findForward(v, n);
@@ -1800,7 +1801,6 @@ public:
      */
     void append(const char* data, size_t len);
 
-
     /**
      * Appends the content of a raw memory area, *not* copying the data. This
      * function does not invalidate iterators. Because the data will not be
@@ -1937,7 +1937,10 @@ inline std::string to_string(const stream::Statistics& x, adl::tag /*unused*/) {
     // Render like a struct.
     return fmt("[$num_data_bytes=%" PRIu64 ", $num_data_chunks=%" PRIu64 ", $num_gap_bytes=%" PRIu64
                ", $num_gap_chunks=%" PRIu64 "]",
-               x.num_data_bytes, x.num_data_chunks, x.num_gap_bytes, x.num_gap_chunks);
+               x.num_data_bytes,
+               x.num_data_chunks,
+               x.num_gap_bytes,
+               x.num_gap_chunks);
 }
 
 } // namespace detail::adl

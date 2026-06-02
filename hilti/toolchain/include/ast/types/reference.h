@@ -28,7 +28,8 @@ public:
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return ctx->make<StrongReference>(ctx, Wildcard(),
+        return ctx->make<StrongReference>(ctx,
+                                          Wildcard(),
                                           {QualifiedType::create(ctx, type::Null::create(ctx, m), Constness::Const)},
                                           m);
     }
@@ -58,8 +59,10 @@ public:
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return ctx->make<WeakReference>(ctx, Wildcard(),
-                                        {QualifiedType::create(ctx, type::Null::create(ctx, m), Constness::Const)}, m);
+        return ctx->make<WeakReference>(ctx,
+                                        Wildcard(),
+                                        {QualifiedType::create(ctx, type::Null::create(ctx, m), Constness::Const)},
+                                        m);
     }
 
 protected:
@@ -89,8 +92,10 @@ public:
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return ctx->make<ValueReference>(ctx, Wildcard(),
-                                         {QualifiedType::create(ctx, type::Null::create(ctx, m), Constness::Const)}, m);
+        return ctx->make<ValueReference>(ctx,
+                                         Wildcard(),
+                                         {QualifiedType::create(ctx, type::Null::create(ctx, m), Constness::Const)},
+                                         m);
     }
 
 protected:

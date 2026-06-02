@@ -29,38 +29,92 @@ public:
         return Node::properties() + std::move(p);
     }
 
-    static auto create(ASTContext* ctx, parameter::Kind kind, UnqualifiedType* type, bool optional = false,
-                       std::string doc = "", Meta meta = {}) {
-        return ctx->make<Operand>(ctx, {_makeOperandType(ctx, kind, type, false), nullptr}, ID(), kind, optional,
-                                  std::move(doc), std::move(meta));
+    static auto create(ASTContext* ctx,
+                       parameter::Kind kind,
+                       UnqualifiedType* type,
+                       bool optional = false,
+                       std::string doc = "",
+                       Meta meta = {}) {
+        return ctx->make<Operand>(ctx,
+                                  {_makeOperandType(ctx, kind, type, false), nullptr},
+                                  ID(),
+                                  kind,
+                                  optional,
+                                  std::move(doc),
+                                  std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, parameter::Kind kind, UnqualifiedType* type, bool optional = false,
-                       std::string doc = "", Meta meta = {}) {
-        return ctx->make<Operand>(ctx, {_makeOperandType(ctx, kind, type, false), nullptr}, std::move(id), kind,
-                                  optional, std::move(doc), std::move(meta));
+    static auto create(ASTContext* ctx,
+                       ID id,
+                       parameter::Kind kind,
+                       UnqualifiedType* type,
+                       bool optional = false,
+                       std::string doc = "",
+                       Meta meta = {}) {
+        return ctx->make<Operand>(ctx,
+                                  {_makeOperandType(ctx, kind, type, false), nullptr},
+                                  std::move(id),
+                                  kind,
+                                  optional,
+                                  std::move(doc),
+                                  std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, parameter::Kind kind, UnqualifiedType* type, Expression* default_,
-                       std::string doc = "", Meta meta = {}) {
-        return ctx->make<Operand>(ctx, {_makeOperandType(ctx, kind, type, false), default_}, std::move(id), kind,
-                                  (default_ != nullptr), std::move(doc), std::move(meta));
+    static auto create(ASTContext* ctx,
+                       ID id,
+                       parameter::Kind kind,
+                       UnqualifiedType* type,
+                       Expression* default_,
+                       std::string doc = "",
+                       Meta meta = {}) {
+        return ctx->make<Operand>(ctx,
+                                  {_makeOperandType(ctx, kind, type, false), default_},
+                                  std::move(id),
+                                  kind,
+                                  (default_ != nullptr),
+                                  std::move(doc),
+                                  std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, parameter::Kind kind, UnqualifiedType* type, Expression* default_,
-                       bool optional, std::string doc = "", Meta meta = {}) {
-        return ctx->make<Operand>(ctx, {_makeOperandType(ctx, kind, type, false), default_}, std::move(id), kind,
-                                  optional, std::move(doc), std::move(meta));
+    static auto create(ASTContext* ctx,
+                       ID id,
+                       parameter::Kind kind,
+                       UnqualifiedType* type,
+                       Expression* default_,
+                       bool optional,
+                       std::string doc = "",
+                       Meta meta = {}) {
+        return ctx->make<Operand>(ctx,
+                                  {_makeOperandType(ctx, kind, type, false), default_},
+                                  std::move(id),
+                                  kind,
+                                  optional,
+                                  std::move(doc),
+                                  std::move(meta));
     }
 
-    static auto createExternal(ASTContext* ctx, parameter::Kind kind, UnqualifiedType* type, bool optional = false,
-                               std::string doc = "", Meta meta = {}) {
-        return ctx->make<Operand>(ctx, {_makeOperandType(ctx, kind, type, true), nullptr}, ID(), kind, optional,
-                                  std::move(doc), std::move(meta));
+    static auto createExternal(ASTContext* ctx,
+                               parameter::Kind kind,
+                               UnqualifiedType* type,
+                               bool optional = false,
+                               std::string doc = "",
+                               Meta meta = {}) {
+        return ctx->make<Operand>(ctx,
+                                  {_makeOperandType(ctx, kind, type, true), nullptr},
+                                  ID(),
+                                  kind,
+                                  optional,
+                                  std::move(doc),
+                                  std::move(meta));
     }
 
 protected:
-    Operand(ASTContext* ctx, Nodes children, ID id, parameter::Kind kind, bool optional, std::string doc,
+    Operand(ASTContext* ctx,
+            Nodes children,
+            ID id,
+            parameter::Kind kind,
+            bool optional,
+            std::string doc,
             Meta meta = {})
         : Node(ctx, NodeTags, std::move(children), std::move(meta)),
           _id(std::move(id)),
@@ -71,7 +125,9 @@ protected:
     HILTI_NODE_0(type::operand_list::Operand, final);
 
 private:
-    static QualifiedType* _makeOperandType(ASTContext* ctx, parameter::Kind kind, UnqualifiedType* type,
+    static QualifiedType* _makeOperandType(ASTContext* ctx,
+                                           parameter::Kind kind,
+                                           UnqualifiedType* type,
                                            bool make_external_type);
 
     ID _id;

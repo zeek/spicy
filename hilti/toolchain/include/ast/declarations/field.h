@@ -123,8 +123,10 @@ public:
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        return ctx->make<Field>(ctx, {QualifiedType::create(ctx, ftype, Constness::Const), attrs, nullptr},
-                                std::move(id), std::move(meta));
+        return ctx->make<Field>(ctx,
+                                {QualifiedType::create(ctx, ftype, Constness::Const), attrs, nullptr},
+                                std::move(id),
+                                std::move(meta));
     }
 
     static auto create(ASTContext* ctx, ID id, hilti::Function* inline_func, AttributeSet* attrs, Meta meta = {}) {
@@ -136,7 +138,11 @@ public:
 
 protected:
     Field(ASTContext* ctx, Nodes children, ID id, Meta meta)
-        : Declaration(ctx, NodeTags, std::move(children), std::move(id), declaration::Linkage::Struct,
+        : Declaration(ctx,
+                      NodeTags,
+                      std::move(children),
+                      std::move(id),
+                      declaration::Linkage::Struct,
                       std::move(meta)) {}
 
     std::string _dump() const override;

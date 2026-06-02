@@ -100,15 +100,20 @@ public:
         return UnqualifiedType::properties() + std::move(p);
     }
 
-    static auto create(ASTContext* ctx, QualifiedType* result, const declaration::Parameters& params,
+    static auto create(ASTContext* ctx,
+                       QualifiedType* result,
+                       const declaration::Parameters& params,
                        function::Flavor flavor = function::Flavor::Function,
-                       function::CallingConvention cc = function::CallingConvention::Standard, Meta meta = {}) {
+                       function::CallingConvention cc = function::CallingConvention::Standard,
+                       Meta meta = {}) {
         return ctx->make<Function>(ctx, flatten(result, params), flavor, cc, std::move(meta));
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return ctx->make<Function>(ctx, Wildcard(),
-                                   {QualifiedType::create(ctx, type::Unknown::create(ctx, m), Constness::Const)}, m);
+        return ctx->make<Function>(ctx,
+                                   Wildcard(),
+                                   {QualifiedType::create(ctx, type::Unknown::create(ctx, m), Constness::Const)},
+                                   m);
     }
 
 protected:

@@ -25,7 +25,8 @@ public:
 
     static auto create(ASTContext* ctx, hilti::rt::Interval v, const Meta& meta = {}) {
         return ctx->make<Interval>(ctx,
-                                   {QualifiedType::create(ctx, type::Interval::create(ctx, meta), Constness::Const)}, v,
+                                   {QualifiedType::create(ctx, type::Interval::create(ctx, meta), Constness::Const)},
+                                   v,
                                    meta);
     }
 

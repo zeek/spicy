@@ -11,6 +11,7 @@
 using namespace hilti;
 
 std::string Expression::_dump() const {
-    return util::fmt("%s %s", (type()->isConstant() ? " (const)" : " (non-const)"),
+    return util::fmt("%s %s",
+                     (type()->isConstant() ? " (const)" : " (non-const)"),
                      (isResolved() ? " (resolved)" : " (not resolved)"));
 }

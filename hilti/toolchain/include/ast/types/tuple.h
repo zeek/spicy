@@ -100,7 +100,6 @@ protected:
     Tuple(ASTContext* ctx, Wildcard _, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"tuple(*)"}, std::move(meta)) {}
 
-
     HILTI_NODE_1(type::Tuple, UnqualifiedType, final);
 };
 

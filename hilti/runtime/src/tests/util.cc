@@ -72,7 +72,8 @@ TEST_CASE("atoi_n") {
 
         SUBCASE("empty range") {
             std::string_view s;
-            CHECK_THROWS_WITH_AS(atoi_n(s.begin(), s.end(), 10, &x), "cannot decode from empty range",
+            CHECK_THROWS_WITH_AS(atoi_n(s.begin(), s.end(), 10, &x),
+                                 "cannot decode from empty range",
                                  const InvalidArgument&);
         }
 
@@ -86,10 +87,12 @@ TEST_CASE("atoi_n") {
     }
 
     SUBCASE("parse something") {
-        CHECK_THROWS_WITH_AS(atoi_n_<int>("123456", 1, 0), "base for numerical conversion must be between 2 and 36",
+        CHECK_THROWS_WITH_AS(atoi_n_<int>("123456", 1, 0),
+                             "base for numerical conversion must be between 2 and 36",
                              const OutOfRange&);
 
-        CHECK_THROWS_WITH_AS(atoi_n_<int>("123456", 37, 0), "base for numerical conversion must be between 2 and 36",
+        CHECK_THROWS_WITH_AS(atoi_n_<int>("123456", 37, 0),
+                             "base for numerical conversion must be between 2 and 36",
                              const OutOfRange&);
 
         CHECK_EQ(atoi_n_<int>("123", 10, 3), 123);
@@ -613,7 +616,8 @@ TEST_CASE("strftime") {
     CHECK_THROWS_WITH_AS(strftime("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
                                   "XXXXXXXXXXXXXXXX %A %c",
                                   Time()),
-                         "could not format timestamp", const InvalidArgument&);
+                         "could not format timestamp",
+                         const InvalidArgument&);
 }
 
 TEST_CASE("strptime") {
@@ -629,13 +633,15 @@ TEST_CASE("strptime") {
                          const InvalidArgument&);
 
     CHECK_THROWS_WITH_AS(strptime("Thursday Thu Jan  1 00:00:00 1970 REST", "%A %c"),
-                         "unparsed remainder after parsing time string:  REST", const InvalidArgument&);
+                         "unparsed remainder after parsing time string:  REST",
+                         const InvalidArgument&);
 
     CHECK_THROWS_WITH_AS(strptime("Thursday Thu Jan  1 00:00:00 1969", "%A %c"),
-                         "value cannot be represented as a time", const OutOfRange&);
+                         "value cannot be represented as a time",
+                         const OutOfRange&);
 
-
-    CHECK_THROWS_WITH_AS(strptime("Thursday Thu Jan  1 00:00:00 1970", "%S"), "could not parse time string",
+    CHECK_THROWS_WITH_AS(strptime("Thursday Thu Jan  1 00:00:00 1970", "%S"),
+                         "could not parse time string",
                          const InvalidArgument&);
 }
 

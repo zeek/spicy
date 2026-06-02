@@ -25,8 +25,10 @@ public:
     }
 
     static auto create(ASTContext* ctx, hilti::rt::Address v, const Meta& meta = {}) {
-        return ctx->make<Address>(ctx, {QualifiedType::create(ctx, type::Address::create(ctx, meta), Constness::Const)},
-                                  v, meta);
+        return ctx->make<Address>(ctx,
+                                  {QualifiedType::create(ctx, type::Address::create(ctx, meta), Constness::Const)},
+                                  v,
+                                  meta);
     }
 
 protected:

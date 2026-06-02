@@ -98,7 +98,9 @@ public:
 
     node::Properties properties() const final;
 
-    static Function* create(ASTContext* ctx, hilti::Function* function, declaration::Linkage linkage = Linkage::Private,
+    static Function* create(ASTContext* ctx,
+                            hilti::Function* function,
+                            declaration::Linkage linkage = Linkage::Private,
                             Meta meta = {}) {
         return ctx->make<Function>(ctx, {function}, function->id(), linkage, std::move(meta));
     }

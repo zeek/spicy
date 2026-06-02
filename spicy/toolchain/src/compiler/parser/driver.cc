@@ -15,14 +15,16 @@
 using namespace spicy;
 using namespace spicy::detail::parser;
 
-hilti::Result<hilti::declaration::Module*> detail::parser::parseSource(Builder* builder, std::istream& in,
+hilti::Result<hilti::declaration::Module*> detail::parser::parseSource(Builder* builder,
+                                                                       std::istream& in,
                                                                        const std::string& filename) {
     hilti::util::timing::Collector _("spicy/compiler/ast/parser");
 
     return Driver().parse(builder, in, filename);
 }
 
-hilti::Result<Expression*> detail::parser::parseExpression(Builder* builder, const std::string& expr,
+hilti::Result<Expression*> detail::parser::parseExpression(Builder* builder,
+                                                           const std::string& expr,
                                                            const Meta& meta) {
     spicy::detail::parser::Driver driver;
     return driver.parseExpression(builder, expr, meta);
@@ -32,7 +34,8 @@ namespace hilti::logging::debug {
 inline const DebugStream Parser("parser");
 } // namespace hilti::logging::debug
 
-hilti::Result<hilti::declaration::Module*> Driver::parse(Builder* builder, std::istream& in,
+hilti::Result<hilti::declaration::Module*> Driver::parse(Builder* builder,
+                                                         std::istream& in,
                                                          const std::string& filename) {
     _builder = builder;
 
@@ -133,7 +136,8 @@ void Driver::disableNewKeywordMode() { _scanner->disableNewKeywordMode(); }
 
 void Driver::enableHookIDMode() { _scanner->enableHookIDMode(); }
 
-void Driver::processPreprocessorLine(const std::string_view& directive, const std::string_view& expression,
+void Driver::processPreprocessorLine(const std::string_view& directive,
+                                     const std::string_view& expression,
                                      const Meta& m) {
     auto state = _preprocessor.processLine(directive, expression);
     if ( ! state ) {

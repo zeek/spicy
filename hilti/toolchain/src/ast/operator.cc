@@ -78,7 +78,8 @@ std::string printOperator(operator_::Kind kind, const std::vector<std::string>& 
 
 std::string printOperator(operator_::Kind kind, const Expressions& operands, bool print_signature, const Meta& meta) {
     if ( ! print_signature )
-        return printOperator(kind, toVector(operands | std::views::transform([](const auto& x) { return x->print(); })),
+        return printOperator(kind,
+                             toVector(operands | std::views::transform([](const auto& x) { return x->print(); })),
                              meta);
 
     auto render_one = [](QualifiedType* t) {
@@ -100,7 +101,8 @@ std::string printOperator(operator_::Kind kind, const Expressions& operands, boo
             else
                 args = render_one(operands[2]->type());
 
-            return printOperator(kind, {render_one(operands[0]->type()), operands[1]->print(), util::fmt("(%s)", args)},
+            return printOperator(kind,
+                                 {render_one(operands[0]->type()), operands[1]->print(), util::fmt("(%s)", args)},
                                  meta);
         }
 
@@ -118,11 +120,11 @@ std::string printOperator(operator_::Kind kind, const Expressions& operands, boo
             return printOperator(kind, {operands[0]->print(), util::fmt("(%s)", args)}, meta);
         }
 
-
         default:
-            return printOperator(kind, toVector(operands | std::views::transform([&render_one](const auto& op) {
-                                                    return render_one(op->type());
-                                                })),
+            return printOperator(kind,
+                                 toVector(operands | std::views::transform([&render_one](const auto& op) {
+                                              return render_one(op->type());
+                                          })),
                                  meta);
     }
 }
@@ -147,7 +149,8 @@ std::string printOperator(operator_::Kind kind, const Operands& operands, const 
             else
                 args = render_one(operands[2]);
 
-            return printOperator(kind, {render_one(operands[0]), render_one(operands[1]), util::fmt("(%s)", args)},
+            return printOperator(kind,
+                                 {render_one(operands[0]), render_one(operands[1]), util::fmt("(%s)", args)},
                                  meta);
         }
 
@@ -162,7 +165,6 @@ std::string printOperator(operator_::Kind kind, const Operands& operands, const 
 
             return printOperator(kind, {render_one(operands[0]), util::fmt("(%s)", args)}, meta);
         }
-
 
         default: return printOperator(kind, toVector(operands | std::views::transform(render_one)), meta);
     }
@@ -257,12 +259,18 @@ bool Operator::init(Builder* builder, Node* scope_root) {
             for ( const auto& p : {sig.param0, sig.param1, sig.param2, sig.param3, sig.param4} ) {
                 if ( p ) {
                     if ( p.default_ )
-                        params.emplace_back(builder->typeOperandListOperand(ID(p.name), p.type.kind, p.type.getType(),
-                                                                            p.default_, p.type.doc,
+                        params.emplace_back(builder->typeOperandListOperand(ID(p.name),
+                                                                            p.type.kind,
+                                                                            p.type.getType(),
+                                                                            p.default_,
+                                                                            p.type.doc,
                                                                             p.type.getType()->meta()));
                     else
-                        params.emplace_back(builder->typeOperandListOperand(ID(p.name), p.type.kind, p.type.getType(),
-                                                                            p.optional, p.type.doc,
+                        params.emplace_back(builder->typeOperandListOperand(ID(p.name),
+                                                                            p.type.kind,
+                                                                            p.type.getType(),
+                                                                            p.optional,
+                                                                            p.type.doc,
                                                                             p.type.getType()->meta()));
                 }
                 else
@@ -321,7 +329,6 @@ QualifiedType* Operator::result(Builder* builder, const Expressions& operands, c
         logger().internalError("operator::Operator::result() not overridden for dynamic operator result");
 }
 
-
 std::string Operator::print() const {
     if ( ! hasOperands() )
         return "<dynamic>";
@@ -340,7 +347,11 @@ std::string Operator::dump() const {
 Operand* Operator::operandForType(Builder* builder, parameter::Kind kind, UnqualifiedType* t, std::string doc) {
     if ( t->isNameType() && ! t->isWildcard() )
         // create external type for potentially complex types involving many nodes
-        return type::operand_list::Operand::createExternal(builder->context(), kind, t, false, std::move(doc),
+        return type::operand_list::Operand::createExternal(builder->context(),
+                                                           kind,
+                                                           t,
+                                                           false,
+                                                           std::move(doc),
                                                            t->meta());
     else
         return type::operand_list::Operand::create(builder->context(), kind, t, false, std::move(doc), t->meta());

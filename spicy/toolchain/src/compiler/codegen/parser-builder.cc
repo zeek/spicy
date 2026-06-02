@@ -41,7 +41,6 @@ using namespace spicy::detail;
 using namespace spicy::detail::codegen;
 using hilti::util::fmt;
 
-
 namespace spicy::logging::debug {
 inline const hilti::logging::DebugStream ParserBuilder("parser-builder");
 } // namespace spicy::logging::debug
@@ -57,8 +56,15 @@ ParserState::ParserState(Builder* builder, type::Unit* unit, const Grammar& gram
 
 void ParserState::printDebug(Builder* builder) const {
     builder->addCall("spicy_rt::printParserState",
-                     {builder->stringLiteral(unit_id.str()), data, begin, cur, lahead, lahead_end,
-                      builder->stringLiteral(to_string(literal_mode)), trim, error});
+                     {builder->stringLiteral(unit_id.str()),
+                      data,
+                      begin,
+                      cur,
+                      lahead,
+                      lahead_end,
+                      builder->stringLiteral(to_string(literal_mode)),
+                      trim,
+                      error});
 }
 
 namespace spicy::detail::codegen {
@@ -188,7 +194,9 @@ struct ProductionVisitor : public production::Visitor {
                               hilti::statement::comment::Separator::After);
     }
 
-    void _checkSizeAmount(Expression* want, const Meta& attr_meta, Expression* ncur,
+    void _checkSizeAmount(Expression* want,
+                          const Meta& attr_meta,
+                          Expression* ncur,
                           type::unit::item::Field* field = nullptr) {
         // Make sure we parsed the entire &size amount.
         auto* missing =
@@ -204,7 +212,8 @@ struct ProductionVisitor : public production::Visitor {
                                               builder()->grouping(
                                                   builder()->difference(builder()->memberCall(ncur, "offset"), want)));
             pb->parseError("&size amount not consumed: expected %" PRIu64 " bytes, but got %" PRIu64 " bytes",
-                           {want, got}, attr_meta);
+                           {want, got},
+                           attr_meta);
         });
     }
 
@@ -225,7 +234,8 @@ struct ProductionVisitor : public production::Visitor {
                 hilti::type::function::Parameter* addl_param = nullptr;
 
                 if ( ! unit && p.meta().field() ) // for units, "self" is the destination
-                    addl_param = builder()->parameter(HILTI_INTERNAL_ID("dst"), p.meta().field()->parseType()->type(),
+                    addl_param = builder()->parameter(HILTI_INTERNAL_ID("dst"),
+                                                      p.meta().field()->parseType()->type(),
                                                       hilti::parameter::Kind::InOut);
 
                 // In the following, we structure the parsing into two
@@ -364,23 +374,29 @@ struct ProductionVisitor : public production::Visitor {
                     build_parse_stage1_logic();
 
                     // Call stage 2.
-                    Expressions args = {state().data,   state().begin,      state().cur,  state().trim,
-                                        state().lahead, state().lahead_end, state().error};
+                    Expressions args = {state().data,
+                                        state().begin,
+                                        state().cur,
+                                        state().trim,
+                                        state().lahead,
+                                        state().lahead_end,
+                                        state().error};
 
                     if ( addl_param )
                         args.push_back(builder()->id(addl_param->id()));
 
-                    builder()->addLocal("filtered", builder()->strongReference(
-                                                        builder()->qualifiedType(builder()->typeStream(),
-                                                                                 hilti::Constness::Mutable)));
+                    builder()->addLocal("filtered",
+                                        builder()->strongReference(
+                                            builder()->qualifiedType(builder()->typeStream(),
+                                                                     hilti::Constness::Mutable)));
 
                     if ( unit ) {
                         pb->guardFeatureCode(unit, {"supports_filters"}, [&]() {
                             // If we have a filter attached, we initialize it and change to parse from its output.
-                            auto* offset1 =
-                                builder()->addTmp("offset1", builder()->memberCall(builder()->begin(
-                                                                                       builder()->deref(state().data)),
-                                                                                   "offset"));
+                            auto* offset1 = builder()->addTmp("offset1",
+                                                              builder()->memberCall(builder()->begin(
+                                                                                        builder()->deref(state().data)),
+                                                                                    "offset"));
 
                             auto* filtered =
                                 builder()->assign(builder()->id("filtered"),
@@ -406,10 +422,10 @@ struct ProductionVisitor : public production::Visitor {
 
                             builder()->addExpression(builder()->memberCall(state().self, id_stage2, args2));
 
-                            auto* offset2 =
-                                builder()->addTmp("offset2", builder()->memberCall(builder()->begin(
-                                                                                       builder()->deref(state().data)),
-                                                                                   "offset"));
+                            auto* offset2 = builder()->addTmp("offset2",
+                                                              builder()->memberCall(builder()->begin(
+                                                                                        builder()->deref(state().data)),
+                                                                                    "offset"));
 
                             auto* advance = builder()->difference(offset2, offset1);
                             pb->advanceInput(advance);
@@ -533,19 +549,25 @@ struct ProductionVisitor : public production::Visitor {
                 // implemented) by the struct that unit-builder is
                 // declaring.
                 if ( unit ) {
-                    addParseMethod(id_stage1.str() != HILTI_INTERNAL_ID("parse_stage1"), id_stage1,
-                                   build_parse_stage1(), addl_param, p.location());
+                    addParseMethod(id_stage1.str() != HILTI_INTERNAL_ID("parse_stage1"),
+                                   id_stage1,
+                                   build_parse_stage1(),
+                                   addl_param,
+                                   p.location());
                     addParseMethod(true, id_stage2, build_parse_stage12_or_stage2(false), addl_param, p.location());
                 }
                 else
-                    addParseMethod(id_stage1.str() != HILTI_INTERNAL_ID("parse_stage1"), id_stage1,
-                                   build_parse_stage12_or_stage2(true), addl_param, p.location());
+                    addParseMethod(id_stage1.str() != HILTI_INTERNAL_ID("parse_stage1"),
+                                   id_stage1,
+                                   build_parse_stage12_or_stage2(true),
+                                   addl_param,
+                                   p.location());
 
                 return id_stage1;
             });
 
-        Expressions args = {state().data,   state().begin,      state().cur,  state().trim,
-                            state().lahead, state().lahead_end, state().error};
+        Expressions args =
+            {state().data, state().begin, state().cur, state().trim, state().lahead, state().lahead_end, state().error};
 
         if ( ! unit && p.meta().field() )
             args.push_back(destination());
@@ -681,8 +703,13 @@ struct ProductionVisitor : public production::Visitor {
             else if ( const auto* unit = p->tryAs<production::Unit>(); unit && ! top_level ) {
                 // Parsing a different unit type. We call the other unit's parse
                 // function, but don't have to create it here.
-                Expressions args = {pb->state().data,   pb->state().begin,      pb->state().cur,  pb->state().trim,
-                                    pb->state().lahead, pb->state().lahead_end, pb->state().error};
+                Expressions args = {pb->state().data,
+                                    pb->state().begin,
+                                    pb->state().cur,
+                                    pb->state().trim,
+                                    pb->state().lahead,
+                                    pb->state().lahead_end,
+                                    pb->state().error};
 
                 Location location;
                 Expressions type_args;
@@ -694,12 +721,15 @@ struct ProductionVisitor : public production::Visitor {
 
                 if ( meta.field() ) {
                     Expression* default_ = builder()->default_(builder()->typeName(unit->unitType()->typeID()),
-                                                               type_args, std::move(location));
+                                                               type_args,
+                                                               std::move(location));
                     builder()->addAssign(destination(true), default_);
                 }
 
                 auto* call = builder()->memberCall(destination(), HILTI_INTERNAL_ID("parse_stage1"), args);
-                builder()->addAssign(builder()->tuple({pb->state().cur, pb->state().lahead, pb->state().lahead_end,
+                builder()->addAssign(builder()->tuple({pb->state().cur,
+                                                       pb->state().lahead,
+                                                       pb->state().lahead_end,
                                                        pb->state().error}),
                                      call);
             }
@@ -731,8 +761,10 @@ struct ProductionVisitor : public production::Visitor {
 
             pushBuilder(std::move(catch_), [&]() {
                 auto* what = builder()->call("hilti::exception_what", {builder()->id(HILTI_INTERNAL_ID("except"))});
-                builder()->addMemberCall(state().self, ID(fmt(HILTI_INTERNAL_ID("on_%s_error"), field->id().local())),
-                                         {what}, field->meta());
+                builder()->addMemberCall(state().self,
+                                         ID(fmt(HILTI_INTERNAL_ID("on_%s_error"), field->id().local())),
+                                         {what},
+                                         field->meta());
                 builder()->addRethrow();
             });
         }
@@ -853,7 +885,8 @@ struct ProductionVisitor : public production::Visitor {
             length = pb->evaluateAttributeExpression(a, "size");
         if ( auto* a = field->attributes()->find(attribute::kind::MaxSize) )
             // Append a sentinel byte for `&max-size` so we can detect reads beyond the expected length.
-            length = builder()->addTmp("max_size_with_sentinel", builder()->typeUnsignedInteger(64),
+            length = builder()->addTmp("max_size_with_sentinel",
+                                       builder()->typeUnsignedInteger(64),
                                        builder()->sum(pb->evaluateAttributeExpression(a, "max_size"),
                                                       builder()->integer(1U)));
 
@@ -922,14 +955,18 @@ struct ProductionVisitor : public production::Visitor {
     Expression* advanceLimited(Expression* cur, Expression* limited) {
         // Compute the difference in offset; this is safe since the limited view is into the
         // original stream `cur` points to.
-        return builder()->memberCall(cur, "advance",
+        return builder()->memberCall(cur,
+                                     "advance",
                                      {builder()->difference(builder()->memberCall(limited, "offset"),
                                                             builder()->memberCall(cur, "offset"))});
     }
 
-
-    void postParseField(const Production& p, const production::Meta& meta, Expression* pre_container_offset,
-                        Expression* ncur, Expression* ncur_max_size, Expression* need_copy_from) {
+    void postParseField(const Production& p,
+                        const production::Meta& meta,
+                        Expression* pre_container_offset,
+                        Expression* ncur,
+                        Expression* ncur_max_size,
+                        Expression* need_copy_from) {
         const auto& field = meta.field();
         assert(field); // Must only be called if we have a field.
 
@@ -1041,7 +1078,8 @@ struct ProductionVisitor : public production::Visitor {
 
         auto* rc = builder()->addTmp("rc", builder()->typeSignedInteger(32));
         builder()->addAssign(builder()->tuple({rc, ncur}),
-                             builder()->memberCall(builder()->id("ms"), "advance", {ncur}), c->meta());
+                             builder()->memberCall(builder()->id("ms"), "advance", {ncur}),
+                             c->meta());
 
         auto switch_ = builder()->addSwitch(rc, c->meta());
 
@@ -1083,7 +1121,9 @@ struct ProductionVisitor : public production::Visitor {
         getLookAhead(productions, lp.symbol(), lp.location());
     }
 
-    void getLookAhead(const production::Set& tokens, const std::string& symbol, const Location& location,
+    void getLookAhead(const production::Set& tokens,
+                      const std::string& symbol,
+                      const Location& location,
                       LiteralMode mode = LiteralMode::Try) {
         assert(mode != LiteralMode::Default);
 
@@ -1096,8 +1136,9 @@ struct ProductionVisitor : public production::Visitor {
         // Collect all expected terminals.
         auto regexps = std::vector<Production*>();
         auto other = std::vector<Production*>();
-        std::ranges::partition_copy(tokens, std::back_inserter(regexps), std::back_inserter(other),
-                                    [](auto& p) { return p->type()->type()->template isA<hilti::type::RegExp>(); });
+        std::ranges::partition_copy(tokens, std::back_inserter(regexps), std::back_inserter(other), [](auto& p) {
+            return p->type()->type()->template isA<hilti::type::RegExp>();
+        });
 
         auto parse = [&]() {
             bool first_token = true;
@@ -1150,16 +1191,18 @@ struct ProductionVisitor : public production::Visitor {
                 }
 
                 auto* re = pb->cg()->addGlobalConstant(
-                    builder()->ctorRegExp(std::move(flattened), builder()->attributeSet({builder()->attribute(
-                                                                    hilti::attribute::kind::Nosub)})));
+                    builder()->ctorRegExp(std::move(flattened),
+                                          builder()->attributeSet(
+                                              {builder()->attribute(hilti::attribute::kind::Nosub)})));
                 // Create the token matcher state.
                 builder()->addLocal(ID("ncur"), state().cur);
                 auto* ms = builder()->local("ms", builder()->memberCall(re, "token_matcher"));
 
                 // Create loop for incremental matching.
                 pushBuilder(builder()->addWhile(ms, builder()->bool_(true)), [&]() {
-                    builder()->addLocal(ID("rc"), builder()->qualifiedType(builder()->typeSignedInteger(32),
-                                                                           hilti::Constness::Const));
+                    builder()->addLocal(ID("rc"),
+                                        builder()->qualifiedType(builder()->typeSignedInteger(32),
+                                                                 hilti::Constness::Const));
 
                     auto guarded_search = guard_search([&]() {
                         // We operate on `ncur` while `advanceToNextData`
@@ -1349,7 +1392,9 @@ struct ProductionVisitor : public production::Visitor {
                 const auto id = cg()->uniquer()->get("synchronize");
                 auto* const ctor_ = e->tryAs<hilti::expression::Ctor>();
                 assert(ctor_);
-                auto ctor = std::make_unique<production::Ctor>(context(), cg()->uniquer()->get(id), ctor_->ctor(),
+                auto ctor = std::make_unique<production::Ctor>(context(),
+                                                               cg()->uniquer()->get(id),
+                                                               ctor_->ctor(),
                                                                ctor_->meta().location());
 
                 // We might use a different look-ahead for synchronization that
@@ -1435,8 +1480,11 @@ struct ProductionVisitor : public production::Visitor {
 
     // Adds a method, and its implementation, to the current parsing struct
     // type that has the standard signature for parse methods.
-    void addParseMethod(bool add_decl, const ID& id, hilti::statement::Block* body,
-                        hilti::type::function::Parameter* addl_param = {}, const Meta& m = {}) {
+    void addParseMethod(bool add_decl,
+                        const ID& id,
+                        hilti::statement::Block* body,
+                        hilti::type::function::Parameter* addl_param = {},
+                        const Meta& m = {}) {
         auto qualified_id = pb->state().unit_id + id;
         auto* ftype = pb->parseMethodFunctionType(addl_param, m);
         auto* func = builder()->function(qualified_id, ftype, body, {}, m);
@@ -1520,7 +1568,8 @@ struct ProductionVisitor : public production::Visitor {
                                         builder()->or_(builder()->not_(is_trial_mode), builder()->not_(state().error))),
                                     [&]() { builder()->addRethrow(); });
 
-                        builder()->addDebugMsg("spicy", "parse error during trial mode, resynchronizing: %s",
+                        builder()->addDebugMsg("spicy",
+                                               "parse error during trial mode, resynchronizing: %s",
                                                {builder()->id("e")});
 
                         // Advance input so we can find the next synchronization point.
@@ -1751,7 +1800,8 @@ struct ProductionVisitor : public production::Visitor {
             length = pb->evaluateAttributeExpression(a, "size");
         else if ( auto* a = p->unitType()->attributes()->find(attribute::kind::MaxSize) )
             // Append a sentinel byte for `&max-size` so we can detect reads beyond the expected length.
-            length = builder()->addTmp("max_size_with_sentinel", builder()->typeUnsignedInteger(64),
+            length = builder()->addTmp("max_size_with_sentinel",
+                                       builder()->typeUnsignedInteger(64),
                                        builder()->sum(pb->evaluateAttributeExpression(a, "max_size"),
                                                       builder()->integer(1U)));
 
@@ -2006,7 +2056,8 @@ struct ProductionVisitor : public production::Visitor {
 
                 auto body = builder()->addWhile(builder()->bool_(true));
                 pushBuilder(std::move(body), [&]() {
-                    pb->waitForInput(until_bytes_size_var, "end-of-data reached before &until expression found",
+                    pb->waitForInput(until_bytes_size_var,
+                                     "end-of-data reached before &until expression found",
                                      until_expr->meta());
 
                     auto* find = builder()->memberCall(state().cur, "find", {until_bytes_var});
@@ -2016,8 +2067,9 @@ struct ProductionVisitor : public production::Visitor {
                     auto* it = builder()->id(it_id);
                     builder()->addLocal(std::move(found_id),
                                         builder()->qualifiedType(builder()->typeBool(), hilti::Constness::Mutable));
-                    builder()->addLocal(std::move(it_id), builder()->qualifiedType(builder()->typeStreamIterator(),
-                                                                                   hilti::Constness::Mutable));
+                    builder()->addLocal(std::move(it_id),
+                                        builder()->qualifiedType(builder()->typeStreamIterator(),
+                                                                 hilti::Constness::Mutable));
                     builder()->addAssign(builder()->tuple({found, it}), find);
 
                     auto [found_branch, not_found_branch] = builder()->addIfElse(found);
@@ -2121,8 +2173,10 @@ struct ProductionVisitor : public production::Visitor {
 
 static auto parseMethodIDs(const type::Unit& t) {
     assert(t.typeID());
-    return std::make_tuple(ID(fmt("%s::parse1", t.typeID())), ID(fmt("%s::parse2", t.typeID())),
-                           ID(fmt("%s::parse3", t.typeID())), ID(fmt("%s::context_new", t.typeID())));
+    return std::make_tuple(ID(fmt("%s::parse1", t.typeID())),
+                           ID(fmt("%s::parse2", t.typeID())),
+                           ID(fmt("%s::parse3", t.typeID())),
+                           ID(fmt("%s::context_new", t.typeID())));
 }
 
 ParserBuilder::ParserBuilder(CodeGen* cg) : _cg(cg) {}
@@ -2130,7 +2184,8 @@ ParserBuilder::ParserBuilder(CodeGen* cg) : _cg(cg) {}
 hilti::type::Function* ParserBuilder::parseMethodFunctionType(hilti::type::function::Parameter* addl_param,
                                                               const Meta& m) {
     auto* result = builder()->typeTuple(
-        {builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::Const), lookAheadType(),
+        {builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::Const),
+         lookAheadType(),
          builder()->qualifiedType(builder()->typeStreamIterator(), hilti::Constness::Const),
          builder()->qualifiedType(builder()->typeOptional(
                                       builder()->qualifiedType(builder()->typeName("hilti::RecoverableFailure"),
@@ -2157,9 +2212,11 @@ hilti::type::Function* ParserBuilder::parseMethodFunctionType(hilti::type::funct
     if ( addl_param )
         params.push_back(addl_param);
 
-    return builder()->typeFunction(builder()->qualifiedType(result, hilti::Constness::Const), params,
+    return builder()->typeFunction(builder()->qualifiedType(result, hilti::Constness::Const),
+                                   params,
                                    hilti::type::function::Flavor::Method,
-                                   hilti::type::function::CallingConvention::Standard, m);
+                                   hilti::type::function::CallingConvention::Standard,
+                                   m);
 }
 
 ASTContext* ParserBuilder::context() const { return _cg->context(); }
@@ -2192,17 +2249,23 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
     auto* attr_ext_overload = builder()->attributeSet(
         {builder()->attribute(hilti::attribute::kind::NeededByFeature, builder()->stringLiteral("is_filter")),
          builder()->attribute(hilti::attribute::kind::NeededByFeature, builder()->stringLiteral("supports_sinks")),
-         builder()->attribute(hilti::attribute::kind::Static), builder()->attribute(hilti::attribute::kind::Public)});
+         builder()->attribute(hilti::attribute::kind::Static),
+         builder()->attribute(hilti::attribute::kind::Public)});
 
     auto* f_ext_overload1_result = builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::Mutable);
-    auto* f_ext_overload1 =
-        builder()->function(id_ext_overload1, f_ext_overload1_result, params, hilti::type::function::Flavor::Method,
-                            hilti::declaration::Linkage::Struct, hilti::type::function::CallingConvention::Extern,
-                            attr_ext_overload, t->meta());
+    auto* f_ext_overload1 = builder()->function(id_ext_overload1,
+                                                f_ext_overload1_result,
+                                                params,
+                                                hilti::type::function::Flavor::Method,
+                                                hilti::declaration::Linkage::Struct,
+                                                hilti::type::function::CallingConvention::Extern,
+                                                attr_ext_overload,
+                                                t->meta());
 
     auto* f_ext_overload2_result = builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::Mutable);
     auto* f_ext_overload2 = builder()->function(
-        id_ext_overload2, f_ext_overload2_result,
+        id_ext_overload2,
+        f_ext_overload2_result,
         {builder()->parameter(HILTI_INTERNAL_ID("unit"),
                               builder()->typeValueReference(builder()->qualifiedType(builder()->typeName(t->typeID()),
                                                                                      hilti::Constness::Mutable)),
@@ -2220,13 +2283,17 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
                               builder()->typeOptional(
                                   builder()->qualifiedType(builder()->typeName("spicy_rt::UnitContext"),
                                                            hilti::Constness::Mutable)))},
-        hilti::type::function::Flavor::Method, hilti::declaration::Linkage::Struct,
-        hilti::type::function::CallingConvention::Extern, attr_ext_overload, t->meta());
+        hilti::type::function::Flavor::Method,
+        hilti::declaration::Linkage::Struct,
+        hilti::type::function::CallingConvention::Extern,
+        attr_ext_overload,
+        t->meta());
 
     auto* f_ext_overload3_result = builder()->qualifiedType(builder()->typeStreamView(), hilti::Constness::Mutable);
     auto* f_ext_overload3 =
         builder()
-            ->function(id_ext_overload3, f_ext_overload3_result,
+            ->function(id_ext_overload3,
+                       f_ext_overload3_result,
                        {builder()->parameter(HILTI_INTERNAL_ID("gunit"),
                                              builder()->typeValueReference(
                                                  builder()->qualifiedType(builder()->typeName("spicy_rt::ParsedUnit"),
@@ -2247,41 +2314,48 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
                                              builder()->typeOptional(
                                                  builder()->qualifiedType(builder()->typeName("spicy_rt::UnitContext"),
                                                                           hilti::Constness::Mutable)))},
-                       hilti::type::function::Flavor::Method, hilti::declaration::Linkage::Struct,
-                       hilti::type::function::CallingConvention::Extern, attr_ext_overload, t->meta());
+                       hilti::type::function::Flavor::Method,
+                       hilti::declaration::Linkage::Struct,
+                       hilti::type::function::CallingConvention::Extern,
+                       attr_ext_overload,
+                       t->meta());
 
     auto* f_ext_context_new_result =
         builder()->qualifiedType(builder()->typeName("spicy_rt::UnitContext"), hilti::Constness::Mutable);
     auto* f_ext_context_new =
-        builder()->function(id_ext_context_new, f_ext_context_new_result, {}, hilti::type::function::Flavor::Method,
+        builder()->function(id_ext_context_new,
+                            f_ext_context_new_result,
+                            {},
+                            hilti::type::function::Flavor::Method,
                             hilti::declaration::Linkage::Struct,
                             hilti::type::function::CallingConvention::ExternNoSuspend,
-                            builder()->attributeSet({builder()->attribute(hilti::attribute::kind::Static)}), t->meta());
+                            builder()->attributeSet({builder()->attribute(hilti::attribute::kind::Static)}),
+                            t->meta());
 
     // We only actually add the functions we just build if the unit is
     // publicly exposed. We still build their code in either case below
     // because doing so triggers generation of the whole parser, including
     // the internal parsing functions.
-    auto* sf_ext_overload1 =
-        builder()->declarationField(f_ext_overload1->id().local(), f_ext_overload1->function()->ftype(),
-                                    f_ext_overload1->function()->attributes());
+    auto* sf_ext_overload1 = builder()->declarationField(f_ext_overload1->id().local(),
+                                                         f_ext_overload1->function()->ftype(),
+                                                         f_ext_overload1->function()->attributes());
 
-    auto* sf_ext_overload2 =
-        builder()->declarationField(f_ext_overload2->id().local(), f_ext_overload2->function()->ftype(),
-                                    f_ext_overload2->function()->attributes());
+    auto* sf_ext_overload2 = builder()->declarationField(f_ext_overload2->id().local(),
+                                                         f_ext_overload2->function()->ftype(),
+                                                         f_ext_overload2->function()->attributes());
 
-    auto* sf_ext_overload3 =
-        builder()->declarationField(f_ext_overload3->id().local(), f_ext_overload3->function()->ftype(),
-                                    f_ext_overload3->function()->attributes());
+    auto* sf_ext_overload3 = builder()->declarationField(f_ext_overload3->id().local(),
+                                                         f_ext_overload3->function()->ftype(),
+                                                         f_ext_overload3->function()->attributes());
 
     s->addField(context(), sf_ext_overload1);
     s->addField(context(), sf_ext_overload2);
     s->addField(context(), sf_ext_overload3);
 
     if ( t->contextType() ) {
-        auto* sf_ext_ctor =
-            builder()->declarationField(f_ext_context_new->id().local(), f_ext_context_new->function()->ftype(),
-                                        f_ext_context_new->function()->attributes());
+        auto* sf_ext_ctor = builder()->declarationField(f_ext_context_new->id().local(),
+                                                        f_ext_context_new->function()->ftype(),
+                                                        f_ext_context_new->function()->attributes());
 
         s->addField(context(), sf_ext_ctor);
     }
@@ -2312,7 +2386,8 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
             builder()->addCall("spicy_rt::setContext",
                                {builder()->member(builder()->id(HILTI_INTERNAL_ID("unit")),
                                                   HILTI_INTERNAL_ID("context")),
-                                ctx, builder()->typeinfo(builder()->qualifiedType(context, hilti::Constness::Const))});
+                                ctx,
+                                builder()->typeinfo(builder()->qualifiedType(context, hilti::Constness::Const))});
         };
 
         HILTI_DEBUG(spicy::logging::debug::ParserBuilder, fmt("creating parser for %s", t->canonicalID()));
@@ -2351,7 +2426,10 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
 
             init_context();
 
-            auto pstate = ParserState(builder(), t, *grammar, builder()->id(HILTI_INTERNAL_ID("data")),
+            auto pstate = ParserState(builder(),
+                                      t,
+                                      *grammar,
+                                      builder()->id(HILTI_INTERNAL_ID("data")),
                                       builder()->id(HILTI_INTERNAL_ID("cur")));
             pstate.self = builder()->id(HILTI_INTERNAL_ID("unit"));
             pstate.begin = builder()->begin(builder()->id(HILTI_INTERNAL_ID("ncur")));
@@ -2411,7 +2489,10 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
 
             init_context();
 
-            pstate = ParserState(builder(), t, *grammar, builder()->id(HILTI_INTERNAL_ID("data")),
+            pstate = ParserState(builder(),
+                                 t,
+                                 *grammar,
+                                 builder()->id(HILTI_INTERNAL_ID("data")),
                                  builder()->id(HILTI_INTERNAL_ID("cur")));
             pstate.self = builder()->id(HILTI_INTERNAL_ID("unit"));
             pstate.begin = builder()->begin(builder()->id(HILTI_INTERNAL_ID("ncur")));
@@ -2461,7 +2542,10 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
 
         init_context();
 
-        auto pstate = ParserState(builder(), t, *grammar, builder()->id(HILTI_INTERNAL_ID("data")),
+        auto pstate = ParserState(builder(),
+                                  t,
+                                  *grammar,
+                                  builder()->id(HILTI_INTERNAL_ID("data")),
                                   builder()->id(HILTI_INTERNAL_ID("cur")));
         pstate.self = builder()->id(HILTI_INTERNAL_ID("unit"));
         pstate.begin = builder()->begin(builder()->id(HILTI_INTERNAL_ID("ncur")));
@@ -2503,15 +2587,16 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
             s->addField(context(), f);
     }
 
-    s->addField(context(), builder()->declarationField(
-                               ID(HILTI_INTERNAL_ID("error")),
-                               builder()->qualifiedType(builder()->typeOptional(
-                                                            builder()->qualifiedType(builder()->typeName(
-                                                                                         "hilti::RecoverableFailure"),
-                                                                                     hilti::Constness::Const)),
-                                                        hilti::Constness::Mutable),
-                               builder()->attributeSet({builder()->attribute(hilti::attribute::kind::AlwaysEmit),
-                                                        builder()->attribute(hilti::attribute::kind::Internal)})));
+    s->addField(context(),
+                builder()->declarationField(
+                    ID(HILTI_INTERNAL_ID("error")),
+                    builder()->qualifiedType(builder()->typeOptional(
+                                                 builder()->qualifiedType(builder()->typeName(
+                                                                              "hilti::RecoverableFailure"),
+                                                                          hilti::Constness::Const)),
+                                             hilti::Constness::Mutable),
+                    builder()->attributeSet({builder()->attribute(hilti::attribute::kind::AlwaysEmit),
+                                             builder()->attribute(hilti::attribute::kind::Internal)})));
 }
 
 Builder* ParserBuilder::builder() const { return _builders.empty() ? _cg->builder() : _builders.back().get(); }
@@ -2578,10 +2663,14 @@ void ParserBuilder::newValueForField(const production::Meta& meta, Expression* v
 
         if ( value->type()->type()->isA<hilti::type::Void>() || field->isSkip() )
             // Special-case: No value parsed, but still run hook.
-            builder()->addMemberCall(state().self, ID(fmt(HILTI_INTERNAL_ID("on_%s"), field->id().local())), {},
+            builder()->addMemberCall(state().self,
+                                     ID(fmt(HILTI_INTERNAL_ID("on_%s"), field->id().local())),
+                                     {},
                                      field->meta());
         else
-            builder()->addMemberCall(state().self, ID(fmt(HILTI_INTERNAL_ID("on_%s"), field->id().local())), args,
+            builder()->addMemberCall(state().self,
+                                     ID(fmt(HILTI_INTERNAL_ID("on_%s"), field->id().local())),
+                                     args,
                                      field->meta());
 
         afterHook();
@@ -2589,8 +2678,10 @@ void ParserBuilder::newValueForField(const production::Meta& meta, Expression* v
 }
 
 Expression* ParserBuilder::newContainerItem(const type::unit::item::Field* field,
-                                            const type::unit::item::Field* container, Expression* self,
-                                            Expression* item, bool need_value) {
+                                            const type::unit::item::Field* container,
+                                            Expression* self,
+                                            Expression* item,
+                                            bool need_value) {
     auto* stop = builder()->addTmp("stop", builder()->bool_(false));
 
     auto push_element = [&]() {
@@ -2606,7 +2697,8 @@ Expression* ParserBuilder::newContainerItem(const type::unit::item::Field* field
                 beforeHook();
                 builder()->addMemberCall(state().self,
                                          ID(fmt(HILTI_INTERNAL_ID("on_%s_foreach"), container->id().local())),
-                                         {item, stop}, container->meta());
+                                         {item, stop},
+                                         container->meta());
                 afterHook();
             }
         });
@@ -2660,7 +2752,8 @@ Expression* ParserBuilder::newContainerItem(const type::unit::item::Field* field
     return stop;
 }
 
-Expression* ParserBuilder::applyConvertExpression(const type::unit::item::Field& field, Expression* value,
+Expression* ParserBuilder::applyConvertExpression(const type::unit::item::Field& field,
+                                                  Expression* value,
                                                   Expression* dst) {
     auto convert = field.convertExpression();
     if ( ! convert )
@@ -2751,12 +2844,14 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
         builder()->addMemberCall(state().self, HILTI_INTERNAL_ID("on_0x25_error"), {what}, l);
     }
 
-    guardFeatureCode(state().unit, {"supports_filters"},
-                     [&]() { builder()->addCall("spicy_rt::filter_disconnect", {state().self}); });
+    guardFeatureCode(state().unit, {"supports_filters"}, [&]() {
+        builder()->addCall("spicy_rt::filter_disconnect", {state().self});
+    });
 
     if ( unit->isFilter() )
-        guardFeatureCode(state().unit, {"is_filter"},
-                         [&]() { builder()->addCall("spicy_rt::filter_forward_eod", {state().self}); });
+        guardFeatureCode(state().unit, {"is_filter"}, [&]() {
+            builder()->addCall("spicy_rt::filter_forward_eod", {state().self});
+        });
 
     guardFeatureCode(state().unit, {"supports_sinks"}, [&]() {
         for ( const auto& s : unit->items<type::unit::item::Sink>() )
@@ -2775,7 +2870,8 @@ Expression* ParserBuilder::currentFilters(const ParserState& state) {
     if ( ! type_id )
         return member;
 
-    return builder()->ternary(featureConstant(state.unit, "supports_filters"), member,
+    return builder()->ternary(featureConstant(state.unit, "supports_filters"),
+                              member,
                               builder()->strongReference(
                                   builder()->qualifiedType(builder()->typeName("spicy_rt::Filters"),
                                                            hilti::Constness::Mutable)));
@@ -2787,10 +2883,18 @@ hilti::Attributes ParserBuilder::removeGenericParseAttributes(hilti::AttributeSe
     // vs field-specific. So this best-effort weeding out attributes that
     // field-specific code usually doesn't need to care about.
     static std::unordered_set<hilti::attribute::Kind> generic_attributes = {
-        attribute::kind::AlwaysEmit, attribute::kind::Convert,     attribute::kind::Default,
-        attribute::kind::Eod,        attribute::kind::MaxSize,     attribute::kind::Optional,
-        attribute::kind::ParseAt,    attribute::kind::ParseFrom,   attribute::kind::Requires,
-        attribute::kind::Size,       attribute::kind::Synchronize, attribute::kind::Try,
+        attribute::kind::AlwaysEmit,
+        attribute::kind::Convert,
+        attribute::kind::Default,
+        attribute::kind::Eod,
+        attribute::kind::MaxSize,
+        attribute::kind::Optional,
+        attribute::kind::ParseAt,
+        attribute::kind::ParseFrom,
+        attribute::kind::Requires,
+        attribute::kind::Size,
+        attribute::kind::Synchronize,
+        attribute::kind::Try,
     };
 
     hilti::Attributes filtered;
@@ -2811,8 +2915,12 @@ Expression* ParserBuilder::atEod() {
 }
 
 void ParserBuilder::waitForInput(std::string_view error_msg, const Meta& location) {
-    builder()->addCall("spicy_rt::waitForInput", {state().data, state().cur, builder()->stringLiteral(error_msg),
-                                                  builder()->expression(location), currentFilters(state())});
+    builder()->addCall("spicy_rt::waitForInput",
+                       {state().data,
+                        state().cur,
+                        builder()->stringLiteral(error_msg),
+                        builder()->expression(location),
+                        currentFilters(state())});
 }
 
 Expression* ParserBuilder::waitForInputOrEod(Expression* min) {
@@ -2820,8 +2928,13 @@ Expression* ParserBuilder::waitForInputOrEod(Expression* min) {
 }
 
 void ParserBuilder::waitForInput(Expression* min, std::string_view error_msg, const Meta& location) {
-    builder()->addCall("spicy_rt::waitForInput", {state().data, state().cur, min, builder()->stringLiteral(error_msg),
-                                                  builder()->expression(location), currentFilters(state())});
+    builder()->addCall("spicy_rt::waitForInput",
+                       {state().data,
+                        state().cur,
+                        min,
+                        builder()->stringLiteral(error_msg),
+                        builder()->expression(location),
+                        currentFilters(state())});
 }
 
 void ParserBuilder::waitForEod() {
@@ -3024,9 +3137,9 @@ std::shared_ptr<Builder> ParserBuilder::_featureCodeIf(const type::Unit* unit,
     auto flags = hilti::util::toVector(
         features | std::views::transform([&](const auto& feature) { return featureConstant(unit, feature); }));
 
-
-    auto* cond = std::accumulate(++flags.begin(), flags.end(), flags.front(),
-                                 [this](const auto& a, const auto& b) { return builder()->expressionLogicalOr(a, b); });
+    auto* cond = std::accumulate(++flags.begin(), flags.end(), flags.front(), [this](const auto& a, const auto& b) {
+        return builder()->expressionLogicalOr(a, b);
+    });
 
     return builder()->addIf(cond);
 }

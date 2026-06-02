@@ -1,3 +1,27 @@
+1.17.0-dev.41 | 2026-06-02 19:27:42 +0200
+
+  * Enable additional clang-format settings which reflect our current style (Benjamin Bannier, Corelight)
+
+  * Make breaking of arguments and parameters more readable (Benjamin Bannier, Corelight)
+
+    We previously had bin packing of arguments and parameters enabled; in
+    that setting `clang-format` would try to put as many arguments as
+    possible on a line before breaking due to the maximum line length. I
+    suspect this was inspired by the style used by Zeek script at some
+    point, and IMO trades readability for a more compact layout.
+
+    Since we often pass many parameters, perform complex operations on them,
+    or have overloads with optional parameters this could obscure what was
+    passed or called. With this patch we use settings with either puts all
+    parameters on a single line or each on its own.
+
+  * Stop allowing multiple empty lines in C++ code (Benjamin Bannier, Corelight)
+
+    At some point this seems to have been intended to logically break bigger
+    blocks of code, but it never seems to have been used consistently.
+    Instead it probably more often than not leaked into the code by
+    accident, so let's simply not allow it anymore.
+
 1.17.0-dev.37 | 2026-06-02 19:27:22 +0200
 
   * Add centos-stream-10 to CI (Benjamin Bannier, Corelight)

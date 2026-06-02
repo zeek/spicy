@@ -24,8 +24,10 @@ bool Struct::isResolved(node::CycleDetector* cd) const {
 
 void Struct::_setSelf(ASTContext* ctx) {
     auto* qtype = QualifiedType::createExternal(ctx, as<UnqualifiedType>(), Constness::Mutable);
-    auto* self = expression::Keyword::create(ctx, expression::keyword::Kind::Self,
-                                             QualifiedType::create(ctx, type::ValueReference::create(ctx, qtype),
+    auto* self = expression::Keyword::create(ctx,
+                                             expression::keyword::Kind::Self,
+                                             QualifiedType::create(ctx,
+                                                                   type::ValueReference::create(ctx, qtype),
                                                                    Constness::Mutable));
 
     auto* decl = declaration::Expression::create(ctx, ID("self"), self, hilti::declaration::Linkage::Private, meta());

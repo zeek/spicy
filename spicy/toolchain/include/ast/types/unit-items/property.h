@@ -35,17 +35,27 @@ public:
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        return ctx->make<Property>(ctx, node::flatten(nullptr, attrs, hilti::type::Void::create(ctx)), std::move(id),
-                                   false, std::move(meta));
+        return ctx->make<Property>(ctx,
+                                   node::flatten(nullptr, attrs, hilti::type::Void::create(ctx)),
+                                   std::move(id),
+                                   false,
+                                   std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, Expression* expr, AttributeSet* attrs, bool inherited = false,
+    static auto create(ASTContext* ctx,
+                       ID id,
+                       Expression* expr,
+                       AttributeSet* attrs,
+                       bool inherited = false,
                        Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
-        return ctx->make<Property>(ctx, node::flatten(expr, attrs, hilti::type::Void::create(ctx)), std::move(id),
-                                   inherited, std::move(meta));
+        return ctx->make<Property>(ctx,
+                                   node::flatten(expr, attrs, hilti::type::Void::create(ctx)),
+                                   std::move(id),
+                                   inherited,
+                                   std::move(meta));
     }
 
 protected:

@@ -365,7 +365,8 @@ struct Visitor : hilti::visitor::PreOrder {
         }
 
         const auto& values = n->op1()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value();
-        result = fmt("%s(%s)", name,
+        result = fmt("%s(%s)",
+                     name,
                      util::join(cg->compileCallArguments(values, f->function()->ftype()->parameters()), ", "));
     }
 
@@ -444,7 +445,9 @@ struct Visitor : hilti::visitor::PreOrder {
         if ( auto default_ = optionalArgument(args, 1); ! default_.empty() )
             result = fmt(
                 "[](auto&& m, auto&& k, auto&& default_) { return m.contains(k) ? m.get(k) : default_; }(%s, %s, %s)",
-                self, k, default_);
+                self,
+                k,
+                default_);
         else
             result = fmt("%s.get(%s)", self, k);
     }
@@ -530,8 +533,11 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(operator_::generic::Unpack* n) final {
         auto args = tupleArguments(n, n->op1());
         auto throw_on_error = n->op2()->as<expression::Ctor>()->ctor()->as<ctor::Bool>()->value();
-        result = cg->unpack(n->op0()->type()->type()->as<type::Type_>()->typeValue(), tupleArgumentType(n->op1(), 0),
-                            args[0], util::toVector(util::slice(args, 1, -1)), throw_on_error);
+        result = cg->unpack(n->op0()->type()->type()->as<type::Type_>()->typeValue(),
+                            tupleArgumentType(n->op1(), 0),
+                            args[0],
+                            util::toVector(util::slice(args, 1, -1)),
+                            throw_on_error);
     }
 
     void operator()(operator_::generic::Begin* n) final {
@@ -568,11 +574,13 @@ struct Visitor : hilti::visitor::PreOrder {
                 args = *def;
 
             result = fmt("::hilti::rt::reference::make_strong<%s>(%s)",
-                         cg->compile(tv->typeValue(), codegen::TypeUsage::Ctor), args);
+                         cg->compile(tv->typeValue(), codegen::TypeUsage::Ctor),
+                         args);
         }
         else
             result = fmt("::hilti::rt::reference::make_strong<%s>(%s)",
-                         cg->compile(n->op0()->type(), codegen::TypeUsage::Ctor), op0(n));
+                         cg->compile(n->op0()->type(), codegen::TypeUsage::Ctor),
+                         op0(n));
     }
 
     void operator()(operator_::generic::CastedCoercion* n) final {
@@ -713,7 +721,6 @@ struct Visitor : hilti::visitor::PreOrder {
         result = fmt("%s.find(%s)", self, args[0]);
     }
 
-
     void operator()(operator_::stream::view::At* n) final {
         auto [self, args] = methodArguments(n);
         result = fmt("%s.at(%s)", self, args[0]);
@@ -738,7 +745,6 @@ struct Visitor : hilti::visitor::PreOrder {
         auto [self, args] = methodArguments(n);
         result = fmt("%s.sub(%s, %s)", self, args[0], args[1]);
     }
-
 
     // Stream
 
@@ -798,7 +804,8 @@ struct Visitor : hilti::visitor::PreOrder {
         if ( n->op1()->type()->type()->isA<type::Tuple>() ) {
             if ( auto* ctor = n->op1()->tryAs<expression::Ctor>() ) {
                 auto t = ctor->ctor()->as<ctor::Tuple>()->value();
-                result = fmt("::hilti::rt::fmt(%s, %s)", op0(n),
+                result = fmt("::hilti::rt::fmt(%s, %s)",
+                             op0(n),
                              util::join(t | std::views::transform([this](auto x) { return cg->compile(x); }), ", "));
                 return;
             }
@@ -904,7 +911,8 @@ struct Visitor : hilti::visitor::PreOrder {
             zipped.emplace_back(args[i], ft->parameters()[i]->kind() == parameter::Kind::InOut);
 
         result = memberAccess(n,
-                              fmt("%s(%s)", id,
+                              fmt("%s(%s)",
+                                  id,
                                   util::join(zipped | std::views::transform([this](const auto& x) {
                                                  return cg->compile(x.first, x.second);
                                              }),

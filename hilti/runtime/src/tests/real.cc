@@ -31,9 +31,11 @@ TEST_CASE("pack") {
         CHECK_EQ(real::pack(0.5, real::Type::IEEE754_Single, ByteOrder::Little), "\x00\x00\x00\x3f"_b);
         CHECK_EQ(real::pack(0.75, real::Type::IEEE754_Single, ByteOrder::Little), "\x00\x00\x40\x3f"_b);
         CHECK_THROWS_WITH_AS(real::pack(1.0, real::Type::Undef, ByteOrder::Big),
-                             "attempt to pack real value of undefined type", const RuntimeError&);
+                             "attempt to pack real value of undefined type",
+                             const RuntimeError&);
         CHECK_THROWS_WITH_AS(real::pack(1.0, real::Type::IEEE754_Single, ByteOrder::Undef),
-                             "attempt to pack value with undefined byte order", const RuntimeError&);
+                             "attempt to pack value with undefined byte order",
+                             const RuntimeError&);
     }
 
     SUBCASE("IEEE754_Double") {
@@ -72,18 +74,21 @@ TEST_CASE("unpack") {
 
             CHECK_EQ(real::unpack("\x3f\xe0\x00\x00\x00\x00\x00\x00"_b, real::Type::IEEE754_Double, ByteOrder::Big),
                      Result(tuple::make(0.5, ""_b)));
-            CHECK_EQ(real::unpack("\x3f\xe8\x00\x00\x00\x00\x00\x00\x01\x02\x03\x04"_b, real::Type::IEEE754_Double,
+            CHECK_EQ(real::unpack("\x3f\xe8\x00\x00\x00\x00\x00\x00\x01\x02\x03\x04"_b,
+                                  real::Type::IEEE754_Double,
                                   ByteOrder::Big),
                      Result(tuple::make(0.75, "\x01\x02\x03\x04"_b)));
 
             CHECK_EQ(real::unpack("\x00\x00\x00\x00\x00\x00\xe0\x3f"_b, real::Type::IEEE754_Double, ByteOrder::Little),
                      Result(tuple::make(0.5, ""_b)));
-            CHECK_EQ(real::unpack("\x00\x00\x00\x00\x00\x00\xe8\x3f\x01\x02\x03\x04"_b, real::Type::IEEE754_Double,
+            CHECK_EQ(real::unpack("\x00\x00\x00\x00\x00\x00\xe8\x3f\x01\x02\x03\x04"_b,
+                                  real::Type::IEEE754_Double,
                                   ByteOrder::Little),
                      Result(tuple::make(0.75, "\x01\x02\x03\x04"_b)));
 
             CHECK_EQ(real::unpack("\x00\x00\x00\x00\x00\x00\x00\x3f"_b, real::Type::IEEE754_Double, ByteOrder::Big),
-                     real::unpack("\x00\x00\x00\x00\x00\x00\x00\x3f"_b, real::Type::IEEE754_Double,
+                     real::unpack("\x00\x00\x00\x00\x00\x00\x00\x3f"_b,
+                                  real::Type::IEEE754_Double,
                                   ByteOrder::Network));
         }
 

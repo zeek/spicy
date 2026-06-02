@@ -22,16 +22,24 @@ enum class Default { First, Second, None };
  */
 class LookAhead : public Production {
 public:
-    LookAhead(ASTContext* /* ctx */, const std::string& symbol, std::unique_ptr<Production> alt1,
-              std::unique_ptr<Production> alt2, look_ahead::Default def, Expression* condition,
+    LookAhead(ASTContext* /* ctx */,
+              const std::string& symbol,
+              std::unique_ptr<Production> alt1,
+              std::unique_ptr<Production> alt2,
+              look_ahead::Default def,
+              Expression* condition,
               const Location& l = location::None)
         : Production(symbol, l),
           _alternatives(std::make_pair(std::move(alt1), std::move(alt2))),
           _default(def),
           _condition(condition) {}
 
-    LookAhead(ASTContext* ctx, const std::string& symbol, std::unique_ptr<Production> alt1,
-              std::unique_ptr<Production> alt2, Expression* condition, const Location& l = location::None)
+    LookAhead(ASTContext* ctx,
+              const std::string& symbol,
+              std::unique_ptr<Production> alt1,
+              std::unique_ptr<Production> alt2,
+              Expression* condition,
+              const Location& l = location::None)
         : LookAhead(ctx, symbol, std::move(alt1), std::move(alt2), look_ahead::Default::None, condition, l) {}
 
     /** Returns the two alternatives. */

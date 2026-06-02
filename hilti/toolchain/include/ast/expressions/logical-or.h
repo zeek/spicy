@@ -24,7 +24,8 @@ public:
 
     static auto create(ASTContext* ctx, Expression* op0, Expression* op1, const Meta& meta = {}) {
         return ctx->make<LogicalOr>(ctx,
-                                    {op0, op1,
+                                    {op0,
+                                     op1,
                                      QualifiedType::create(ctx, type::Bool::create(ctx, meta), Constness::Const)},
                                     meta);
     }

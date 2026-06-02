@@ -19,7 +19,10 @@ namespace spicy::detail::codegen::production {
  */
 class Counter : public Production {
 public:
-    Counter(ASTContext* /* ctx */, const std::string& symbol, Expression* e, std::unique_ptr<Production> body,
+    Counter(ASTContext* /* ctx */,
+            const std::string& symbol,
+            Expression* e,
+            std::unique_ptr<Production> body,
             const Location& l = location::None)
         : Production(symbol, l), _expression(e), _body(std::move(body)) {}
 

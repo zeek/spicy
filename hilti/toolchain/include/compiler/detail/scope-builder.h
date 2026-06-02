@@ -22,5 +22,4 @@ namespace hilti::detail::scope_builder {
  */
 bool build(Builder* builder, Node* node);
 
-
 } // namespace hilti::detail::scope_builder

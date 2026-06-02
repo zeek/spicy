@@ -62,7 +62,8 @@ void cxx::Linker::finalize() {
     unit->add("extern \"C\" {");
 #endif
     unit->add(fmt("const char HILTI_EXPORT HILTI_WEAK * %s = R\"(%s)\";",
-                  HILTI_INTERNAL_GLOBAL_ID("hlto_library_version"), version.toJSON()));
+                  HILTI_INTERNAL_GLOBAL_ID("hlto_library_version"),
+                  version.toJSON()));
     unit->add(fmt("const char HILTI_EXPORT HILTI_WEAK * %s = " HILTI_VERSION_FUNCTION_STRING "();",
                   HILTI_INTERNAL_GLOBAL_ID("hlto_bind_to_version")));
 #ifdef _MSC_VER

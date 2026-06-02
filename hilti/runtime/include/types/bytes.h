@@ -613,7 +613,6 @@ public:
 
     friend bool operator!=(const Bytes& a, const Bytes& b) { return ! (a == b); }
 
-
     friend bool operator<(const Bytes& a, const Bytes& b) {
         return static_cast<const Bytes::Base&>(a) < static_cast<const Bytes::Base&>(b);
     }

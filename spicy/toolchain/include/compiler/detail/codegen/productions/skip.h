@@ -17,7 +17,10 @@ namespace spicy::detail::codegen::production {
 /** A production simply skipping input data. */
 class Skip : public Production {
 public:
-    Skip(ASTContext* ctx, const std::string& symbol, type::unit::item::Field* field, std::unique_ptr<Production> ctor,
+    Skip(ASTContext* ctx,
+         const std::string& symbol,
+         type::unit::item::Field* field,
+         std::unique_ptr<Production> ctor,
          const Location& l = location::None)
         : Production(symbol, l),
           _field(field),
@@ -46,7 +49,6 @@ public:
         else
             return {};
     };
-
 
     Expression* expression() const final { return _ctor ? _ctor->expression() : nullptr; }
 

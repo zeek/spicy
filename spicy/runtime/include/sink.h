@@ -132,7 +132,9 @@ public:
             throw SinkError("cannot connect filter after data has been forwarded already");
 
         SPICY_RT_DEBUG_VERBOSE(hilti::rt::fmt("connecting filter unit %s [%p] to sink %p",
-                                              T::HILTI_INTERNAL(parser).name, &*filter_unit, this));
+                                              T::HILTI_INTERNAL(parser).name,
+                                              &*filter_unit,
+                                              this));
         spicy::rt::filter::detail::connect(_filter, filter_unit);
     }
 
@@ -288,7 +290,9 @@ private:
     void _init();
 
     // Add new data to buffer, beginning search for insert position at given start *c*.
-    ChunkList::iterator _addAndCheck(hilti::rt::Optional<hilti::rt::Bytes> data, uint64_t rseq, uint64_t rupper,
+    ChunkList::iterator _addAndCheck(hilti::rt::Optional<hilti::rt::Bytes> data,
+                                     uint64_t rseq,
+                                     uint64_t rupper,
                                      ChunkList::iterator c);
 
     // Deliver data to connected parsers. Returns false if the data is empty (i.e., a gap).
@@ -314,7 +318,9 @@ private:
     void _reportUndeliveredUpTo(uint64_t rupper) const;
 
     // Output reassembler state for debugging.
-    void _debugReassembler(std::string_view msg, const hilti::rt::Optional<hilti::rt::Bytes>& data, uint64_t seq,
+    void _debugReassembler(std::string_view msg,
+                           const hilti::rt::Optional<hilti::rt::Bytes>& data,
+                           uint64_t seq,
                            uint64_t len) const;
     void _debugReassemblerBuffer(std::string_view msg) const;
     void _debugDeliver(const hilti::rt::Bytes& data) const;

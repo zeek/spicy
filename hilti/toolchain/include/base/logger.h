@@ -213,7 +213,11 @@ public:
     void reset() { _errors = _warnings = 0; }
 
 protected:
-    void report(std::ostream& output, logging::Level level, size_t indent, std::string_view addl, std::string_view msg,
+    void report(std::ostream& output,
+                logging::Level level,
+                size_t indent,
+                std::string_view addl,
+                std::string_view msg,
                 const Location& l) const;
 
 private:

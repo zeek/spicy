@@ -24,7 +24,9 @@ public:
     }
 
     static auto create(ASTContext* ctx, hilti::rt::Port v, const Meta& meta = {}) {
-        return ctx->make<Port>(ctx, {QualifiedType::create(ctx, type::Port::create(ctx, meta), Constness::Const)}, v,
+        return ctx->make<Port>(ctx,
+                               {QualifiedType::create(ctx, type::Port::create(ctx, meta), Constness::Const)},
+                               v,
                                meta);
     }
 

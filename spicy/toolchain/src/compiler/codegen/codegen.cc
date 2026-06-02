@@ -173,8 +173,9 @@ struct VisitorPass1 : public visitor::MutatingPostOrder {
             // Unit has an implementation of `%sync_advance`, so add feature
             // requirement for %sync_advance to the struct's type
             // declaration.
-            n->addAttribute(context(), builder()->attribute(hilti::attribute::kind::RequiresTypeFeature,
-                                                            builder()->stringLiteral("uses_sync_advance")));
+            n->addAttribute(context(),
+                            builder()->attribute(hilti::attribute::kind::RequiresTypeFeature,
+                                                 builder()->stringLiteral("uses_sync_advance")));
 
         cg->recordTypeMapping(u, struct_);
 
@@ -249,9 +250,15 @@ struct VisitorPass2 : public visitor::MutatingPostOrder {
         const auto& unit_type = context()->lookup(n->hook()->unitTypeIndex());
         assert(unit_type);
 
-        auto* func =
-            cg->compileHook(*unit_type->as<type::Unit>(), n->hook()->id(), {}, hook->hookType(), hook->isDebug(),
-                            hook->ftype()->parameters(), hook->body(), hook->priority(), n->meta());
+        auto* func = cg->compileHook(*unit_type->as<type::Unit>(),
+                                     n->hook()->id(),
+                                     {},
+                                     hook->hookType(),
+                                     hook->isDebug(),
+                                     hook->ftype()->parameters(),
+                                     hook->body(),
+                                     hook->priority(),
+                                     n->meta());
 
         replaceNode(n, func);
     }
@@ -454,8 +461,10 @@ struct VisitorPass2 : public visitor::MutatingPostOrder {
     }
 
     void operator()(operator_::sink::Write* n) final {
-        auto* x = builder()->memberCall(n->op0(), "write",
-                                        {argument(n->op2(), 0), argument(n->op2(), 1, builder()->null()),
+        auto* x = builder()->memberCall(n->op0(),
+                                        "write",
+                                        {argument(n->op2(), 0),
+                                         argument(n->op2(), 1, builder()->null()),
                                          argument(n->op2(), 2, builder()->null())});
         replaceNode(n, x);
     }
@@ -676,10 +685,14 @@ bool CodeGen::compileAST(hilti::ASTRoot* root) {
     return modified;
 }
 
-hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const ID& id, type::unit::item::Field* field,
-                                                   declaration::hook::Type type, bool debug,
+hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit,
+                                                   const ID& id,
+                                                   type::unit::item::Field* field,
+                                                   declaration::hook::Type type,
+                                                   bool debug,
                                                    hilti::type::function::Parameters params,
-                                                   hilti::statement::Block* body, Expression* priority,
+                                                   hilti::statement::Block* body,
+                                                   Expression* priority,
                                                    const hilti::Meta& meta) {
     if ( debug && ! options().debug )
         return {};
@@ -714,7 +727,8 @@ hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const
     if ( type == declaration::hook::Type::ForEach ) {
         assert_field();
 
-        params.push_back(builder()->parameter(HILTI_INTERNAL_ID("dd"), field->ddType()->type()->elementType()->type(),
+        params.push_back(builder()->parameter(HILTI_INTERNAL_ID("dd"),
+                                              field->ddType()->type()->elementType()->type(),
                                               hilti::parameter::Kind::In));
         params.push_back(
             builder()->parameter(HILTI_INTERNAL_ID("stop"), builder()->typeBool(), hilti::parameter::Kind::InOut));
@@ -734,7 +748,8 @@ hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const
         // ones that have it (for vector of regexps, it wouldn't be clear what
         // to bind to).
         if ( original_field_type->type()->isA<hilti::type::RegExp>() && ! is_container )
-            params.push_back(builder()->parameter(HILTI_INTERNAL_ID("captures"), builder()->typeName("hilti::Captures"),
+            params.push_back(builder()->parameter(HILTI_INTERNAL_ID("captures"),
+                                                  builder()->typeName("hilti::Captures"),
                                                   hilti::parameter::Kind::In));
     }
 
@@ -765,8 +780,11 @@ hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit, const
     if ( ! id.namespace_().empty() )
         hid = fmt("%s::%s", id.namespace_(), hid);
 
-    auto* ft = builder()->typeFunction(result, params, hilti::type::function::Flavor::Hook,
-                                       hilti::type::function::CallingConvention::Standard, meta);
+    auto* ft = builder()->typeFunction(result,
+                                       params,
+                                       hilti::type::function::Flavor::Hook,
+                                       hilti::type::function::CallingConvention::Standard,
+                                       meta);
 
     AttributeSet* attrs = builder()->attributeSet();
 

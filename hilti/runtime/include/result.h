@@ -172,7 +172,6 @@ public:
      */
     result::Error error() && { return std::get<result::Error>(std::move(_value)); }
 
-
     /**
      * Returns the result's error if it indicates failure, or throws an
      * exception if not.

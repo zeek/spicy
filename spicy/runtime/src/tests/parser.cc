@@ -117,10 +117,13 @@ struct UnitWithSinkSupport : std::enable_shared_from_this<UnitWithSinkSupport> {
     void (*HILTI_INTERNAL(on_0x25_undelivered))(uint64_t, const Bytes&) = nullptr;
 
     void (*HILTI_INTERNAL(hook_gap))(hilti::rt::StrongReferenceGeneric, uint64_t, uint64_t);
-    void (*HILTI_INTERNAL(hook_overlap))(hilti::rt::StrongReferenceGeneric, uint64_t, const hilti::rt::Bytes&,
+    void (*HILTI_INTERNAL(hook_overlap))(hilti::rt::StrongReferenceGeneric,
+                                         uint64_t,
+                                         const hilti::rt::Bytes&,
                                          const hilti::rt::Bytes&) = nullptr;
     void (*HILTI_INTERNAL(hook_skipped))(hilti::rt::StrongReferenceGeneric, uint64_t) = nullptr;
-    void (*HILTI_INTERNAL(hook_undelivered))(hilti::rt::StrongReferenceGeneric, uint64_t,
+    void (*HILTI_INTERNAL(hook_undelivered))(hilti::rt::StrongReferenceGeneric,
+                                             uint64_t,
                                              const hilti::rt::Bytes&) = nullptr;
 
     // NOLINTNEXTLINE(bugprone-unhandled-self-assignment, cert-oop54-cpp)
@@ -279,7 +282,8 @@ TEST_CASE("waitForInput") {
         // can only wait from inside a `Resumable`.
         auto wait = waitForInput();
         CHECK_FALSE(wait);
-        CHECK_THROWS_WITH_AS(_waitForInput(nullptr), "'yield' in non-suspendable context",
+        CHECK_THROWS_WITH_AS(_waitForInput(nullptr),
+                             "'yield' in non-suspendable context",
                              const hilti::rt::RuntimeError&);
     }
 
@@ -319,7 +323,8 @@ TEST_CASE("waitForInput with min") {
         // can only wait from `Resumable`.
         auto wait = waitForInput();
         CHECK_FALSE(wait);
-        CHECK_THROWS_WITH_AS(_waitForInput(nullptr), "'yield' in non-suspendable context",
+        CHECK_THROWS_WITH_AS(_waitForInput(nullptr),
+                             "'yield' in non-suspendable context",
                              const hilti::rt::RuntimeError&);
     }
 
@@ -373,7 +378,8 @@ TEST_CASE("waitForInputOrEod with min") {
         // can only wait from inside a `Resumable`.
         auto wait = waitForInputOrEod();
         CHECK_FALSE(wait);
-        CHECK_THROWS_WITH_AS(_waitForInputOrEod(nullptr), "'yield' in non-suspendable context",
+        CHECK_THROWS_WITH_AS(_waitForInputOrEod(nullptr),
+                             "'yield' in non-suspendable context",
                              const hilti::rt::RuntimeError&);
     }
 
@@ -471,7 +477,8 @@ TEST_CASE("extractBytes") {
     SUBCASE("without eod") {
         CHECK_EQ(detail::extractBytes(data, data->view(), 5, false, "<location>", {}), hilti::rt::Bytes("12345"));
         CHECK_THROWS_WITH_AS(detail::extractBytes(data, data->view(), 10, false, "<location>", {}),
-                             "expected 10 bytes (5 available) (<location>)", const spicy::rt::ParseError&);
+                             "expected 10 bytes (5 available) (<location>)",
+                             const spicy::rt::ParseError&);
     }
 
     SUBCASE("with eod") {

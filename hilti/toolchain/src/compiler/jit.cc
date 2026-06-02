@@ -79,7 +79,9 @@ hilti::rt::filesystem::path save(const CxxCode& code, const hilti::rt::filesyste
     std::error_code ec;
     hilti::rt::filesystem::rename(cc0->string(), cc1, ec);
     if ( ec )
-        rt::fatalError(util::fmt("could not move file %s to final location %s: %s", cc0->string(), cc1.generic_string(),
+        rt::fatalError(util::fmt("could not move file %s to final location %s: %s",
+                                 cc0->string(),
+                                 cc1.generic_string(),
                                  ec.message()));
 
     return cc1;
@@ -320,7 +322,9 @@ hilti::Result<Nothing> JIT::_compile() {
             HILTI_DEBUG(logging::debug::Driver, util::fmt("saving code for %s to %s", id, dbg));
 
             std::error_code ec;
-            hilti::rt::filesystem::copy(cc, dbg, hilti::rt::filesystem::copy_options::overwrite_existing,
+            hilti::rt::filesystem::copy(cc,
+                                        dbg,
+                                        hilti::rt::filesystem::copy_options::overwrite_existing,
                                         ec); // will save into current directory; ignore errors
         }
 
@@ -458,7 +462,9 @@ hilti::Result<std::shared_ptr<const Library>> JIT::_link() {
             HILTI_DEBUG(logging::debug::Driver, util::fmt("saving object file to %s", dbg));
 
             std::error_code ec;
-            hilti::rt::filesystem::copy(path, dbg, hilti::rt::filesystem::copy_options::overwrite_existing,
+            hilti::rt::filesystem::copy(path,
+                                        dbg,
+                                        hilti::rt::filesystem::copy_options::overwrite_existing,
                                         ec); // will save into current directory; ignore errors
         }
     }
@@ -732,14 +738,16 @@ void JIT::JobRunner::_recordUserDiagnostics(JobID jid, const Job& job) {
     std::ofstream out(UserDiagnosticsFile, std::ios::app);
     if ( ! out ) {
         logger().warning(util::fmt("could not open diagnostics file %s for writing: %s",
-                                   UserDiagnosticsFile.generic_string(), ::strerror(errno)));
+                                   UserDiagnosticsFile.generic_string(),
+                                   ::strerror(errno)));
         return;
     }
 
     // Copy the output of the process over into the diagnostics file
     std::ifstream in(job.output);
     if ( ! in ) {
-        logger().warning(util::fmt("could not open process output file %s for reading: %s", job.output.generic_string(),
+        logger().warning(util::fmt("could not open process output file %s for reading: %s",
+                                   job.output.generic_string(),
                                    ::strerror(errno)));
         return;
     }
@@ -772,7 +780,8 @@ JIT::JobRunner::JobRunner() {
             logger().internalError(
                 util::fmt("cannot set limit for number of open files ('ulimit -n %d'), please set it in your "
                           "environment: %s",
-                          reproc_max_fd_limit, ::strerror(errno)));
+                          reproc_max_fd_limit,
+                          ::strerror(errno)));
         }
     }
 }

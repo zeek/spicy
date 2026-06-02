@@ -67,7 +67,9 @@ struct Visitor : public visitor::PreOrder {
             return prod;
         else
             // Fallback: Just a plain type.
-            return std::make_unique<production::Variable>(context(), pf->cg->uniquer()->get(id, false), t,
+            return std::make_unique<production::Variable>(context(),
+                                                          pf->cg->uniquer()->get(id, false),
+                                                          t,
                                                           t->meta().location());
     }
 
@@ -97,7 +99,10 @@ struct Visitor : public visitor::PreOrder {
             return std::make_unique<production::Counter>(context(), id, repeat, std::move(sub), loc);
 
         if ( count )
-            return std::make_unique<production::Counter>(context(), id, *count->valueAsExpression(), std::move(sub),
+            return std::make_unique<production::Counter>(context(),
+                                                         id,
+                                                         *count->valueAsExpression(),
+                                                         std::move(sub),
                                                          loc);
 
         if ( size )
@@ -138,8 +143,13 @@ struct Visitor : public visitor::PreOrder {
         }
 
         auto block_label = pf->cg->uniquer()->get("block");
-        result = std::make_unique<production::Block>(context(), block_label, std::move(prods), n->condition(),
-                                                     std::move(else_prods), n->attributes(), n->meta().location());
+        result = std::make_unique<production::Block>(context(),
+                                                     block_label,
+                                                     std::move(prods),
+                                                     n->condition(),
+                                                     std::move(else_prods),
+                                                     n->attributes(),
+                                                     n->meta().location());
     }
 
     void operator()(spicy::type::unit::item::Field* n) final {
@@ -152,8 +162,11 @@ struct Visitor : public visitor::PreOrder {
                 auto m = prod->meta();
                 m.setField(pf->currentField(), false);
                 prod->setMeta(m);
-                skip = std::make_unique<production::Skip>(context(), pf->cg->uniquer()->get(n->id()), n,
-                                                          std::move(prod), n->meta().location());
+                skip = std::make_unique<production::Skip>(context(),
+                                                          pf->cg->uniquer()->get(n->id()),
+                                                          n,
+                                                          std::move(prod),
+                                                          n->meta().location());
             }
 
             else if ( n->item() ) {
@@ -161,7 +174,10 @@ struct Visitor : public visitor::PreOrder {
             }
 
             else if ( n->size(context()) )
-                skip = std::make_unique<production::Skip>(context(), pf->cg->uniquer()->get(n->id()), n, nullptr,
+                skip = std::make_unique<production::Skip>(context(),
+                                                          pf->cg->uniquer()->get(n->id()),
+                                                          n,
+                                                          nullptr,
                                                           n->meta().location());
 
             else if ( n->parseType()->type()->isA<hilti::type::Bytes>() ) {
@@ -171,7 +187,10 @@ struct Visitor : public visitor::PreOrder {
                 auto* until_including_attr = n->attributes()->find(attribute::kind::UntilIncluding);
 
                 if ( eod_attr || until_attr || until_including_attr )
-                    skip = std::make_unique<production::Skip>(context(), pf->cg->uniquer()->get(n->id()), n, nullptr,
+                    skip = std::make_unique<production::Skip>(context(),
+                                                              pf->cg->uniquer()->get(n->id()),
+                                                              n,
+                                                              nullptr,
                                                               n->meta().location());
             }
 
@@ -241,8 +260,13 @@ struct Visitor : public visitor::PreOrder {
                 }
             }
 
-            result = std::make_unique<production::Switch>(context(), switch_sym, n->expression(), std::move(cases),
-                                                          std::move(default_), n->attributes(), n->condition(),
+            result = std::make_unique<production::Switch>(context(),
+                                                          switch_sym,
+                                                          n->expression(),
+                                                          std::move(cases),
+                                                          std::move(default_),
+                                                          n->attributes(),
+                                                          n->condition(),
                                                           n->meta().location());
             return;
         }
@@ -278,8 +302,13 @@ struct Visitor : public visitor::PreOrder {
                     d = production::look_ahead::Default::Second;
 
                 auto lah_sym = fmt("%s_lha_%d", switch_sym, i);
-                auto lah = std::make_unique<production::LookAhead>(context(), lah_sym, std::move(prev), std::move(prod),
-                                                                   d, n->condition(), c->meta().location());
+                auto lah = std::make_unique<production::LookAhead>(context(),
+                                                                   lah_sym,
+                                                                   std::move(prev),
+                                                                   std::move(prod),
+                                                                   d,
+                                                                   n->condition(),
+                                                                   c->meta().location());
                 prev = std::move(lah);
             }
 
@@ -339,8 +368,9 @@ struct Visitor : public visitor::PreOrder {
 };
 
 std::unique_ptr<Production> ProductionFactory::createProduction(Node* node) {
-    return visitor::dispatch(Visitor(this), node,
-                             [](auto& v) -> std::unique_ptr<Production> { return std::move(v.result); });
+    return visitor::dispatch(Visitor(this), node, [](auto& v) -> std::unique_ptr<Production> {
+        return std::move(v.result);
+    });
 }
 
 } // anonymous namespace

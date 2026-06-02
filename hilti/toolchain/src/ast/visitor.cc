@@ -18,8 +18,14 @@ void visitor::MutatingVisitorBase::replaceNode(Node* old, Node* new_, const std:
         msg_ = util::fmt(" (%s)", msg);
 
     if ( new_ )
-        HILTI_DEBUG(_dbg, util::fmt("%s%s \"%s\" -> %s \"%s\"%s", location, old->typename_(), old->printRaw(),
-                                    new_->typename_(), new_->printRaw(), msg_))
+        HILTI_DEBUG(_dbg,
+                    util::fmt("%s%s \"%s\" -> %s \"%s\"%s",
+                              location,
+                              old->typename_(),
+                              old->printRaw(),
+                              new_->typename_(),
+                              new_->printRaw(),
+                              msg_))
     else
         HILTI_DEBUG(_dbg, util::fmt("%s%s \"%s\" -> null%s", location, old->typename_(), old->printRaw(), msg_))
 
@@ -39,8 +45,14 @@ void visitor::MutatingVisitorBase::replaceNodeWithChild(Node* old, Node* new_, c
     if ( ! msg.empty() )
         msg_ = util::fmt(" (%s)", msg);
 
-    HILTI_DEBUG(_dbg, util::fmt("%s%s \"%s\" -> %s \"%s\"%s", location, old->typename_(), old->printRaw(),
-                                new_->typename_(), new_->printRaw(), msg_))
+    HILTI_DEBUG(_dbg,
+                util::fmt("%s%s \"%s\" -> %s \"%s\"%s",
+                          location,
+                          old->typename_(),
+                          old->printRaw(),
+                          new_->typename_(),
+                          new_->printRaw(),
+                          msg_))
 
     new_->removeFromParent(); // will leave parent in undefined state, which is fine because the parent will be detached
                               // next (and eventually deleted).
@@ -62,8 +74,14 @@ void visitor::MutatingVisitorBase::recordChange(const Node* old, Node* changed, 
     if ( ! msg.empty() )
         msg_ = util::fmt(" (%s)", msg);
 
-    HILTI_DEBUG(_dbg, util::fmt("%s%s \"%s\" -> %s \"%s\"%s", location, old->typename_(), old->printRaw(),
-                                changed->typename_(), *changed, msg_))
+    HILTI_DEBUG(_dbg,
+                util::fmt("%s%s \"%s\" -> %s \"%s\"%s",
+                          location,
+                          old->typename_(),
+                          old->printRaw(),
+                          changed->typename_(),
+                          *changed,
+                          msg_))
     _modified = true;
 }
 

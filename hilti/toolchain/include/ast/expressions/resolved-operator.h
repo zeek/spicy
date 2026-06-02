@@ -72,8 +72,12 @@ public:
     HILTI_NODE_1(expression::ResolvedOperator, Expression, override);
 
 protected:
-    ResolvedOperator(ASTContext* ctx, node::Tags node_tags, const Operator* op, QualifiedType* result,
-                     const Expressions& operands, Meta meta)
+    ResolvedOperator(ASTContext* ctx,
+                     node::Tags node_tags,
+                     const Operator* op,
+                     QualifiedType* result,
+                     const Expressions& operands,
+                     Meta meta)
         : Expression(ctx, node_tags, node::flatten(result, operands), std::move(meta)), _operator(op) {}
 
 private:

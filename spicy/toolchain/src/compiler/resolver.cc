@@ -48,8 +48,16 @@ auto resolveField(Builder* builder, type::unit::item::UnresolvedField* u, T t) {
 
     u->removeChildren(0, {});
 
-    auto field = builder->typeUnitItemField(u->fieldID(), std::move(t), u->isSkip(), std::move(arguments), repeat_count,
-                                            std::move(sinks), attributes, condition, std::move(hooks), u->meta());
+    auto field = builder->typeUnitItemField(u->fieldID(),
+                                            std::move(t),
+                                            u->isSkip(),
+                                            std::move(arguments),
+                                            repeat_count,
+                                            std::move(sinks),
+                                            attributes,
+                                            condition,
+                                            std::move(hooks),
+                                            u->meta());
     assert(u->index());
     field->setIndex(*u->index());
     return field;
@@ -77,7 +85,10 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     // Helper method to compute one of several kinds of a field's types.
-    QualifiedType* fieldType(const type::unit::item::Field& f, QualifiedType* type, FieldType ft, bool is_container,
+    QualifiedType* fieldType(const type::unit::item::Field& f,
+                             QualifiedType* type,
+                             FieldType ft,
+                             bool is_container,
                              const Meta& meta) {
         // Visitor determining a unit field type.
         struct FieldTypeVisitor : public visitor::PreOrder {
@@ -121,8 +132,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 // Caught elsewhere, we don't want to report it here again.
                 return;
 
-            if ( auto x = n->coerceValueTo(builder(), builder()->qualifiedType(builder()->typeUnsignedInteger(64),
-                                                                               hilti::Constness::Const)) ) {
+            if ( auto x = n->coerceValueTo(builder(),
+                                           builder()->qualifiedType(builder()->typeUnsignedInteger(64),
+                                                                    hilti::Constness::Const)) ) {
                 if ( *x )
                     recordChange(n, to_string(n->kind()));
             }
@@ -142,7 +154,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             if ( cond->type()->type()->isA<hilti::type::Result>() )
                 return;
 
-            auto ne = coerceExpression(builder(), cond,
+            auto ne = coerceExpression(builder(),
+                                       cond,
                                        builder()->qualifiedType(builder()->typeBool(), hilti::Constness::Const));
             if ( ! ne.coerced ) {
                 n->addError(ne.coerced.error());
@@ -152,9 +165,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             // Implicitly create an error message from the condition itself.
             auto msg = hilti::util::fmt("&requires failed: %s",
                                         hilti::util::replace(cond->print(), HILTI_INTERNAL_ID("dd"), "$$"));
-            auto* new_cond =
-                builder()->conditionTest(*ne.coerced, builder()->expression(builder()->ctorError(std::move(msg))),
-                                         cond->meta());
+            auto* new_cond = builder()->conditionTest(*ne.coerced,
+                                                      builder()->expression(builder()->ctorError(std::move(msg))),
+                                                      cond->meta());
             n->replaceChild(context(), cond, new_cond);
             recordChange(n, std::string(to_string(n->kind())));
         }
@@ -397,9 +410,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 const auto* unit_member = hilti::operator_::registry().byName("unit::MemberConst");
                 const auto* bitfield_member = hilti::operator_::registry().byName("bitfield::Member");
                 assert(unit_member && bitfield_member);
-                auto access_field =
-                    unit_member->instantiate(builder(), {n->op0(), builder()->expressionMember(field->id())},
-                                             n->meta());
+                auto access_field = unit_member->instantiate(builder(),
+                                                             {n->op0(), builder()->expressionMember(field->id())},
+                                                             n->meta());
                 auto access_bits = bitfield_member->instantiate(builder(), {*access_field, n->op1()}, n->meta());
                 replaceNode(n, *access_bits);
             }
@@ -418,9 +431,9 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 const auto* unit_member = hilti::operator_::registry().byName("unit::MemberNonConst");
                 const auto* bitfield_member = hilti::operator_::registry().byName("bitfield::Member");
                 assert(unit_member && bitfield_member);
-                auto access_field =
-                    unit_member->instantiate(builder(), {n->op0(), builder()->expressionMember(field->id())},
-                                             n->meta());
+                auto access_field = unit_member->instantiate(builder(),
+                                                             {n->op0(), builder()->expressionMember(field->id())},
+                                                             n->meta());
                 auto access_bits = bitfield_member->instantiate(builder(), {*access_field, n->op1()}, n->meta());
                 replaceNode(n, *access_bits);
             }
@@ -492,7 +505,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     void operator()(type::unit::item::Block* n) final {
         if ( auto* cond = n->condition() ) {
             auto coerced =
-                hilti::coerceExpression(builder(), cond,
+                hilti::coerceExpression(builder(),
+                                        cond,
                                         builder()->qualifiedType(builder()->typeBool(), hilti::Constness::Const),
                                         hilti::CoercionStyle::TryAllForMatching |
                                             hilti::CoercionStyle::ContextualConversion);
@@ -583,7 +597,8 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             if ( auto* expr = n->expression() ) {
                 auto* t = expr->type()->type()->tryAs<hilti::type::UnsignedInteger>();
                 if ( ! t || t->width() != 64 ) {
-                    if ( auto x = hilti::coerceExpression(builder(), expr,
+                    if ( auto x = hilti::coerceExpression(builder(),
+                                                          expr,
                                                           builder()->qualifiedType(builder()->typeUnsignedInteger(64),
                                                                                    hilti::Constness::Const),
                                                           hilti::CoercionStyle::TryAllForMatching) ) {
@@ -637,9 +652,16 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                         builder()->typeUnitItemField({}, tt, false, n->arguments(), {}, {}, {}, {}, {}, n->meta());
                     inner_field->setIndex(*n->index());
 
-                    auto* outer_field = builder()->typeUnitItemField(n->fieldID(), inner_field, n->isSkip(), {},
-                                                                     n->repeatCount(), n->sinks(), n->attributes(),
-                                                                     n->condition(), n->hooks(), n->meta());
+                    auto* outer_field = builder()->typeUnitItemField(n->fieldID(),
+                                                                     inner_field,
+                                                                     n->isSkip(),
+                                                                     {},
+                                                                     n->repeatCount(),
+                                                                     n->sinks(),
+                                                                     n->attributes(),
+                                                                     n->condition(),
+                                                                     n->hooks(),
+                                                                     n->meta());
 
                     outer_field->setIndex(*n->index());
 
@@ -694,6 +716,7 @@ bool detail::resolver::resolve(Builder* builder, Node* root) {
 
     bool hilti_modified = (*hilti::plugin::registry().hiltiPlugin().ast_resolve)(builder, root);
 
-    return visitor::visit(VisitorPass2(builder, root), root, ".spicy",
-                          [&](const auto& v) { return v.isModified() || hilti_modified; });
+    return visitor::visit(VisitorPass2(builder, root), root, ".spicy", [&](const auto& v) {
+        return v.isModified() || hilti_modified;
+    });
 }

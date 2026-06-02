@@ -120,11 +120,17 @@ private:
         Types,
     };
 
-    using cxxDeclaration = std::variant<declaration::IncludeFile, declaration::Global, declaration::Constant,
-                                        declaration::Type, declaration::Function>;
+    using cxxDeclaration = std::variant<declaration::IncludeFile,
+                                        declaration::Global,
+                                        declaration::Constant,
+                                        declaration::Type,
+                                        declaration::Function>;
 
     void _generateCode(Formatter& f, bool prototypes_only, bool include_all_implementations);
-    void _emitDeclarations(const cxxDeclaration& decl, Formatter& f, Phase phase, bool prototypes_only,
+    void _emitDeclarations(const cxxDeclaration& decl,
+                           Formatter& f,
+                           Phase phase,
+                           bool prototypes_only,
                            bool include_all_implementations);
     void _addHeader(Formatter& f);
     void _addModuleInitFunction();
@@ -164,7 +170,9 @@ void Unit::add(const Declaration& d, const Meta& m)
         if ( ! other ) {
             logger().internalError(
                 util::fmt("mismatched declaration types in cxx::Unit::add for ID %s: got a %s, but already have a %s",
-                          d.id, typeid(d).name(), typeid(i->second).name()));
+                          d.id,
+                          typeid(d).name(),
+                          typeid(i->second).name()));
         }
 
         if ( *other == d )

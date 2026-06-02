@@ -123,7 +123,10 @@ QualifiedType* QualifiedType::createExternal(ASTContext* ctx, UnqualifiedType* t
     return createExternal(ctx, t, const_, Side::RHS, m);
 }
 
-QualifiedType* QualifiedType::createExternal(ASTContext* ctx, UnqualifiedType* t, Constness const_, Side side,
+QualifiedType* QualifiedType::createExternal(ASTContext* ctx,
+                                             UnqualifiedType* t,
+                                             Constness const_,
+                                             Side side,
                                              const Meta& m) {
     return ctx->make<QualifiedType>(ctx, {}, t, const_, side, m);
 }

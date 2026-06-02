@@ -26,8 +26,10 @@ public:
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return ctx->make<Result>(ctx, Wildcard(),
-                                 {QualifiedType::create(ctx, type::Unknown::create(ctx, m), Constness::Const)}, m);
+        return ctx->make<Result>(ctx,
+                                 Wildcard(),
+                                 {QualifiedType::create(ctx, type::Unknown::create(ctx, m), Constness::Const)},
+                                 m);
     }
 
 protected:
@@ -35,7 +37,6 @@ protected:
         : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
     Result(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"result(*)"}, std::move(children), std::move(meta)) {}
-
 
     HILTI_NODE_1(type::Result, UnqualifiedType, final);
 };

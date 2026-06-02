@@ -34,7 +34,6 @@ public:
 };
 HILTI_OPERATOR_IMPLEMENTATION(Deref);
 
-
 class IncrPostfix : public Operator {
 public:
     Signature signature(Builder* builder) const final {
@@ -54,7 +53,6 @@ public:
     HILTI_OPERATOR(hilti, list::iterator::IncrPostfix)
 };
 HILTI_OPERATOR_IMPLEMENTATION(IncrPostfix);
-
 
 class IncrPrefix : public Operator {
 public:

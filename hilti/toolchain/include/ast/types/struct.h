@@ -64,7 +64,9 @@ public:
     bool isNameType() const final { return true; }
     bool isResolved(node::CycleDetector* cd) const final;
 
-    static auto create(ASTContext* ctx, const declaration::Parameters& params, const Declarations& fields,
+    static auto create(ASTContext* ctx,
+                       const declaration::Parameters& params,
+                       const Declarations& fields,
                        Meta meta = {}) {
         for ( auto&& p : params )
             p->setIsTypeParameter();

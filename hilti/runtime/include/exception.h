@@ -99,6 +99,7 @@ inline std::ostream& operator<<(std::ostream& stream, const Exception& e) { retu
         name(std::string_view desc) : base(Internal(), #name, desc) {}                                                 \
         name(std::string_view desc, std::string_view location) : base(Internal(), #name, desc, location) {}            \
         virtual ~name(); /* required to create vtable, see hilti::rt::Exception */                                     \
+                                                                                                                       \
     protected:                                                                                                         \
         using base::base;                                                                                              \
     }; // namespace hilti::rt
@@ -109,6 +110,7 @@ inline std::ostream& operator<<(std::ostream& stream, const Exception& e) { retu
         name(std::string_view desc) : base(Internal(), #name, desc) {}                                                 \
         name(std::string_view desc, std::string_view location) : base(Internal(), #name, desc, location) {}            \
         virtual ~name(); /* required to create vtable, see hilti::rt::Exception */                                     \
+                                                                                                                       \
     protected:                                                                                                         \
         using base::base;                                                                                              \
     };

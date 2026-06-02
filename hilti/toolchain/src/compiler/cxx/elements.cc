@@ -210,8 +210,10 @@ void cxx::Block::addComment(const std::string& stmt, bool sep_before, bool sep_a
     _stmts.emplace_back(fmt("// %s", stmt), Block(), f);
 }
 
-inline static std::string fmtDeclaration(const cxx::ID& id, const cxx::Type& type,
-                                         const std::vector<cxx::Expression>& args, std::string linkage = "",
+inline static std::string fmtDeclaration(const cxx::ID& id,
+                                         const cxx::Type& type,
+                                         const std::vector<cxx::Expression>& args,
+                                         std::string linkage = "",
                                          std::optional<cxx::Expression> init = {}) {
     std::string sinit;
 
@@ -283,7 +285,9 @@ void cxx::Block::addWhile(const Expression& cond, const cxx::Block& body) {
     _stmts.emplace_back(fmt("while ( %s )", cond), body, flags::AddSeparatorAfter);
 }
 
-void cxx::Block::addFor(const Expression& init, const Expression& cond, const Expression& next,
+void cxx::Block::addFor(const Expression& init,
+                        const Expression& cond,
+                        const Expression& next,
                         const cxx::Block& body) {
     _stmts.emplace_back(fmt("for ( %s; %s; %s )", init, cond, next), body, flags::AddSeparatorAfter);
 }
@@ -299,14 +303,16 @@ void cxx::Block::addForRange(bool const_, const ID& id, const Expression& seq, c
 //     _stmts.emplace_back(fmt("for ( %s; %sauto& %s : %s )", init, c, id, seq), body, flags::AddSeparatorAfter);
 // }
 
-void cxx::Block::addSwitch(const Expression& cond, const std::vector<std::pair<Expression, Block>>& cases_,
+void cxx::Block::addSwitch(const Expression& cond,
+                           const std::vector<std::pair<Expression, Block>>& cases_,
                            std::optional<Block> default_) {
     auto cases = util::toVector(
         cases_ | std::views::transform([](const auto& c) { return std::make_pair(std::vector{c.first}, c.second); }));
     addSwitch(cond, cases, std::move(default_));
 }
 
-void cxx::Block::addSwitch(const Expression& cond, const std::vector<std::pair<std::vector<Expression>, Block>>& cases_,
+void cxx::Block::addSwitch(const Expression& cond,
+                           const std::vector<std::pair<std::vector<Expression>, Block>>& cases_,
                            std::optional<Block> default_) {
     auto x = Block();
     x.setEnsureBracesforBlock();
@@ -332,7 +338,8 @@ void cxx::Block::addTry(Block body, std::vector<std::pair<declaration::Argument,
         if ( e.id )
             arg = fmt("%s %s", arg, e.id);
 
-        _stmts.emplace_back(fmt("catch ( %s )", arg), std::move(b),
+        _stmts.emplace_back(fmt("catch ( %s )", arg),
+                            std::move(b),
                             (e == catches.back().first ? flags::AddSeparatorAfter : flags::NoSeparator));
     }
 }
@@ -391,10 +398,13 @@ std::string cxx::type::Struct::str() const {
             out = fmt(R"("$%s=("s + )", x->id.local());
 
         if ( x->emitted )
-            out += fmt("::hilti::rt::bitfield::detail::render(%s, %s, %s)", x->id, *x->typeinfo_bitfield,
+            out += fmt("::hilti::rt::bitfield::detail::render(%s, %s, %s)",
+                       x->id,
+                       *x->typeinfo_bitfield,
                        (x->isAnonymous() ? "true" : "false"));
         else
-            out += fmt("::hilti::rt::bitfield::detail::renderNotEmitted(%s, %s)", *x->typeinfo_bitfield,
+            out += fmt("::hilti::rt::bitfield::detail::renderNotEmitted(%s, %s)",
+                       *x->typeinfo_bitfield,
                        (x->isAnonymous() ? "true" : "false"));
 
         if ( ! x->isAnonymous() )
@@ -426,7 +436,9 @@ std::string cxx::type::Struct::str() const {
             // explicit "init" expression. Those that do will be initialized
             // through our constructors.
             cxx::Expression init = x->init ? "" : "{}";
-            return fmt("%s%s%s;", (x->emitted ? "" : "// "), fmtDeclaration(x->id, x->type, x->args, x->linkage, {}),
+            return fmt("%s%s%s;",
+                       (x->emitted ? "" : "// "),
+                       fmtDeclaration(x->id, x->type, x->args, x->linkage, {}),
                        init);
         }
 
@@ -519,8 +531,12 @@ std::string cxx::type::Struct::str() const {
     })",
                          util::join(to_string_fields, R"( + ", "s + )"));
 
-    return fmt("struct %s : ::hilti::rt::trait::isStruct%s, ::hilti::rt::Controllable<%s> {\n%s\n%s\n}", type_name,
-               has_params, type_name, struct_fields_as_str, to_string);
+    return fmt("struct %s : ::hilti::rt::trait::isStruct%s, ::hilti::rt::Controllable<%s> {\n%s\n%s\n}",
+               type_name,
+               has_params,
+               type_name,
+               struct_fields_as_str,
+               to_string);
 }
 
 std::string cxx::type::Struct::code() const {
@@ -576,7 +592,11 @@ std::string cxx::type::Struct::code() const {
     if ( args.size() )
         code += fmt("%s::%s() {\n%s%s}\n\n", type_name, type_name, init_parameters(), init_locals_non_user());
     else
-        code += fmt("%s::%s() {\n%s%s%s}\n\n", type_name, type_name, init_parameters(), init_locals_user(),
+        code += fmt("%s::%s() {\n%s%s%s}\n\n",
+                    type_name,
+                    type_name,
+                    init_parameters(),
+                    init_locals_user(),
                     init_locals_non_user());
 
     if ( args.size() ) {
@@ -591,11 +611,20 @@ std::string cxx::type::Struct::code() const {
                                      ", ");
 
         if ( ctor_args.empty() )
-            code += fmt("%s::%s() : %s {\n%s%s}\n\n", type_name, type_name, ctor_inits, init_locals_user(),
+            code += fmt("%s::%s() : %s {\n%s%s}\n\n",
+                        type_name,
+                        type_name,
+                        ctor_inits,
+                        init_locals_user(),
                         init_locals_non_user());
         else
-            code += fmt("%s::%s(::hilti::rt::struct_::tag::Parameters, %s) : %s {\n%s%s}\n\n", type_name, type_name,
-                        ctor_args, ctor_inits, init_locals_user(), init_locals_non_user());
+            code += fmt("%s::%s(::hilti::rt::struct_::tag::Parameters, %s) : %s {\n%s%s}\n\n",
+                        type_name,
+                        type_name,
+                        ctor_args,
+                        ctor_inits,
+                        init_locals_user(),
+                        init_locals_non_user());
     }
 
     if ( ! locals_user.empty() ) {
@@ -615,8 +644,12 @@ std::string cxx::type::Struct::code() const {
         if ( ctor_args.empty() )
             code += fmt("%s::%s() : %s() {\n%s}\n\n", type_name, type_name, type_name, ctor_inits);
         else
-            code += fmt("%s::%s(::hilti::rt::struct_::tag::Inits, %s) : %s() {\n%s}\n\n", type_name, type_name,
-                        ctor_args, type_name, ctor_inits);
+            code += fmt("%s::%s(::hilti::rt::struct_::tag::Inits, %s) : %s() {\n%s}\n\n",
+                        type_name,
+                        type_name,
+                        ctor_args,
+                        type_name,
+                        ctor_inits);
     }
 
     return code;
@@ -632,7 +665,8 @@ std::string cxx::type::Union::str() const {
         to_string_fields.emplace_back(fmt(R"(if ( auto* x = std::get_if<%d>(&this->value) )
             return "$%s=" + hilti::rt::to_string(*x);
         else )",
-                                          idx + 1, decl.id));
+                                          idx + 1,
+                                          decl.id));
     }
 
     auto base = fmt("::hilti::rt::Union<%s>", util::join(types, ", "));

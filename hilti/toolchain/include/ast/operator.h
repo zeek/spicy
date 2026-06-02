@@ -161,7 +161,6 @@ constexpr util::enum_::Value<Kind> Kinds[] =
 /** Render an operator with its operand expressions. */
 extern std::string print(Kind kind, const Expressions& operands);
 
-
 /** Render an operator with its operand types. */
 extern std::string printSignature(Kind kind, const Expressions& operands, const Meta& meta);
 
@@ -361,7 +360,8 @@ public:
     virtual void validate(expression::ResolvedOperator* n) const {};
 
     /** Instantiates the operator as an AST node, given specific operand expressions. */
-    virtual Result<expression::ResolvedOperator*> instantiate(Builder* builder, Expressions operands,
+    virtual Result<expression::ResolvedOperator*> instantiate(Builder* builder,
+                                                              Expressions operands,
                                                               Meta meta) const = 0;
 
     /**
@@ -397,7 +397,9 @@ protected:
      * @param kind kind of the operand specifying passing style
      * @param t type of the operand
      */
-    static operator_::Operand* operandForType(Builder* builder, parameter::Kind kind, UnqualifiedType* t,
+    static operator_::Operand* operandForType(Builder* builder,
+                                              parameter::Kind kind,
+                                              UnqualifiedType* t,
                                               std::string doc = "");
 
     /**
@@ -406,7 +408,9 @@ protected:
      * @param kind kind of the operand specifying passing style
      * @param e expression whose type to use
      */
-    static operator_::Operand* operandForExpression(Builder* builder, parameter::Kind kind, const Expressions& e,
+    static operator_::Operand* operandForExpression(Builder* builder,
+                                                    parameter::Kind kind,
+                                                    const Expressions& e,
                                                     size_t i) {
         return operandForType(builder, kind, e[i]->type()->type(), "");
     }

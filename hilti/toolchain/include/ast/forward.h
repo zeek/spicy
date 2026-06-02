@@ -125,7 +125,6 @@ namespace operator_::struct_ {
 class MemberCall;
 }
 
-
 namespace operator_ {
 
 namespace address {

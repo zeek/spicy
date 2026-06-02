@@ -25,8 +25,12 @@ namespace spicy::detail::codegen::production {
  */
 class Unit : public Production {
 public:
-    Unit(ASTContext* ctx, const std::string& symbol, type::Unit* type, Expressions args,
-         std::vector<std::unique_ptr<Production>> fields, const Location& l = location::None)
+    Unit(ASTContext* ctx,
+         const std::string& symbol,
+         type::Unit* type,
+         Expressions args,
+         std::vector<std::unique_ptr<Production>> fields,
+         const Location& l = location::None)
         : Production(symbol, l),
           _type(QualifiedType::create(ctx, type, hilti::Constness::Const)),
           _args(std::move(args)),

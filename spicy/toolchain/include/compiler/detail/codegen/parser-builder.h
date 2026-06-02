@@ -307,7 +307,10 @@ public:
      * the parsing could not optimized (no state will have changed in that
      * case)
      */
-    Expression* parseType(UnqualifiedType* t, const production::Meta& meta, Expression* dst, TypesMode mode,
+    Expression* parseType(UnqualifiedType* t,
+                          const production::Meta& meta,
+                          Expression* dst,
+                          TypesMode mode,
                           bool no_trim = false);
 
     /** Returns the type for a `parse_stageX` unit method. */
@@ -478,8 +481,11 @@ public:
      * Called when a container item has been parsed. Returns a boolean
      * expression that is true if container parsing is to continue.
      */
-    Expression* newContainerItem(const type::unit::item::Field* field, const type::unit::item::Field* container,
-                                 Expression* self, Expression* item, bool need_value);
+    Expression* newContainerItem(const type::unit::item::Field* field,
+                                 const type::unit::item::Field* container,
+                                 Expression* self,
+                                 Expression* item,
+                                 bool need_value);
 
     /**
      * Applies a field's `&convert` expression to a value, and returns the

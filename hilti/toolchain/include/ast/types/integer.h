@@ -24,7 +24,11 @@ public:
     }
 
 protected:
-    IntegerBase(ASTContext* ctx, node::Tags node_tags, type::Unification u, Nodes children, unsigned int width,
+    IntegerBase(ASTContext* ctx,
+                node::Tags node_tags,
+                type::Unification u,
+                Nodes children,
+                unsigned int width,
                 const Meta& m = Meta())
         : UnqualifiedType(ctx, node_tags, std::move(u), std::move(children), m), _width(width) {}
     IntegerBase(ASTContext* ctx, node::Tags node_tags, Wildcard _, type::Unification u, const Meta& m = Meta())

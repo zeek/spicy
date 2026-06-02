@@ -69,7 +69,9 @@ void hilti::rt::done() {
 
     if ( configuration::detail::__configuration && configuration::detail::__configuration->report_resource_usage ) {
         auto stats = rt::resource_usage();
-        std::cerr << fmt("# user_time=%.6f sys_time=%.6f memory=%" PRIu64 "\n", stats.user_time, stats.system_time,
+        std::cerr << fmt("# user_time=%.6f sys_time=%.6f memory=%" PRIu64 "\n",
+                         stats.user_time,
+                         stats.system_time,
                          stats.memory_heap);
     }
 

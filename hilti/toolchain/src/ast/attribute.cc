@@ -65,7 +65,9 @@ Result<bool> Attribute::coerceValueTo(Builder* builder, QualifiedType* dst) {
         auto ne = coerceExpression(builder, *e, dst);
         if ( ! ne.coerced )
             return result::Error(hilti::util::fmt("cannot coerce attribute's expression from type '%s' to '%s' (%s)",
-                                                  *(*e)->type(), *dst, to_string(kind())));
+                                                  *(*e)->type(),
+                                                  *dst,
+                                                  to_string(kind())));
 
         if ( ! ne.nexpr )
             return false;

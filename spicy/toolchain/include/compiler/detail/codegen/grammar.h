@@ -121,7 +121,9 @@ private:
     hilti::Result<hilti::Nothing> _computeTables();
     hilti::Result<hilti::Nothing> _check();
     production::Set _computeClosure(Production* p);
-    bool _add(std::map<std::string, std::set<std::string>>* tbl, Production* dst, const std::set<std::string>& src,
+    bool _add(std::map<std::string, std::set<std::string>>* tbl,
+              Production* dst,
+              const std::set<std::string>& src,
               bool changed);
     bool _isNullable(const Production* p) const;
     bool _isNullable(std::vector<Production*>::const_iterator i, std::vector<Production*>::const_iterator j) const;

@@ -37,7 +37,8 @@ void type::Enum::_setLabels(ASTContext* ctx, enum_::Labels labels) {
     undef_label->setEnumType(ctx, enum_type);
 
     auto* undef_decl =
-        declaration::Constant::create(ctx, undef_label->id(),
+        declaration::Constant::create(ctx,
+                                      undef_label->id(),
                                       expression::Ctor::create(ctx, ctor::Enum::create(ctx, undef_label)));
 
     addChild(ctx, undef_decl);

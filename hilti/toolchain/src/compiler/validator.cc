@@ -70,8 +70,13 @@ using util::fmt;
  */
 static std::unordered_map<node::Tag, std::unordered_set<attribute::Kind>> allowed_attributes{
     {node::tag::Function,
-     {attribute::kind::Cxxname, attribute::kind::HavePrototype, attribute::kind::Priority, attribute::kind::Static,
-      attribute::kind::NeededByFeature, attribute::kind::Debug, attribute::kind::Public}},
+     {attribute::kind::Cxxname,
+      attribute::kind::HavePrototype,
+      attribute::kind::Priority,
+      attribute::kind::Static,
+      attribute::kind::NeededByFeature,
+      attribute::kind::Debug,
+      attribute::kind::Public}},
     {node::tag::declaration::Parameter, {attribute::kind::CxxAnyAsPtr, attribute::kind::RequiresTypeFeature}},
 };
 
@@ -84,7 +89,9 @@ void validator::VisitorMixIn::error(std::string msg, Node* n, node::ErrorPriorit
     ++_errors;
 }
 
-void validator::VisitorMixIn::error(std::string msg, std::vector<std::string> context, Node* n,
+void validator::VisitorMixIn::error(std::string msg,
+                                    std::vector<std::string> context,
+                                    Node* n,
                                     node::ErrorPriority priority) {
     n->addError(std::move(msg), n->location(), priority, std::move(context));
     ++_errors;
@@ -101,10 +108,14 @@ void validator::VisitorMixIn::error(std::string msg, Node* n, Location l, node::
 }
 
 void validator::VisitorMixIn::checkTypeArguments(const node::Range<Expression>& have,
-                                                 const node::Set<type::function::Parameter>& want, Node* n,
-                                                 bool allow_no_arguments, bool do_not_check_types) {
+                                                 const node::Set<type::function::Parameter>& want,
+                                                 Node* n,
+                                                 bool allow_no_arguments,
+                                                 bool do_not_check_types) {
     if ( have.size() > want.size() ) {
-        error(fmt("type expects %u parameter%s, but receives %u", want.size(), (want.size() > 1 ? "s" : ""),
+        error(fmt("type expects %u parameter%s, but receives %u",
+                  want.size(),
+                  (want.size() > 1 ? "s" : ""),
                   have.size()),
               n);
     }
@@ -191,7 +202,8 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         if ( ty->type()->isA<hilti::type::Struct>() || ty->type()->isA<hilti::type::Enum>() ||
              ty->type()->isA<hilti::type::Union>() ) {
             if ( ! ty->type()->typeID() )
-                error(fmt("%s types must be named in declarations", ty->type()->typeClass()), decl,
+                error(fmt("%s types must be named in declarations", ty->type()->typeClass()),
+                      decl,
                       node::ErrorPriority::High);
         }
     }
@@ -227,8 +239,10 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                                 continue;
 
                             if ( auto valid = isValidOverload(current_fn_ty, previous_fn_ty); ! valid )
-                                error(fmt("'%s' is not a valid overload: %s; previous definition in %s", id,
-                                          valid.error(), previous_decl->location()),
+                                error(fmt("'%s' is not a valid overload: %s; previous definition in %s",
+                                          id,
+                                          valid.error(),
+                                          previous_decl->location()),
                                       node);
                         }
                     }
@@ -531,7 +545,8 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
         if ( ! n->hasErrors() ) { // no need for more checks if coercer has already flagged it
             if ( ! type::sameExceptForConstness(n->source()->type(), n->target()->type()) )
-                error(fmt("type mismatch for assignment, expected type %s but got %s", *n->target()->type(),
+                error(fmt("type mismatch for assignment, expected type %s but got %s",
+                          *n->target()->type(),
                           *n->source()->type()),
                       n);
         }
@@ -549,7 +564,8 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
     void operator()(expression::Ternary* n) final {
         if ( ! hilti::type::sameExceptForConstness(n->true_()->type(), n->false_()->type()) ) {
-            error(fmt("types of alternatives do not match in ternary expression (%s vs. %s)", *n->true_()->type(),
+            error(fmt("types of alternatives do not match in ternary expression (%s vs. %s)",
+                      *n->true_()->type(),
                       *n->false_()->type()),
                   n);
         }

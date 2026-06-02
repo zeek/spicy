@@ -48,7 +48,9 @@ Result<std::pair<D*, ID>> lookupID(ID id, Node* n, const std::string_view& what)
             if ( auto d = resolved->first->tryAs<D>() )
                 return std::make_pair(d, resolved->second);
             else
-                return result::Error(util::fmt("ID '%s' does not resolve to a %s (but to a %s)", id, what,
+                return result::Error(util::fmt("ID '%s' does not resolve to a %s (but to a %s)",
+                                               id,
+                                               what,
                                                (*resolved).first->displayName()));
         }
 

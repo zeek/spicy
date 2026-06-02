@@ -161,7 +161,8 @@ public:
      * @return UID of the parsed module (which is now a part of the AST), or an
      * error if parsing failed
      */
-    Result<declaration::module::UID> parseSource(Builder* builder, const hilti::rt::filesystem::path& path,
+    Result<declaration::module::UID> parseSource(Builder* builder,
+                                                 const hilti::rt::filesystem::path& path,
                                                  std::optional<hilti::rt::filesystem::path> process_extension = {});
 
     /**
@@ -183,7 +184,9 @@ public:
      * @return UID of the parsed module (which is now a part of the AST), or an
      * error if parsing failed
      */
-    Result<declaration::module::UID> importModule(Builder* builder, const ID& id, const ID& scope,
+    Result<declaration::module::UID> importModule(Builder* builder,
+                                                  const ID& id,
+                                                  const ID& scope,
                                                   const hilti::rt::filesystem::path& parse_extension,
                                                   const std::optional<hilti::rt::filesystem::path>& process_extension,
                                                   std::vector<hilti::rt::filesystem::path> search_dirs);
@@ -474,7 +477,8 @@ public:
 private:
     // The following methods implement the corresponding phases of AST processing.
 
-    Result<declaration::module::UID> _parseSource(Builder* builder, const hilti::rt::filesystem::path& path,
+    Result<declaration::module::UID> _parseSource(Builder* builder,
+                                                  const hilti::rt::filesystem::path& path,
                                                   const ID& scope,
                                                   std::optional<hilti::rt::filesystem::path> process_extension = {});
     Result<Nothing> _init(Builder* builder, const Plugin& plugin);
@@ -498,11 +502,15 @@ private:
     void _saveIterationAST(const Plugin& plugin, const std::string& prefix, const std::string& tag);
 
     // Dumps the AST to a debugging stream.
-    void _dumpAST(const hilti::logging::DebugStream& stream, const Plugin& plugin, const std::string& prefix,
+    void _dumpAST(const hilti::logging::DebugStream& stream,
+                  const Plugin& plugin,
+                  const std::string& prefix,
                   std::optional<unsigned int> round);
 
     // Dumps the AST to a debugging stream.
-    void _dumpAST(std::ostream& stream, const Plugin& plugin, const std::string& prefix,
+    void _dumpAST(std::ostream& stream,
+                  const Plugin& plugin,
+                  const std::string& prefix,
                   std::optional<unsigned int> round);
 
     // Dumps the accumulated state tables of the context to a debugging stream.

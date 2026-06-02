@@ -81,7 +81,6 @@
     HILTI_RT_ENUM_TYPE(name, __VA_ARGS__);                                                                             \
     inline name Enum(name::Value value) { return name(value); }
 
-
 /**
  * On Linux `__thread` is faster than C++'s `thread_local`. However, on macOS
  * `__thread` doesn't work. Also see this for a lot of detail:
@@ -271,7 +270,8 @@ bool endsWith(std::string_view s, std::string_view suffix);
  * Python-style enumerate() that returns an iterable yielding pairs `(index,
  * val)`. From http://reedbeta.com/blog/python-like-enumerate-in-cpp17/.
  */
-template<typename T, typename TIter = decltype(std::begin(std::declval<T>())),
+template<typename T,
+         typename TIter = decltype(std::begin(std::declval<T>())),
          typename = decltype(std::end(std::declval<T>()))>
 constexpr auto enumerate(T&& iterable) {
     // TODO(C++23): replace callers with `std::views::enumerate` in C++23 and remove this function.

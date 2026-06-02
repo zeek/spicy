@@ -190,18 +190,27 @@ std::pair<int32_t, int64_t> regexp::MatchState::_advance(const stream::View& dat
 
 #ifdef _DEBUG_MATCHING
         std::cerr << fmt("feeding |%s| data.offset=%lu use_std_matcher=%u\n",
-                         escapeBytes(std::string_view((const char*)block->start, block->size)), data.begin().offset(),
+                         escapeBytes(std::string_view((const char*)block->start, block->size)),
+                         data.begin().offset(),
                          use_std_matcher);
 #endif
 
         if ( use_std_matcher )
-            rc = static_cast<jrx_accept_id>(
-                jrx_regexec_partial_std(_pimpl->_re->jrx(), reinterpret_cast<const char*>(block->start), block->size,
-                                        first, last, &_pimpl->_ms, final_block));
+            rc = static_cast<jrx_accept_id>(jrx_regexec_partial_std(_pimpl->_re->jrx(),
+                                                                    reinterpret_cast<const char*>(block->start),
+                                                                    block->size,
+                                                                    first,
+                                                                    last,
+                                                                    &_pimpl->_ms,
+                                                                    final_block));
         else
-            rc = static_cast<jrx_accept_id>(
-                jrx_regexec_partial_min(_pimpl->_re->jrx(), reinterpret_cast<const char*>(block->start), block->size,
-                                        first, last, &_pimpl->_ms, final_block));
+            rc = static_cast<jrx_accept_id>(jrx_regexec_partial_min(_pimpl->_re->jrx(),
+                                                                    reinterpret_cast<const char*>(block->start),
+                                                                    block->size,
+                                                                    first,
+                                                                    last,
+                                                                    &_pimpl->_ms,
+                                                                    final_block));
 
         // Note: The JRX match_state initializes offsets with 1.
 
@@ -410,7 +419,10 @@ Tuple<int32_t, Bytes> RegExp::find(const Bytes& data) const {
 
 regexp::MatchState RegExp::tokenMatcher() const { return regexp::MatchState(*this); }
 
-jrx_accept_id RegExp::_search_pattern(jrx_match_state* ms, const char* data, size_t len, jrx_offset* so,
+jrx_accept_id RegExp::_search_pattern(jrx_match_state* ms,
+                                      const char* data,
+                                      size_t len,
+                                      jrx_offset* so,
                                       jrx_offset* eo) const {
     if ( len == 0 ) {
         // Nothing to do, but still need to init the match state.
@@ -427,8 +439,11 @@ jrx_accept_id RegExp::_search_pattern(jrx_match_state* ms, const char* data, siz
     auto use_std_matcher = _use_std_matcher(jrx(), ms);
 
 #ifdef _DEBUG_MATCHING
-    std::cerr << fmt("feeding |%s| use_std_matcher=%u first=%u last=%u\n", escapeBytes(std::string_view(data, len)),
-                     use_std_matcher, first, last);
+    std::cerr << fmt("feeding |%s| use_std_matcher=%u first=%u last=%u\n",
+                     escapeBytes(std::string_view(data, len)),
+                     use_std_matcher,
+                     first,
+                     last);
 #endif
 
     if ( use_std_matcher )

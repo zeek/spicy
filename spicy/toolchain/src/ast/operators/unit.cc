@@ -21,7 +21,6 @@ void checkName(hilti::expression::ResolvedOperator* op) {
         op->addError(hilti::util::fmt("unit does not have field '%s'", id), node::ErrorPriority::High);
 }
 
-
 QualifiedType* itemType(hilti::Builder* builder, const Expressions& operands) {
     auto* unit = operands[0]->type()->type()->as<type::Unit>();
     const auto& id = operands[1]->as<hilti::expression::Member>()->id();
@@ -45,7 +44,6 @@ QualifiedType* contextResult(hilti::Builder* builder, const Expressions& operand
 
     return builder->qualifiedType(builder->typeVoid(), constness);
 }
-
 
 class Unset : public hilti::Operator {
 public:
@@ -355,7 +353,8 @@ public:
                     .type = {.kind = hilti::parameter::Kind::In,
                              .type = builder.typeStrongReference(
                                  builder.qualifiedType(builder.typeUnit(hilti::type::Wildcard()),
-                                                       hilti::Constness::Mutable, hilti::Side::LHS))},
+                                                       hilti::Constness::Mutable,
+                                                       hilti::Side::LHS))},
                 },
             .result = {.constness = hilti::Constness::Const, .type = builder.typeVoid()},
             .ns = "unit",

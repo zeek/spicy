@@ -464,7 +464,6 @@ hilti::rt::Time hilti::rt::strptime(std::string_view buf, std::string_view forma
     const char* end = ::strptime(buf_.data(), format_.c_str(), &time);
 #endif
 
-
     if ( ! end )
         throw InvalidArgument("could not parse time string");
 

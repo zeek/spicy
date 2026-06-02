@@ -24,8 +24,11 @@ public:
     }
 
     static auto create(ASTContext* ctx, std::string value, bool is_literal, const Meta& meta = {}) {
-        return ctx->make<String>(ctx, {QualifiedType::create(ctx, type::String::create(ctx, meta), Constness::Const)},
-                                 std::move(value), is_literal, meta);
+        return ctx->make<String>(ctx,
+                                 {QualifiedType::create(ctx, type::String::create(ctx, meta), Constness::Const)},
+                                 std::move(value),
+                                 is_literal,
+                                 meta);
     }
 
 protected:

@@ -27,9 +27,12 @@ enum class Linkage {
 
 namespace detail {
 constexpr util::enum_::Value<Linkage> Linkages[] = {
-    {.value = Linkage::Export, .name = "exported"}, {.value = Linkage::Init, .name = "init"},
-    {.value = Linkage::PreInit, .name = "preinit"}, {.value = Linkage::Private, .name = "private"},
-    {.value = Linkage::Public, .name = "public"},   {.value = Linkage::Struct, .name = "struct"},
+    {.value = Linkage::Export, .name = "exported"},
+    {.value = Linkage::Init, .name = "init"},
+    {.value = Linkage::PreInit, .name = "preinit"},
+    {.value = Linkage::Private, .name = "private"},
+    {.value = Linkage::Public, .name = "public"},
+    {.value = Linkage::Struct, .name = "struct"},
 };
 } // namespace detail
 
@@ -144,7 +147,11 @@ public:
 protected:
     friend class ASTContext;
 
-    Declaration(ASTContext* ctx, node::Tags node_tags, Nodes children, ID id, declaration::Linkage linkage,
+    Declaration(ASTContext* ctx,
+                node::Tags node_tags,
+                Nodes children,
+                ID id,
+                declaration::Linkage linkage,
                 Meta meta = {})
         : Node(ctx, node_tags, std::move(children), std::move(meta)), _id(std::move(id)), _linkage(linkage) {}
 

@@ -24,8 +24,10 @@ public:
     }
 
     static auto create(ASTContext* ctx, hilti::rt::Network v, const Meta& meta = {}) {
-        return ctx->make<Network>(ctx, {QualifiedType::create(ctx, type::Network::create(ctx, meta), Constness::Const)},
-                                  v, meta);
+        return ctx->make<Network>(ctx,
+                                  {QualifiedType::create(ctx, type::Network::create(ctx, meta), Constness::Const)},
+                                  v,
+                                  meta);
     }
 
 protected:

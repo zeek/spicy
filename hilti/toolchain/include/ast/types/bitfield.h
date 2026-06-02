@@ -67,20 +67,36 @@ public:
     void setAttributes(ASTContext* ctx, AttributeSet* attrs) { setChild(ctx, 1, attrs); }
     void setCtorValue(ASTContext* ctx, Expression* e) { setChild(ctx, 2, e); }
 
-    static auto create(ASTContext* ctx, const ID& id, unsigned int lower, unsigned int upper, unsigned int field_width,
-                       AttributeSet* attrs = {}, Expression* ctor_value = nullptr, Meta meta = Meta()) {
+    static auto create(ASTContext* ctx,
+                       const ID& id,
+                       unsigned int lower,
+                       unsigned int upper,
+                       unsigned int field_width,
+                       AttributeSet* attrs = {},
+                       Expression* ctor_value = nullptr,
+                       Meta meta = Meta()) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
         auto* dd = expression::Keyword::createDollarDollarDeclaration(
             ctx, QualifiedType::create(ctx, type::UnsignedInteger::create(ctx, field_width), Constness::Const));
 
-        return ctx->make<BitRange>(ctx, node::flatten(QualifiedType::createAuto(ctx), attrs, ctor_value, dd), id, lower,
-                                   upper, field_width, std::move(meta));
+        return ctx->make<BitRange>(ctx,
+                                   node::flatten(QualifiedType::createAuto(ctx), attrs, ctor_value, dd),
+                                   id,
+                                   lower,
+                                   upper,
+                                   field_width,
+                                   std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, const ID& id, unsigned int lower, unsigned int upper, unsigned int field_width,
-                       AttributeSet* attrs = {}, Meta meta = Meta()) {
+    static auto create(ASTContext* ctx,
+                       const ID& id,
+                       unsigned int lower,
+                       unsigned int upper,
+                       unsigned int field_width,
+                       AttributeSet* attrs = {},
+                       Meta meta = Meta()) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
@@ -90,9 +106,18 @@ public:
 protected:
     friend class type::Bitfield;
 
-    BitRange(ASTContext* ctx, Nodes children, ID id, unsigned int lower, unsigned int upper, unsigned int field_width,
+    BitRange(ASTContext* ctx,
+             Nodes children,
+             ID id,
+             unsigned int lower,
+             unsigned int upper,
+             unsigned int field_width,
              Meta meta = {})
-        : Declaration(ctx, NodeTags, std::move(children), std::move(id), declaration::Linkage::Private,
+        : Declaration(ctx,
+                      NodeTags,
+                      std::move(children),
+                      std::move(id),
+                      declaration::Linkage::Private,
                       std::move(meta)),
           _lower(lower),
           _upper(upper),
@@ -149,7 +174,10 @@ public:
         return UnqualifiedType::properties() + node::WithUniqueID::properties() + std::move(p);
     }
 
-    static auto create(ASTContext* ctx, unsigned int width, const type::bitfield::BitRanges& bits, AttributeSet* attrs,
+    static auto create(ASTContext* ctx,
+                       unsigned int width,
+                       const type::bitfield::BitRanges& bits,
+                       AttributeSet* attrs,
                        const Meta& m = Meta()) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
@@ -176,6 +204,5 @@ protected:
 private:
     unsigned int _width = 0;
 };
-
 
 } // namespace hilti::type

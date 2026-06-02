@@ -95,8 +95,11 @@ struct Visitor : public hilti::visitor::PreOrder {
         if ( dst->type()->isA<type::Optional>() ) {
             // Create tmp to avoid evaluation "expr" twice.
             auto tmp = cg->addTmp("opt", cg->compile(src, codegen::TypeUsage::Storage));
-            result = {fmt("(%s = (%s), %s.hasValue() ? hilti::rt::optional::make(*%s) : hilti::rt::Null())", tmp, expr,
-                          tmp, tmp),
+            result = {fmt("(%s = (%s), %s.hasValue() ? hilti::rt::optional::make(*%s) : hilti::rt::Null())",
+                          tmp,
+                          expr,
+                          tmp,
+                          tmp),
                       Side::LHS};
         }
 
@@ -117,7 +120,8 @@ struct Visitor : public hilti::visitor::PreOrder {
 
         else if ( auto* x = dst->type()->tryAs<type::WeakReference>() )
             result = fmt("::hilti::rt::WeakReference<%s>(%s)",
-                         cg->compile(x->dereferencedType(), codegen::TypeUsage::Ctor), expr);
+                         cg->compile(x->dereferencedType(), codegen::TypeUsage::Ctor),
+                         expr);
 
         else if ( type::same(n->dereferencedType(), dst) )
             result = {fmt("(*%s)", expr), Side::LHS};
@@ -149,8 +153,11 @@ struct Visitor : public hilti::visitor::PreOrder {
         else if ( dst->type()->isA<type::Optional>() ) {
             // Create tmp to avoid evaluation "expr" twice.
             auto tmp = cg->addTmp("result", cg->compile(src, codegen::TypeUsage::Storage));
-            result = {fmt("(%s = (%s), %s.hasValue() ? hilti::rt::optional::make(*%s) : hilti::rt::Null())", tmp, expr,
-                          tmp, tmp),
+            result = {fmt("(%s = (%s), %s.hasValue() ? hilti::rt::optional::make(*%s) : hilti::rt::Null())",
+                          tmp,
+                          expr,
+                          tmp,
+                          tmp),
                       Side::LHS};
         }
 
@@ -233,11 +240,14 @@ struct Visitor : public hilti::visitor::PreOrder {
             // emitting multiple full tupled constructors for temporaries.
             for ( auto i = 0U; i < n->elements().size(); i++ ) {
                 exprs.push_back(cg->coerce(fmt("::hilti::rt::tuple::get<%d>(%s)", i, HILTI_INTERNAL_ID("t")),
-                                           n->elements()[i]->type(), x->elements()[i]->type()));
+                                           n->elements()[i]->type(),
+                                           x->elements()[i]->type()));
             }
 
-            result = fmt("[&](const auto& %s) { return hilti::rt::tuple::make(%s); }(%s)", HILTI_INTERNAL_ID("t"),
-                         util::join(exprs, ", "), expr);
+            result = fmt("[&](const auto& %s) { return hilti::rt::tuple::make(%s); }(%s)",
+                         HILTI_INTERNAL_ID("t"),
+                         util::join(exprs, ", "),
+                         expr);
         }
 
         else
@@ -267,7 +277,8 @@ struct Visitor : public hilti::visitor::PreOrder {
 
         else if ( auto* x = dst->type()->tryAs<type::StrongReference>() )
             result = fmt("::hilti::rt::StrongReference<%s>(%s.derefAsValue())",
-                         cg->compile(x->dereferencedType(), codegen::TypeUsage::Ctor), expr);
+                         cg->compile(x->dereferencedType(), codegen::TypeUsage::Ctor),
+                         expr);
 
         else if ( dst->type()->isA<type::ValueReference>() )
             result = fmt("%s.derefAsValue()", expr);
@@ -290,11 +301,13 @@ struct Visitor : public hilti::visitor::PreOrder {
 
         else if ( auto* x = dst->type()->tryAs<type::StrongReference>() )
             result = fmt("::hilti::rt::StrongReference<%s>(%s)",
-                         cg->compile(x->dereferencedType(), codegen::TypeUsage::Ctor), expr);
+                         cg->compile(x->dereferencedType(), codegen::TypeUsage::Ctor),
+                         expr);
 
         else if ( auto* x = dst->type()->tryAs<type::WeakReference>() )
             result = fmt("::hilti::rt::WeakReference<%s>(%s)",
-                         cg->compile(x->dereferencedType(), codegen::TypeUsage::Ctor), expr);
+                         cg->compile(x->dereferencedType(), codegen::TypeUsage::Ctor),
+                         expr);
 
         else if ( type::same(n->dereferencedType(), dst) )
             result = {fmt("(*%s)", expr), Side::LHS};

@@ -125,8 +125,9 @@ struct Mutator : optimizer::visitor::Mutator {
                             recordChange(local,
                                          "resetting block-local variable at the end of block since block will "
                                          "be removed");
-                            block->addChild(context(), builder()->assign(builder()->id(local->id()),
-                                                                         builder()->default_(local->type()->type())));
+                            block->addChild(context(),
+                                            builder()->assign(builder()->id(local->id()),
+                                                              builder()->default_(local->type()->type())));
                         }
                     }
                 }

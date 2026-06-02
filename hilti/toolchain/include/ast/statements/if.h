@@ -22,8 +22,12 @@ public:
 
     void setCondition(ASTContext* ctx, hilti::Expression* c) { setChild(ctx, 1, c); }
 
-    static auto create(ASTContext* ctx, hilti::Declaration* init, hilti::Expression* cond, Statement* true_,
-                       Statement* false_, Meta meta = {}) {
+    static auto create(ASTContext* ctx,
+                       hilti::Declaration* init,
+                       hilti::Expression* cond,
+                       Statement* true_,
+                       Statement* false_,
+                       Meta meta = {}) {
         return ctx->make<If>(ctx, {init, cond, true_, false_}, std::move(meta));
     }
 

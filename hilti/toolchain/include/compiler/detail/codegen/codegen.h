@@ -81,8 +81,11 @@ public:
     cxx::Expression compile(hilti::Ctor* c, bool lhs = false);
     cxx::Expression compile(hilti::expression::ResolvedOperator* o, bool lhs = false);
     cxx::Block compile(hilti::Statement* s, cxx::Block* b = nullptr);
-    cxx::declaration::Function compile(Declaration* decl, type::Function* ft, declaration::Linkage linkage,
-                                       AttributeSet* fattrs = {}, std::optional<cxx::ID> namespace_ = {});
+    cxx::declaration::Function compile(Declaration* decl,
+                                       type::Function* ft,
+                                       declaration::Linkage linkage,
+                                       AttributeSet* fattrs = {},
+                                       std::optional<cxx::ID> namespace_ = {});
 
     enum class CtorKind { Inits, Parameters };
     std::vector<cxx::Expression> compileCallArguments(const hilti::node::Range<Expression>& args,
@@ -97,14 +100,21 @@ public:
     cxx::Expression typeInfo(QualifiedType* t);
     void addTypeInfoDefinition(QualifiedType* t);
 
-    cxx::Expression coerce(const cxx::Expression& e, QualifiedType* src,
+    cxx::Expression coerce(const cxx::Expression& e,
+                           QualifiedType* src,
                            QualifiedType* dst); // only for supported coercions
     cxx::Expression pack(Expression* data, const Expressions& args);
     cxx::Expression pack(QualifiedType* t, const cxx::Expression& data, const std::vector<cxx::Expression>& args);
-    cxx::Expression unpack(QualifiedType* t, QualifiedType* data_type, Expression* data, const Expressions& args,
+    cxx::Expression unpack(QualifiedType* t,
+                           QualifiedType* data_type,
+                           Expression* data,
+                           const Expressions& args,
                            bool throw_on_error);
-    cxx::Expression unpack(QualifiedType* t, QualifiedType* data_type, const cxx::Expression& data,
-                           const std::vector<cxx::Expression>& args, bool throw_on_error);
+    cxx::Expression unpack(QualifiedType* t,
+                           QualifiedType* data_type,
+                           const cxx::Expression& data,
+                           const std::vector<cxx::Expression>& args,
+                           bool throw_on_error);
 
     cxx::Expression addTmp(const std::string& prefix, const cxx::Type& t);
     cxx::Expression addTmp(const std::string& prefix, const cxx::Expression& init);
@@ -112,7 +122,8 @@ public:
     cxx::Expression startProfiler(const std::string& name, cxx::Block* block = nullptr, bool insert_at_front = false);
     void stopProfiler(const cxx::Expression& profiler, cxx::Block* block = nullptr);
 
-    cxx::Expression unsignedIntegerToBitfield(QualifiedType* t, const cxx::Expression& value,
+    cxx::Expression unsignedIntegerToBitfield(QualifiedType* t,
+                                              const cxx::Expression& value,
                                               const cxx::Expression& bitorder);
 
     // Helper factoring out common code to generate C++ types and default

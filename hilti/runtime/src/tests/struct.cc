@@ -18,7 +18,8 @@ TEST_CASE("value_or_exception") {
     CHECK_EQ(struct_::value_or_exception(hilti::rt::Optional<int>(42)), 42);
 
     CHECK_THROWS_WITH_AS(struct_::value_or_exception(hilti::rt::Optional<int>(hilti::rt::Null())),
-                         "struct attribute not set (location:123)", const AttributeNotSet&);
+                         "struct attribute not set (location:123)",
+                         const AttributeNotSet&);
     debug::setLocation(nullptr);
 }
 

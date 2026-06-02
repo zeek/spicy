@@ -10,7 +10,6 @@
 //
 //   Replace checks for constants with a hasSideEffect() that may take flow into account as well.
 
-
 #include <hilti/ast/attribute.h>
 #include <hilti/ast/builder/builder.h>
 #include <hilti/ast/ctors/bool.h>
@@ -51,8 +50,11 @@ struct Collector : public optimizer::visitor::Collector {
             for ( const auto& [id, field] : fields ) {
                 assert(field.decl && field.struct_);
                 HILTI_DEBUG(logging::debug::OptimizerPasses,
-                            util::fmt("    %s  #reads=%zu #writes=%zu #unsets=%zu", field.decl->fullyQualifiedID(),
-                                      field.reads.size(), field.writes.size(), field.unsets.size()));
+                            util::fmt("    %s  #reads=%zu #writes=%zu #unsets=%zu",
+                                      field.decl->fullyQualifiedID(),
+                                      field.reads.size(),
+                                      field.writes.size(),
+                                      field.unsets.size()));
             }
         }
     }
@@ -176,8 +178,9 @@ struct Mutator : public optimizer::visitor::Mutator {
     // Removes a field from a struct.
     void removeField(const Collector::Field& field) {
         recordChange(field.decl, "field unused, setting to &noemit");
-        field.decl->attributes()->add(context(), builder()->attribute(attribute::kind::NoEmit,
-                                                                      builder()->stringLiteral("optimized")));
+        field.decl->attributes()->add(context(),
+                                      builder()->attribute(attribute::kind::NoEmit,
+                                                           builder()->stringLiteral("optimized")));
     }
 
     // Removes reads to a given field. Handles all read cases identified by the
@@ -214,10 +217,12 @@ struct Mutator : public optimizer::visitor::Mutator {
 
             else if ( auto* n = read->tryAs<operator_::struct_::HasMember>() ) {
                 if ( field.decl->isOptional() )
-                    replaceNode(n, builder()->bool_(false),
+                    replaceNode(n,
+                                builder()->bool_(false),
                                 "replacing has-member check of unwritten optional field with false");
                 else
-                    replaceNode(n, builder()->bool_(true),
+                    replaceNode(n,
+                                builder()->bool_(true),
                                 "replacing has-member check of unwritten optional field with true");
             }
 

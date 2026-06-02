@@ -127,7 +127,8 @@ void ASTState::updateAST(const PassInfo& pinfo) {
 
         if ( ! (pinfo.guarantees & Guarantees::ConstantsFolded) )
             run_on_changed_nodes("constant-folder", [&](auto* node) {
-                return constant_folder::fold(_builder, node,
+                return constant_folder::fold(_builder,
+                                             node,
                                              constant_folder::Style::InlineFeatureConstants |
                                                  constant_folder::Style::InlineBooleanConstants |
                                                  constant_folder::Style::FoldTernaryOperator);
@@ -255,7 +256,9 @@ bool Optimizer::_runPass(const optimizer::PassInfo& pinfo, unsigned int round) {
                 const auto header = util::
                     fmt("State after modifications by pass %s, round %zu, pass iteration %zu, before running "
                         "post-processors",
-                        to_string(pinfo.id), round, iteration);
+                        to_string(pinfo.id),
+                        round,
+                        iteration);
                 _dumpAST(context(), fname, header);
             }
 
@@ -267,7 +270,9 @@ bool Optimizer::_runPass(const optimizer::PassInfo& pinfo, unsigned int round) {
                 const auto header = util::
                     fmt("State after modifications by pass %s, round %zu, pass iteration %zu, after running "
                         "post-processors",
-                        to_string(pinfo.id), round, iteration);
+                        to_string(pinfo.id),
+                        round,
+                        iteration);
                 _dumpAST(context(), fname, header);
             }
 
@@ -327,7 +332,8 @@ hilti::Result<Nothing> Optimizer::run() {
                 // the optimizer. Specifically, hilti.output.optimization.const
                 // breaks without this. Once we are fine changing output, we
                 // can revisit whether we need to to keep this behavior.
-                modified |= constant_folder::fold(builder(), context()->root(),
+                modified |= constant_folder::fold(builder(),
+                                                  context()->root(),
                                                   constant_folder::Style::InlineBooleanConstants |
                                                       constant_folder::Style::FoldTernaryOperator);
             }
@@ -345,7 +351,6 @@ hilti::Result<Nothing> Optimizer::run() {
 
     return Nothing();
 }
-
 
 std::optional<std::pair<ID, std::string>> Optimizer::idFeatureFromConstant(const ID& feature_constant) {
     const auto& id = feature_constant.local();

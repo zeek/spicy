@@ -164,16 +164,20 @@ TEST_CASE("bits") {
     CHECK_EQ(integer::bits(uint8("00001111"), 0, 5, integer::BitOrder::LSB0), uint8("001111"));
 
     CHECK_THROWS_WITH_AS(integer::bits(integer::safe<uint8_t>(0), 3, 0, integer::BitOrder::MSB0),
-                         "lower limit needs to be less or equal the upper limit", const InvalidArgument&);
+                         "lower limit needs to be less or equal the upper limit",
+                         const InvalidArgument&);
     CHECK_THROWS_WITH_AS(integer::bits(integer::safe<uint8_t>(0), 1, 8, integer::BitOrder::MSB0),
-                         "upper limit needs to be less or equal the input width", const InvalidArgument&);
+                         "upper limit needs to be less or equal the input width",
+                         const InvalidArgument&);
     CHECK_THROWS_WITH_AS(integer::bits(integer::safe<uint8_t>(0), 0, 3, integer::BitOrder::Undef),
-                         "undefined bit order", const RuntimeError&);
+                         "undefined bit order",
+                         const RuntimeError&);
 
     // Extracting all bits should reproduce the input.
     CHECK_EQ(hilti::rt::integer::bits(hilti::rt::integer::safe<uint64_t>(72623859790382848),
                                       hilti::rt::integer::safe<std::uint64_t>{0U},
-                                      hilti::rt::integer::safe<std::uint64_t>{63U}, hilti::rt::integer::BitOrder::LSB0),
+                                      hilti::rt::integer::safe<std::uint64_t>{63U},
+                                      hilti::rt::integer::BitOrder::LSB0),
              72623859790382848);
 }
 
@@ -183,7 +187,8 @@ TEST_CASE("pack") {
     CHECK_EQ(integer::pack<uint16_t>(256, ByteOrder::Little), "\x00\x01"_b);
     CHECK_EQ(integer::pack<uint16_t>(1, ByteOrder::Big), "\x00\x01"_b);
     CHECK_THROWS_WITH_AS(integer::pack<uint16_t>(1, ByteOrder::Undef),
-                         "attempt to pack value with undefined byte order", const RuntimeError&);
+                         "attempt to pack value with undefined byte order",
+                         const RuntimeError&);
 
     CHECK_EQ(integer::pack<uint32_t>(0x01020304, ByteOrder::Big), "\x01\x02\x03\x04"_b);
     CHECK_EQ(integer::pack<uint32_t>(0x01020304, ByteOrder::Little), "\x04\x03\x02\x01"_b);

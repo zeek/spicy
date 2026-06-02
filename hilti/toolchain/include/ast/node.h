@@ -56,7 +56,8 @@
                                                                                                                        \
     static constexpr uint16_t NodeLevel = 2;                                                                           \
     static constexpr ::hilti::node::Tag NodeTag = ::hilti::node::tag::CLASS;                                           \
-    static constexpr ::hilti::node::Tags NodeTags = {::hilti::node::tag::Node, ::hilti::node::tag::BASE,               \
+    static constexpr ::hilti::node::Tags NodeTags = {::hilti::node::tag::Node,                                         \
+                                                     ::hilti::node::tag::BASE,                                         \
                                                      ::hilti::node::tag::CLASS};
 
 #define HILTI_NODE_1(CLASS, BASE, override_)                                                                           \
@@ -73,8 +74,10 @@
                                                                                                                        \
     static constexpr uint16_t NodeLevel = 3;                                                                           \
     static constexpr ::hilti::node::Tag NodeTag = ::hilti::node::tag::CLASS;                                           \
-    static constexpr ::hilti::node::Tags NodeTags = {::hilti::node::tag::Node, ::hilti::node::tag::BASE2,              \
-                                                     ::hilti::node::tag::BASE1, ::hilti::node::tag::CLASS};
+    static constexpr ::hilti::node::Tags NodeTags = {::hilti::node::tag::Node,                                         \
+                                                     ::hilti::node::tag::BASE2,                                        \
+                                                     ::hilti::node::tag::BASE1,                                        \
+                                                     ::hilti::node::tag::CLASS};
 
 #define HILTI_NODE_2(CLASS, BASE1, BASE2, override_)                                                                   \
     __HILTI_NODE_2(hilti, CLASS, BASE1, BASE2, override_)                                                              \
@@ -116,8 +119,8 @@ T* deepcopy(ASTContext* ctx, T* n, bool force = false) {
 }
 
 /** Value of a node property, stored as part of `Properties`. */
-using PropertyValue = std::variant<bool, const char*, double, int, int64_t, unsigned int, uint64_t, std::string, ID,
-                                   std::optional<uint64_t>>;
+using PropertyValue = std::
+    variant<bool, const char*, double, int, int64_t, unsigned int, uint64_t, std::string, ID, std::optional<uint64_t>>;
 
 /** Renders a property value into a string for display. */
 inline std::string to_string(const PropertyValue& v) {
@@ -316,7 +319,6 @@ public:
 
         return i;
     }
-
 
     /** Returns the meta data associated with the node. */
     const auto& meta() const { return *_meta; }
@@ -1076,15 +1078,21 @@ private:
 
         if ( ours != theirs ) {
             std::cerr << util::fmt("internal error: Node::_checkCast() RTTI mismatch\n")
-                      << util::fmt("isA<T=%s>(%s) -> %s but dynamic_cast() says %s\n", typeid(T).name(), _typename(),
-                                   ours ? "true" : "false", theirs ? "true" : "false")
-                      << util::fmt("T::type_level=%" PRIu16 " T::node_tags={%s} this->types={%s}\n", T::NodeLevel,
-                                   node::to_string(T::NodeTags), node::to_string(_node_tags));
+                      << util::fmt("isA<T=%s>(%s) -> %s but dynamic_cast() says %s\n",
+                                   typeid(T).name(),
+                                   _typename(),
+                                   ours ? "true" : "false",
+                                   theirs ? "true" : "false")
+                      << util::fmt("T::type_level=%" PRIu16 " T::node_tags={%s} this->types={%s}\n",
+                                   T::NodeLevel,
+                                   node::to_string(T::NodeTags),
+                                   node::to_string(_node_tags));
             abort();
         }
 
         if ( enforce_success && ! ours ) {
-            std::cerr << util::fmt("internal error: unexpected type, want %s but have %s\n", util::typename_<T>(),
+            std::cerr << util::fmt("internal error: unexpected type, want %s but have %s\n",
+                                   util::typename_<T>(),
                                    _typename());
             abort();
         }

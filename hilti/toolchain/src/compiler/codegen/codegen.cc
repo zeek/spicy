@@ -94,12 +94,17 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
         unit->add(t);
 
         auto body = cxx::Block();
-        body.addStatement(fmt("return ::hilti::rt::detail::moduleGlobals<%s>(%s)", HILTI_INTERNAL_ID("globals_t"),
+        body.addStatement(fmt("return ::hilti::rt::detail::moduleGlobals<%s>(%s)",
+                              HILTI_INTERNAL_ID("globals_t"),
                               HILTI_INTERNAL_ID("globals_index")));
 
-        auto body_decl =
-            cxx::declaration::Function(cxx::declaration::Function::Free, "auto", {ns, HILTI_INTERNAL_ID("globals")}, {},
-                                       "static", cxx::declaration::Function::Inline(), std::move(body));
+        auto body_decl = cxx::declaration::Function(cxx::declaration::Function::Free,
+                                                    "auto",
+                                                    {ns, HILTI_INTERNAL_ID("globals")},
+                                                    {},
+                                                    "static",
+                                                    cxx::declaration::Function::Inline(),
+                                                    std::move(body));
 
         unit->add(body_decl);
     }
@@ -113,7 +118,8 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
         cg->pushCxxBlock(&body);
 
         if ( cg->options().cxx_enable_dynamic_globals ) {
-            body.addStatement(fmt("::hilti::rt::detail::initModuleGlobals<%s>(%s)", HILTI_INTERNAL_ID("globals_t"),
+            body.addStatement(fmt("::hilti::rt::detail::initModuleGlobals<%s>(%s)",
+                                  HILTI_INTERNAL_ID("globals_t"),
                                   HILTI_INTERNAL_ID("globals_index")));
 
             for ( auto g : globals ) {
@@ -124,7 +130,9 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
                     body.addStatement(fmt("%s()->%s = {%s}", HILTI_INTERNAL_ID("globals"), g.id.local(), *g.init));
                 else if ( g.args.size() )
                     body.addStatement(fmt("%s()->%s = {::hilti::rt::struct_::tag::Parameters(), %s}",
-                                          HILTI_INTERNAL_ID("globals"), g.id.local(), util::join(g.args, ", ")));
+                                          HILTI_INTERNAL_ID("globals"),
+                                          g.id.local(),
+                                          util::join(g.args, ", ")));
             }
         }
         else {
@@ -138,7 +146,10 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
                 else if ( g.args.size() )
                     body.addStatement(
                         fmt("::%s::%s = ::hilti::rt::optional::make<%s>(::hilti::rt::struct_::tag::Parameters(), %s)",
-                            ns, g.id.local(), g.type, util::join(g.args, ", ")));
+                            ns,
+                            g.id.local(),
+                            g.type,
+                            util::join(g.args, ", ")));
                 else
                     body.addStatement(fmt("::%s::%s = ::hilti::rt::optional::make(%s{})", ns, g.id.local(), g.type));
             }
@@ -146,8 +157,12 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
 
         cg->popCxxBlock();
 
-        auto body_decl = cxx::declaration::Function(cxx::declaration::Function::Free, "void", std::move(id),
-                                                    {{"ctx", "::hilti::rt::Context*"}}, "extern", std::move(body));
+        auto body_decl = cxx::declaration::Function(cxx::declaration::Function::Free,
+                                                    "void",
+                                                    std::move(id),
+                                                    {{"ctx", "::hilti::rt::Context*"}},
+                                                    "extern",
+                                                    std::move(body));
         unit->add(body_decl);
     }
 
@@ -170,8 +185,12 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
             body.addStatement(fmt("::%s.reset();", g.id));
         }
 
-        auto body_decl = cxx::declaration::Function(cxx::declaration::Function::Free, "void", std::move(id),
-                                                    {{"ctx", "::hilti::rt::Context*"}}, "extern", std::move(body));
+        auto body_decl = cxx::declaration::Function(cxx::declaration::Function::Free,
+                                                    "void",
+                                                    std::move(id),
+                                                    {{"ctx", "::hilti::rt::Context*"}},
+                                                    "extern",
+                                                    std::move(body));
         unit->add(body_decl);
     }
 
@@ -240,9 +259,11 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
     void operator()(declaration::GlobalVariable* n) final {
         auto args = n->typeArguments() | std::views::transform([this](auto a) { return cg->compile(a); });
         auto init = n->init() ? cg->compile(n->init()) : cg->typeDefaultValue(n->type());
-        auto x =
-            cxx::declaration::Global({cxxNamespace(), n->id()}, cg->compile(n->type(), codegen::TypeUsage::Storage),
-                                     util::toVector(args), std::move(init), (n->isPublic() ? "" : "static"));
+        auto x = cxx::declaration::Global({cxxNamespace(), n->id()},
+                                          cg->compile(n->type(), codegen::TypeUsage::Storage),
+                                          util::toVector(args),
+                                          std::move(init),
+                                          (n->isPublic() ? "" : "static"));
 
         // Record the global for now, final declarations will be added later
         // once the visitor knows all globals.
@@ -256,10 +277,9 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
             // Ignore, will be declared through the enum type.
             return;
 
-        auto x =
-            cxx::declaration::Constant({cxxNamespace(), n->id()}, cg->compile(n->type(), codegen::TypeUsage::Storage),
-                                       cg->compile(n->value()));
-
+        auto x = cxx::declaration::Constant({cxxNamespace(), n->id()},
+                                            cg->compile(n->type(), codegen::TypeUsage::Storage),
+                                            cg->compile(n->value()));
 
         // Literal integer values we can emit as `constexpr` so our safeints
         // can be used in C++ constant expressions. We likely can do this for
@@ -371,7 +391,9 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
             // Make any additional types the hook needs known to the linker.
             std::list<cxx::declaration::Type> aux_types{
                 cxx::declaration::Type(cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
-                                       fmt("struct %s", id_class), {}, true)};
+                                       fmt("struct %s", id_class),
+                                       {},
+                                       true)};
 
             for ( const auto& p : ft->parameters() ) {
                 auto* type = p->type();
@@ -398,13 +420,16 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
 
                 aux_types.push_back(
                     cxx::declaration::Type(cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
-                                           fmt("struct %s", id_class), {}, true));
+                                           fmt("struct %s", id_class),
+                                           {},
+                                           true));
             }
 
             cg->unit()->add(d);
 
             if ( include_implementation ) {
-                auto id_hook_stub = cxx::ID(cg->options().cxx_namespace_intern, id_module,
+                auto id_hook_stub = cxx::ID(cg->options().cxx_namespace_intern,
+                                            id_module,
                                             fmt(HILTI_INTERNAL_ID("hook_%s_%s"), id_class, id_local));
                 // Tell linker about our implementation.
                 auto hook_join = cxx::linker::Join{.id = std::move(id_hook_stub),
@@ -462,7 +487,9 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
 
                 aux_types.push_back(
                     cxx::declaration::Type(cxx::ID(cg->options().cxx_namespace_intern, id_module, id_class),
-                                           fmt("struct %s", id_class), {}, true));
+                                           fmt("struct %s", id_class),
+                                           {},
+                                           true));
             }
 
             if ( include_implementation ) {
@@ -496,7 +523,9 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
         if ( n->linkage() == declaration::Linkage::Struct && ! f->isStatic() ) {
             if ( ! is_hook && ! f->isStatic() ) {
                 // Need a LHS value for __self.
-                auto self = cxx::declaration::Local(HILTI_INTERNAL_ID("self"), "auto", {},
+                auto self = cxx::declaration::Local(HILTI_INTERNAL_ID("self"),
+                                                    "auto",
+                                                    {},
                                                     fmt("%s::%s()", id_struct_type, HILTI_INTERNAL_ID("self")));
                 body.addStatementAtFront(std::move(self));
             }
@@ -515,8 +544,11 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
                 fmts.emplace_back("%s");
             }
 
-            auto dbg = fmt("HILTI_RT_DEBUG(\"hilti-flow\", ::hilti::rt::fmt(\"%s: %s(%s)\"%s))", f->meta().location(),
-                           d.id, util::join(fmts, ", "), util::join(args, ""));
+            auto dbg = fmt("HILTI_RT_DEBUG(\"hilti-flow\", ::hilti::rt::fmt(\"%s: %s(%s)\"%s))",
+                           f->meta().location(),
+                           d.id,
+                           util::join(fmts, ", "),
+                           util::join(args, ""));
 
             cxx_func.body->addStatementAtFront(std::move(dbg));
         }
@@ -564,7 +596,8 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
             }
 
             body.addLambda(
-                "cb", "[args_on_heap = std::move(args_on_heap)](::hilti::rt::resumable::Handle* r) -> ::hilti::rt::any",
+                "cb",
+                "[args_on_heap = std::move(args_on_heap)](::hilti::rt::resumable::Handle* r) -> ::hilti::rt::any",
                 std::move(cb));
             body.addLocal({"r", "auto", {}, "std::make_unique<::hilti::rt::Resumable>(std::move(cb))"});
             body.addStatement("r->run()");
@@ -655,8 +688,11 @@ codegen::TypeUsage CodeGen::parameterKindToTypeUsage(parameter::Kind k) {
     util::cannotBeReached();
 }
 
-cxx::declaration::Function CodeGen::compile(Declaration* decl, type::Function* ft, declaration::Linkage linkage,
-                                            AttributeSet* fattrs, std::optional<cxx::ID> namespace_) {
+cxx::declaration::Function CodeGen::compile(Declaration* decl,
+                                            type::Function* ft,
+                                            declaration::Linkage linkage,
+                                            AttributeSet* fattrs,
+                                            std::optional<cxx::ID> namespace_) {
     auto result_ = [&]() {
         auto rt = compile(ft->result(), codegen::TypeUsage::FunctionResult);
 
@@ -723,8 +759,11 @@ cxx::declaration::Function CodeGen::compile(Declaration* decl, type::Function* f
                                     cxx::Type("const hilti::rt::TypeInfo*"));
     }
 
-    auto cxx_decl = cxx::declaration::Function(cxx::declaration::Function::Free, result_(), {ns, cxx_id},
-                                               std::move(parameters), linkage_());
+    auto cxx_decl = cxx::declaration::Function(cxx::declaration::Function::Free,
+                                               result_(),
+                                               {ns, cxx_id},
+                                               std::move(parameters),
+                                               linkage_());
 
     if ( linkage == declaration::Linkage::Struct )
         cxx_decl.ftype = cxx::declaration::Function::Method;
@@ -793,7 +832,9 @@ std::vector<cxx::Expression> CodeGen::compileCallArguments(const node::Range<Exp
     return x;
 }
 
-void GlobalsVisitor::addCxxDeclarationsFor(Declaration* d, ID module_name, bool include_implementation_,
+void GlobalsVisitor::addCxxDeclarationsFor(Declaration* d,
+                                           ID module_name,
+                                           bool include_implementation_,
                                            node::CycleDetector* cd) {
     if ( cd->haveSeen(d) )
         return;
@@ -927,7 +968,8 @@ void CodeGen::stopProfiler(const cxx::Expression& profiler, cxx::Block* block) {
     block->addStatement(cxx::Expression(fmt("::hilti::rt::profiler::stop(%s)", profiler)));
 }
 
-cxx::Expression CodeGen::unsignedIntegerToBitfield(QualifiedType* t, const cxx::Expression& value,
+cxx::Expression CodeGen::unsignedIntegerToBitfield(QualifiedType* t,
+                                                   const cxx::Expression& value,
                                                    const cxx::Expression& bitorder) {
     auto* bf = t->type()->as<type::Bitfield>();
 
@@ -960,7 +1002,9 @@ std::pair<std::string, std::string> CodeGen::cxxTypeForVector(QualifiedType* ele
         type_addl = (element_type->isConstant() ? "::const_iterator" : "::iterator");
 
     if ( auto default_ = typeDefaultValue(element_type) )
-        return std::make_pair(fmt("::hilti::rt::Vector<%s, ::hilti::rt::vector::Allocator<%s>>%s", etype, etype,
+        return std::make_pair(fmt("::hilti::rt::Vector<%s, ::hilti::rt::vector::Allocator<%s>>%s",
+                                  etype,
+                                  etype,
                                   type_addl),
                               fmt(", {%s}", *default_));
     else

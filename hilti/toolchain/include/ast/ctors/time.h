@@ -24,7 +24,9 @@ public:
     }
 
     static auto create(ASTContext* ctx, hilti::rt::Time v, const Meta& meta = {}) {
-        return ctx->make<Time>(ctx, {QualifiedType::create(ctx, type::Time::create(ctx, meta), Constness::Const)}, v,
+        return ctx->make<Time>(ctx,
+                               {QualifiedType::create(ctx, type::Time::create(ctx, meta), Constness::Const)},
+                               v,
                                meta);
     }
 

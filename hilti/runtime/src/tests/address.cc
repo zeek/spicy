@@ -142,7 +142,8 @@ TEST_CASE("pack") {
     CHECK_EQ(address::pack(Address("2001:db8::FFFF:192.168.0.5"), ByteOrder::Little),
              "\x05\x00\xa8\xc0\xff\xff\x00\x00\x00\x00\x00\x00\xb8\x0d\x01\x20"_b);
     CHECK_THROWS_WITH_AS(address::pack(Address("1.2.3.4"), ByteOrder::Undef),
-                         "attempt to pack value with undefined byte order", const RuntimeError&);
+                         "attempt to pack value with undefined byte order",
+                         const RuntimeError&);
 }
 
 TEST_CASE("unpack") {
@@ -152,7 +153,6 @@ TEST_CASE("unpack") {
 
         CHECK_EQ(address::unpack("\x01\x02\x03\x04"_b, AddressFamily::IPv4, ByteOrder::Undef),
                  Result<Tuple<Address, Bytes>>(result::Error("undefined byte order")));
-
 
         CHECK_EQ(address::unpack("\x01\x02\x03"_b, AddressFamily::IPv4, ByteOrder::Big),
                  Result<Tuple<Address, Bytes>>(result::Error("insufficient data to unpack IPv4 address")));
@@ -167,20 +167,24 @@ TEST_CASE("unpack") {
         CHECK_EQ(*address::unpack("\x01\x02\x03\x04"_b + excess, AddressFamily::IPv4, ByteOrder::Big),
                  tuple::make(Address("1.2.3.4"), excess));
 
-        CHECK_EQ(address::unpack("\x01\x02\x03\x04\x05\x06\x07\x08\x09\x00\x01\x02\x03\x04\x05"_b, AddressFamily::IPv6,
+        CHECK_EQ(address::unpack("\x01\x02\x03\x04\x05\x06\x07\x08\x09\x00\x01\x02\x03\x04\x05"_b,
+                                 AddressFamily::IPv6,
                                  ByteOrder::Big),
                  Result<Tuple<Address, Bytes>>(result::Error("insufficient data to unpack IPv6 address")));
 
         CHECK_EQ(*address::unpack("\x01\x02\x03\x04\x01\x02\x03\x04\x05\x06\x07\x08\x09\x01\x02\x03"_b,
-                                  AddressFamily::IPv6, ByteOrder::Big),
+                                  AddressFamily::IPv6,
+                                  ByteOrder::Big),
                  tuple::make(Address("102:304:102:304:506:708:901:203"), ""_b));
 
         CHECK_EQ(*address::unpack("\x01\x02\x03\x04\x01\x02\x03\x04\x05\x06\x07\x08\x09\x01\x02\x03"_b,
-                                  AddressFamily::IPv6, ByteOrder::Little),
+                                  AddressFamily::IPv6,
+                                  ByteOrder::Little),
                  tuple::make(Address("302:109:807:605:403:201:403:201"), ""_b));
 
         CHECK_EQ(*address::unpack("\x01\x02\x03\x04\x01\x02\x03\x04\x05\x06\x07\x08\x09\x01\x02\x03"_b + excess,
-                                  AddressFamily::IPv6, ByteOrder::Big),
+                                  AddressFamily::IPv6,
+                                  ByteOrder::Big),
                  tuple::make(Address("102:304:102:304:506:708:901:203"), excess));
     }
 

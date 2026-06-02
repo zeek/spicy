@@ -57,7 +57,8 @@ TEST_CASE("execute") {
                      ++count;
                      return a + b;
                  },
-                 40, 2)
+                 40,
+                 2)
                  .get<int>(),
              42);
 

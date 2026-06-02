@@ -60,7 +60,9 @@ public:
     /** Helper to create `$$` a declaration of a given type. */
     static auto createDollarDollarDeclaration(ASTContext* ctx, QualifiedType* type) {
         auto* kw = create(ctx, keyword::Kind::DollarDollar, type);
-        return declaration::Expression::create(ctx, ID(HILTI_INTERNAL_ID("dd")), kw,
+        return declaration::Expression::create(ctx,
+                                               ID(HILTI_INTERNAL_ID("dd")),
+                                               kw,
                                                hilti::declaration::Linkage::Private);
     }
 

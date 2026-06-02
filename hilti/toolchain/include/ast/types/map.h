@@ -28,21 +28,27 @@ public:
 
     static auto create(ASTContext* ctx, QualifiedType* ktype, QualifiedType* vtype, const Meta& meta = {}) {
         return ctx->make<Iterator>(ctx,
-                                   {QualifiedType::create(ctx, type::Tuple::create(ctx, QualifiedTypes{ktype, vtype}),
+                                   {QualifiedType::create(ctx,
+                                                          type::Tuple::create(ctx, QualifiedTypes{ktype, vtype}),
                                                           Constness::Const)},
                                    meta);
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& meta = Meta()) {
         return ctx->make<Iterator>(
-            ctx, Wildcard(),
-            {QualifiedType::create(
-                ctx,
-                type::Tuple::create(ctx, QualifiedTypes{QualifiedType::create(ctx, type::Unknown::create(ctx, meta),
-                                                                              Constness::Const),
-                                                        QualifiedType::create(ctx, type::Unknown::create(ctx, meta),
-                                                                              Constness::Const)}),
-                Constness::Const)},
+            ctx,
+            Wildcard(),
+            {QualifiedType::create(ctx,
+                                   type::Tuple::create(ctx,
+                                                       QualifiedTypes{QualifiedType::create(ctx,
+                                                                                            type::Unknown::create(ctx,
+                                                                                                                  meta),
+                                                                                            Constness::Const),
+                                                                      QualifiedType::create(ctx,
+                                                                                            type::Unknown::create(ctx,
+                                                                                                                  meta),
+                                                                                            Constness::Const)}),
+                                   Constness::Const)},
             meta);
     }
 
@@ -78,14 +84,17 @@ public:
 
     static auto create(ASTContext* ctx, QualifiedType* ktype, QualifiedType* vtype, const Meta& meta = {}) {
         return ctx->make<Map>(ctx,
-                              {QualifiedType::create(ctx, map::Iterator::create(ctx, ktype, vtype, meta),
+                              {QualifiedType::create(ctx,
+                                                     map::Iterator::create(ctx, ktype, vtype, meta),
                                                      Constness::Mutable)},
                               meta);
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return ctx->make<Map>(ctx, Wildcard(),
-                              {QualifiedType::create(ctx, map::Iterator::create(ctx, Wildcard(), m),
+        return ctx->make<Map>(ctx,
+                              Wildcard(),
+                              {QualifiedType::create(ctx,
+                                                     map::Iterator::create(ctx, Wildcard(), m),
                                                      Constness::Mutable)},
                               m);
     }
@@ -95,7 +104,6 @@ protected:
         : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
     Map(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"map(*)"}, std::move(children), std::move(meta)) {}
-
 
     void newlyQualified(const QualifiedType* qtype) const final {
         valueType()->setConst(qtype->constness());

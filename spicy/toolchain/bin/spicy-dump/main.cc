@@ -328,7 +328,8 @@ int main(int argc, char** argv) try {
     return 0;
 } catch ( const std::exception& e ) {
     std::cerr << hilti::util::fmt("[fatal error] terminating with uncaught exception of type %s: %s",
-                                  hilti::util::demangle(typeid(e).name()), e.what())
+                                  hilti::util::demangle(typeid(e).name()),
+                                  e.what())
               << '\n';
     exit(1);
 }

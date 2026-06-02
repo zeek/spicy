@@ -240,7 +240,6 @@ int main(int argc, char** argv) try {
             continue;
         }
 
-
         if ( opt == "--using-build-dir" )
             exit(hilti::configuration().uses_build_directory ? 0 : 1);
 
@@ -253,5 +252,6 @@ int main(int argc, char** argv) try {
     return 0;
 } catch ( const std::exception& e ) {
     hilti::logger().fatalError(hilti::util::fmt("terminating with uncaught exception of type %s: %s",
-                                                hilti::util::demangle(typeid(e).name()), e.what()));
+                                                hilti::util::demangle(typeid(e).name()),
+                                                e.what()));
 }

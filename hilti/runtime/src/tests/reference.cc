@@ -96,7 +96,8 @@ TEST_CASE("asSharedPtr") {
         CHECK_EQ(*ValueReference<T>::self(ptr.get()).asSharedPtr(), *ptr);
 
         T x(42);
-        CHECK_THROWS_WITH_AS(ValueReference<T>::self(&x).asSharedPtr(), "reference to non-heap instance",
+        CHECK_THROWS_WITH_AS(ValueReference<T>::self(&x).asSharedPtr(),
+                             "reference to non-heap instance",
                              const IllegalReference&);
     }
 }
@@ -253,7 +254,8 @@ TEST_CASE("arrow") {
         auto ref = ValueReference<int>(42);
         CHECK_EQ(StrongReference<int>(ref).operator->(), ref.get());
 
-        CHECK_THROWS_WITH_AS(StrongReference<int>().operator->(), "attempt to access null reference",
+        CHECK_THROWS_WITH_AS(StrongReference<int>().operator->(),
+                             "attempt to access null reference",
                              const NullReference&);
     }
 
@@ -779,7 +781,8 @@ TEST_CASE("as") {
     CHECK_EQ(StrongReferenceGeneric().as<int>(), nullptr);
     CHECK_EQ(StrongReferenceGeneric(StrongReference<int>()).as<int>(), nullptr);
     CHECK_EQ(*StrongReferenceGeneric(StrongReference<int>(42)).as<int>(), 42);
-    CHECK_THROWS_WITH_AS(StrongReferenceGeneric(StrongReference<int>(42)).as<double>(), "invalid target type",
+    CHECK_THROWS_WITH_AS(StrongReferenceGeneric(StrongReference<int>(42)).as<double>(),
+                         "invalid target type",
                          const IllegalReference&);
 
     CHECK_EQ(StrongReferenceGeneric().as<int>(), nullptr);

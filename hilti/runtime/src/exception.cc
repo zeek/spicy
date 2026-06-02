@@ -59,7 +59,10 @@ static void printException(const std::string& msg, const Exception& e, std::ostr
         out << "[libhilti]    " << s << "\n";
 }
 
-Exception::Exception(Internal, const char* type, std::string_view what, std::string_view desc,
+Exception::Exception(Internal,
+                     const char* type,
+                     std::string_view what,
+                     std::string_view desc,
                      std::string_view location)
     : std::runtime_error({what.data(), what.size()}), _description(desc), _location(location) {
     if ( isInitialized() )
@@ -75,11 +78,17 @@ Exception::Exception(Internal, const char* type, std::string_view what, std::str
 }
 
 Exception::Exception(Internal, const char* type, std::string_view desc)
-    : Exception(Internal(), type, debug::location() ? fmt("%s (%s)", desc, debug::location()) : desc, desc,
+    : Exception(Internal(),
+                type,
+                debug::location() ? fmt("%s (%s)", desc, debug::location()) : desc,
+                desc,
                 debug::location() ? debug::location() : "") {}
 
 Exception::Exception(Internal, const char* type, std::string_view desc, std::string_view location)
-    : Exception(Internal(), type, ! location.empty() ? fmt("%s (%s)", desc, location) : fmt("%s", desc), desc,
+    : Exception(Internal(),
+                type,
+                ! location.empty() ? fmt("%s (%s)", desc, location) : fmt("%s", desc),
+                desc,
                 location) {}
 
 Exception::Exception() : std::runtime_error("<no error>") { /* no profiling */ }
@@ -95,7 +104,6 @@ exception::DisableAbortOnExceptions::DisableAbortOnExceptions() {
 exception::DisableAbortOnExceptions::~DisableAbortOnExceptions() {
     detail::globalState()->disable_abort_on_exceptions--;
 }
-
 
 void exception::printUncaught(const Exception& e) { printException("Uncaught exception", e, std::cerr); }
 

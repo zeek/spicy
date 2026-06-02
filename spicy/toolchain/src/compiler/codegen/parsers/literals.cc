@@ -91,10 +91,12 @@ struct Visitor : public visitor::PreOrder {
                     pb()->parseError("unexpected token to consume", n->meta());
                     popBuilder();
 
-                    pushBuilder(builder()->addIf(
-                        builder()->unequal(literal, builder()->memberCall(state().cur, "sub",
-                                                                          {builder()->begin(state().cur),
-                                                                           state().lahead_end}))));
+                    pushBuilder(
+                        builder()->addIf(builder()->unequal(literal,
+                                                            builder()->memberCall(state().cur,
+                                                                                  "sub",
+                                                                                  {builder()->begin(state().cur),
+                                                                                   state().lahead_end}))));
                     pb()->parseError("unexpected data when consuming token", n->meta());
                     popBuilder();
 
@@ -107,10 +109,12 @@ struct Visitor : public visitor::PreOrder {
                     pushBuilder(std::move(no_lah));
                 }
 
-                auto* expect_bytes_literal =
-                    builder()->call("spicy_rt::expectBytesLiteral",
-                                    {state().data, state().cur, literal, builder()->expression(n->meta()),
-                                     pb()->currentFilters(state())});
+                auto* expect_bytes_literal = builder()->call("spicy_rt::expectBytesLiteral",
+                                                             {state().data,
+                                                              state().cur,
+                                                              literal,
+                                                              builder()->expression(n->meta()),
+                                                              pb()->currentFilters(state())});
 
                 builder()->addExpression(expect_bytes_literal);
 
@@ -174,11 +178,13 @@ struct Visitor : public visitor::PreOrder {
             auto body = builder()->addWhile(ms, builder()->bool_(true));
             pushBuilder(std::move(body));
 
-            auto* rc = builder()->addTmp(ID("rc"), builder()->qualifiedType(builder()->typeSignedInteger(32),
-                                                                            hilti::Constness::Mutable));
+            auto* rc = builder()->addTmp(ID("rc"),
+                                         builder()->qualifiedType(builder()->typeSignedInteger(32),
+                                                                  hilti::Constness::Mutable));
 
             builder()->addAssign(builder()->tuple({rc, ncur}),
-                                 builder()->memberCall(builder()->id("ms"), "advance", {ncur}), n->meta());
+                                 builder()->memberCall(builder()->id("ms"), "advance", {ncur}),
+                                 n->meta());
 
             auto switch_ = builder()->addSwitch(rc, n->meta());
 
@@ -305,8 +311,9 @@ struct Visitor : public visitor::PreOrder {
                 builder()->addAssign(state().cur, old_cur);
 
                 // Compare parsed value against expected value.
-                auto* match = builder()->and_(x, builder()->and_(builder()->unequal(offset(old_cur), offset(new_cur)),
-                                                                 builder()->equal(builder()->deref(x), expected)));
+                auto* match = builder()->and_(x,
+                                              builder()->and_(builder()->unequal(offset(old_cur), offset(new_cur)),
+                                                              builder()->equal(builder()->deref(x), expected)));
                 return builder()->begin(builder()->ternary(match, new_cur, old_cur));
             }
         }
@@ -417,7 +424,8 @@ Expression* ParserBuilder::parseLiteral(const Production& p, Expression* dst) {
         return e;
 
     hilti::logger().internalError(fmt("codegen: literal parser did not return expression for '%s' (%s)",
-                                      *p.expression(), p.expression()->typename_()));
+                                      *p.expression(),
+                                      p.expression()->typename_()));
 }
 
 void ParserBuilder::skipLiteral(const Production& p) {

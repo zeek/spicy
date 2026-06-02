@@ -22,7 +22,8 @@ public:
 
     static auto create(ASTContext* ctx, QualifiedType* t, const Meta& meta = {}) {
         return ctx->make<StrongReference>(ctx,
-                                          {QualifiedType::create(ctx, type::StrongReference::create(ctx, t, meta),
+                                          {QualifiedType::create(ctx,
+                                                                 type::StrongReference::create(ctx, t, meta),
                                                                  Constness::Const)},
                                           meta);
     }
@@ -44,7 +45,8 @@ public:
 
     static auto create(ASTContext* ctx, QualifiedType* t, const Meta& meta = {}) {
         return ctx->make<WeakReference>(ctx,
-                                        {QualifiedType::create(ctx, type::WeakReference::create(ctx, t, meta),
+                                        {QualifiedType::create(ctx,
+                                                               type::WeakReference::create(ctx, t, meta),
                                                                Constness::Const)},
                                         meta);
     }

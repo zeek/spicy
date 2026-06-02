@@ -71,7 +71,6 @@ public:
         return operands[0]->type();
     }
 
-
     HILTI_OPERATOR(hilti, set::iterator::IncrPrefix)
 };
 HILTI_OPERATOR_IMPLEMENTATION(IncrPrefix);
@@ -214,7 +213,8 @@ public:
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
         auto* op0 = operandForExpression(builder, parameter::Kind::InOut, operands, 0);
-        auto* op1 = operandForType(builder, parameter::Kind::In,
+        auto* op1 = operandForType(builder,
+                                   parameter::Kind::In,
                                    operands[0]->type()->type()->as<type::Set>()->elementType()->type());
         return {{op0, op1}};
     }
@@ -238,7 +238,8 @@ public:
 
     std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const final {
         auto* op0 = operandForExpression(builder, parameter::Kind::InOut, operands, 0);
-        auto* op1 = operandForType(builder, parameter::Kind::In,
+        auto* op1 = operandForType(builder,
+                                   parameter::Kind::In,
                                    operands[0]->type()->type()->as<type::Set>()->elementType()->type());
         return {{op0, op1}};
     }

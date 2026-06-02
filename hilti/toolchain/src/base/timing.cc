@@ -54,7 +54,6 @@ void Manager::register_(Ledger* ledger) {
     _all_ledgers[ledger->name()] = ledger;
 }
 
-
 void Manager::unregister(Ledger* ledger) { _all_ledgers.erase(ledger->name()); }
 
 Ledger* Manager::newLedger(const std::string& name) {

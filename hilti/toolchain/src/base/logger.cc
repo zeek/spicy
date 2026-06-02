@@ -134,8 +134,12 @@ void Logger::_debug(const logging::DebugStream& dbg, std::string_view msg, const
         report(_output_debug, logging::Level::Debug, i->second, dbg.name(), msg, l);
 }
 
-void Logger::report(std::ostream& output, logging::Level level, size_t indent, std::string_view addl,
-                    std::string_view msg, const Location& l) const {
+void Logger::report(std::ostream& output,
+                    logging::Level level,
+                    size_t indent,
+                    std::string_view addl,
+                    std::string_view msg,
+                    const Location& l) const {
     std::string level_str = logging::to_string(level);
     std::string indent_str = std::string(static_cast<std::string::size_type>(indent) * 2, ' ');
 

@@ -614,8 +614,9 @@ std::string CFG::dot(bool omit_dataflow) const {
     std::unordered_map<uintptr_t, size_t> node_ids; // Deterministic node ids.
 
     std::vector<GraphNode> sorted_nodes;
-    std::transform(_graph.nodes().begin(), _graph.nodes().end(), std::back_inserter(sorted_nodes),
-                   [](const auto& p) { return p.second.value; });
+    std::transform(_graph.nodes().begin(), _graph.nodes().end(), std::back_inserter(sorted_nodes), [](const auto& p) {
+        return p.second.value;
+    });
     std::ranges::sort(sorted_nodes, [](const GraphNode& a, const GraphNode& b) {
         return a.get() && b.get() && a->identity() < b->identity();
     });
@@ -698,17 +699,18 @@ std::string CFG::dot(bool omit_dataflow) const {
 
             auto keep = [&]() -> std::string { return transfer.keep ? "keep" : ""; }();
 
-            xlabel = util::fmt("xlabel=\"%s\"", util::join(
-                                                    std::vector{
-                                                        std::move(read),
-                                                        std::move(write),
-                                                        std::move(gen),
-                                                        std::move(kill),
-                                                        std::move(in_out),
-                                                        std::move(aliases),
-                                                        std::move(keep),
-                                                    } | std::views::filter([](const auto& x) { return ! x.empty(); }),
-                                                    " "));
+            xlabel = util::fmt("xlabel=\"%s\"",
+                               util::join(
+                                   std::vector{
+                                       std::move(read),
+                                       std::move(write),
+                                       std::move(gen),
+                                       std::move(kill),
+                                       std::move(in_out),
+                                       std::move(aliases),
+                                       std::move(keep),
+                                   } | std::views::filter([](const auto& x) { return ! x.empty(); }),
+                                   " "));
         }
 
         if ( const auto* meta = n->tryAs<MetaNode>() ) {
@@ -719,7 +721,9 @@ std::string CFG::dot(bool omit_dataflow) const {
                 ss << util::fmt("    %s [shape=point %s];\n", id, xlabel ? *xlabel : "");
 
             else if ( const auto* scope = meta->tryAs<End>() )
-                ss << util::fmt("    %s [label=\"end %s\" shape=triangle %s];\n", id, scope->scope->meta().location(),
+                ss << util::fmt("    %s [label=\"end %s\" shape=triangle %s];\n",
+                                id,
+                                scope->scope->meta().location(),
                                 xlabel ? *xlabel : "");
 
             else
@@ -738,8 +742,10 @@ std::string CFG::dot(bool omit_dataflow) const {
         const auto* to = _graph.getNode(to_);
         assert(from);
         assert(to);
-        ss << util::fmt("    %s -> %s [label=\"%s\"];\n", node_ids.at((*from)->identity()),
-                        node_ids.at((*to)->identity()), id);
+        ss << util::fmt("    %s -> %s [label=\"%s\"];\n",
+                        node_ids.at((*from)->identity()),
+                        node_ids.at((*to)->identity()),
+                        id);
     }
 
     ss << "}";
@@ -1344,7 +1350,8 @@ void cfg::Cache::checkValidity() const {
             logger().internalError(
                 util::fmt("cfg::Cache::checkValidity: CFG for %s \"%s\" is not up to date (see cfg.actual.dot vs "
                           "cfg.expected.dot)",
-                          decl->typename_(), decl->id()));
+                          decl->typename_(),
+                          decl->id()));
         }
     }
 }

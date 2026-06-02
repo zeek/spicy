@@ -15,7 +15,6 @@ namespace hilti::logging::debug {
 inline const DebugStream Operator("operator");
 } // namespace hilti::logging::debug
 
-
 namespace {
 
 struct VisitorCtor : visitor::PreOrder {
@@ -73,8 +72,9 @@ struct VisitorType : visitor::PreOrder {
 
 } // anonymous namespace
 
-
-Ctor* spicy::detail::coercer::coerceCtor(Builder* builder, Ctor* c, QualifiedType* dst,
+Ctor* spicy::detail::coercer::coerceCtor(Builder* builder,
+                                         Ctor* c,
+                                         QualifiedType* dst,
                                          bitmask<hilti::CoercionStyle> style) {
     hilti::util::timing::Collector _("spicy/compiler/ast/coercer");
 
@@ -90,7 +90,9 @@ Ctor* spicy::detail::coercer::coerceCtor(Builder* builder, Ctor* c, QualifiedTyp
         return (*hilti::plugin::registry().hiltiPlugin().coerce_ctor)(builder, c, dst, style);
 }
 
-QualifiedType* spicy::detail::coercer::coerceType(Builder* builder, QualifiedType* t, QualifiedType* dst,
+QualifiedType* spicy::detail::coercer::coerceType(Builder* builder,
+                                                  QualifiedType* t,
+                                                  QualifiedType* dst,
                                                   bitmask<hilti::CoercionStyle> style) {
     hilti::util::timing::Collector _("spicy/compiler/ast/coercer");
 

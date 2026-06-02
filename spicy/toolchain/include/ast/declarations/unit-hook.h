@@ -25,7 +25,11 @@ public:
 
 protected:
     UnitHook(ASTContext* ctx, Nodes children, ID id, Meta meta)
-        : Declaration(ctx, NodeTags, std::move(children), std::move(id), hilti::declaration::Linkage::Private,
+        : Declaration(ctx,
+                      NodeTags,
+                      std::move(children),
+                      std::move(id),
+                      hilti::declaration::Linkage::Private,
                       std::move(meta)) {}
 
     SPICY_NODE_1(declaration::UnitHook, Declaration, final);

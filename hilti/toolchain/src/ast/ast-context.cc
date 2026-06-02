@@ -260,13 +260,17 @@ void ASTContext::clear() {
     // retained pointers around still.
 }
 
-Result<declaration::module::UID> ASTContext::parseSource(Builder* builder, const hilti::rt::filesystem::path& path,
+Result<declaration::module::UID> ASTContext::parseSource(Builder* builder,
+                                                         const hilti::rt::filesystem::path& path,
                                                          std::optional<hilti::rt::filesystem::path> process_extension) {
     return _parseSource(builder, path, {}, std::move(process_extension));
 }
 
 Result<declaration::module::UID> ASTContext::importModule(
-    Builder* builder, const ID& id, const ID& scope, const hilti::rt::filesystem::path& parse_extension,
+    Builder* builder,
+    const ID& id,
+    const ID& scope,
+    const hilti::rt::filesystem::path& parse_extension,
     const std::optional<hilti::rt::filesystem::path>& process_extension,
     std::vector<hilti::rt::filesystem::path> search_dirs) {
     // For compatibility with older versions, we allow import without reading a
@@ -315,7 +319,8 @@ Result<declaration::module::UID> ASTContext::importModule(
     return uid;
 }
 
-declaration::Module* ASTContext::newModule(Builder* builder, ID id,
+declaration::Module* ASTContext::newModule(Builder* builder,
+                                           ID id,
                                            const hilti::rt::filesystem::path& process_extension) {
     auto uid = declaration::module::UID(std::move(id), process_extension, process_extension);
     auto* m = builder->declarationModule(uid);
@@ -358,12 +363,18 @@ void ASTContext::garbageCollect() {
         _nodes = std::move(new_nodes);
     } while ( changed );
 
-    HILTI_DEBUG(logging::debug::AstStats, util::fmt("garbage collected %zu nodes in %u round%s, %zu left retained",
-                                                    collected, rounds, (rounds != 1 ? "s" : ""), retained));
+    HILTI_DEBUG(logging::debug::AstStats,
+                util::fmt("garbage collected %zu nodes in %u round%s, %zu left retained",
+                          collected,
+                          rounds,
+                          (rounds != 1 ? "s" : ""),
+                          retained));
 }
 
 Result<declaration::module::UID> ASTContext::_parseSource(
-    Builder* builder, const hilti::rt::filesystem::path& path, const ID& scope,
+    Builder* builder,
+    const hilti::rt::filesystem::path& path,
+    const ID& scope,
     std::optional<hilti::rt::filesystem::path> process_extension) {
     std::ifstream in;
     in.open(path);
@@ -438,8 +449,13 @@ ast::DeclarationIndex ASTContext::register_(Declaration* decl) {
         else
             canon_id = std::string("<no-canon-id> ");
 
-        HILTI_DEBUG(logging::debug::Resolver, fmt("-> [%s] %s %s| %s (%s)", index, decl->typename_(), canon_id,
-                                                  decl->print(), decl->location().dump(true)));
+        HILTI_DEBUG(logging::debug::Resolver,
+                    fmt("-> [%s] %s %s| %s (%s)",
+                        index,
+                        decl->typename_(),
+                        canon_id,
+                        decl->print(),
+                        decl->location().dump(true)));
     }
 
     return index;
@@ -468,8 +484,13 @@ void ASTContext::replace(Declaration* old, Declaration* new_) {
         else
             canon_id = std::string("<no-canon-id> ");
 
-        HILTI_DEBUG(logging::debug::Resolver, fmt("-> update: [%s] %s %s| %s (%s)", index, new_->typename_(), canon_id,
-                                                  new_->print(), new_->location().dump(true)));
+        HILTI_DEBUG(logging::debug::Resolver,
+                    fmt("-> update: [%s] %s %s| %s (%s)",
+                        index,
+                        new_->typename_(),
+                        canon_id,
+                        new_->print(),
+                        new_->location().dump(true)));
     }
 }
 
@@ -498,8 +519,13 @@ ast::TypeIndex ASTContext::register_(UnqualifiedType* type) {
         else
             type_id = std::string("<no-type-id> ");
 
-        HILTI_DEBUG(logging::debug::Resolver, fmt("-> [%s] %s %s| %s (%s)", index, type->typename_(), type_id,
-                                                  type->print(), type->location().dump(true)));
+        HILTI_DEBUG(logging::debug::Resolver,
+                    fmt("-> [%s] %s %s| %s (%s)",
+                        index,
+                        type->typename_(),
+                        type_id,
+                        type->print(),
+                        type->location().dump(true)));
     }
 
     return index;
@@ -521,8 +547,13 @@ void ASTContext::replace(UnqualifiedType* old, UnqualifiedType* new_) {
         else
             type_id = std::string("<no-type-id> ");
 
-        HILTI_DEBUG(logging::debug::Resolver, fmt("-> update: [%s] %s %s| %s (%s)", index, new_->typename_(), type_id,
-                                                  new_->print(), new_->location().dump(true)));
+        HILTI_DEBUG(logging::debug::Resolver,
+                    fmt("-> update: [%s] %s %s| %s (%s)",
+                        index,
+                        new_->typename_(),
+                        type_id,
+                        new_->print(),
+                        new_->location().dump(true)));
     }
 }
 
@@ -547,7 +578,9 @@ declaration::module::UID ASTContext::_addModuleToAST(declaration::Module* module
 }
 
 template<typename PluginMember, typename... Args>
-static Result<Nothing> runHook(const Plugin& plugin, PluginMember hook, const std::string& description,
+static Result<Nothing> runHook(const Plugin& plugin,
+                               PluginMember hook,
+                               const std::string& description,
                                const Args&... args) {
     if ( ! (plugin.*hook) )
         return Nothing();
@@ -564,7 +597,10 @@ static Result<Nothing> runHook(const Plugin& plugin, PluginMember hook, const st
 }
 
 template<typename PluginMember, typename... Args>
-static Result<Nothing> runHook(bool* modified, const Plugin& plugin, PluginMember hook, const std::string& description,
+static Result<Nothing> runHook(bool* modified,
+                               const Plugin& plugin,
+                               PluginMember hook,
+                               const std::string& description,
                                const Args&... args) {
     if ( ! (plugin.*hook) )
         return Nothing();
@@ -855,7 +891,9 @@ Result<Nothing> ASTContext::_computeDependencies() {
     return Nothing();
 }
 
-void ASTContext::_dumpAST(const logging::DebugStream& stream, const Plugin& plugin, const std::string& prefix,
+void ASTContext::_dumpAST(const logging::DebugStream& stream,
+                          const Plugin& plugin,
+                          const std::string& prefix,
                           std::optional<unsigned int> round) {
     if ( ! logger().isEnabled(stream) )
         return;
@@ -869,7 +907,9 @@ void ASTContext::_dumpAST(const logging::DebugStream& stream, const Plugin& plug
     ast_dumper::dump(stream, root(), true);
 }
 
-void ASTContext::_dumpAST(std::ostream& stream, const Plugin& plugin, const std::string& prefix,
+void ASTContext::_dumpAST(std::ostream& stream,
+                          const Plugin& plugin,
+                          const std::string& prefix,
                           std::optional<unsigned int> round) {
     std::string r;
 
@@ -1037,7 +1077,10 @@ const ASTContext::DeclarationSet& ASTContext::dependentDeclarations(Declaration*
         logger().internalError("dependencies not computed yet");
 }
 
-static node::ErrorPriority recursiveValidateAST(Node* n, Location closest_location, node::ErrorPriority prio, int level,
+static node::ErrorPriority recursiveValidateAST(Node* n,
+                                                Location closest_location,
+                                                node::ErrorPriority prio,
+                                                int level,
                                                 std::vector<node::Error>* errors) {
     if ( n->location() )
         closest_location = n->location();

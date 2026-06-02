@@ -46,8 +46,10 @@ void expression::Name::setResolvedDeclarationIndex(ASTContext* ctx, ast::Declara
     if ( auto* d = resolvedDeclaration()->tryAs<declaration::Type>() )
         addChild(ctx,
                  QualifiedType::create(ctx,
-                                       type::Type_::create(ctx, QualifiedType::createExternal(ctx, d->type()->type(),
-                                                                                              Constness::Const)),
+                                       type::Type_::create(ctx,
+                                                           QualifiedType::createExternal(ctx,
+                                                                                         d->type()->type(),
+                                                                                         Constness::Const)),
                                        Constness::Const));
 }
 

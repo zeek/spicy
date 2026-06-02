@@ -142,7 +142,6 @@ struct Printer : visitor::PreOrder {
 
         _out.pushScope(n->scopeID());
 
-
         auto print_decls = [&](auto&& decls) {
             bool empty = true;
             for ( const auto& d : decls ) {
@@ -153,7 +152,6 @@ struct Printer : visitor::PreOrder {
             if ( ! empty )
                 _out.emptyLine();
         };
-
 
         print_decls(n->declarations() |
                     std::views::filter([](const auto& d) { return d->template isA<declaration::ImportedModule>(); }));

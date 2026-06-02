@@ -167,7 +167,8 @@ result::Error Driver::augmentError(const result::Error& err, const hilti::rt::fi
     return error(err.description(), p);
 }
 
-Result<std::unique_ptr<std::ostream>> Driver::openOutput(const hilti::rt::filesystem::path& p, bool binary,
+Result<std::unique_ptr<std::ostream>> Driver::openOutput(const hilti::rt::filesystem::path& p,
+                                                         bool binary,
                                                          bool append) {
     if ( p == "/dev/stdout" )
         return {std::make_unique<std::ostream>(std::cout.rdbuf())};
@@ -226,7 +227,6 @@ Result<Nothing> Driver::writeOutput(std::ifstream& in, const hilti::rt::filesyst
 
     return Nothing();
 }
-
 
 void Driver::dumpUnit(const Unit& unit) {
     if ( auto* module = unit.module() ) {
@@ -547,12 +547,15 @@ void Driver::updateProcessExtension(const declaration::module::UID& uid, const h
 
     if ( _units.contains(new_uid) )
         logger().internalError(
-            util::fmt("attempt to update process extension of unit %s to %s, but that already exists", uid,
+            util::fmt("attempt to update process extension of unit %s to %s, but that already exists",
+                      uid,
                       ext.generic_string()));
 
-
-    HILTI_DEBUG(logging::debug::Driver, fmt("updating process extension of unit %s (%s) to %s", unit->uid(),
-                                            unit->uid().path.generic_string(), ext.generic_string()));
+    HILTI_DEBUG(logging::debug::Driver,
+                fmt("updating process extension of unit %s (%s) to %s",
+                    unit->uid(),
+                    unit->uid().path.generic_string(),
+                    ext.generic_string()));
 
     context()->astContext()->updateModuleUID(uid, new_uid);
 

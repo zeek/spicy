@@ -173,7 +173,8 @@ TEST_CASE("Iterator") {
 
         CHECK_EQ(xs.begin(), xs.begin());
 
-        CHECK_THROWS_WITH_AS(operator==(xs.begin(), ys.begin()), "cannot compare iterators into different vectors",
+        CHECK_THROWS_WITH_AS(operator==(xs.begin(), ys.begin()),
+                             "cannot compare iterators into different vectors",
                              const InvalidArgument&);
 
         auto xs1 = ++xs.begin();
@@ -187,7 +188,8 @@ TEST_CASE("Iterator") {
             CHECK_LT(xs.begin(), xs.end());
             CHECK_FALSE(operator<(xs.end(), xs.begin()));
             CHECK_THROWS_WITH_AS(operator<(Vector<int>().begin(), Vector<int>().begin()),
-                                 "cannot compare iterators into different vectors", const InvalidArgument&);
+                                 "cannot compare iterators into different vectors",
+                                 const InvalidArgument&);
         }
 
         SUBCASE("less equal") {
@@ -196,7 +198,8 @@ TEST_CASE("Iterator") {
             CHECK_LE(xs.begin(), xs.end());
             CHECK_FALSE(operator<=(xs.end(), xs.begin()));
             CHECK_THROWS_WITH_AS(operator<=(Vector<int>().begin(), Vector<int>().begin()),
-                                 "cannot compare iterators into different vectors", const InvalidArgument&);
+                                 "cannot compare iterators into different vectors",
+                                 const InvalidArgument&);
         }
 
         SUBCASE("greater") {
@@ -205,7 +208,8 @@ TEST_CASE("Iterator") {
             CHECK_GT(xs.end(), xs.begin());
             CHECK_FALSE(operator>(xs.begin(), xs.end()));
             CHECK_THROWS_WITH_AS(operator>(Vector<int>().begin(), Vector<int>().begin()),
-                                 "cannot compare iterators into different vectors", const InvalidArgument&);
+                                 "cannot compare iterators into different vectors",
+                                 const InvalidArgument&);
         }
 
         SUBCASE("greater equal") {
@@ -214,7 +218,8 @@ TEST_CASE("Iterator") {
             CHECK_GE(xs.end(), xs.begin());
             CHECK_FALSE(operator>=(xs.begin(), xs.end()));
             CHECK_THROWS_WITH_AS(operator>=(Vector<int>().begin(), Vector<int>().begin()),
-                                 "cannot compare iterators into different vectors", const InvalidArgument&);
+                                 "cannot compare iterators into different vectors",
+                                 const InvalidArgument&);
         }
     }
 }
@@ -246,7 +251,8 @@ TEST_CASE("ConstIterator") {
 
         CHECK_EQ(xs.cbegin(), xs.cbegin());
 
-        CHECK_THROWS_WITH_AS(operator==(xs.cbegin(), ys.cbegin()), "cannot compare iterators into different vectors",
+        CHECK_THROWS_WITH_AS(operator==(xs.cbegin(), ys.cbegin()),
+                             "cannot compare iterators into different vectors",
                              const InvalidArgument&);
 
         auto xs1 = ++xs.cbegin();
@@ -260,7 +266,8 @@ TEST_CASE("ConstIterator") {
             CHECK_LT(xs.cbegin(), xs.cend());
             CHECK_FALSE(operator<(xs.cend(), xs.cbegin()));
             CHECK_THROWS_WITH_AS(operator<(Vector<int>().cbegin(), Vector<int>().cbegin()),
-                                 "cannot compare iterators into different vectors", const InvalidArgument&);
+                                 "cannot compare iterators into different vectors",
+                                 const InvalidArgument&);
         }
 
         SUBCASE("less equal") {
@@ -269,7 +276,8 @@ TEST_CASE("ConstIterator") {
             CHECK_LE(xs.cbegin(), xs.cend());
             CHECK_FALSE(operator<=(xs.cend(), xs.cbegin()));
             CHECK_THROWS_WITH_AS(operator<=(Vector<int>().cbegin(), Vector<int>().cbegin()),
-                                 "cannot compare iterators into different vectors", const InvalidArgument&);
+                                 "cannot compare iterators into different vectors",
+                                 const InvalidArgument&);
         }
 
         SUBCASE("greater") {
@@ -278,7 +286,8 @@ TEST_CASE("ConstIterator") {
             CHECK_GT(xs.cend(), xs.cbegin());
             CHECK_FALSE(operator>(xs.cbegin(), xs.cend()));
             CHECK_THROWS_WITH_AS(operator>(Vector<int>().cbegin(), Vector<int>().cbegin()),
-                                 "cannot compare iterators into different vectors", const InvalidArgument&);
+                                 "cannot compare iterators into different vectors",
+                                 const InvalidArgument&);
         }
 
         SUBCASE("greater equal") {
@@ -287,7 +296,8 @@ TEST_CASE("ConstIterator") {
             CHECK_GE(xs.cend(), xs.cbegin());
             CHECK_FALSE(operator>=(xs.cbegin(), xs.cend()));
             CHECK_THROWS_WITH_AS(operator>=(Vector<int>().cbegin(), Vector<int>().cbegin()),
-                                 "cannot compare iterators into different vectors", const InvalidArgument&);
+                                 "cannot compare iterators into different vectors",
+                                 const InvalidArgument&);
         }
     }
 }

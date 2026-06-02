@@ -34,7 +34,8 @@ private:
     std::ostream& out() { return _output; }
 
     // Append rendering of offsets to current output line.
-    void printOffsets(const hilti::rt::type_info::Struct& ti, const hilti::rt::type_info::Value& v,
+    void printOffsets(const hilti::rt::type_info::Struct& ti,
+                      const hilti::rt::type_info::Value& v,
                       const std::string& field_name);
 
     // Insert current indentation into output stream.

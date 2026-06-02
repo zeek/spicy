@@ -522,7 +522,6 @@ private:
     const std::vector<enum_::Label> _labels;
 };
 
-
 /** Auxiliary type information for type ``error`. */
 class Error : public detail::AtomicType<hilti::rt::result::Error> {};
 
@@ -918,7 +917,6 @@ public:
     }
 };
 
-
 class Struct;
 
 namespace struct_ {
@@ -939,7 +937,12 @@ struct Field {
      * @param offset offset of the field in number bytes inside the struct
      * @param accessor function returning a pointer to a fields value
      */
-    Field(const char* name, const TypeInfo* type, std::ptrdiff_t offset, bool internal, bool anonymous, bool emitted,
+    Field(const char* name,
+          const TypeInfo* type,
+          std::ptrdiff_t offset,
+          bool internal,
+          bool anonymous,
+          bool emitted,
           Accessor accessor = accessor_default)
         : name(name),
           type(type),
@@ -1008,8 +1011,9 @@ public:
 
     auto fields(bool include_internal = false) const {
         std::vector<std::reference_wrapper<const struct_::Field>> fields;
-        std::ranges::copy_if(_fields, std::back_inserter(fields),
-                             [=](const struct_::Field& f) { return include_internal || ! f.isInternal(); });
+        std::ranges::copy_if(_fields, std::back_inserter(fields), [=](const struct_::Field& f) {
+            return include_internal || ! f.isInternal();
+        });
         return fields;
     }
 
@@ -1381,7 +1385,9 @@ struct TypeInfo {
     TypeInfo() = default;
 
     template<typename Type>
-    TypeInfo(std::optional<const char*> _id, const char* _display, std::string (*const to_string)(const void*),
+    TypeInfo(std::optional<const char*> _id,
+             const char* _display,
+             std::string (*const to_string)(const void*),
              Type* value)
         : id(_id),
           display(_display),
@@ -1793,7 +1799,6 @@ const Type* auxType(const type_info::Value& v) {
     }
 }
 } // namespace value
-
 
 // Forward declare static built-in type information objects.
 extern HILTI_JIT_IMPORT const TypeInfo address;

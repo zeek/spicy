@@ -44,7 +44,8 @@ QualifiedType* CastedCoercion::result(Builder* builder, const Expressions& opera
     return operands[1]->type()->type()->as<type::Type_>()->typeValue();
 }
 
-Result<expression::ResolvedOperator*> CastedCoercion::instantiate(Builder* builder, Expressions operands,
+Result<expression::ResolvedOperator*> CastedCoercion::instantiate(Builder* builder,
+                                                                  Expressions operands,
                                                                   Meta meta) const {
     auto* result_ = result(builder, operands, meta);
     return {operator_::generic::CastedCoercion::create(builder->context(), this, result_, operands, std::move(meta))};

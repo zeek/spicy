@@ -25,8 +25,9 @@ bool has_label(const T& t, const TypeInfo* ti) {
         internalError("unexpected type info in enum_::has_label");
 
     const auto& labels = ti->enum_->labels();
-    return std::any_of(labels.begin(), labels.end(),
-                       [&](const auto& l) { return l.value != -1 && t.value() == l.value; });
+    return std::any_of(labels.begin(), labels.end(), [&](const auto& l) {
+        return l.value != -1 && t.value() == l.value;
+    });
 }
 
 /**

@@ -19,7 +19,9 @@ namespace spicy::detail::codegen::production {
 /** * A production representing a sequence of other sub-productions to be parsed sequentially. */
 class Sequence : public Production {
 public:
-    Sequence(ASTContext* /* ctx */, const std::string& symbol, std::vector<std::unique_ptr<Production>> prods,
+    Sequence(ASTContext* /* ctx */,
+             const std::string& symbol,
+             std::vector<std::unique_ptr<Production>> prods,
              const Location& l = location::None)
         : Production(symbol, l), _prods(std::move(prods)) {}
 

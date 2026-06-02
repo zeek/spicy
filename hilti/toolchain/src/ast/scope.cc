@@ -14,7 +14,6 @@
 #include <hilti/ast/scope.h>
 #include <hilti/ast/type.h>
 
-
 using namespace hilti;
 
 bool Scope::ItemOrder::operator()(const Declaration* a, const Declaration* b) const {
@@ -76,12 +75,12 @@ static auto createRefs(const NodeSet& refs, const std::string& id, bool external
     std::vector<Scope::Referee> result;
     result.reserve(refs.size());
 
-    std::transform(refs.begin(), refs.end(), std::back_inserter(result),
-                   [&](const auto& n) { return Scope::Referee{.node = n, .qualified = id, .external = external}; });
+    std::transform(refs.begin(), refs.end(), std::back_inserter(result), [&](const auto& n) {
+        return Scope::Referee{.node = n, .qualified = id, .external = external};
+    });
 
     return result;
 }
-
 
 std::vector<Scope::Referee> Scope::_findID(const Scope* scope, const ID& id, bool external) const {
     if ( ! scope )
@@ -143,7 +142,8 @@ void Scope::dump(std::ostream& out, const std::string& prefix) const {
 
             if ( x ) {
                 if ( auto* d = x->tryAs<declaration::Expression>() )
-                    s += util::fmt(" (type: [@e:%s] [@t:%s])", d->expression()->type()->identity(),
+                    s += util::fmt(" (type: [@e:%s] [@t:%s])",
+                                   d->expression()->type()->identity(),
                                    d->expression()->type()->identity());
                 else
                     s += util::fmt(" ([@d:%p])", x->identity());

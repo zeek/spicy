@@ -85,7 +85,9 @@ public:
         return declarationImportedModule(hilti::ID(module), parse_extension, m);
     }
 
-    auto import(const std::string& module, const std::string& parse_extension, ID search_scope,
+    auto import(const std::string& module,
+                const std::string& parse_extension,
+                ID search_scope,
                 const Meta& m = Meta()) {
         return declarationImportedModule(hilti::ID(module), parse_extension, std::move(search_scope), m);
     }
@@ -106,37 +108,54 @@ public:
         return statementDeclaration(declarationLocalVariable(std::move(id_), t, std::move(args), {}, std::move(m)));
     }
 
-    auto global(ID id_, QualifiedType* t, declaration::Linkage linkage = declaration::Linkage::Private,
+    auto global(ID id_,
+                QualifiedType* t,
+                declaration::Linkage linkage = declaration::Linkage::Private,
                 Meta m = Meta()) {
         return declarationGlobalVariable(std::move(id_), t, {}, linkage, std::move(m));
     }
 
-    auto global(ID id_, Expression* init, declaration::Linkage linkage = declaration::Linkage::Private,
+    auto global(ID id_,
+                Expression* init,
+                declaration::Linkage linkage = declaration::Linkage::Private,
                 const Meta& m = Meta()) {
         return declarationGlobalVariable(std::move(id_), init, linkage, m);
     }
 
-    auto global(ID id_, QualifiedType* t, Expression* init,
-                declaration::Linkage linkage = declaration::Linkage::Private, Meta m = Meta()) {
+    auto global(ID id_,
+                QualifiedType* t,
+                Expression* init,
+                declaration::Linkage linkage = declaration::Linkage::Private,
+                Meta m = Meta()) {
         return declarationGlobalVariable(std::move(id_), t, init, linkage, std::move(m));
     }
 
-    auto global(ID id_, QualifiedType* t, Expressions args,
-                declaration::Linkage linkage = declaration::Linkage::Private, Meta m = Meta()) {
+    auto global(ID id_,
+                QualifiedType* t,
+                Expressions args,
+                declaration::Linkage linkage = declaration::Linkage::Private,
+                Meta m = Meta()) {
         return declarationGlobalVariable(std::move(id_), t, std::move(args), {}, linkage, std::move(m));
     }
 
-    auto type(ID id, QualifiedType* type, declaration::Linkage linkage = declaration::Linkage::Private,
+    auto type(ID id,
+              QualifiedType* type,
+              declaration::Linkage linkage = declaration::Linkage::Private,
               Meta m = Meta()) {
         return declarationType(std::move(id), type, linkage, std::move(m));
     }
 
-    auto type(ID id, QualifiedType* type, AttributeSet* attrs,
-              declaration::Linkage linkage = declaration::Linkage::Private, Meta m = Meta()) {
+    auto type(ID id,
+              QualifiedType* type,
+              AttributeSet* attrs,
+              declaration::Linkage linkage = declaration::Linkage::Private,
+              Meta m = Meta()) {
         return declarationType(std::move(id), type, attrs, linkage, std::move(m));
     }
 
-    auto constant(ID id_, Expression* init, declaration::Linkage linkage = declaration::Linkage::Private,
+    auto constant(ID id_,
+                  Expression* init,
+                  declaration::Linkage linkage = declaration::Linkage::Private,
                   Meta m = Meta()) {
         return declarationConstant(std::move(id_), init, linkage, std::move(m));
     }
@@ -145,7 +164,10 @@ public:
         return declarationParameter(std::move(id), type, kind, {}, {}, std::move(m));
     }
 
-    auto parameter(ID id, UnqualifiedType* type, Expression* default_, parameter::Kind kind = parameter::Kind::In,
+    auto parameter(ID id,
+                   UnqualifiedType* type,
+                   Expression* default_,
+                   parameter::Kind kind = parameter::Kind::In,
                    Meta m = Meta()) {
         return declarationParameter(std::move(id), type, kind, default_, {}, std::move(m));
     }
@@ -157,21 +179,28 @@ public:
 
     using NodeFactory::function;
 
-    auto function(const ID& id, QualifiedType* result, const declaration::Parameters& params,
+    auto function(const ID& id,
+                  QualifiedType* result,
+                  const declaration::Parameters& params,
                   type::function::Flavor flavor = type::function::Flavor::Function,
                   declaration::Linkage linkage = declaration::Linkage::Private,
                   type::function::CallingConvention cc = type::function::CallingConvention::Standard,
-                  AttributeSet* attrs = {}, const Meta& m = Meta()) {
+                  AttributeSet* attrs = {},
+                  const Meta& m = Meta()) {
         auto* ft = typeFunction(result, params, flavor, cc, m);
         auto* f = function(id, ft, {}, attrs, m);
         return declarationFunction(f, linkage, m);
     }
 
-    auto function(const ID& id, QualifiedType* result, const declaration::Parameters& params, statement::Block* body,
+    auto function(const ID& id,
+                  QualifiedType* result,
+                  const declaration::Parameters& params,
+                  statement::Block* body,
                   type::function::Flavor flavor = type::function::Flavor::Function,
                   declaration::Linkage linkage = declaration::Linkage::Private,
                   type::function::CallingConvention cc = type::function::CallingConvention::Standard,
-                  AttributeSet* attrs = {}, const Meta& m = Meta()) {
+                  AttributeSet* attrs = {},
+                  const Meta& m = Meta()) {
         auto* ft = typeFunction(result, params, flavor, cc, m);
         auto* f = function(id, ft, body, attrs, m);
         return declarationFunction(f, linkage, m);
@@ -360,12 +389,14 @@ public:
 
     auto memberCall(Expression* self, const std::string& id_, const Expressions& args = {}, const Meta& m = Meta()) {
         return expressionUnresolvedOperator(operator_::Kind::MemberCall,
-                                            {self, expressionMember(ID(id_), m), tuple(args, m)}, m);
+                                            {self, expressionMember(ID(id_), m), tuple(args, m)},
+                                            m);
     }
 
     auto memberCall(Expression* self, const std::string& id_, ctor::Tuple* args, const Meta& m = Meta()) {
         return expressionUnresolvedOperator(operator_::Kind::MemberCall,
-                                            {self, expressionMember(ID(id_), m), expressionCtor(args)}, m);
+                                            {self, expressionMember(ID(id_), m), expressionCtor(args)},
+                                            m);
     }
 
     auto pack(QualifiedType* type, const Expressions& args, const Meta& m = Meta()) {
@@ -457,7 +488,8 @@ public:
      * temporary initialized, yet the contained expression still unset (it can
      * be set later via `expression::Grouping::setExpression()`)
      */
-    std::pair<expression::Name*, expression::Grouping*> groupingWithTmp(const std::string& prefix, Expression* init,
+    std::pair<expression::Name*, expression::Grouping*> groupingWithTmp(const std::string& prefix,
+                                                                        Expression* init,
                                                                         const Meta& m = Meta());
 
     auto move(Expression* e, const Meta& m = Meta()) { return expressionMove(e, m); }
@@ -494,7 +526,8 @@ public:
 
     auto namedCtor(const std::string& name, const Expressions& args, const Meta& m = Meta()) {
         return expressionUnresolvedOperator(operator_::Kind::Call,
-                                            {expressionMember(ID(name)), expressionCtor(ctorTuple(args))}, m);
+                                            {expressionMember(ID(name)), expressionCtor(ctorTuple(args))},
+                                            m);
     }
 
     auto scope(const Meta& m = Meta()) { return expressionKeyword(hilti::expression::keyword::Kind::Scope, m); }

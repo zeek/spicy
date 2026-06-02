@@ -26,8 +26,10 @@ public:
     }
 
     static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
-        return ctx->make<Optional>(ctx, Wildcard(),
-                                   {QualifiedType::create(ctx, type::Unknown::create(ctx, m), Constness::Const)}, m);
+        return ctx->make<Optional>(ctx,
+                                   Wildcard(),
+                                   {QualifiedType::create(ctx, type::Unknown::create(ctx, m), Constness::Const)},
+                                   m);
     }
 
 protected:
@@ -36,9 +38,7 @@ protected:
     Optional(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"optional(*)"}, std::move(children), std::move(meta)) {}
 
-
     HILTI_NODE_1(type::Optional, UnqualifiedType, final);
 };
-
 
 } // namespace hilti::type

@@ -54,8 +54,12 @@ public:
      * @param msg optional message to report an runtime if assertions fails
      * @param m meta information for AST node
      */
-    static auto create(ASTContext* ctx, assert::Exception /*unused*/, hilti::Expression* expr, UnqualifiedType* except,
-                       hilti::Expression* msg = nullptr, Meta meta = {}) {
+    static auto create(ASTContext* ctx,
+                       assert::Exception /*unused*/,
+                       hilti::Expression* expr,
+                       UnqualifiedType* except,
+                       hilti::Expression* msg = nullptr,
+                       Meta meta = {}) {
         return ctx->make<Assert>(ctx, {expr, except, msg}, true, std::move(meta));
     }
 

@@ -40,15 +40,22 @@ public:
 
     std::string_view displayName() const final { return "type"; }
 
-    static auto create(ASTContext* ctx, ID id, QualifiedType* type, AttributeSet* attrs,
-                       declaration::Linkage linkage = Linkage::Private, Meta meta = {}) {
+    static auto create(ASTContext* ctx,
+                       ID id,
+                       QualifiedType* type,
+                       AttributeSet* attrs,
+                       declaration::Linkage linkage = Linkage::Private,
+                       Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 
         return ctx->make<Type>(ctx, {type, attrs}, std::move(id), linkage, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, ID id, QualifiedType* type, declaration::Linkage linkage = Linkage::Private,
+    static auto create(ASTContext* ctx,
+                       ID id,
+                       QualifiedType* type,
+                       declaration::Linkage linkage = Linkage::Private,
                        Meta meta = {}) {
         return create(ctx, std::move(id), type, AttributeSet::create(ctx), linkage, std::move(meta));
     }

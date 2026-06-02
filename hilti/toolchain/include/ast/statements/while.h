@@ -23,15 +23,22 @@ public:
     void setCondition(ASTContext* ctx, hilti::Expression* c) { setChild(ctx, 1, c); }
     void removeElse(ASTContext* ctx) { setChild(ctx, 3, nullptr); }
 
-    static auto create(ASTContext* ctx, hilti::Declaration* init, hilti::Expression* cond, Statement* body,
-                       Statement* else_ = nullptr, Meta meta = {}) {
+    static auto create(ASTContext* ctx,
+                       hilti::Declaration* init,
+                       hilti::Expression* cond,
+                       Statement* body,
+                       Statement* else_ = nullptr,
+                       Meta meta = {}) {
         return ctx->make<While>(ctx, {init, cond, body, else_}, std::move(meta));
     }
 
     static auto create(ASTContext* ctx, hilti::Expression* cond, Statement* body, Meta meta = {}) {
         return create(ctx, nullptr, cond, body, nullptr, std::move(meta));
     }
-    static auto create(ASTContext* ctx, hilti::Expression* cond, Statement* body, Statement* else_ = nullptr,
+    static auto create(ASTContext* ctx,
+                       hilti::Expression* cond,
+                       Statement* body,
+                       Statement* else_ = nullptr,
                        Meta meta = {}) {
         return create(ctx, nullptr, cond, body, else_, std::move(meta));
     }

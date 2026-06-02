@@ -22,7 +22,6 @@ using PreOrder = hilti::visitor::Visitor<hilti::visitor::Order::Pre, visitor::Di
  */
 using MutatingPreOrder = hilti::visitor::MutatingVisitor<hilti::visitor::Order::Pre, visitor::Dispatcher, Builder>;
 
-
 /**
  * Visitor performing a post-order iteration over a Spicy AST.
  */

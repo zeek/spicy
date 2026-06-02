@@ -23,16 +23,18 @@ TEST_CASE("encode") {
     CHECK_EQ(string::encode("\xc3\x28"_hs, unicode::Charset::UTF8), "\ufffd("_b);
     CHECK_EQ(string::encode("\xc3\x28"_hs, unicode::Charset::UTF8, unicode::DecodeErrorStrategy::IGNORE), "("_b);
     CHECK_THROWS_WITH_AS(string::encode("\xc3\x28"_hs, unicode::Charset::UTF8, unicode::DecodeErrorStrategy::STRICT),
-                         "illegal UTF8 sequence in string", const RuntimeError&);
-
+                         "illegal UTF8 sequence in string",
+                         const RuntimeError&);
 
     CHECK_EQ(string::encode("\xF0\x9F\x98\x85"_hs, unicode::Charset::ASCII, unicode::DecodeErrorStrategy::REPLACE),
              "????"_b);
     CHECK_EQ(string::encode("\xF0\x9F\x98\x85"_hs, unicode::Charset::ASCII, unicode::DecodeErrorStrategy::IGNORE),
              ""_b);
-    CHECK_THROWS_WITH_AS(string::encode("\xF0\x9F\x98\x85"_hs, unicode::Charset::ASCII,
+    CHECK_THROWS_WITH_AS(string::encode("\xF0\x9F\x98\x85"_hs,
+                                        unicode::Charset::ASCII,
                                         unicode::DecodeErrorStrategy::STRICT),
-                         "illegal ASCII character in string", const RuntimeError&);
+                         "illegal ASCII character in string",
+                         const RuntimeError&);
 
     CHECK_EQ(string::encode("abc"_hs, unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), "a\0b\0c\0"_b);
     CHECK_EQ(string::encode("abc"_hs, unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::STRICT), "\0a\0b\0c"_b);
@@ -40,7 +42,8 @@ TEST_CASE("encode") {
     CHECK_EQ(string::encode("東京"_hs, unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::STRICT), "gqN\xac"_b);
 
     // NOLINTNEXTLINE(bugprone-throw-keyword-missing)
-    CHECK_THROWS_WITH_AS(string::encode("123"_hs, unicode::Charset::Undef), "unknown character set for encoding",
+    CHECK_THROWS_WITH_AS(string::encode("123"_hs, unicode::Charset::Undef),
+                         "unknown character set for encoding",
                          const RuntimeError&);
 }
 
@@ -59,7 +62,8 @@ TEST_CASE("lower") {
     CHECK_THROWS_WITH_AS(string::lower("\xc3\x28"
                                        "aBcD"_hs,
                                        unicode::DecodeErrorStrategy::STRICT),
-                         "illegal UTF8 sequence in string", const RuntimeError&);
+                         "illegal UTF8 sequence in string",
+                         const RuntimeError&);
 }
 
 TEST_CASE("size") {
@@ -77,7 +81,8 @@ TEST_CASE("size") {
     CHECK_THROWS_WITH_AS(string::size("\xc3\x28"
                                       "aBcD"_hs,
                                       unicode::DecodeErrorStrategy::STRICT),
-                         "illegal UTF8 sequence in string", const RuntimeError&);
+                         "illegal UTF8 sequence in string",
+                         const RuntimeError&);
 }
 
 TEST_CASE("upper") {
@@ -95,7 +100,8 @@ TEST_CASE("upper") {
     CHECK_THROWS_WITH_AS(string::upper("\xc3\x28"
                                        "aBcD"_hs,
                                        unicode::DecodeErrorStrategy::STRICT),
-                         "illegal UTF8 sequence in string", const RuntimeError&);
+                         "illegal UTF8 sequence in string",
+                         const RuntimeError&);
 }
 
 TEST_CASE("to_string") {
