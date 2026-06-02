@@ -81,6 +81,9 @@ TEST_CASE("atoi_n") {
         }
 
         CHECK_EQ(x, -42);
+
+        // Parsing an a signed value into an unsigned type underflows.
+        CHECK_EQ(atoi_n_<uint8_t>("-1", 10, 2), 255);
     }
 
     SUBCASE("parse something") {
@@ -118,6 +121,25 @@ TEST_CASE("atoi_n") {
 
         CHECK_EQ(atoi_n_<int>("-00123-123", 10, 6), -123);
         CHECK_EQ(atoi_n_<int>("-00123Z123", 10, 6), -123);
+
+        CHECK_EQ(atoi_n_<int8_t>(std::to_string(std::numeric_limits<int8_t>::min()), 10, 4),
+                 std::numeric_limits<int8_t>::min());
+        CHECK_EQ(atoi_n_<int8_t>(std::to_string(std::numeric_limits<int8_t>::max()), 10, 3),
+                 std::numeric_limits<int8_t>::max());
+
+        CHECK_EQ(atoi_n_<uint8_t>(std::to_string(std::numeric_limits<uint8_t>::min()), 10, 1),
+                 std::numeric_limits<uint8_t>::min());
+        CHECK_EQ(atoi_n_<uint8_t>(std::to_string(std::numeric_limits<uint8_t>::max()), 10, 3),
+                 std::numeric_limits<uint8_t>::max());
+    }
+
+    SUBCASE("overflow") {
+        CHECK_THROWS_WITH_AS(atoi_n_<int32_t>("9901090097", 10, 0),
+                             "cannot decode value in chosen base",
+                             const OutOfRange&);
+        CHECK_THROWS_WITH_AS(atoi_n_<int32_t>("-9901090097", 10, 0),
+                             "cannot decode value in chosen base",
+                             const OutOfRange&);
     }
 }
 

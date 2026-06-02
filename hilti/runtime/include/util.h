@@ -6,6 +6,8 @@
 #include <unistd.h>
 
 #include <algorithm>
+#include <cstdint>
+#include <limits>
 #include <list>
 #include <memory>
 #include <optional>
@@ -450,14 +452,15 @@ class OutOfRange;
  *     extraction.
  */
 template<class Iter, typename Result>
-inline Iter atoi_n(Iter s, Iter e, uint8_t base, Result* result) {
+inline Iter atoi_n(Iter s, Iter e, uint8_t base, Result* result)
+    requires std::is_integral_v<Result> && std::contiguous_iterator<Iter>
+{
     if ( base < 2 || base > 36 )
         throw OutOfRange("base for numerical conversion must be between 2 and 36");
 
     if ( s == e )
         throw InvalidArgument("cannot decode from empty range");
 
-    std::optional<Result> n = std::nullopt;
     bool neg = false;
     auto it = s;
 
@@ -470,10 +473,33 @@ inline Iter atoi_n(Iter s, Iter e, uint8_t base, Result* result) {
         ++it;
     }
 
+    // Compute range of possible values. For signed types the absolute minimum
+    // value typically does not fit into the type, so instead store the maximum
+    // value in the corresponding unsigned type which has enough range.
+    constexpr auto max = std::numeric_limits<Result>::max();
+    constexpr auto min = std::numeric_limits<Result>::min();
+
+    // Sanity check since e.g., our own `hilti::rt::integer::safe` type does
+    // not implement `std::is_signed_v`, `std::make_unsigned_t`, or
+    // `std::numeric_limits` so `min` or `max` could be the default value for
+    // that type. Since we require a builtin integral type above we should
+    // never reach this.
+    static_assert(min < max);
+
+    using Unsigned = std::conditional_t<std::is_signed_v<Result>, std::make_unsigned_t<Result>, Result>;
+    constexpr auto max_value =
+        std::is_unsigned_v<Result> ? Unsigned(max) : static_cast<Unsigned>(0) - static_cast<Unsigned>(min);
+
+    // Since we handle any sign above we can accumulate into an unsigned
+    // integer when iterating digits. We pick `uint64_t` since it is large
+    // enough to handle any type we need to handle.
+    static_assert(max_value <= std::numeric_limits<uint64_t>::max());
+    uint64_t n = 0;
     for ( ; it != e; ++it ) {
         auto c = *it;
 
-        Result d;
+        // `uint8_t` is sufficient to store any digit up to max base 36.
+        uint8_t d;
         if ( c >= '0' && c < '0' + base )
             d = c - '0';
         else if ( c >= 'a' && c < 'a' - 10 + base )
@@ -483,18 +509,22 @@ inline Iter atoi_n(Iter s, Iter e, uint8_t base, Result* result) {
         else
             break;
 
-        n = n.value_or(Result()) * base + d;
+        if ( n > static_cast<uint64_t>(max_value / base) || d > max_value - (n * base) )
+            throw OutOfRange("cannot decode value in chosen base");
+
+        n = (n * base) + d;
     }
 
-    if ( ! n )
+    if ( it == s )
         return s;
 
     s = it;
 
+    // Convert to and store in target value. We have already checked the range above.
     if ( neg )
-        *result = -*n;
+        *result = -static_cast<Result>(n);
     else
-        *result = *n;
+        *result = static_cast<Result>(n);
 
     return s;
 }
