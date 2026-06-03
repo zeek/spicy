@@ -1056,7 +1056,7 @@ private:
             end = static_cast<int>(_children.size()) + *end;
 
         if ( ! end )
-            end = _children.size();
+            end = static_cast<int>(_children.size());
 
         if ( end > begin )
             return end;
