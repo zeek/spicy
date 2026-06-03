@@ -407,6 +407,10 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
     std::string magic;
     std::getline(in, magic);
 
+    // Strip trailing \r in case the input has Windows-style (CRLF) line endings.
+    if ( ! magic.empty() && magic.back() == '\r' )
+        magic.pop_back();
+
     if ( magic != std::string("!spicy-batch v2") )
         return hilti::rt::result::Error("input is not a v2 Spicy batch file");
 
@@ -529,7 +533,17 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
 
             std::string data(size, {});
             in.read(data.data(), static_cast<std::streamsize>(size));
-            in.get(); // Eat newline.
+
+            // Handle CRLF line endings: when the file has \r\n line terminators
+            // and is opened in binary mode, the data payload will have \r as its
+            // last byte (where \n was expected), with the actual \n still in the
+            // stream.  Detect this and fix up the payload.
+            if ( size > 0 && data.back() == '\r' && in.peek() == '\n' ) {
+                data.back() = '\n';
+                in.get(); // consume the \n that belongs to this data line
+            }
+
+            in.get(); // Eat trailing newline (blank line separator).
 
             if ( in.eof() || in.fail() )
                 return hilti::rt::result::Error("premature end of @data");

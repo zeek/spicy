@@ -686,6 +686,12 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
                         auto target = redirect_dir / name;
                         rt::filesystem::remove(target, ec);
                         rt::filesystem::create_hard_link(current_exe, target, ec);
+                        if ( ec ) {
+                            // Hard links fail across drives; fall back to copying.
+                            ec.clear();
+                            rt::filesystem::copy_file(current_exe, target,
+                                                     rt::filesystem::copy_options::overwrite_existing, ec);
+                        }
                     }
                     ::AddDllDirectory(redirect_dir.wstring().c_str());
                 }
