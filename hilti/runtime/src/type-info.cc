@@ -11,7 +11,7 @@ using namespace hilti::rt;
 #define TO_STRING(type) [](const void* self) { return hilti::rt::to_string(*reinterpret_cast<const type*>(self)); }
 
 // Helper to create a `to_string()` callback that just returns a constant string.
-#define TO_STRING_CONST(str) [](const void* self) { return std::string(str); }
+#define TO_STRING_CONST(str) [](const void* /*self*/) { return std::string(str); }
 
 const TypeInfo hilti::rt::type_info::address{std::nullopt,
                                              "address",

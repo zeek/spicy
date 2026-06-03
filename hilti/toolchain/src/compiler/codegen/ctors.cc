@@ -185,7 +185,7 @@ struct Visitor : hilti::visitor::PreOrder {
         result = fmt("::hilti::rt::Network(\"%s\", %u)", n->value().prefix(), n->value().length());
     }
 
-    void operator()(ctor::Null* n) final { result = fmt("::hilti::rt::Null()"); }
+    void operator()(ctor::Null* /*n*/) final { result = fmt("::hilti::rt::Null()"); }
 
     void operator()(ctor::Optional* n) final {
         if ( auto* e = n->value() )

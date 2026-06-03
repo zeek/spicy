@@ -49,7 +49,7 @@ struct Visitor : hilti::visitor::PreOrder {
         util::cannotBeReached();
     }
 
-    void operator()(type::Address* n) final {
+    void operator()(type::Address* /*n*/) final {
         switch ( kind ) {
             case Kind::Pack: result = fmt("::hilti::rt::address::pack(%s, %s)", data, args[0]); return;
             case Kind::Unpack: result = fmt("::hilti::rt::address::unpack(%s, %s, %s)", data, args[0], args[1]); return;
@@ -88,7 +88,7 @@ struct Visitor : hilti::visitor::PreOrder {
         result = fmt("::hilti::rt::integer::%s<int%d_t>(%s, %s)", kindToString(), n->width(), data, args[0]);
     }
 
-    void operator()(type::Real* n) final {
+    void operator()(type::Real* /*n*/) final {
         result = fmt("::hilti::rt::real::%s(%s, %s, %s)", kindToString(), data, args[0], args[1]);
     }
 };

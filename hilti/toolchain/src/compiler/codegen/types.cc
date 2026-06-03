@@ -59,7 +59,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                 // Just return an empty dummy for now to avoid cyclic recursion.
                 return cxx::declaration::Type();
             },
-            [&](auto& dummy) {
+            [&](auto& /*dummy*/) {
                 std::vector<cxx::declaration::Argument> args;
                 std::vector<cxx::type::struct_::Member> fields;
 
@@ -409,11 +409,11 @@ struct VisitorStorage : hilti::visitor::PreOrder {
 
     std::optional<CxxTypes> result;
 
-    void operator()(type::Address* n) final { result = CxxTypes{.base_type = "::hilti::rt::Address"}; }
+    void operator()(type::Address* /*n*/) final { result = CxxTypes{.base_type = "::hilti::rt::Address"}; }
 
-    void operator()(type::Any* n) final { result = CxxTypes{.base_type = "::hilti::rt::any"}; }
+    void operator()(type::Any* /*n*/) final { result = CxxTypes{.base_type = "::hilti::rt::any"}; }
 
-    void operator()(type::Bool* n) final { result = CxxTypes{.base_type = "::hilti::rt::Bool"}; }
+    void operator()(type::Bool* /*n*/) final { result = CxxTypes{.base_type = "::hilti::rt::Bool"}; }
 
     void operator()(type::Bitfield* n) final {
         auto x = n->bits(true) | std::views::transform([this](const auto& b) {
@@ -425,9 +425,9 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         result = CxxTypes{.base_type = t, .default_ = cxx::Expression(fmt("%s{%s}", t, ti))};
     }
 
-    void operator()(type::Bytes* n) final { result = CxxTypes{.base_type = "::hilti::rt::Bytes"}; }
+    void operator()(type::Bytes* /*n*/) final { result = CxxTypes{.base_type = "::hilti::rt::Bytes"}; }
 
-    void operator()(type::Real* n) final { result = CxxTypes{.base_type = "double"}; }
+    void operator()(type::Real* /*n*/) final { result = CxxTypes{.base_type = "double"}; }
 
     void operator()(type::Enum* n) final {
         assert(n->typeID());
@@ -487,7 +487,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         result = CxxTypes{.base_type = std::string(sid), .default_ = cxx::Expression(cxx::ID(sid, "Undef"))};
     }
 
-    void operator()(type::Error* n) final { result = CxxTypes{.base_type = "::hilti::rt::result::Error"}; }
+    void operator()(type::Error* /*n*/) final { result = CxxTypes{.base_type = "::hilti::rt::result::Error"}; }
 
     void operator()(type::Exception* n) final {
         if ( auto cxx = n->cxxID() ) {
@@ -503,15 +503,15 @@ struct VisitorStorage : hilti::visitor::PreOrder {
             result = CxxTypes{.base_type = "::hilti::rt::Exception"};
     }
 
-    void operator()(type::Function* n) final { result = CxxTypes{}; }
+    void operator()(type::Function* /*n*/) final { result = CxxTypes{}; }
 
-    void operator()(type::Interval* n) final { result = CxxTypes{.base_type = "::hilti::rt::Interval"}; }
+    void operator()(type::Interval* /*n*/) final { result = CxxTypes{.base_type = "::hilti::rt::Interval"}; }
 
-    void operator()(type::bytes::Iterator* n) final {
+    void operator()(type::bytes::Iterator* /*n*/) final {
         result = CxxTypes{.base_type = "::hilti::rt::bytes::SafeIterator"};
     }
 
-    void operator()(type::stream::Iterator* n) final {
+    void operator()(type::stream::Iterator* /*n*/) final {
         result = CxxTypes{.base_type = "::hilti::rt::stream::SafeConstIterator"};
     }
 
@@ -572,13 +572,13 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         result = CxxTypes{.base_type = fmt("%s", t)};
     }
 
-    void operator()(type::Network* n) final { result = CxxTypes{.base_type = "::hilti::rt::Network"}; }
+    void operator()(type::Network* /*n*/) final { result = CxxTypes{.base_type = "::hilti::rt::Network"}; }
 
-    void operator()(type::Null* n) final { result = CxxTypes{.base_type = "::hilti::rt::Null"}; }
+    void operator()(type::Null* /*n*/) final { result = CxxTypes{.base_type = "::hilti::rt::Null"}; }
 
-    void operator()(type::Port* n) final { result = CxxTypes{.base_type = "::hilti::rt::Port"}; }
+    void operator()(type::Port* /*n*/) final { result = CxxTypes{.base_type = "::hilti::rt::Port"}; }
 
-    void operator()(type::RegExp* n) final { result = CxxTypes{.base_type = "::hilti::rt::RegExp"}; }
+    void operator()(type::RegExp* /*n*/) final { result = CxxTypes{.base_type = "::hilti::rt::RegExp"}; }
 
     void operator()(type::SignedInteger* n) final {
         cxx::Type t;
@@ -608,7 +608,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         result = CxxTypes{.base_type = fmt("%s", t)};
     }
 
-    void operator()(type::Stream* n) final { result = CxxTypes{.base_type = "::hilti::rt::Stream"}; }
+    void operator()(type::Stream* /*n*/) final { result = CxxTypes{.base_type = "::hilti::rt::Stream"}; }
 
     void operator()(type::Type_* n) final {
         assert(n->typeValue());
@@ -657,7 +657,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         }
     }
 
-    void operator()(type::Time* n) final { result = CxxTypes{.base_type = "::hilti::rt::Time"}; }
+    void operator()(type::Time* /*n*/) final { result = CxxTypes{.base_type = "::hilti::rt::Time"}; }
 
     void operator()(type::UnsignedInteger* n) final {
         cxx::Type t;
@@ -697,7 +697,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         result = CxxTypes{.base_type = t, .param_in = fmt("%s", t), .param_inout = fmt("%s&", t)};
     }
 
-    void operator()(type::stream::View* n) final { result = CxxTypes{.base_type = "::hilti::rt::stream::View"}; }
+    void operator()(type::stream::View* /*n*/) final { result = CxxTypes{.base_type = "::hilti::rt::stream::View"}; }
 
     void operator()(type::Result* n) final {
         std::string t;
@@ -714,7 +714,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         result = CxxTypes{.base_type = t};
     }
 
-    void operator()(type::String* n) final { result = CxxTypes{.base_type = "::hilti::rt::String"}; }
+    void operator()(type::String* /*n*/) final { result = CxxTypes{.base_type = "::hilti::rt::String"}; }
 
     void operator()(type::Struct* n) final {
         auto type_id = n->typeID();
@@ -794,9 +794,11 @@ struct VisitorStorage : hilti::visitor::PreOrder {
         dispatch(n->resolvedType());
     }
 
-    void operator()(type::Void* n) final { result = CxxTypes{.base_type = "void"}; }
+    void operator()(type::Void* /*n*/) final { result = CxxTypes{.base_type = "void"}; }
 
-    void operator()(type::Auto* n) final { logger().internalError("codegen: automatic type has not been replaced"); }
+    void operator()(type::Auto* /*n*/) final {
+        logger().internalError("codegen: automatic type has not been replaced");
+    }
 
     void operator()(type::WeakReference* n) final {
         std::string t;
@@ -827,28 +829,30 @@ struct VisitorTypeInfoPredefined : hilti::visitor::PreOrder {
 
     std::optional<cxx::Expression> result;
 
-    void operator()(type::Address* n) final { result = "::hilti::rt::type_info::address"; }
-    void operator()(type::Any* n) final { result = "::hilti::rt::type_info::any"; }
-    void operator()(type::Bool* n) final { result = "::hilti::rt::type_info::bool_"; }
-    void operator()(type::Bytes* n) final { result = "::hilti::rt::type_info::bytes"; }
-    void operator()(type::bytes::Iterator* n) final { result = "::hilti::rt::type_info::bytes_iterator"; }
-    void operator()(type::Error* n) final { result = "::hilti::rt::type_info::error"; }
-    void operator()(type::Interval* n) final { result = "::hilti::rt::type_info::interval"; }
-    void operator()(type::Network* n) final { result = "::hilti::rt::type_info::network"; }
-    void operator()(type::Null* n) final { result = "::hilti::rt::type_info::null"; }
-    void operator()(type::Port* n) final { result = "::hilti::rt::type_info::port"; }
-    void operator()(type::Real* n) final { result = "::hilti::rt::type_info::real"; }
-    void operator()(type::RegExp* n) final { result = "::hilti::rt::type_info::regexp"; }
+    void operator()(type::Address* /*n*/) final { result = "::hilti::rt::type_info::address"; }
+    void operator()(type::Any* /*n*/) final { result = "::hilti::rt::type_info::any"; }
+    void operator()(type::Bool* /*n*/) final { result = "::hilti::rt::type_info::bool_"; }
+    void operator()(type::Bytes* /*n*/) final { result = "::hilti::rt::type_info::bytes"; }
+    void operator()(type::bytes::Iterator* /*n*/) final { result = "::hilti::rt::type_info::bytes_iterator"; }
+    void operator()(type::Error* /*n*/) final { result = "::hilti::rt::type_info::error"; }
+    void operator()(type::Interval* /*n*/) final { result = "::hilti::rt::type_info::interval"; }
+    void operator()(type::Network* /*n*/) final { result = "::hilti::rt::type_info::network"; }
+    void operator()(type::Null* /*n*/) final { result = "::hilti::rt::type_info::null"; }
+    void operator()(type::Port* /*n*/) final { result = "::hilti::rt::type_info::port"; }
+    void operator()(type::Real* /*n*/) final { result = "::hilti::rt::type_info::real"; }
+    void operator()(type::RegExp* /*n*/) final { result = "::hilti::rt::type_info::regexp"; }
     void operator()(type::SignedInteger* n) final { result = fmt("::hilti::rt::type_info::int%d", n->width()); }
-    void operator()(type::Stream* n) final { result = "::hilti::rt::type_info::stream"; }
-    void operator()(type::stream::Iterator* n) final { result = "::hilti::rt::type_info::stream_iterator"; }
-    void operator()(type::stream::View* n) final { result = "::hilti::rt::type_info::stream_view"; }
-    void operator()(type::String* n) final { result = "::hilti::rt::type_info::string"; }
-    void operator()(type::Time* n) final { result = "::hilti::rt::type_info::time"; }
+    void operator()(type::Stream* /*n*/) final { result = "::hilti::rt::type_info::stream"; }
+    void operator()(type::stream::Iterator* /*n*/) final { result = "::hilti::rt::type_info::stream_iterator"; }
+    void operator()(type::stream::View* /*n*/) final { result = "::hilti::rt::type_info::stream_view"; }
+    void operator()(type::String* /*n*/) final { result = "::hilti::rt::type_info::string"; }
+    void operator()(type::Time* /*n*/) final { result = "::hilti::rt::type_info::time"; }
     void operator()(type::UnsignedInteger* n) final { result = fmt("::hilti::rt::type_info::uint%d", n->width()); }
-    void operator()(type::Void* n) final { result = "::hilti::rt::type_info::void_"; }
+    void operator()(type::Void* /*n*/) final { result = "::hilti::rt::type_info::void_"; }
 
-    void operator()(type::Auto* n) final { logger().internalError("codegen: automatic type has not been replaced"); }
+    void operator()(type::Auto* /*n*/) final {
+        logger().internalError("codegen: automatic type has not been replaced");
+    }
     void operator()(type::Name* n) final {
         assert(n->resolvedType());
         dispatch(n->resolvedType());
@@ -900,9 +904,9 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
                      util::join(labels, ", "));
     }
 
-    void operator()(type::Exception* n) final { result = "::hilti::rt::type_info::Exception()"; }
+    void operator()(type::Exception* /*n*/) final { result = "::hilti::rt::type_info::Exception()"; }
 
-    void operator()(type::Function* n) final { result = "::hilti::rt::type_info::Function()"; }
+    void operator()(type::Function* /*n*/) final { result = "::hilti::rt::type_info::Function()"; }
 
     void operator()(type::Library* n) final { result = fmt("::hilti::rt::type_info::Library(\"%s\")", n->cxxName()); }
 
@@ -1086,7 +1090,9 @@ struct VisitorTypeInfoDynamic : hilti::visitor::PreOrder {
         dispatch(n->resolvedType());
     }
 
-    void operator()(type::Auto* n) final { logger().internalError("codegen: automatic type has not been replaced"); }
+    void operator()(type::Auto* /*n*/) final {
+        logger().internalError("codegen: automatic type has not been replaced");
+    }
 };
 
 } // anonymous namespace

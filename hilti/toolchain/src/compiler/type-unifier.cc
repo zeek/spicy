@@ -33,7 +33,7 @@ public:
 
     type_unifier::Unifier* unifier;
 
-    void operator()(type::Auto* n) final {
+    void operator()(type::Auto* /*n*/) final {
         // We never set this, so that it will be unified once the actual type
         // has been identified.
         unifier->abort();

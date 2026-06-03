@@ -220,7 +220,7 @@ public:
         return expressionCtor(ctorString({s.data(), s.size()}, false, m), m);
     }
 
-    auto stringLiteral(std::string_view s, const Meta& m = Meta()) {
+    auto stringLiteral(std::string_view s, const Meta& /*m*/ = Meta()) {
         // String literals have no location.
         return expressionCtor(ctorString({s.data(), s.size()}, true));
     }

@@ -45,7 +45,7 @@ public:
 
     QualifiedType* itemType() const final { return child<QualifiedType>(0); /* return `auto` */ }
 
-    bool isResolved(hilti::node::CycleDetector* cd) const final { return false; }
+    bool isResolved(hilti::node::CycleDetector* /*cd*/) const final { return false; }
 
     std::string_view displayName() const final { return "unresolved unit field"; }
 

@@ -150,7 +150,7 @@ public:
         return t;
     }
 
-    static auto create(ASTContext* ctx, hilti::type::Wildcard _, Meta meta = {}) {
+    static auto create(ASTContext* ctx, hilti::type::Wildcard /*_*/, Meta meta = {}) {
         return ctx->make<Unit>(ctx,
                                hilti::type::Wildcard(),
                                {nullptr, AttributeSet::create(ctx), nullptr},
@@ -163,7 +163,7 @@ protected:
         _assignItemIndices();
     }
 
-    Unit(ASTContext* ctx, hilti::type::Wildcard _, const Nodes& children, Meta meta)
+    Unit(ASTContext* ctx, hilti::type::Wildcard /*_*/, const Nodes& children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, hilti::type::Wildcard(), {"unit(*)"}, children, std::move(meta)) {
         _assignItemIndices();
     }

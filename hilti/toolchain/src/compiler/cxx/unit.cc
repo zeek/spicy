@@ -21,7 +21,7 @@ Unit::Unit(const std::shared_ptr<Context>& context, ::hilti::declaration::Module
 Unit::Unit(const std::shared_ptr<Context>& context, cxx::ID module_id, const std::string& cxx_code)
     : _context(context), _module_id(std::move(module_id)), _no_linker_meta_data(true), _cxx_code(cxx_code) {}
 
-void Unit::add(std::string_view stmt, const Meta& m) { _statements.emplace_back(stmt); }
+void Unit::add(std::string_view stmt, const Meta& /*m*/) { _statements.emplace_back(stmt); }
 
 void Unit::add(const linker::Join& f) {
     assert(f.callee.ftype == cxx::declaration::Function::Free);
@@ -47,7 +47,7 @@ void Unit::_addHeader(Formatter& f) {
 }
 
 void Unit::_addModuleInitFunction() {
-    auto add_init_function = [&](Context* ctx, auto f, const std::string& id_) {
+    auto add_init_function = [&](Context* /*ctx*/, auto f, const std::string& id_) {
         auto id = cxx::ID{cxxInternalNamespace(), id_};
 
         cxx::Block body;

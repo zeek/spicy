@@ -34,7 +34,7 @@ TEST_CASE("execute-void") {
     std::string x;
     std::string c;
 
-    auto f = [&](hilti::rt::resumable::Handle* r) {
+    auto f = [&](hilti::rt::resumable::Handle* /*r*/) {
         TestDtor t(c);
         x = "Hello from fiber!";
         return hilti::rt::Nothing();
@@ -53,7 +53,7 @@ TEST_CASE("reuse-from-cache") {
 
     int x = 0;
 
-    auto f1 = [&](hilti::rt::resumable::Handle* r) {
+    auto f1 = [&](hilti::rt::resumable::Handle* /*r*/) {
         x += 1;
         return hilti::rt::Nothing();
     };
@@ -61,7 +61,7 @@ TEST_CASE("reuse-from-cache") {
     REQUIRE(r1);
     CHECK(x == 1);
 
-    auto f2 = [&](hilti::rt::resumable::Handle* r) {
+    auto f2 = [&](hilti::rt::resumable::Handle* /*r*/) {
         x += 1;
         return hilti::rt::Nothing();
     };
@@ -81,7 +81,7 @@ TEST_CASE("execute-result") {
     std::string x;
     std::string c;
 
-    auto f = [&](hilti::rt::resumable::Handle* r) {
+    auto f = [&](hilti::rt::resumable::Handle* /*r*/) {
         TestDtor t(c);
         x = "Hello from fiber!";
         return x;
@@ -175,7 +175,7 @@ TEST_CASE("exception") {
     std::string c1;
     std::string c2;
 
-    auto f1 = [&](hilti::rt::resumable::Handle* r) {
+    auto f1 = [&](hilti::rt::resumable::Handle* /*r*/) {
         TestDtor t(c1);
         x = "Hello";
         throw std::runtime_error("kaputt");
@@ -342,7 +342,7 @@ bool isMacosAsan() {
 TEST_CASE("stack-size-check" * doctest::skip(isMacosAsan())) {
     hilti::rt::init();
 
-    auto f = [&](hilti::rt::resumable::Handle* r) {
+    auto f = [&](hilti::rt::resumable::Handle* /*r*/) {
         fibo(1000000000); // stack won't suffice
         return hilti::rt::Nothing();
     };

@@ -40,7 +40,7 @@ operator_::Signature CastedCoercion::signature(Builder* builder) const {
     };
 }
 
-QualifiedType* CastedCoercion::result(Builder* builder, const Expressions& operands, const Meta& meta) const {
+QualifiedType* CastedCoercion::result(Builder* /*builder*/, const Expressions& operands, const Meta& /*meta*/) const {
     return operands[1]->type()->type()->as<type::Type_>()->typeValue();
 }
 
@@ -133,7 +133,7 @@ public:
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& /*meta*/) const final {
         const auto args = operands[1]->type()->type()->as<type::Tuple>()->elements();
         if ( args.empty() )
             return builder->qualifiedType(builder->typeError(), Constness::Const);
@@ -233,7 +233,7 @@ public:
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& /*meta*/) const final {
         if ( auto* iter = operands[0]->type()->type()->iteratorType() )
             return iter;
         else
@@ -261,7 +261,7 @@ public:
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& /*meta*/) const final {
         if ( auto* iter = operands[0]->type()->type()->iteratorType() )
             return iter;
         else
@@ -297,7 +297,7 @@ expressions are not allowed.
 )",
         };
     }
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& /*meta*/) const final {
         auto* t = operands[0]->type();
 
         if ( auto* tv = operands[0]->type()->type()->tryAs<type::Type_>() )

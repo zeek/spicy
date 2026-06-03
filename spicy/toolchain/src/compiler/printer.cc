@@ -45,7 +45,7 @@ struct VisitorPrinter : visitor::PreOrder {
 
     bool result = false;
 
-    void operator()(type::Sink* n) final {
+    void operator()(type::Sink* /*n*/) final {
         out << "sink";
         result = true;
     }

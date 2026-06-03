@@ -81,10 +81,10 @@ extern "C" {
 
 // A dummy fallback function which will be put on the bottom of all fibers'
 // call stacks. This function should never execute.
-[[noreturn]] static void fiber_bottom_abort(Fiber* fiber, void* args) { abort(); }
+[[noreturn]] static void fiber_bottom_abort(Fiber* /*fiber*/, void* /*args*/) { abort(); }
 
 // Fiber entry point for execution of payload functions.
-void __fiber_run_trampoline(void* argsp) {
+void __fiber_run_trampoline(void* /*argsp*/) {
     auto* fiber = context::detail::get()->fiber.current;
     hilti::rt::detail::Fiber::_finishSwitchFiber("trampoline-run");
 

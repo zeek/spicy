@@ -130,7 +130,7 @@ bool Unit::requiresCompilation() {
     struct Visitor : hilti::visitor::PreOrder {
         bool result = false;
 
-        void operator()(declaration::GlobalVariable* n) final { result = true; }
+        void operator()(declaration::GlobalVariable* /*n*/) final { result = true; }
         void operator()(declaration::Function* n) final {
             if ( n->function()->body() )
                 result = true;

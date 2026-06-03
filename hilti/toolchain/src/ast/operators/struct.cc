@@ -125,7 +125,7 @@ triggers an exception.
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& /*meta*/) const final {
         return itemType(builder, operands)->recreateAsLhs(builder->context());
     }
 
@@ -153,7 +153,7 @@ triggers an exception.
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& /*meta*/) const final {
         return itemType(builder, operands)->recreateAsConst(builder->context());
     }
 
@@ -183,7 +183,7 @@ exception differently).
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& /*meta*/) const final {
         return itemType(builder, operands);
     }
 

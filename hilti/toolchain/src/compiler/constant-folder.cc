@@ -382,7 +382,7 @@ Result<Ctor*> detail::constant_folder::foldExpression(Builder* builder, Expressi
 }
 
 struct VisitorConstantFolderAST : visitor::MutatingPostOrder {
-    explicit VisitorConstantFolderAST(Builder* builder, Node* root, bitmask<Style> style)
+    explicit VisitorConstantFolderAST(Builder* builder, Node* /*root*/, bitmask<Style> style)
         : visitor::MutatingPostOrder(builder, logging::debug::Resolver), style(style) {}
 
     bitmask<Style> style;

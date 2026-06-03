@@ -25,7 +25,7 @@ std::unique_ptr<hilti::Builder> Driver::createBuilder(hilti::ASTContext* ctx) co
 
 std::string Driver::hookAddCommandLineOptions() { return "Q"; }
 
-bool Driver::hookProcessCommandLineOption(int opt, const char* optarg) {
+bool Driver::hookProcessCommandLineOption(int opt, const char* /*optarg*/) {
     auto hilti_options = hiltiOptions();
 
     switch ( opt ) {

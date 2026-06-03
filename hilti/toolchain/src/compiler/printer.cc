@@ -235,7 +235,7 @@ struct Printer : visitor::PreOrder {
 
     void operator()(ctor::Network* n) final { _out << n->value(); }
 
-    void operator()(ctor::Null* n) final { _out << "Null"; }
+    void operator()(ctor::Null* /*n*/) final { _out << "Null"; }
 
     void operator()(ctor::Optional* n) final {
         if ( n->value() )
@@ -256,7 +256,7 @@ struct Printer : visitor::PreOrder {
         _out << buf;
     }
 
-    void operator()(ctor::StrongReference* n) final { _out << "Null"; }
+    void operator()(ctor::StrongReference* /*n*/) final { _out << "Null"; }
 
     void operator()(ctor::RegExp* n) final {
         _out << std::make_pair(n->patterns() | std::views::transform([](const auto& p) { return to_string(p); }),
@@ -319,7 +319,7 @@ struct Printer : visitor::PreOrder {
 
     void operator()(ctor::Vector* n) final { _out << "vector(" << std::make_pair(n->value(), ", ") << ')'; }
 
-    void operator()(ctor::WeakReference* n) final { _out << "Null"; }
+    void operator()(ctor::WeakReference* /*n*/) final { _out << "Null"; }
 
     void operator()(ctor::ValueReference* n) final { _out << n->expression(); }
 
@@ -554,7 +554,7 @@ struct Printer : visitor::PreOrder {
 
     void operator()(expression::TypeWrapped* n) final { _out << n->expression(); }
 
-    void operator()(expression::Void* n) final {
+    void operator()(expression::Void* /*n*/) final {
         _out << "<void expression>"; // Shouldn't really happen->
     }
 
@@ -604,13 +604,13 @@ struct Printer : visitor::PreOrder {
         }
     }
 
-    void operator()(statement::Break* n) final {
+    void operator()(statement::Break* /*n*/) final {
         _out.beginLine();
         _out << "break;";
         _out.endLine();
     }
 
-    void operator()(statement::Continue* n) final {
+    void operator()(statement::Continue* /*n*/) final {
         _out.beginLine();
         _out << "continue;";
         _out.endLine();
@@ -781,7 +781,7 @@ struct Printer : visitor::PreOrder {
         _out.endLine();
     }
 
-    void operator()(statement::Yield* n) final {
+    void operator()(statement::Yield* /*n*/) final {
         _out.beginLine();
         _out << "yield";
         _out.endLine();
@@ -791,11 +791,11 @@ struct Printer : visitor::PreOrder {
 
     void operator()(QualifiedType* n) final { _out << const_(n) << n->type(false); }
 
-    void operator()(type::Any* n) final { _out << "any"; }
+    void operator()(type::Any* /*n*/) final { _out << "any"; }
 
-    void operator()(type::Address* n) final { _out << "addr"; }
+    void operator()(type::Address* /*n*/) final { _out << "addr"; }
 
-    void operator()(type::Auto* n) final { _out << "auto"; }
+    void operator()(type::Auto* /*n*/) final { _out << "auto"; }
 
     void operator()(type::bitfield::BitRange* n) final {
         _out << "    " << n->id() << ": ";
@@ -832,9 +832,9 @@ struct Printer : visitor::PreOrder {
             _out << ' ' << attrs;
     }
 
-    void operator()(type::Bool* n) final { _out << "bool"; }
+    void operator()(type::Bool* /*n*/) final { _out << "bool"; }
 
-    void operator()(type::Bytes* n) final { _out << "bytes"; }
+    void operator()(type::Bytes* /*n*/) final { _out << "bytes"; }
 
     void operator()(type::enum_::Label* n) final { _out << n->id() << " = " << n->value(); }
 
@@ -855,7 +855,7 @@ struct Printer : visitor::PreOrder {
         _out << "enum { " << std::make_pair(util::toVector(std::move(x)), ", ") << " }";
     }
 
-    void operator()(type::Error* n) final { _out << "error"; }
+    void operator()(type::Error* /*n*/) final { _out << "error"; }
 
     void operator()(type::Exception* n) final {
         if ( ! _out.isExpandSubsequentType() ) {
@@ -882,15 +882,15 @@ struct Printer : visitor::PreOrder {
 
     void operator()(type::Function* n) final { printFunctionType(*n, {}); }
 
-    void operator()(type::Interval* n) final { _out << "interval"; }
+    void operator()(type::Interval* /*n*/) final { _out << "interval"; }
 
     void operator()(type::Member* n) final { _out << n->id(); }
 
     void operator()(type::Name* n) final { _out << n->id(); }
 
-    void operator()(type::Network* n) final { _out << "net"; }
+    void operator()(type::Network* /*n*/) final { _out << "net"; }
 
-    void operator()(type::Null* n) final { _out << "<null type>"; }
+    void operator()(type::Null* /*n*/) final { _out << "<null type>"; }
 
     void operator()(type::OperandList* n) final { _out << "(" << std::make_pair(n->operands(), ", ") << ")"; }
 
@@ -920,9 +920,9 @@ struct Printer : visitor::PreOrder {
         }
     }
 
-    void operator()(type::Port* n) final { _out << "port"; }
+    void operator()(type::Port* /*n*/) final { _out << "port"; }
 
-    void operator()(type::Real* n) final { _out << "real"; }
+    void operator()(type::Real* /*n*/) final { _out << "real"; }
 
     void operator()(type::StrongReference* n) final {
         if ( n->isWildcard() )
@@ -931,9 +931,9 @@ struct Printer : visitor::PreOrder {
             _out << "strong_ref<" << n->dereferencedType() << ">";
     }
 
-    void operator()(type::Stream* n) final { _out << "stream"; }
+    void operator()(type::Stream* /*n*/) final { _out << "stream"; }
 
-    void operator()(type::bytes::Iterator* n) final { _out << "iterator<bytes>"; }
+    void operator()(type::bytes::Iterator* /*n*/) final { _out << "iterator<bytes>"; }
 
     void operator()(type::list::Iterator* n) final {
         if ( n->isWildcard() )
@@ -942,7 +942,7 @@ struct Printer : visitor::PreOrder {
             _out << fmt("iterator<list<%s>>", *n->dereferencedType());
     }
 
-    void operator()(type::stream::Iterator* n) final { _out << "iterator<stream>"; }
+    void operator()(type::stream::Iterator* /*n*/) final { _out << "iterator<stream>"; }
 
     void operator()(type::vector::Iterator* n) final {
         if ( n->isWildcard() )
@@ -951,7 +951,7 @@ struct Printer : visitor::PreOrder {
             _out << fmt("iterator<vector<%s>>", *n->dereferencedType());
     }
 
-    void operator()(type::stream::View* n) final { _out << "view<stream>"; }
+    void operator()(type::stream::View* /*n*/) final { _out << "view<stream>"; }
 
     void operator()(type::Library* n) final {
         if ( auto id = n->typeID() )
@@ -983,7 +983,7 @@ struct Printer : visitor::PreOrder {
         }
     }
 
-    void operator()(type::RegExp* n) final { _out << "regexp"; }
+    void operator()(type::RegExp* /*n*/) final { _out << "regexp"; }
 
     void operator()(type::Result* n) final {
         if ( n->isWildcard() )
@@ -1015,7 +1015,7 @@ struct Printer : visitor::PreOrder {
             _out << fmt("int<%d>", n->width());
     }
 
-    void operator()(type::String* n) final { _out << "string"; }
+    void operator()(type::String* /*n*/) final { _out << "string"; }
 
     void operator()(type::Struct* n) final {
         if ( ! _out.isExpandSubsequentType() ) {
@@ -1051,7 +1051,7 @@ struct Printer : visitor::PreOrder {
         _out << "}";
     }
 
-    void operator()(type::Time* n) final { _out << "time"; }
+    void operator()(type::Time* /*n*/) final { _out << "time"; }
 
     void operator()(type::Type_* n) final {
         if ( n->isWildcard() )
@@ -1078,7 +1078,7 @@ struct Printer : visitor::PreOrder {
         _out << "}";
     }
 
-    void operator()(type::Unknown* n) final { _out << "<unknown type>"; }
+    void operator()(type::Unknown* /*n*/) final { _out << "<unknown type>"; }
 
     void operator()(type::UnsignedInteger* n) final {
         if ( n->isWildcard() )
@@ -1112,7 +1112,7 @@ struct Printer : visitor::PreOrder {
         }
     }
 
-    void operator()(type::Void* n) final { _out << "void"; }
+    void operator()(type::Void* /*n*/) final { _out << "void"; }
 
     void operator()(type::WeakReference* n) final {
         if ( n->isWildcard() )

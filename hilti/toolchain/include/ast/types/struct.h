@@ -83,13 +83,13 @@ public:
     }
 
     struct AnonymousStruct {};
-    static auto create(ASTContext* ctx, AnonymousStruct _, const Declarations& fields, Meta meta = {}) {
+    static auto create(ASTContext* ctx, AnonymousStruct /*_*/, const Declarations& fields, Meta meta = {}) {
         auto* t = ctx->make<Struct>(ctx, node::flatten(nullptr, fields), std::move(meta));
         t->_setSelf(ctx);
         return t;
     }
 
-    static auto create(ASTContext* ctx, Wildcard _, Meta meta = {}) {
+    static auto create(ASTContext* ctx, Wildcard /*_*/, Meta meta = {}) {
         return ctx->make<Struct>(ctx, Wildcard(), {nullptr}, std::move(meta));
     }
 
@@ -97,7 +97,7 @@ protected:
     Struct(ASTContext* ctx, const Nodes& children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, {}, children, std::move(meta)) {}
 
-    Struct(ASTContext* ctx, Wildcard _, const Nodes& children, Meta meta)
+    Struct(ASTContext* ctx, Wildcard /*_*/, const Nodes& children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"struct(*)"}, children, std::move(meta)) {}
 
     HILTI_NODE_1(type::Struct, UnqualifiedType, final);

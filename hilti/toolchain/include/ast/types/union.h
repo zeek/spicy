@@ -78,11 +78,11 @@ public:
     }
 
     union AnonymousUnion {};
-    static auto create(ASTContext* ctx, AnonymousUnion _, const Declarations& fields, Meta meta = {}) {
+    static auto create(ASTContext* ctx, AnonymousUnion /*_*/, const Declarations& fields, Meta meta = {}) {
         return ctx->make<Union>(ctx, fields, ++anon_union_counter, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, Wildcard _, Meta meta = {}) {
+    static auto create(ASTContext* ctx, Wildcard /*_*/, Meta meta = {}) {
         return ctx->make<Union>(ctx, Wildcard(), std::move(meta));
     }
 
@@ -90,7 +90,7 @@ protected:
     Union(ASTContext* ctx, const Nodes& children, int64_t anon_union, Meta meta)
         : UnqualifiedType(ctx, NodeTags, {}, children, std::move(meta)), _anon_union(anon_union) {}
 
-    Union(ASTContext* ctx, Wildcard _, Meta meta)
+    Union(ASTContext* ctx, Wildcard /*_*/, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"union(*)"}, std::move(meta)) {}
 
     HILTI_NODE_1(type::Union, UnqualifiedType, final);

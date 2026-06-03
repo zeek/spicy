@@ -413,7 +413,7 @@ protected:
     virtual std::string hookAddCommandLineOptions() { return ""; }
 
     /** Hook for derived classes for parsing additional options. */
-    virtual bool hookProcessCommandLineOption(int opt, const char* optarg) { return false; }
+    virtual bool hookProcessCommandLineOption(int /*opt*/, const char* /*optarg*/) { return false; }
 
     /**
      * Hook for derived classes for adding content to the driver's usage
@@ -455,13 +455,13 @@ protected:
      * @param root the AST that has been processed
      * @return true if the AST has been modified and needs to be reprocessed
      */
-    virtual bool hookNewASTPostCompilation(const Plugin& plugin, ASTRoot* root) { return false; }
+    virtual bool hookNewASTPostCompilation(const Plugin& /*plugin*/, ASTRoot* /*root*/) { return false; }
 
     /**
      * Hook for derived classes to execute custom code when the AST has been
      * fully processed and transformed to its final state.
      */
-    virtual Result<Nothing> hookCompilationFinished(ASTRoot* root) { return Nothing(); }
+    virtual Result<Nothing> hookCompilationFinished(ASTRoot* /*root*/) { return Nothing(); }
 
     /**
      * Hook for derived classes to execute custom code when the HILTI runtime

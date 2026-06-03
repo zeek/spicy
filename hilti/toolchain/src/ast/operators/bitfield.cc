@@ -49,7 +49,7 @@ right.
 )"};
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& /*meta*/) const final {
         return itemType(builder, operands);
     }
 

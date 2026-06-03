@@ -387,7 +387,7 @@ inline std::string to_string(const std::pair<const K, V>& x, adl::tag /*unused*/
     return fmt("(%s, %s)", hilti::rt::to_string(x.first), hilti::rt::to_string(x.second));
 }
 
-inline std::string to_string(const map::Empty& x, adl::tag /*unused*/) { return "{}"; }
+inline std::string to_string(const map::Empty& /*x*/, adl::tag /*unused*/) { return "{}"; }
 
 template<typename K, typename V>
 inline std::string to_string(const map::Iterator<K, V>& /*unused*/, adl::tag /*unused*/) {

@@ -24,7 +24,7 @@ public:
         return ctx->make<Member>(ctx, id, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
+    static auto create(ASTContext* ctx, Wildcard /*_*/, const Meta& m = Meta()) {
         return ctx->make<Member>(ctx, Wildcard(), m);
     }
 
@@ -34,7 +34,7 @@ protected:
         assert(_id);
     }
 
-    Member(ASTContext* ctx, Wildcard _, Meta meta)
+    Member(ASTContext* ctx, Wildcard /*_*/, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"member(*)"}, std::move(meta)), _id("<wildcard>") {}
 
     HILTI_NODE_1(type::Member, UnqualifiedType, final);

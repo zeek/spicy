@@ -27,7 +27,7 @@ public:
         return ctx->make<Iterator>(ctx, {etype}, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
+    static auto create(ASTContext* ctx, Wildcard /*_*/, const Meta& m = Meta()) {
         return ctx->make<Iterator>(ctx,
                                    Wildcard(),
                                    {QualifiedType::create(ctx, type::Unknown::create(ctx, m), Constness::Const)},
@@ -37,7 +37,7 @@ public:
 protected:
     Iterator(ASTContext* ctx, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
-    Iterator(ASTContext* ctx, Wildcard _, const Nodes& children, Meta meta)
+    Iterator(ASTContext* ctx, Wildcard /*_*/, const Nodes& children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"iterator(list(*))"}, children, std::move(meta)) {}
 
     HILTI_NODE_1(type::list::Iterator, UnqualifiedType, final);
@@ -63,7 +63,7 @@ public:
                                meta);
     }
 
-    static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
+    static auto create(ASTContext* ctx, Wildcard /*_*/, const Meta& m = Meta()) {
         return ctx->make<List>(ctx,
                                Wildcard(),
                                {QualifiedType::create(ctx,
@@ -75,7 +75,7 @@ public:
 protected:
     List(ASTContext* ctx, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
-    List(ASTContext* ctx, Wildcard _, const Nodes& children, Meta meta)
+    List(ASTContext* ctx, Wildcard /*_*/, const Nodes& children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"list(*)"}, children, std::move(meta)) {}
 
     void newlyQualified(const QualifiedType* qtype) const final { elementType()->setConst(qtype->constness()); }

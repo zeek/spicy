@@ -157,7 +157,7 @@ private:
 };
 
 template<typename Declaration>
-void Unit::add(const Declaration& d, const Meta& m)
+void Unit::add(const Declaration& d, const Meta& /*m*/)
     requires(std::is_base_of_v<declaration::DeclarationBase, Declaration>)
 {
     static_assert(std::is_base_of_v<declaration::DeclarationBase, Declaration>,

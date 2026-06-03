@@ -349,7 +349,7 @@ public:
      * be used to change the signature to more specific types given concreate
      * operands. To not change anything, return an empty optional
      */
-    virtual std::optional<operator_::Operands> filter(Builder* builder, const Expressions& operands) const {
+    virtual std::optional<operator_::Operands> filter(Builder* /*builder*/, const Expressions& /*operands*/) const {
         return {};
     }
 

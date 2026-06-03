@@ -582,7 +582,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
             body.addLocal({"args_on_heap", "auto", {}, "std::make_shared<decltype(args)>(std::move(args))"});
 
             int idx = 0;
-            auto inner_args = util::join(cxx_func.args | std::views::transform([&idx](auto& x) {
+            auto inner_args = util::join(cxx_func.args | std::views::transform([&idx](auto& /*x*/) {
                                              return fmt("std::get<%d>(*args_on_heap)", idx++);
                                          }),
                                          ", ");
@@ -691,7 +691,7 @@ codegen::TypeUsage CodeGen::parameterKindToTypeUsage(parameter::Kind k) {
 cxx::declaration::Function CodeGen::compile(Declaration* decl,
                                             type::Function* ft,
                                             declaration::Linkage linkage,
-                                            AttributeSet* fattrs,
+                                            AttributeSet* /*fattrs*/,
                                             std::optional<cxx::ID> namespace_) {
     auto result_ = [&]() {
         auto rt = compile(ft->result(), codegen::TypeUsage::FunctionResult);

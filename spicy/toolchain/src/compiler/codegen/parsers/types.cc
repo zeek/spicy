@@ -281,7 +281,7 @@ struct Visitor : public visitor::PreOrder {
         hilti::rt::cannot_be_reached();
     }
 
-    void operator()(hilti::type::Void* n) final {
+    void operator()(hilti::type::Void* /*n*/) final {
         switch ( tp->mode ) {
             case TypesMode::Default: {
                 result = builder()->expressionVoid();

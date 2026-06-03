@@ -373,7 +373,7 @@ using RangePostOrder = visitor::Range<visitor::Order::Post>;
 
 /** Return a range that iterates over AST, returning each node successively. */
 template<typename Visitor, typename Node>
-auto range(Visitor&& visitor, Node* root, std::string_view limit_to_tag = {}) {
+auto range(Visitor&& /*visitor*/, Node* root, std::string_view limit_to_tag = {}) {
     return visitor::Range<std::remove_reference<Visitor>::type::Order_>(root, limit_to_tag);
 }
 

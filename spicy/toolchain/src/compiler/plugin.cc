@@ -50,7 +50,7 @@ hilti::Plugin spicy::detail::createSpicyPlugin() {
             },
 
         .ast_init =
-            [](hilti::Builder* builder, hilti::ASTRoot* root) {
+            [](hilti::Builder* builder, hilti::ASTRoot* /*root*/) {
                 hilti::util::timing::Collector _("spicy/compiler/ast/init");
 
                 if ( builder->options().import_standard_modules ) {

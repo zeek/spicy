@@ -136,7 +136,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     // constness of the individual expressions when comparing types, and always
     // returns a non-constant type as the one inferred. If old type is given,
     // returns null if inferred type is the same as the old one.
-    QualifiedType* typeForExpressions(Node* n, node::Range<Expression> exprs, QualifiedType* old_type = nullptr) {
+    QualifiedType* typeForExpressions(node::Range<Expression> exprs, QualifiedType* old_type = nullptr) {
         UnqualifiedType* t = nullptr;
 
         for ( const auto& e : exprs ) {
@@ -406,7 +406,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             return; // cannot do anything yet
 
         if ( ! n->type()->isResolved() ) {
-            if ( auto* ntype = typeForExpressions(n, n->value(), n->type()->type()->elementType()) ) {
+            if ( auto* ntype = typeForExpressions(n->value(), n->type()->type()->elementType()) ) {
                 recordChange(n, ntype, "type");
                 n->setType(context(), builder()->qualifiedType(builder()->typeList(ntype), Constness::Mutable));
             }
@@ -496,7 +496,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             return; // cannot do anything yet
 
         if ( ! n->type()->isResolved() ) {
-            if ( auto* ntype = typeForExpressions(n, n->value(), n->type()->type()->elementType()) ) {
+            if ( auto* ntype = typeForExpressions(n->value(), n->type()->type()->elementType()) ) {
                 recordChange(n, ntype, "type");
                 n->setType(context(), builder()->qualifiedType(builder()->typeSet(ntype), Constness::Mutable));
             }
@@ -548,7 +548,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             return; // cannot do anything yet
 
         if ( ! n->type()->isResolved() ) {
-            if ( auto* ntype = typeForExpressions(n, n->value(), n->type()->type()->elementType()) ) {
+            if ( auto* ntype = typeForExpressions(n->value(), n->type()->type()->elementType()) ) {
                 recordChange(n, ntype, "type");
                 n->setType(context(), builder()->qualifiedType(builder()->typeVector(ntype), Constness::Mutable));
             }

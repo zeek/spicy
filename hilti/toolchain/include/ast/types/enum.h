@@ -92,14 +92,14 @@ public:
         return t;
     }
 
-    static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
+    static auto create(ASTContext* ctx, Wildcard /*_*/, const Meta& m = Meta()) {
         return ctx->make<Enum>(ctx, Wildcard(), m);
     }
 
 protected:
     Enum(ASTContext* ctx, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
-    Enum(ASTContext* ctx, Wildcard _, Meta meta)
+    Enum(ASTContext* ctx, Wildcard /*_*/, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"enum(*)"}, std::move(meta)) {}
 
     HILTI_NODE_1(type::Enum, UnqualifiedType, final);

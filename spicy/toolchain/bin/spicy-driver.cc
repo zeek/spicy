@@ -54,7 +54,7 @@ static bool accepted = false; // set by hook_accept_input()
 static void hookAcceptInput() { accepted = true; }
 
 static bool declined = false; // set by hook_decline_input()
-static void hookDeclineInput(const std::string& reason) { declined = true; }
+static void hookDeclineInput(const std::string& /*reason*/) { declined = true; }
 
 class SpicyDriver : public spicy::Driver, public spicy::rt::Driver {
 public:

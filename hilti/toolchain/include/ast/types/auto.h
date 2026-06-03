@@ -16,7 +16,7 @@ public:
 
     std::string_view typeClass() const final { return "auto"; }
 
-    bool isResolved(node::CycleDetector* cd) const final { return false; }
+    bool isResolved(node::CycleDetector* /*cd*/) const final { return false; }
 
 protected:
     Auto(ASTContext* ctx, Meta meta) : UnqualifiedType(ctx, NodeTags, {}, std::move(meta)) {}

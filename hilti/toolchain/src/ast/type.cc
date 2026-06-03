@@ -62,7 +62,7 @@ std::string UnqualifiedType::_dump() const {
     return util::join(x);
 }
 
-bool UnqualifiedType::unify(ASTContext* ctx, Node* scope_root) {
+bool UnqualifiedType::unify(ASTContext* ctx, Node* /*scope_root*/) {
     return type_unifier::unify(ctx, as<UnqualifiedType>());
 }
 

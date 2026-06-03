@@ -321,7 +321,7 @@ bool Operator::init(Builder* builder, Node* scope_root) {
     return true;
 }
 
-QualifiedType* Operator::result(Builder* builder, const Expressions& operands, const Meta& meta) const {
+QualifiedType* Operator::result(Builder* /*builder*/, const Expressions& /*operands*/, const Meta& /*meta*/) const {
     assert(_signature);
     if ( _signature->result )
         return _signature->result;

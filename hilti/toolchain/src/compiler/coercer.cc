@@ -92,7 +92,7 @@ struct VisitorCtor : visitor::PreOrder {
         }
     }
 
-    void operator()(ctor::Null* n) final {
+    void operator()(ctor::Null* /*n*/) final {
         if ( auto* t = dst->type()->tryAs<type::Optional>() ) {
             result = builder->ctorOptional(t->dereferencedType());
             return;
@@ -119,14 +119,14 @@ struct VisitorCtor : visitor::PreOrder {
         }
     }
 
-    void operator()(ctor::StrongReference* n) final {
+    void operator()(ctor::StrongReference* /*n*/) final {
         if ( dst->type()->isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) ) {
             result = builder->ctorBool(false);
             return;
         }
     }
 
-    void operator()(ctor::WeakReference* n) final {
+    void operator()(ctor::WeakReference* /*n*/) final {
         if ( dst->type()->isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) ) {
             result = builder->ctorBool(false);
             return;
@@ -523,17 +523,17 @@ struct VisitorType : visitor::PreOrder {
 
     QualifiedType* result = nullptr;
 
-    void operator()(type::Enum* n) final {
+    void operator()(type::Enum* /*n*/) final {
         if ( auto* t = dst->type()->tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
             result = dst;
     }
 
-    void operator()(type::Interval* n) final {
+    void operator()(type::Interval* /*n*/) final {
         if ( auto* t = dst->type()->tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
             result = dst;
     }
 
-    void operator()(type::Null* n) final {
+    void operator()(type::Null* /*n*/) final {
         if ( dst->type()->isA<type::Optional>() )
             result = dst;
         else if ( auto* t = dst->type()->tryAs<type::Result>(); t && t->dereferencedType()->type()->isA<type::Void>() )
@@ -544,12 +544,12 @@ struct VisitorType : visitor::PreOrder {
             result = dst;
     }
 
-    void operator()(type::Bytes* n) final {
+    void operator()(type::Bytes* /*n*/) final {
         if ( dst->type()->tryAs<type::Stream>() && (style & (CoercionStyle::Assignment | CoercionStyle::FunctionCall)) )
             result = dst;
     }
 
-    void operator()(type::Error* n) final {
+    void operator()(type::Error* /*n*/) final {
         if ( dst->type()->isA<type::Result>() )
             result = dst;
     }
@@ -599,14 +599,14 @@ struct VisitorType : visitor::PreOrder {
         }
     }
 
-    void operator()(type::String* n) final {
+    void operator()(type::String* /*n*/) final {
         if ( dst->type()->isA<type::Error>() && (style & CoercionStyle::ContextualConversion) ) {
             result = dst;
             return;
         }
     }
 
-    void operator()(type::Time* n) final {
+    void operator()(type::Time* /*n*/) final {
         if ( auto* t = dst->type()->tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
             result = dst;
     }
@@ -630,12 +630,12 @@ struct VisitorType : visitor::PreOrder {
         }
     }
 
-    void operator()(type::Stream* n) final {
+    void operator()(type::Stream* /*n*/) final {
         if ( dst->type()->isA<type::stream::View>() )
             result = dst;
     }
 
-    void operator()(type::stream::View* n) final {
+    void operator()(type::stream::View* /*n*/) final {
         if ( dst->type()->tryAs<type::Bytes>() && (style & (CoercionStyle::Assignment | CoercionStyle::FunctionCall)) )
             result = dst;
     }
@@ -654,7 +654,7 @@ struct VisitorType : visitor::PreOrder {
             result = n->typeValue();
     }
 
-    void operator()(type::Union* n) final {
+    void operator()(type::Union* /*n*/) final {
         if ( auto* t = dst->type()->tryAs<type::Bool>(); t && (style & CoercionStyle::ContextualConversion) )
             result = dst;
     }
@@ -1032,8 +1032,7 @@ static CoercedExpression coerceExpressionBackend(Builder* builder,
                                                  Expression* e,
                                                  QualifiedType* src_,
                                                  QualifiedType* dst_,
-                                                 bitmask<CoercionStyle> style,
-                                                 bool lhs) {
+                                                 bitmask<CoercionStyle> style) {
     const auto& no_change = e;
     CoercedExpression _result;
     int _line = 0;
@@ -1236,8 +1235,8 @@ CoercedExpression hilti::coerceExpression(Builder* builder,
                                           QualifiedType* src,
                                           QualifiedType* dst,
                                           bitmask<CoercionStyle> style,
-                                          bool lhs) {
-    return coerceExpressionBackend(builder, e, src, dst, style, lhs);
+                                          bool /*lhs*/) {
+    return coerceExpressionBackend(builder, e, src, dst, style);
 }
 
 // Public version going through all plugins.
@@ -1245,8 +1244,8 @@ CoercedExpression hilti::coerceExpression(Builder* builder,
                                           Expression* e,
                                           QualifiedType* dst,
                                           bitmask<CoercionStyle> style,
-                                          bool lhs) {
-    return coerceExpressionBackend(builder, e, e->type(), dst, style, lhs);
+                                          bool /*lhs*/) {
+    return coerceExpressionBackend(builder, e, e->type(), dst, style);
 }
 
 // Plugin-specific version just kicking off the local visitor.

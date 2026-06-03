@@ -25,7 +25,7 @@ static void execute_one(benchmark::State& state) {
         state.PauseTiming();
 
         auto addl_stack_usage = state.range(0);
-        auto r = hilti::rt::Resumable([addl_stack_usage](hilti::rt::resumable::Handle* h) {
+        auto r = hilti::rt::Resumable([addl_stack_usage](hilti::rt::resumable::Handle* /*h*/) {
             auto* xs = reinterpret_cast<char*>(alloca(addl_stack_usage));
             benchmark::DoNotOptimize(xs[addl_stack_usage - 1]);
             return hilti::rt::Nothing();
@@ -118,7 +118,7 @@ static void execute_many(benchmark::State& state) {
 
         rs.reserve(num_fibers);
         for ( int i = 0; i < num_fibers; ++i ) {
-            rs.emplace_back([addl_stack_usage](hilti::rt::resumable::Handle* h) {
+            rs.emplace_back([addl_stack_usage](hilti::rt::resumable::Handle* /*h*/) {
                 auto* xs = reinterpret_cast<char*>(alloca(addl_stack_usage));
                 benchmark::DoNotOptimize(xs[addl_stack_usage - 1]);
                 return hilti::rt::Nothing();

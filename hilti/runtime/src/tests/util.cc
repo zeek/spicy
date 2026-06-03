@@ -448,7 +448,7 @@ TEST_CASE("memory_statistics") {
     REQUIRE_EQ(ru0.cached_fibers, 0U);
 
     // Execute a single fiber.
-    hilti::rt::fiber::execute([](auto* p) { return Nothing(); });
+    hilti::rt::fiber::execute([](auto* /*p*/) { return Nothing(); });
 
     // Sleep again to give timing measurements a chance to differ. They might still
     // end up being indistinguishable from the previous measurements, though.

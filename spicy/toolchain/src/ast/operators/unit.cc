@@ -91,7 +91,7 @@ triggers an exception.
         };
     }
 
-    QualifiedType* result(hilti::Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(hilti::Builder* builder, const Expressions& operands, const Meta& /*meta*/) const final {
         return itemType(builder, operands)->recreateAsLhs(builder->context());
     }
 
@@ -124,7 +124,7 @@ triggers an exception.
         };
     }
 
-    QualifiedType* result(hilti::Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(hilti::Builder* builder, const Expressions& operands, const Meta& /*meta*/) const final {
         return itemType(builder, operands)->recreateAsConst(builder->context());
     }
 
@@ -159,7 +159,7 @@ exception differently).
         };
     }
 
-    QualifiedType* result(hilti::Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(hilti::Builder* builder, const Expressions& operands, const Meta& /*meta*/) const final {
         return itemType(builder, operands)->recreateAsLhs(builder->context());
     }
 
@@ -468,7 +468,7 @@ Returns a reference to the ``%context`` instance associated with the unit.
         };
     }
 
-    QualifiedType* result(hilti::Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(hilti::Builder* builder, const Expressions& operands, const Meta& /*meta*/) const final {
         return contextResult(builder, operands, hilti::Constness::Const);
     }
 
@@ -494,7 +494,7 @@ Returns a reference to the ``%context`` instance associated with the unit.
         };
     }
 
-    QualifiedType* result(hilti::Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(hilti::Builder* builder, const Expressions& operands, const Meta& /*meta*/) const final {
         return contextResult(builder, operands, hilti::Constness::Mutable);
     }
 

@@ -181,12 +181,12 @@ void connect(S& state, UnitRef<F> filter_unit) {
  * doing the transformation
  */
 template<typename S, typename F>
-void connect(S& state, const hilti::rt::TypeInfo* ti, UnitRef<F> filter_unit) {
+void connect(S& state, const hilti::rt::TypeInfo* /*ti*/, UnitRef<F> filter_unit) {
     detail::connect(state, filter_unit);
 }
 
 template<typename U, typename F>
-void connect(UnitType<U>& unit, const hilti::rt::TypeInfo* ti, UnitRef<F> filter_unit) {
+void connect(UnitType<U>& unit, const hilti::rt::TypeInfo* /*ti*/, UnitRef<F> filter_unit) {
     detail::connect(*unit, filter_unit);
 }
 
@@ -317,7 +317,9 @@ inline void flush(UnitType<U>& unit, const hilti::rt::TypeInfo* ti) {
 } // namespace spicy::rt::filter
 
 namespace hilti::rt::detail::adl {
-inline std::string to_string(const spicy::rt::filter::detail::OneFilter& u, adl::tag /*unused*/) { return "<filter>"; };
+inline std::string to_string(const spicy::rt::filter::detail::OneFilter& /*u*/, adl::tag /*unused*/) {
+    return "<filter>";
+};
 } // namespace hilti::rt::detail::adl
 
 namespace spicy::rt {
