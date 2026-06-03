@@ -125,17 +125,15 @@ public:
     void deprecated(std::string_view msg, const Location& l = location::None);
     void error(std::string_view msg, const Location& l = location::None);
     void error(std::string_view msg, const std::vector<std::string>& context, const Location& l = location::None);
-    void fatalError(std::string_view msg, const Location& l = location::None) __attribute__((noreturn));
-    void internalError(std::string_view msg, const Location& l = location::None) __attribute__((noreturn));
+    [[noreturn]] void fatalError(std::string_view msg, const Location& l = location::None);
+    [[noreturn]] void internalError(std::string_view msg, const Location& l = location::None);
 
     void info(std::string_view msg, const Node* n) { info(msg, n->location()); }
     void warning(std::string_view msg, const Node* n) { warning(msg, n->location()); }
     void deprecated(std::string_view msg, const Node* n) { deprecated(msg, n->location()); }
     void error(std::string_view msg, const Node* n) { error(msg, n->location()); }
-    void fatalError(std::string_view msg, const Node* n) __attribute__((noreturn)) { fatalError(msg, n->location()); }
-    void internalError(std::string_view msg, const Node* n) __attribute__((noreturn)) {
-        internalError(msg, n->location());
-    }
+    [[noreturn]] void fatalError(std::string_view msg, const Node* n) { fatalError(msg, n->location()); }
+    [[noreturn]] void internalError(std::string_view msg, const Node* n) { internalError(msg, n->location()); }
 
     /** Use HILTI_DEBUG(...) instead. */
     void _debug(const logging::DebugStream& dbg, std::string_view msg, const Location& l = location::None);
@@ -171,12 +169,12 @@ public:
     }
 
     template<typename T>
-    __attribute__((noreturn)) void fatalError(std::string msg, const std::shared_ptr<T>& n) {
+    [[noreturn]] void fatalError(std::string msg, const std::shared_ptr<T>& n) {
         fatalError(msg, n->location());
     }
 
     template<typename T>
-    __attribute__((noreturn)) void internalError(std::string msg, const std::shared_ptr<T>& n) {
+    [[noreturn]] void internalError(std::string msg, const std::shared_ptr<T>& n) {
         internalError(msg, n->location());
     }
 

@@ -4,4 +4,4 @@
 
 using namespace hilti::rt;
 
-HILTI_NORETURN void tuple::detail::throw_unset_tuple_element() { throw UnsetTupleElement("unset tuple element"); }
+void tuple::detail::throw_unset_tuple_element() { throw UnsetTupleElement("unset tuple element"); }

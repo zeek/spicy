@@ -24,8 +24,8 @@ namespace optional {
 struct Unset : public std::exception {};
 
 namespace detail {
-extern HILTI_NORETURN void throw_unset();          // throws rt::optional::Unset
-extern HILTI_NORETURN void throw_unset_optional(); // throws rt::UnsetOptional
+[[noreturn]] extern void throw_unset();          // throws rt::optional::Unset
+[[noreturn]] extern void throw_unset_optional(); // throws rt::UnsetOptional
 } // namespace detail
 } // namespace optional
 

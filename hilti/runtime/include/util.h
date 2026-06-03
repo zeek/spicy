@@ -97,7 +97,7 @@
 namespace hilti::rt {
 
 /** Reports an internal error and aborts execution. */
-HILTI_NORETURN void internalError(std::string_view msg);
+[[noreturn]] void internalError(std::string_view msg);
 
 } // namespace hilti::rt
 
@@ -113,10 +113,10 @@ namespace hilti::rt {
 extern std::string version();
 
 /** Dumps a backtrack to stderr and then aborts execution. */
-extern HILTI_NORETURN void abort_with_backtrace();
+[[noreturn]] extern void abort_with_backtrace();
 
 /** Aborts with an internal error saying we should not be where we are. */
-extern HILTI_NORETURN void cannot_be_reached();
+[[noreturn]] extern void cannot_be_reached();
 
 /** Statistics about resource usage. */
 struct ResourceUsage {

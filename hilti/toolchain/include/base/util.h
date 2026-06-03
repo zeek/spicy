@@ -55,7 +55,7 @@ using hilti::rt::demangle;
 using hilti::rt::enumerate;
 
 /** Aborts with an internal error saying we should not be where we are. */
-extern void cannotBeReached() __attribute__((noreturn));
+[[noreturn]] extern void cannotBeReached();
 
 /** Returns a type's demangled C++ name. */
 template<typename T>
