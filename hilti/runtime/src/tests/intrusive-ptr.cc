@@ -13,9 +13,11 @@
 // `IntrusivePtr` and might report frees of non-heap objects, even though the
 // code would not be called. Silence this warning (and accommodate for either
 // Clang or GCC not knowing that warning).
+#ifdef __GNUC__
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wfree-nonheap-object"
+#endif
 
 using namespace hilti::rt;
 

@@ -8,10 +8,14 @@
 #include <hilti/rt/types/set.h>
 #include <hilti/rt/types/vector.h>
 
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuninitialized"
+#endif
 #include <benchmark/benchmark.h>
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
 
 static void iterate_bytes(benchmark::State& state) {
     hilti::rt::init();

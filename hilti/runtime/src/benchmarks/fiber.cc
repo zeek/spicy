@@ -1,9 +1,13 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuninitialized"
+#endif
 #include <benchmark/benchmark.h>
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
 
 #include <cstdlib>
 

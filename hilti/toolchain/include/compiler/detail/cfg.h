@@ -33,12 +33,16 @@ namespace detail::cfg {
  */
 struct MetaNode : Node {
     // Some versions of GCC incorrectly diagnose maybe uninitialized members here.
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
     MetaNode(node::Tags node_tags) : Node(nullptr, node_tags, {}, {}) {}
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
 
     HILTI_NODE_0(MetaNode, override);
 };
