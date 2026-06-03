@@ -604,7 +604,7 @@ public:
      * @param group capture group to return
      * @return the matching group, or unset if no match
      */
-    Result<Bytes> match(const RegExp& re, unsigned int group = 0) const;
+    Result<Bytes> match(const RegExp& re, size_t group = 0) const;
 
     // Add some operators over `Base`.
     friend bool operator==(const Bytes& a, const Bytes& b) {
