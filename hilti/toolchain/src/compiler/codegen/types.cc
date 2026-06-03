@@ -1275,7 +1275,7 @@ const CxxTypeInfo& CodeGen::_getOrCreateTypeInfo(QualifiedType* t) {
                             to_string,
                             *x);
 
-            ti.declaration = cxx::declaration::Constant(tid, "::hilti::rt::TypeInfo", init, "");
+            ti.declaration = cxx::declaration::Constant(tid, "::hilti::rt::TypeInfo", init, "inline");
 
             unit()->add(*ti.declaration);
 

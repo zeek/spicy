@@ -19,7 +19,7 @@ namespace hlt_internal::Foo {
 }
 
 namespace hlt_internal::type_info { namespace {
-    const ::hilti::rt::TypeInfo _t_ti_tuple_a__uint_64___b__string__tuplex2auint64_string_x2b = { {}, "tuple<a: uint<64>, b: string>", [](const void *self) { return hilti::rt::to_string(*reinterpret_cast<const ::hilti::rt::Tuple<::hilti::rt::integer::safe<uint64_t>, ::hilti::rt::String>*>(self)); }, new ::hilti::rt::type_info::Tuple(std::vector<::hilti::rt::type_info::tuple::Element>({::hilti::rt::type_info::tuple::Element{ "a", &::hilti::rt::type_info::uint64, ::hilti::rt::Tuple<::hilti::rt::integer::safe<uint64_t>, ::hilti::rt::String>::elementOffset<0>() }, ::hilti::rt::type_info::tuple::Element{ "b", &::hilti::rt::type_info::string, ::hilti::rt::Tuple<::hilti::rt::integer::safe<uint64_t>, ::hilti::rt::String>::elementOffset<1>() }})) };
+    inline const ::hilti::rt::TypeInfo _t_ti_tuple_a__uint_64___b__string__tuplex2auint64_string_x2b = { {}, "tuple<a: uint<64>, b: string>", [](const void *self) { return hilti::rt::to_string(*reinterpret_cast<const ::hilti::rt::Tuple<::hilti::rt::integer::safe<uint64_t>, ::hilti::rt::String>*>(self)); }, new ::hilti::rt::type_info::Tuple(std::vector<::hilti::rt::type_info::tuple::Element>({::hilti::rt::type_info::tuple::Element{ "a", &::hilti::rt::type_info::uint64, ::hilti::rt::Tuple<::hilti::rt::integer::safe<uint64_t>, ::hilti::rt::String>::elementOffset<0>() }, ::hilti::rt::type_info::tuple::Element{ "b", &::hilti::rt::type_info::string, ::hilti::rt::Tuple<::hilti::rt::integer::safe<uint64_t>, ::hilti::rt::String>::elementOffset<1>() }})) };
 } }
 
 HILTI_PRE_INIT(hlt_internal::Foo::_t_register_module)
