@@ -858,6 +858,16 @@ Result<Nothing> Driver::compile() {
         if ( _driver_options.output_path.empty() ) {
             // OK if not available.
             if ( _library ) {
+#ifdef _WIN32
+                // Register the directories of any --cxx-link libraries so that
+                // the loader can find their DLL dependencies at runtime.
+                for ( const auto& lib : _compiler_options.cxx_link ) {
+                    if ( lib.empty() )
+                        continue;
+                    auto dir = rt::filesystem::absolute(rt::filesystem::path(lib)).parent_path();
+                    ::AddDllDirectory(dir.wstring().c_str());
+                }
+#endif
                 if ( auto loaded = _library->open(); ! loaded )
                     return loaded.error();
             }
