@@ -1,6 +1,9 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <cmath>
+#include <cstdint>
 #include <limits>
+#include <type_traits>
 #include <utility>
 
 #include <hilti/ast/builder/builder.h>
@@ -32,6 +35,30 @@ inline const DebugStream Coercer("coercer");
 } // namespace hilti::logging::debug
 
 namespace {
+
+// Helper to check whether a double value is representable in some integral type `T`.
+template<typename T>
+bool isRepresentable(double x)
+    requires std::is_integral_v<T>
+{
+    if ( ! std::isfinite(x) )
+        return false;
+
+    if ( std::trunc(x) != x )
+        return false;
+
+    // For both unsigned as well as signed integers up to 64 bit wide the
+    // minimum value can be representable in `double`.
+    if ( x < static_cast<double>(std::numeric_limits<T>::min()) )
+        return false;
+
+    // The max value of e.g., `int64_t` is not exactly representable due to the
+    // sign bit, but MAX + 1 is, so compare against that. We already know that
+    // the input value has no fractional part.
+    static const double max = std::ldexp(1.0, std::numeric_limits<T>::digits);
+
+    return x < max;
+}
 
 struct VisitorCtor : visitor::PreOrder {
     VisitorCtor(Builder* builder, QualifiedType* dst, bitmask<CoercionStyle> style)
@@ -158,20 +185,20 @@ struct VisitorCtor : visitor::PreOrder {
         if ( auto* t = dst->type()->tryAs<type::SignedInteger>() ) {
             double d = n->value();
 
-            if ( static_cast<double>(static_cast<int64_t>(d)) == d ) {
+            if ( isRepresentable<int64_t>(d) ) {
                 switch ( t->isWildcard() ? 64 : t->width() ) {
                     case 8:
-                        if ( static_cast<double>(int8_t(d)) == d )
+                        if ( isRepresentable<int8_t>(d) )
                             result = builder->ctorSignedInteger(static_cast<int64_t>(d), 8, n->meta());
                         break;
 
                     case 16:
-                        if ( static_cast<double>(static_cast<int16_t>(d)) == d )
+                        if ( isRepresentable<int16_t>(d) )
                             result = builder->ctorSignedInteger(static_cast<int64_t>(d), 16, n->meta());
                         break;
 
                     case 32:
-                        if ( static_cast<double>(static_cast<int32_t>(d)) == d )
+                        if ( isRepresentable<int32_t>(d) )
                             result = builder->ctorSignedInteger(static_cast<int64_t>(d), 32, n->meta());
                         break;
 
@@ -183,20 +210,20 @@ struct VisitorCtor : visitor::PreOrder {
         if ( auto* t = dst->type()->tryAs<type::UnsignedInteger>() ) {
             double d = n->value();
 
-            if ( static_cast<double>(static_cast<uint64_t>(d)) == d ) {
+            if ( isRepresentable<uint64_t>(d) ) {
                 switch ( t->isWildcard() ? 64 : t->width() ) {
                     case 8:
-                        if ( static_cast<double>(static_cast<uint8_t>(d)) == d )
+                        if ( isRepresentable<uint8_t>(d) )
                             result = builder->ctorUnsignedInteger(static_cast<uint64_t>(d), 8, n->meta());
                         break;
 
                     case 16:
-                        if ( static_cast<double>(static_cast<uint16_t>(d)) == d )
+                        if ( isRepresentable<uint16_t>(d) )
                             result = builder->ctorUnsignedInteger(static_cast<uint64_t>(d), 16, n->meta());
                         break;
 
                     case 32:
-                        if ( static_cast<double>(static_cast<uint32_t>(d)) == d )
+                        if ( isRepresentable<uint32_t>(d) )
                             result = builder->ctorUnsignedInteger(static_cast<uint64_t>(d), 32, n->meta());
                         break;
 
