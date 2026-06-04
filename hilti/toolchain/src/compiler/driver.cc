@@ -679,19 +679,16 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
                 if ( ! redirect_done ) {
                     redirect_done = true;
                     auto current_exe = rt::filesystem::canonical(util::currentExecutable());
-                    auto redirect_dir = rt::filesystem::temp_directory_path() / "hilti-hlto-redirect";
+                    // Place redirect directory on the same drive as the executable
+                    // so that hard links always succeed (they require the same
+                    // filesystem). We use a subdirectory next to the exe's bin dir.
+                    auto redirect_dir = current_exe.parent_path() / "hilti-hlto-redirect";
                     std::error_code ec;
                     rt::filesystem::create_directories(redirect_dir, ec);
                     for ( const auto* name : {"hiltic.exe", "spicyc.exe", "spicy-driver.exe", "spicy-dump.exe"} ) {
                         auto target = redirect_dir / name;
                         rt::filesystem::remove(target, ec);
                         rt::filesystem::create_hard_link(current_exe, target, ec);
-                        if ( ec ) {
-                            // Hard links fail across drives; fall back to copying.
-                            ec.clear();
-                            rt::filesystem::copy_file(current_exe, target,
-                                                     rt::filesystem::copy_options::overwrite_existing, ec);
-                        }
                     }
                     ::AddDllDirectory(redirect_dir.wstring().c_str());
                 }
