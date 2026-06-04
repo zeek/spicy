@@ -35,5 +35,5 @@ case "${cmd}" in
         docker run --cap-add SYS_PTRACE --security-opt seccomp=unconfined -i -t "spicy-${platform}:latest" /bin/sh -l
         ;;
 
-    *) usage;;
+    *) usage ;;
 esac
