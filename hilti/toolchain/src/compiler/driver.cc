@@ -685,6 +685,10 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
                     auto redirect_dir = current_exe.parent_path() / "hilti-hlto-redirect";
                     std::error_code ec;
                     rt::filesystem::create_directories(redirect_dir, ec);
+                    if ( ec )
+                        hilti::rt::fatalError(
+                            util::fmt("could not create redirect directory %s: %s", redirect_dir, ec.message()));
+
                     for ( const auto* name : {"hiltic.exe", "spicyc.exe", "spicy-driver.exe", "spicy-dump.exe"} ) {
                         auto target = redirect_dir / name;
                         rt::filesystem::remove(target, ec);
@@ -867,6 +871,20 @@ Result<Nothing> Driver::compile() {
         if ( _driver_options.output_path.empty() ) {
             // OK if not available.
             if ( _library ) {
+#ifdef _WIN32
+                // Register the directories of any --cxx-link libraries so that
+                // the loader can find their DLL dependencies at runtime.
+                for ( const auto& lib : _compiler_options.cxx_link ) {
+                    if ( lib.empty() )
+                        continue;
+                    std::error_code ec;
+                    auto dir = rt::filesystem::absolute(rt::filesystem::path(lib), ec);
+                    if ( ec )
+                        return error(util::fmt("could not resolve library path %s: %s", lib, ec.message()));
+
+                    ::AddDllDirectory(dir.parent_path().wstring().c_str());
+                }
+#endif
                 if ( auto loaded = _library->open(); ! loaded )
                     return loaded.error();
             }
