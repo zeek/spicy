@@ -3,7 +3,7 @@
 # Replace anything which looks like timestamps with XXXs (including the #start/end markers in logs).
 
 # Get us "modern" regexps with sed.
-if [ $(uname) == "Linux" ]; then
+if [ "$(uname)" == "Linux" ]; then
     sed="sed -r"
 else
     sed="sed -E"

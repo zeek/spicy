@@ -5,13 +5,6 @@
 repos:
 - repo: local
   hooks:
-  - id: checkbashisms
-    name: Check for bashisms in /bin/sh scripts
-    entry: ./tests/Scripts/3rdparty/checkbashisms.pl
-    language: script
-    types: ["sh"]
-    stages: ["pre-commit"]
-
   - id: license
     name: Check for license headers
     entry: ./tests/Scripts/license-header.py
@@ -104,5 +97,10 @@ repos:
   hooks:
     - id: shfmt
       args: ["-w", "-i", "4", "-ci"]
+
+- repo: https://github.com/shellcheck-py/shellcheck-py
+  rev: 745eface02aef23e168a8afb6b5737818efbea95  # frozen: v0.11.0.1
+  hooks:
+    - id: shellcheck
 
 exclude: 3rdparty/|doc/(autogen|.*examples)/|/Baseline/|(\.svg$)|(\.dat$)

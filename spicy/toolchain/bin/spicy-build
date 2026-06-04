@@ -39,7 +39,7 @@ mkcc() {
 execute() {
     # Remove absolute path of executable
     test "${verbose}" = 1 && echo "$@" | sed 's#^[^ ]*/\([a-zA-Z+_-]\{1,\}\) #> \1 #'
-    $@
+    "$@"
 }
 
 cleanup() {
@@ -161,10 +161,12 @@ done
 
 # Generate C++ output files. We pass `cc_inputs` here as well even though its
 # only effect is to cause emitting of generated files.
+# shellcheck disable=SC2086
 execute "$("${spicy_config}" --spicyc)" ${hiltic_flags} -x "${dest}/" ${spicy_inputs} ${cc_inputs} ${rt_modules} || exit 1
 
 cxxs="${cc_inputs} $(find "${dest}" -type f)"
 
 # Compile all C++ code into executable
 test "${verbose}" = 1 && echo "> ${cxx} [cxxflags] ${cxxs} [ldflags] -o ${out}"
+# shellcheck disable=SC2086
 "${cxx}" ${cxxflags} ${cxxs} ${ldflags} -o "${out}" || exit 1
