@@ -5,13 +5,6 @@
 repos:
 - repo: local
   hooks:
-  - id: checkbashisms
-    name: Check for bashisms in /bin/sh scripts
-    entry: ./tests/Scripts/3rdparty/checkbashisms.pl
-    language: script
-    types: ["sh"]
-    stages: ["pre-commit"]
-
   - id: license
     name: Check for license headers
     entry: ./tests/Scripts/license-header.py
@@ -37,7 +30,7 @@ repos:
     stages: ["pre-commit"]
 
 - repo: https://github.com/pre-commit/mirrors-clang-format
-  rev: 07a0f7667439f60724899f6ae288e4a4f572e0e1  # frozen: v22.1.2
+  rev: dd18dad857d6133e90bbe478f4f2f22ec0030269  # frozen: v22.1.5
   hooks:
   - id: clang-format
     types_or: ["c", "c++"]
@@ -54,13 +47,13 @@ repos:
     stages: ["pre-commit"]
   - id: check-added-large-files
 
-- repo: https://gitlab.com/daverona/pre-commit/cpp
-  rev: 46cc8b337c73e5c1622ba0bb6dc21cdfcfe00c2f  # frozen: 0.8.0
+- repo: https://github.com/cpplint/cpplint
+  rev: 350702a4d39395571bd118c9a3cff0a573488d61  # frozen: 2.0.2
   hooks:
-  - id: cpplint
-    exclude: '3rdparty/'
-    args: ["--quiet"]
-    stages: ["pre-commit"]
+    - id: cpplint
+      exclude: '3rdparty/'
+      args: ["--quiet"]
+      stages: ["pre-commit"]
 
 - repo: https://github.com/jorisroovers/gitlint
   rev:  acc9d9de6369b76d22cb4167029d2035e8730b98  # frozen: v0.19.1
@@ -86,17 +79,28 @@ repos:
     stages: ["pre-commit"]
 
 - repo: https://github.com/crate-ci/typos
-  rev: 02ea592e44b3a53c302f697cddca7641cd051c3d  # frozen: v1.45.0
+  rev: 37bb98842b0d8c4ffebdb75301a13db0267cef89  # frozen: typos-dict-v0.13.30
   hooks:
   - id: typos
     exclude: 'tests/.*/regexp/.*|.clang-tidy'
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
   # Ruff version.
-  rev: c60c980e561ed3e73101667fe8365c609d19a438  # frozen: v0.15.9
+  rev: 0671d8ab202c4ac093b78433ae5baf74f3fc7246  # frozen: v0.15.15
   hooks:
   - id: ruff-check
     args: [ --fix ]
   - id: ruff-format
+
+- repo: https://github.com/maxwinterstein/shfmt-py
+  rev: 85cc16bc0319e182d7b62b0a2de351358083ce4c  # frozen: v4.0.0
+  hooks:
+    - id: shfmt
+      args: ["-w", "-i", "4", "-ci"]
+
+- repo: https://github.com/shellcheck-py/shellcheck-py
+  rev: 745eface02aef23e168a8afb6b5737818efbea95  # frozen: v0.11.0.1
+  hooks:
+    - id: shellcheck
 
 exclude: 3rdparty/|doc/(autogen|.*examples)/|/Baseline/|(\.svg$)|(\.dat$)
