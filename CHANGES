@@ -1,3 +1,7 @@
+1.17.0-dev.46 | 2026-06-05 13:46:40 +0200
+
+  * Handle overflows in `atoi_n` (Benjamin Bannier, Corelight)
+
 1.17.0-dev.44 | 2026-06-03 18:39:40 +0200
 
   * Do not run concurrent GH actions workflow for anything but tags [skip ci] (Benjamin Bannier, Corelight)
