@@ -1,0 +1,5 @@
+#!/bin/sh
+#
+# Returns true if running on Linux.
+
+test "$(uname -o 2>/dev/null)" = "Linux"
