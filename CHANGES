@@ -1,3 +1,18 @@
+1.17.0-dev.51 | 2026-06-08 15:00:48 +0200
+
+  * Skip leak tests unless running on Linux (Benjamin Bannier, Corelight)
+
+    Clang's leak sanitizer is only supported on Linux at the moment, so skip
+    tests relying on it on all other platforms.
+
+  * Avoid overflows when checking coercion from `real` to integer type (Benjamin Bannier, Corelight)
+
+    The casts from `double` to integral type could previously trigger UB at
+    compile time if the `double` value was outside of the range of the
+    integral type, NaN or infinity. To handle this correctly we add a range
+    check in this patch. Due to the way comparisons against float NaN and
+    infinity work they are also handled.
+
 1.17.0-dev.48 | 2026-06-08 12:07:55 +0200
 
   * Avoid underflow in `atoi_n` (Benjamin Bannier, Corelight)

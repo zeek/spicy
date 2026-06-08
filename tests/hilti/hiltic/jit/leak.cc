@@ -1,4 +1,5 @@
 // @TEST-REQUIRES: have-sanitizer
+// @TEST-REQUIRES: is-linux
 // @TEST-REQUIRES: test -z "${ASAN_OPTIONS}"
 // @TEST-EXEC-FAIL: ${HILTIC} -j %INPUT >output 2>&1
 // @TEST-EXEC: grep -q 'detected memory leaks' output
