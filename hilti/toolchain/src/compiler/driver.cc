@@ -685,10 +685,21 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
                     auto redirect_dir = current_exe.parent_path() / "hilti-hlto-redirect";
                     std::error_code ec;
                     rt::filesystem::create_directories(redirect_dir, ec);
+                    if ( ec )
+                        hilti::rt::fatalError(
+                            util::fmt("could not create redirect directory %s: %s", redirect_dir, ec.message()));
+
                     for ( const auto* name : {"hiltic.exe", "spicyc.exe", "spicy-driver.exe", "spicy-dump.exe"} ) {
                         auto target = redirect_dir / name;
                         rt::filesystem::remove(target, ec);
+                        if ( ec )
+                            hilti::rt::fatalError(
+                                util::fmt("could not remove existing redirect %s: %s", target, ec.message()));
+
                         rt::filesystem::create_hard_link(current_exe, target, ec);
+                        if ( ec )
+                            hilti::rt::fatalError(util::fmt("could not create hard link %s -> %s: %s", target,
+                                                            current_exe, ec.message()));
                     }
                     ::AddDllDirectory(redirect_dir.wstring().c_str());
                 }
@@ -864,8 +875,12 @@ Result<Nothing> Driver::compile() {
                 for ( const auto& lib : _compiler_options.cxx_link ) {
                     if ( lib.empty() )
                         continue;
-                    auto dir = rt::filesystem::absolute(rt::filesystem::path(lib)).parent_path();
-                    ::AddDllDirectory(dir.wstring().c_str());
+                    std::error_code ec;
+                    auto dir = rt::filesystem::absolute(rt::filesystem::path(lib), ec);
+                    if ( ec )
+                        return error(util::fmt("could not resolve library path %s: %s", lib, ec.message()));
+
+                    ::AddDllDirectory(dir.parent_path().wstring().c_str());
                 }
 #endif
                 if ( auto loaded = _library->open(); ! loaded )
