@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <ctime>
+#include <limits>
 #include <locale>
 #include <string>
 #include <vector>
@@ -84,9 +85,6 @@ TEST_CASE("atoi_n") {
         }
 
         CHECK_EQ(x, -42);
-
-        // Parsing an a signed value into an unsigned type underflows.
-        CHECK_EQ(atoi_n_<uint8_t>("-1", 10, 2), 255);
     }
 
     SUBCASE("parse something") {
@@ -136,6 +134,19 @@ TEST_CASE("atoi_n") {
                  std::numeric_limits<uint8_t>::min());
         CHECK_EQ(atoi_n_<uint8_t>(std::to_string(std::numeric_limits<uint8_t>::max()), 10, 3),
                  std::numeric_limits<uint8_t>::max());
+
+        CHECK_EQ(atoi_n_<int64_t>(std::to_string(std::numeric_limits<int64_t>::min()), 10, 20),
+                 std::numeric_limits<int64_t>::min());
+        CHECK_EQ(atoi_n_<int64_t>(std::to_string(std::numeric_limits<int64_t>::max()), 10, 19),
+                 std::numeric_limits<int64_t>::max());
+
+        CHECK_EQ(atoi_n_<uint64_t>(std::to_string(std::numeric_limits<uint64_t>::min()), 10, 1),
+                 std::numeric_limits<uint64_t>::min());
+        CHECK_EQ(atoi_n_<uint64_t>(std::to_string(std::numeric_limits<uint64_t>::max()), 10, 20),
+                 std::numeric_limits<uint64_t>::max());
+
+        // Parsing an a signed value into an unsigned type underflows.
+        CHECK_EQ(atoi_n_<uint8_t>("-1", 10, 2), 255);
     }
 
     SUBCASE("overflow") {

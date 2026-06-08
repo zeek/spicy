@@ -462,7 +462,7 @@ class OutOfRange;
  */
 template<class Iter, typename Result>
 inline Iter atoi_n(Iter s, Iter e, uint8_t base, Result* result)
-    requires std::is_integral_v<Result> && std::contiguous_iterator<Iter>
+    requires std::is_integral_v<Result> && (sizeof(Result) <= sizeof(uint64_t)) && std::contiguous_iterator<Iter>
 {
     if ( base < 2 || base > 36 )
         throw OutOfRange("base for numerical conversion must be between 2 and 36");
@@ -531,7 +531,7 @@ inline Iter atoi_n(Iter s, Iter e, uint8_t base, Result* result)
 
     // Convert to and store in target value. We have already checked the range above.
     if ( neg )
-        *result = -static_cast<Result>(n);
+        *result = static_cast<Result>(0ULL - n);
     else
         *result = static_cast<Result>(n);
 

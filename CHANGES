@@ -1,3 +1,16 @@
+1.17.0-dev.48 | 2026-06-08 12:07:55 +0200
+
+  * Avoid underflow in `atoi_n` (Benjamin Bannier, Corelight)
+
+    We had previously fixed some overflows in this function, but missed a
+    case when extracting `INT64_MIN`. We were already parsing the absolute
+    value with enough range, but could underflow when negating it for the
+    final result since the negation was done in the target type which did
+    not have enough range.
+
+    With this patch we instead perform the negation in the unsigned type
+    which has enough range, and only cast to the target type after.
+
 1.17.0-dev.46 | 2026-06-05 13:46:40 +0200
 
   * Handle overflows in `atoi_n` (Benjamin Bannier, Corelight)
