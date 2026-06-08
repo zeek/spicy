@@ -698,8 +698,10 @@ Result<Nothing> Driver::addInput(const hilti::rt::filesystem::path& path) {
 
                         rt::filesystem::create_hard_link(current_exe, target, ec);
                         if ( ec )
-                            hilti::rt::fatalError(util::fmt("could not create hard link %s -> %s: %s", target,
-                                                            current_exe, ec.message()));
+                            hilti::rt::fatalError(util::fmt("could not create hard link %s -> %s: %s",
+                                                            target,
+                                                            current_exe,
+                                                            ec.message()));
                     }
                     ::AddDllDirectory(redirect_dir.wstring().c_str());
                 }
