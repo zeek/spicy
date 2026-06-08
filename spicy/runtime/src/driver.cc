@@ -407,7 +407,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
     std::string magic;
     std::getline(in, magic);
 
-    if ( hilti::rt::trim(magic) != "!spicy-batch v2" )
+    if ( magic != std::string("!spicy-batch v2") )
         return hilti::rt::result::Error("input is not a v2 Spicy batch file");
 
     std::unordered_map<hilti::rt::String, driver::ParsingStateForDriver> flows;
@@ -529,12 +529,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
 
             std::string data(size, {});
             in.read(data.data(), static_cast<std::streamsize>(size));
-
-            // Consume the line terminator after the data payload.
-            // In binary mode a CRLF file has \r\n; eat both characters.
-            if ( in.peek() == '\r' )
-                in.get();
-            in.get(); // \n
+            in.get(); // Eat newline.
 
             if ( in.eof() || in.fail() )
                 return hilti::rt::result::Error("premature end of @data");
