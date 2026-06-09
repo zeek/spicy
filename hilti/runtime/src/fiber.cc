@@ -28,32 +28,30 @@
 
 using namespace hilti::rt;
 
-#ifndef HILTI_HAVE_ASAN
+#if defined(HILTI_HAVE_ASAN) || defined(HILTI_IN_SANITIZER_CONTEXT)
+// When running inside a sanitized process (either directly compiled with
+// ASAN, or linked into a sanitized executable), we use individual stacks to
+// avoid stack-copying false positives, force the switch trampoline, and
+// disable guard pages (leak sanitizer aborts with "Tracer caught signal 11"
+// if pages get protected).
+static const auto DefaultFiberType = detail::Fiber::Type::IndividualStack;
+static const auto AlwaysUseStackSwitchTrampoline = true;
+static const auto FiberGuardFlags = 0;
+#else
 // Defaults for normal operation.
 static const auto DefaultFiberType = detail::Fiber::Type::SharedStack; // share stack by default
 static const auto AlwaysUseStackSwitchTrampoline = false;              // use switch trampoline only with shared stacks
 static const auto FiberGuardFlags = FIBER_FLAG_GUARD_LO | FIBER_FLAG_GUARD_HI;
+#endif
 
+#ifndef HILTI_HAVE_ASAN
 #define ASAN_NO_OPTIMIZE // just leave empty
-
 #else
-// Because the stack copying triggers false positives with ASAN, we use
-// individual stacks when that's active. We still force use of the stack
-// switcher trampoline in that case, so that we get that piece at least.
-//
-// TODO: If we could whitelist the memcpys, that would solve the problem, but I
-// haven't been able to do that using any of the sanitizer attributes; they
-// just seem to be ignored.
-static const auto DefaultFiberType = detail::Fiber::Type::IndividualStack;
-static const auto AlwaysUseStackSwitchTrampoline = true;
-static const auto FiberGuardFlags = 0; // leak sanitizer may abort with "Tracer caught signal 11" if pages get protected
-
 #if defined(__clang__)
 #define ASAN_NO_OPTIMIZE __attribute__((optnone))
 #elif defined(__GNUC__)
 #define ASAN_NO_OPTIMIZE __attribute__((optimize(0)))
 #endif
-
 #endif
 
 // Pre-allocate this so that we don't need to create a std::string on the fly
