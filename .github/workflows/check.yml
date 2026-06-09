@@ -430,6 +430,5 @@ jobs:
     - name: Build
       run: ci/windows/build.cmd
 
-    # TODO: Currently a number of tests fail, look into that and reenable test running in CI.
-    # - name: Test
-    #   run: ci/windows/test.cmd
+    - name: Test
+      run: ci/windows/test.cmd

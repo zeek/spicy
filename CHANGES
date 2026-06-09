@@ -1,3 +1,11 @@
+1.17.0-dev.55 | 2026-06-09 11:27:45 +0200
+
+  * add windows variant to spicyc-cxx-link (Maor Hamami)
+
+  * replace temp dir with dir on exe location (Maor Hamami)
+
+  * [windows] fix btests failures (Maor Hamami)
+
 1.17.0-dev.51 | 2026-06-08 15:00:48 +0200
 
   * Skip leak tests unless running on Linux (Benjamin Bannier, Corelight)

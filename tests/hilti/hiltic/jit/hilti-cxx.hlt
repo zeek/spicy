@@ -40,6 +40,6 @@ cxx=$(cat ${BUILD}/CMakeCache.txt | grep ^CMAKE_CXX_COMPILER: | cut -d = -f 2)
 @TEST-START-FILE cxx-wrapper.cmd
 @echo off
 echo our wrapper ran!>"%~dp0wrapper.output"
-for /f "usebackq tokens=1,* delims==" %%a in (`findstr /b "CMAKE_CXX_COMPILER:" "%BUILD%\CMakeCache.txt"`) do set "CXX=%%b"
+for /f "usebackq tokens=1,* delims==" %%a in (`%SystemRoot%\System32\findstr.exe /b "CMAKE_CXX_COMPILER:" "%BUILD%\CMakeCache.txt"`) do set "CXX=%%b"
 "%CXX%" %*
 @TEST-END-FILE

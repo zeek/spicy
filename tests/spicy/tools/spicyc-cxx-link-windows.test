@@ -1,21 +1,25 @@
-# @TEST-DOC: Validate that one can load additional static or shared libraries.
+# @TEST-DOC: Validate that one can load additional static or shared libraries (Windows variant).
 
-# @TEST-REQUIRES: ! is-windows
-# @TEST-REQUIRES: command -v ar
-# @TEST-EXEC: $(spicy-config --cxx-launcher --cxx --debug --cxxflags --ldflags) -fPIC -shared -o hello.so hello.cc
-# @TEST-EXEC: CXX="$(spicy-config --cxx-launcher --cxx)" CXXFLAGS="$(spicy-config --debug --cxxflags --ldflags) -fPIC" make hi.o && ar rcs hi.a hi.o
+# @TEST-REQUIRES: is-windows
+
+# Build hello.cc into a shared library (DLL + import lib).
+# @TEST-EXEC: cxx-compile -LD hello.cc -link -out:hello.dll -implib:hello.lib
+
+# Build hi.cc into a static library.
+# @TEST-EXEC: cxx-compile -c -o hi.obj hi.cc
+# @TEST-EXEC: lib -nologo -out:hi.lib hi.obj
 
 # Works in just-in-time mode.
-# @TEST-EXEC: spicyc --cxx-link $PWD/hello.so --cxx-link $PWD/hi.a -j foo.spicy>>output
+# @TEST-EXEC: spicyc --cxx-link $PWD/hello.lib --cxx-link $PWD/hi.lib -j foo.spicy>>output
 
 # Works in ahead-of-time mode.
-# @TEST-EXEC: spicyc -D jit --cxx-link $PWD/hello.so --cxx-link $PWD/hi.a -j foo.spicy -o foo.hlto >>output
+# @TEST-EXEC: spicyc -D jit --cxx-link $PWD/hello.lib --cxx-link $PWD/hi.lib -j foo.spicy -o foo.hlto >>output
 # @TEST-EXEC: spicyc -j foo.hlto >>output
 
 # @TEST-EXEC: btest-diff output
 
 # @TEST-START-FILE hello.cc
-// This file will be compiled into a shared library.
+// This file will be compiled into a shared library (DLL).
 #include <hilti/rt/linker.h>
 #include <hilti/rt/types/string.h>
 HILTI_EXPORT ::hilti::rt::String hello(const ::hilti::rt::String& name) {
