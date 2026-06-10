@@ -45,7 +45,11 @@ namespace spicy::logging::debug {
 inline const hilti::logging::DebugStream ParserBuilder("parser-builder");
 } // namespace spicy::logging::debug
 
-ParserState::ParserState(Builder* builder, type::Unit* unit, const Grammar& grammar, Expression* data, Expression* cur)
+ParserState::ParserState(Builder* builder,
+                         type::Unit* unit,
+                         const Grammar& /*grammar*/,
+                         Expression* data,
+                         Expression* cur)
     : unit(unit),
       unit_id(unit->typeID()),
       self(builder->expressionName(ID("self"))),
@@ -961,7 +965,7 @@ struct ProductionVisitor : public production::Visitor {
                                                             builder()->memberCall(cur, "offset"))});
     }
 
-    void postParseField(const Production& p,
+    void postParseField(const Production& /*p*/,
                         const production::Meta& meta,
                         Expression* pre_container_offset,
                         Expression* ncur,
@@ -1122,7 +1126,7 @@ struct ProductionVisitor : public production::Visitor {
     }
 
     void getLookAhead(const production::Set& tokens,
-                      const std::string& symbol,
+                      const std::string& /*symbol*/,
                       const Location& location,
                       LiteralMode mode = LiteralMode::Try) {
         assert(mode != LiteralMode::Default);
@@ -1588,7 +1592,7 @@ struct ProductionVisitor : public production::Visitor {
         popBuilder(); // while_.
     }
 
-    std::pair<Expression*, Expression*> preAggregate(const Production* p, AttributeSet* attributes) {
+    std::pair<Expression*, Expression*> preAggregate(const Production* /*p*/, AttributeSet* attributes) {
         Expression* length = nullptr;
         builder()->addCall("hilti::debugIndent", {builder()->stringLiteral("spicy")});
 
@@ -1616,7 +1620,7 @@ struct ProductionVisitor : public production::Visitor {
         return {ncur, length};
     }
 
-    void postAggregate(const Production* p, AttributeSet* attributes, Expression* ncur, Expression* length) {
+    void postAggregate(const Production* /*p*/, AttributeSet* attributes, Expression* ncur, Expression* length) {
         if ( auto* a = attributes->find(attribute::kind::Size); a && ! attributes->find(attribute::kind::Eod) ) {
             assert(length);
             _checkSizeAmount(length, a->meta(), ncur);

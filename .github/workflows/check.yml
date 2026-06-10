@@ -361,7 +361,7 @@ jobs:
     - name: Setup ccache
       uses: hendrikmuhs/ccache-action@d62db5f07c26379fc4b4e0916f098a92573c3b03 # v1.2.23
       with:
-        key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.release }}
+        key: ${{ github.workflow }}-${{ github.job }}
 
     - name: Set up MSVC Dev Cmd
       uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0

@@ -85,11 +85,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
     }
 
     // Helper method to compute one of several kinds of a field's types.
-    QualifiedType* fieldType(const type::unit::item::Field& f,
-                             QualifiedType* type,
-                             FieldType ft,
-                             bool is_container,
-                             const Meta& meta) {
+    QualifiedType* fieldType(QualifiedType* type, FieldType ft, bool is_container, const Meta& meta) {
         // Visitor determining a unit field type.
         struct FieldTypeVisitor : public visitor::PreOrder {
             explicit FieldTypeVisitor(Builder* builder, FieldType ft) : builder(builder), ft(ft) {}
@@ -99,7 +95,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
             QualifiedType* result = nullptr;
 
-            void operator()(hilti::type::RegExp* n) final {
+            void operator()(hilti::type::RegExp* /*n*/) final {
                 result = builder->qualifiedType(builder->typeBytes(), hilti::Constness::Mutable);
             }
         };
@@ -539,14 +535,14 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         if ( n->parseType()
                  ->type()
                  ->isA<hilti::type::Auto>() ) { // do not use isResolved(), so that we can deal with loops
-            if ( auto* t = fieldType(*n, n->originalType(), FieldType::ParseType, n->isContainer(), n->meta()) ) {
+            if ( auto* t = fieldType(n->originalType(), FieldType::ParseType, n->isContainer(), n->meta()) ) {
                 recordChange(n, "parse type");
                 n->setParseType(context(), t);
             }
         }
 
         if ( ! n->ddType()->isResolved() && n->parseType()->isResolved() ) {
-            if ( auto* dd = fieldType(*n, n->originalType(), FieldType::DDType, n->isContainer(), n->meta()) ) {
+            if ( auto* dd = fieldType(n->originalType(), FieldType::DDType, n->isContainer(), n->meta()) ) {
                 recordChange(n, dd, "$$ type");
                 n->setDDType(context(), dd);
             }
@@ -578,12 +574,11 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                                                      t->constness());
                 }
             }
-            else if ( const auto& i = n->item(); i && i->isA<type::unit::item::Field>() ) {
-                const auto& inner_f = i->as<type::unit::item::Field>();
-                t = fieldType(*inner_f, i->itemType(), FieldType::ItemType, n->isContainer(), n->meta());
-            }
+            else if ( const auto& i = n->item(); i && i->isA<type::unit::item::Field>() )
+                t = fieldType(i->itemType(), FieldType::ItemType, n->isContainer(), n->meta());
+
             else
-                t = fieldType(*n, n->originalType(), FieldType::ItemType, n->isContainer(), n->meta());
+                t = fieldType(n->originalType(), FieldType::ItemType, n->isContainer(), n->meta());
 
             if ( t ) {
                 recordChange(n, "item type");

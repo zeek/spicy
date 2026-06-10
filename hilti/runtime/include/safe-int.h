@@ -13,8 +13,8 @@ namespace detail {
 class SafeIntException {
 public:
     // SafeInt API methods.
-    HILTI_NORETURN static void SafeIntOnOverflow() { throw Overflow("integer overflow"); }
-    HILTI_NORETURN static void SafeIntOnDivZero() { throw DivisionByZero("integer division by zero"); }
+    [[noreturn]] static void SafeIntOnOverflow() { throw Overflow("integer overflow"); }
+    [[noreturn]] static void SafeIntOnDivZero() { throw DivisionByZero("integer division by zero"); }
 };
 } // namespace detail
 

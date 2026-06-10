@@ -428,7 +428,7 @@ GraphNode CFG::_addFor(GraphNode predecessor, const statement::For& for_) {
     return scope_end;
 }
 
-GraphNode CFG::_addWhile(GraphNode predecessor, const statement::While& while_, GraphNode scope_end) {
+GraphNode CFG::_addWhile(GraphNode predecessor, const statement::While& while_, GraphNode /*scope_end*/) {
     if ( auto* init = while_.init() ) {
         auto init_ = _getOrAddNode(init);
         _addEdge(predecessor, init_);

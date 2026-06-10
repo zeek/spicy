@@ -320,7 +320,7 @@ public:
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* /*builder*/, const Expressions& operands, const Meta& /*meta*/) const final {
         return operands[1]->type()->type()->as<type::Type_>()->typeValue();
     }
 
@@ -343,7 +343,7 @@ public:
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* /*builder*/, const Expressions& operands, const Meta& /*meta*/) const final {
         return operands[1]->type()->type()->as<type::Type_>()->typeValue();
     }
 

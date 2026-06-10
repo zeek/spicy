@@ -148,7 +148,7 @@ struct Visitor : hilti::visitor::PreOrder {
         block->addStatement(fmt("goto %s_%" PRIu64, HILTI_INTERNAL_ID("done"), n->linkedLoop()->identity()));
     }
 
-    void operator()(statement::Continue* n) final { block->addStatement("continue"); }
+    void operator()(statement::Continue* /*n*/) final { block->addStatement("continue"); }
 
     void operator()(statement::Comment* n) final {
         auto sep_before = (n->separator() == statement::comment::Separator::Before ||

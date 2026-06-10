@@ -13,7 +13,7 @@
 namespace hilti::detail {
 
 using normalizer_func = std::optional<std::string> (*)(std::string_view);
-inline std::optional<std::string> identityNormalizer(std::string_view s) { return std::nullopt; }
+inline std::optional<std::string> identityNormalizer(std::string_view /*s*/) { return std::nullopt; }
 
 /**
  * Base class for representing scoped language IDs. It provides a number of

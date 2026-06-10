@@ -176,7 +176,7 @@ public:
         return ctx->make<OperandList>(ctx, node::flatten(std::move(operands)), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
+    static auto create(ASTContext* ctx, Wildcard /*_*/, const Meta& m = Meta()) {
         return ctx->make<OperandList>(ctx, Wildcard(), m);
     }
 
@@ -194,7 +194,7 @@ public:
 protected:
     OperandList(ASTContext* ctx, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
-    OperandList(ASTContext* ctx, Wildcard _, Meta meta)
+    OperandList(ASTContext* ctx, Wildcard /*_*/, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"operand-list(*)"}, std::move(meta)) {}
 
     HILTI_NODE_1(type::OperandList, UnqualifiedType, final);

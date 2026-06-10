@@ -90,7 +90,7 @@ this triggers an exception.
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& /*meta*/) const final {
         return itemType(builder, operands);
     }
 
@@ -116,7 +116,7 @@ this triggers an exception unless the value is only being assigned to.
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& /*meta*/) const final {
         return itemType(builder, operands)->recreateAsLhs(builder->context());
     }
 

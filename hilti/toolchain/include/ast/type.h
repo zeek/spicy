@@ -74,7 +74,7 @@ struct Unification {
      *
      * @param never_match unused
      */
-    Unification(NeverMatch _) : _serialization("") {}
+    Unification(NeverMatch /*_*/) : _serialization("") {}
 
     Unification(const Unification& other) = default;
     Unification(Unification&& other) = default;
@@ -292,7 +292,7 @@ public:
     virtual bool isReferenceType() const { return false; }
 
     /** * Returns true if a type is fully resolved. */
-    virtual bool isResolved(node::CycleDetector* cd = nullptr) const { return true; }
+    virtual bool isResolved(node::CycleDetector* /*cd*/ = nullptr) const { return true; }
 
     /** Returns true for HILTI types that can be compared for ordering at runtime. */
     virtual bool isSortable() const { return false; }
@@ -316,14 +316,14 @@ protected:
         : Node::Node(ctx, node_tags, std::move(meta)), _context(ctx), _unification(std::move(u)) {}
     UnqualifiedType(ASTContext* ctx, node::Tags node_tags, type::Unification&& u, Nodes children, Meta meta)
         : Node::Node(ctx, node_tags, std::move(children), std::move(meta)), _context(ctx), _unification(std::move(u)) {}
-    UnqualifiedType(ASTContext* ctx, node::Tags node_tags, type::Wildcard _, type::Unification&& u, Meta meta)
+    UnqualifiedType(ASTContext* ctx, node::Tags node_tags, type::Wildcard /*_*/, type::Unification&& u, Meta meta)
         : Node::Node(ctx, node_tags, {}, std::move(meta)),
           _context(ctx),
           _unification(std::move(u)),
           _is_wildcard(true) {}
     UnqualifiedType(ASTContext* ctx,
                     node::Tags node_tags,
-                    type::Wildcard _,
+                    type::Wildcard /*_*/,
                     type::Unification&& u,
                     Nodes children,
                     Meta meta)

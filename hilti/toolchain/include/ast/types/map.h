@@ -34,7 +34,7 @@ public:
                                    meta);
     }
 
-    static auto create(ASTContext* ctx, Wildcard _, const Meta& meta = Meta()) {
+    static auto create(ASTContext* ctx, Wildcard /*_*/, const Meta& meta = Meta()) {
         return ctx->make<Iterator>(
             ctx,
             Wildcard(),
@@ -55,7 +55,7 @@ public:
 protected:
     Iterator(ASTContext* ctx, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
-    Iterator(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
+    Iterator(ASTContext* ctx, Wildcard /*_*/, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"iterator(map(*))"}, std::move(children), std::move(meta)) {}
 
     bool isResolved(node::CycleDetector* cd) const final {
@@ -90,7 +90,7 @@ public:
                               meta);
     }
 
-    static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
+    static auto create(ASTContext* ctx, Wildcard /*_*/, const Meta& m = Meta()) {
         return ctx->make<Map>(ctx,
                               Wildcard(),
                               {QualifiedType::create(ctx,
@@ -102,7 +102,7 @@ public:
 protected:
     Map(ASTContext* ctx, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
-    Map(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
+    Map(ASTContext* ctx, Wildcard /*_*/, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"map(*)"}, std::move(children), std::move(meta)) {}
 
     void newlyQualified(const QualifiedType* qtype) const final {

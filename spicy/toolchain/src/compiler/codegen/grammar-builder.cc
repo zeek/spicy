@@ -21,7 +21,7 @@ using hilti::util::fmt;
 namespace {
 
 struct ProductionFactory {
-    ProductionFactory(CodeGen* cg, codegen::GrammarBuilder* gb, Grammar* g) : cg(cg), grammar(g) {}
+    ProductionFactory(CodeGen* cg, Grammar* g) : cg(cg), grammar(g) {}
 
     const auto& currentField() { return fields.back(); }
     void pushField(spicy::type::unit::item::Field* f) { fields.emplace_back(f); }
@@ -382,7 +382,7 @@ hilti::Result<hilti::Nothing> GrammarBuilder::run(type::Unit* unit) {
         return hilti::Nothing();
 
     Grammar g(id.str(), unit->location());
-    auto pf = ProductionFactory(cg(), this, &g);
+    auto pf = ProductionFactory(cg(), &g);
     auto root = pf.createProduction(unit);
     assert(root);
 

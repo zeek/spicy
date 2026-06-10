@@ -170,7 +170,9 @@ public:
 private:
     // Disabled. It's not needed and can be hard to use (because it needs both
     // old and new node state simultaneously).
-    void recordChange(const Node* old, Node* changed, const std::string& msg = "") override { util::cannotBeReached(); }
+    void recordChange(const Node* /*old*/, Node* /*changed*/, const std::string& /*msg*/ = "") override {
+        util::cannotBeReached();
+    }
 
     // Records a node as changed.
     void _trackASTChange(const Node* n);

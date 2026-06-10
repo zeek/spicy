@@ -66,7 +66,7 @@ struct Visitor : hilti::visitor::PreOrder {
         util::cannotBeReached();
     }
 
-    auto tupleArguments(expression::ResolvedOperator* o, Expression* op) {
+    auto tupleArguments(Expression* op) {
         auto* ctor = op->as<expression::Ctor>()->ctor();
 
         if ( auto* x = ctor->tryAs<ctor::Coerced>() )
@@ -303,13 +303,13 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     void operator()(operator_::enum_::CtorSigned* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         auto* t = n->op0()->type();
         result = fmt("%s{%s}", cg->compile(t, codegen::TypeUsage::Storage), args[0]);
     }
 
     void operator()(operator_::enum_::CtorUnsigned* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         auto* t = n->op0()->type();
         result = fmt("%s{%s}", cg->compile(t, codegen::TypeUsage::Storage), args[0]);
     }
@@ -321,7 +321,7 @@ struct Visitor : hilti::visitor::PreOrder {
     // Error
 
     void operator()(operator_::error::Ctor* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("::hilti::rt::result::Error(%s)", args[0]);
     }
 
@@ -334,7 +334,7 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(operator_::exception::Ctor* n) final {
         std::string type;
 
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
 
         if ( auto x = n->op0()->type()->type()->cxxID() )
             type = x.str();
@@ -386,27 +386,27 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(operator_::interval::Unequal* n) final { result = binary(n, "!="); }
 
     void operator()(operator_::interval::CtorSignedIntegerSecs* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("::hilti::rt::Interval(%s, ::hilti::rt::Interval::SecondTag())", args[0]);
     }
 
     void operator()(operator_::interval::CtorSignedIntegerNs* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("::hilti::rt::Interval(%s, ::hilti::rt::Interval::NanosecondTag())", args[0]);
     }
 
     void operator()(operator_::interval::CtorUnsignedIntegerSecs* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("::hilti::rt::Interval(%s, ::hilti::rt::Interval::SecondTag())", args[0]);
     }
 
     void operator()(operator_::interval::CtorUnsignedIntegerNs* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("::hilti::rt::Interval(%s, ::hilti::rt::Interval::NanosecondTag())", args[0]);
     }
 
     void operator()(operator_::interval::CtorRealSecs* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("::hilti::rt::Interval(%f, ::hilti::rt::Interval::SecondTag())", args[0]);
     }
 
@@ -526,12 +526,12 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(operator_::generic::Pack* n) final {
         const auto& ctor = n->op0()->as<expression::Ctor>()->ctor()->as<ctor::Tuple>()->value();
         const auto& type = ctor[0]->type();
-        auto args = tupleArguments(n, n->op0());
+        auto args = tupleArguments(n->op0());
         result = cg->pack(type, args[0], util::toVector(util::slice(args, 1, -1)));
     }
 
     void operator()(operator_::generic::Unpack* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         auto throw_on_error = n->op2()->as<expression::Ctor>()->ctor()->as<ctor::Bool>()->value();
         result = cg->unpack(n->op0()->type()->type()->as<type::Type_>()->typeValue(),
                             tupleArgumentType(n->op1(), 0),
@@ -626,7 +626,7 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(operator_::port::Unequal* n) final { result = binary(n, "!="); }
 
     void operator()(operator_::port::Ctor* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("::hilti::rt::Port(%s, %s)", args[0], args[1]);
     }
 
@@ -753,7 +753,7 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(operator_::stream::SumAssignBytes* n) final { result = fmt("%s.append(%s)", op0(n), op1(n)); }
 
     void operator()(operator_::stream::Ctor* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("::hilti::rt::Stream(%s)", args[0]);
     }
 
@@ -855,12 +855,12 @@ struct Visitor : hilti::visitor::PreOrder {
 
     /// Struct
 
-    auto memberAccess(const expression::ResolvedOperator* o, const std::string& self, const std::string& member) {
+    auto memberAccess(const std::string& self, const std::string& member) {
         return fmt("%s.%s", self, cxx::ID(member));
     }
 
-    auto memberAccess(const expression::ResolvedOperator* o, const std::string& member, bool lhs = false) {
-        return memberAccess(o, cg->compile(o->op0()), member);
+    auto memberAccess(const expression::ResolvedOperator* o, const std::string& member) {
+        return memberAccess(cg->compile(o->op0()), member);
     }
 
     cxx::Expression structMember(const expression::ResolvedOperator* o) {
@@ -916,8 +916,7 @@ struct Visitor : hilti::visitor::PreOrder {
                                   util::join(zipped | std::views::transform([this](const auto& x) {
                                                  return cg->compile(x.first, x.second);
                                              }),
-                                             ", ")),
-                              false);
+                                             ", ")));
     }
 
     void operator()(operator_::struct_::HasMember* n) final {
@@ -1039,42 +1038,42 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     void operator()(operator_::signed_integer::CtorSigned8* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("static_cast<int8_t>(%s)", args[0]);
     }
 
     void operator()(operator_::signed_integer::CtorSigned16* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("static_cast<int16_t>(%s)", args[0]);
     }
 
     void operator()(operator_::signed_integer::CtorSigned32* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("static_cast<int32_t>(%s)", args[0]);
     }
 
     void operator()(operator_::signed_integer::CtorSigned64* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("static_cast<int64_t>(%s)", args[0]);
     }
 
     void operator()(operator_::signed_integer::CtorUnsigned8* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("static_cast<int8_t>(%s)", args[0]);
     }
 
     void operator()(operator_::signed_integer::CtorUnsigned16* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("static_cast<int16_t>(%s)", args[0]);
     }
 
     void operator()(operator_::signed_integer::CtorUnsigned32* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("static_cast<int32_t>(%s)", args[0]);
     }
 
     void operator()(operator_::signed_integer::CtorUnsigned64* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("static_cast<int64_t>(%s)", args[0]);
     }
 
@@ -1093,27 +1092,27 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(operator_::time::Unequal* n) final { result = binary(n, "!="); }
 
     void operator()(operator_::time::CtorSignedIntegerSecs* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("::hilti::rt::Time(%s, ::hilti::rt::Time::SecondTag())", args[0]);
     }
 
     void operator()(operator_::time::CtorSignedIntegerNs* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("::hilti::rt::Time(%s, ::hilti::rt::Time::NanosecondTag())", args[0]);
     }
 
     void operator()(operator_::time::CtorUnsignedIntegerSecs* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("::hilti::rt::Time(%s, ::hilti::rt::Time::SecondTag())", args[0]);
     }
 
     void operator()(operator_::time::CtorUnsignedIntegerNs* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("::hilti::rt::Time(%s, ::hilti::rt::Time::NanosecondTag())", args[0]);
     }
 
     void operator()(operator_::time::CtorRealSecs* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("::hilti::rt::Time(%f, ::hilti::rt::Time::SecondTag())", args[0]);
     }
 
@@ -1205,42 +1204,42 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     void operator()(operator_::unsigned_integer::CtorSigned8* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("static_cast<uint8_t>(%s)", args[0]);
     }
 
     void operator()(operator_::unsigned_integer::CtorSigned16* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("static_cast<uint16_t>(%s)", args[0]);
     }
 
     void operator()(operator_::unsigned_integer::CtorSigned32* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("static_cast<uint32_t>(%s)", args[0]);
     }
 
     void operator()(operator_::unsigned_integer::CtorSigned64* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("static_cast<uint64_t>(%s)", args[0]);
     }
 
     void operator()(operator_::unsigned_integer::CtorUnsigned8* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("static_cast<uint8_t>(%s)", args[0]);
     }
 
     void operator()(operator_::unsigned_integer::CtorUnsigned16* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("static_cast<uint16_t>(%s)", args[0]);
     }
 
     void operator()(operator_::unsigned_integer::CtorUnsigned32* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("static_cast<uint32_t>(%s)", args[0]);
     }
 
     void operator()(operator_::unsigned_integer::CtorUnsigned64* n) final {
-        auto args = tupleArguments(n, n->op1());
+        auto args = tupleArguments(n->op1());
         result = fmt("static_cast<uint64_t>(%s)", args[0]);
     }
 

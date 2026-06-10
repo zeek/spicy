@@ -335,7 +335,7 @@ struct Mutator : public optimizer::visitor::Mutator {
         }
     }
 
-    bool run(Node* node = nullptr) override {
+    bool run(Node* /*node*/ = nullptr) override {
         // This is an unusual mutator in that it doesn't iterate the AST itself
         // but works directly on the nodes identified by the collector.
         for ( const auto& [id, field] : collector->fields ) {

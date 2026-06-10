@@ -42,15 +42,15 @@ TEST_SUITE_BEGIN("Visitor");
 
 TEST_CASE("Single-shot, result, constant node") {
     struct Visitor : hilti::visitor::PreOrder {
-        void operator()(hilti::ASTRoot* n) final { result = "(ro)"; }
-        void operator()(hilti::declaration::Module* n) final { result = "(mo)"; }
-        void operator()(hilti::QualifiedType* n) final { result = "(qt)"; }
-        void operator()(hilti::UnqualifiedType* n) final { result = "(ut)"; }
-        void operator()(hilti::type::String* n) final { result = "(ts)"; }
-        void operator()(hilti::type::SignedInteger* n) final { result = "(ti)"; }
-        void operator()(hilti::expression::Ctor* n) final { result = "(e:c)"; }
-        void operator()(hilti::ctor::Bool* n) final { result = "(c:b)"; }
-        void operator()(hilti::statement::Block* n) final { result = "(s:b)"; }
+        void operator()(hilti::ASTRoot* /*n*/) final { result = "(ro)"; }
+        void operator()(hilti::declaration::Module* /*n*/) final { result = "(mo)"; }
+        void operator()(hilti::QualifiedType* /*n*/) final { result = "(qt)"; }
+        void operator()(hilti::UnqualifiedType* /*n*/) final { result = "(ut)"; }
+        void operator()(hilti::type::String* /*n*/) final { result = "(ts)"; }
+        void operator()(hilti::type::SignedInteger* /*n*/) final { result = "(ti)"; }
+        void operator()(hilti::expression::Ctor* /*n*/) final { result = "(e:c)"; }
+        void operator()(hilti::ctor::Bool* /*n*/) final { result = "(c:b)"; }
+        void operator()(hilti::statement::Block* /*n*/) final { result = "(s:b)"; }
 
         std::optional<std::string> result;
     };
@@ -75,13 +75,13 @@ TEST_CASE("Single-shot, result, constant node") {
 
 TEST_CASE("Visitor, pre-order") {
     struct Visitor : hilti::visitor::PreOrder {
-        void operator()(hilti::declaration::Module* m) final { x += "(mo)"; }
-        void operator()(hilti::QualifiedType* t) final { x += "(qt)"; }
-        void operator()(hilti::type::String* s) final { x += "(ts)"; }
-        void operator()(hilti::type::SignedInteger* i) final { x += "(ti)"; }
-        void operator()(hilti::expression::Ctor* c) final { x += "(e:c)"; }
-        void operator()(hilti::ctor::Bool* b) final { x += "(c:b)"; }
-        void operator()(hilti::statement::Block* n) final { x += "(s:b)"; }
+        void operator()(hilti::declaration::Module* /*m*/) final { x += "(mo)"; }
+        void operator()(hilti::QualifiedType* /*t*/) final { x += "(qt)"; }
+        void operator()(hilti::type::String* /*s*/) final { x += "(ts)"; }
+        void operator()(hilti::type::SignedInteger* /*i*/) final { x += "(ti)"; }
+        void operator()(hilti::expression::Ctor* /*c*/) final { x += "(e:c)"; }
+        void operator()(hilti::ctor::Bool* /*b*/) final { x += "(c:b)"; }
+        void operator()(hilti::statement::Block* /*n*/) final { x += "(s:b)"; }
 
         void testDispatch(hilti::Node* i) {
             auto old = x.size();
@@ -109,13 +109,13 @@ TEST_CASE("Visitor, pre-order") {
 
 TEST_CASE("Visitor, pre-order") {
     struct Visitor : hilti::visitor::PostOrder {
-        void operator()(hilti::declaration::Module* m) final { x += "(mo)"; }
-        void operator()(hilti::QualifiedType* t) final { x += "(qt)"; }
-        void operator()(hilti::type::String* s) final { x += "(ts)"; }
-        void operator()(hilti::type::SignedInteger* i) final { x += "(ti)"; }
-        void operator()(hilti::expression::Ctor* c) final { x += "(e:c)"; }
-        void operator()(hilti::ctor::Bool* b) final { x += "(c:b)"; }
-        void operator()(hilti::statement::Block* n) final { x += "(s:b)"; }
+        void operator()(hilti::declaration::Module* /*m*/) final { x += "(mo)"; }
+        void operator()(hilti::QualifiedType* /*t*/) final { x += "(qt)"; }
+        void operator()(hilti::type::String* /*s*/) final { x += "(ts)"; }
+        void operator()(hilti::type::SignedInteger* /*i*/) final { x += "(ti)"; }
+        void operator()(hilti::expression::Ctor* /*c*/) final { x += "(e:c)"; }
+        void operator()(hilti::ctor::Bool* /*b*/) final { x += "(c:b)"; }
+        void operator()(hilti::statement::Block* /*n*/) final { x += "(s:b)"; }
 
         void testDispatch(hilti::Node* i) {
             auto old = x.size();

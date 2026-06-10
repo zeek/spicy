@@ -59,7 +59,7 @@ Plugin hilti::detail::createHiltiPlugin() {
         .extension = ".hlt",
         .cxx_includes = {"hilti/rt/libhilti.h"},
 
-        .library_paths = [](hilti::Context* ctx) { return hilti::configuration().hilti_library_paths; },
+        .library_paths = [](hilti::Context* /*ctx*/) { return hilti::configuration().hilti_library_paths; },
 
         .unify_type = type_unifier::detail::unifyType,
 
@@ -79,7 +79,7 @@ Plugin hilti::detail::createHiltiPlugin() {
             },
 
         .ast_init =
-            [](Builder* builder, ASTRoot* root) {
+            [](Builder* builder, ASTRoot* /*root*/) {
                 util::timing::Collector _("hilti/compiler/ast/init");
 
                 if ( builder->options().import_standard_modules )

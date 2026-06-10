@@ -26,14 +26,14 @@ public:
 
     static auto create(ASTContext* ctx, Meta meta = {}) { return create(ctx, nullptr, std::move(meta)); }
 
-    static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
+    static auto create(ASTContext* ctx, Wildcard /*_*/, const Meta& m = Meta()) {
         return ctx->make<Exception>(ctx, Wildcard(), {type::Unknown::create(ctx, m)}, m);
     }
 
 protected:
     Exception(ASTContext* ctx, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
-    Exception(ASTContext* ctx, Wildcard _, const Nodes& children, Meta meta)
+    Exception(ASTContext* ctx, Wildcard /*_*/, const Nodes& children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"exception(*)"}, children, std::move(meta)) {}
 
     bool isResolved(node::CycleDetector* cd) const final { return baseType() ? baseType()->isResolved(cd) : true; }

@@ -333,7 +333,7 @@ Bytes Bytes::lower(unicode::Charset cs, unicode::DecodeErrorStrategy errors) con
     return string::encode(string::lower(decode(cs, errors), errors), cs, errors);
 }
 
-Result<Bytes> Bytes::match(const RegExp& re, unsigned int group) const {
+Result<Bytes> Bytes::match(const RegExp& re, size_t group) const {
     auto groups = re.matchGroups(*this);
 
     if ( group >= groups.size() )

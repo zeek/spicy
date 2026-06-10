@@ -1,12 +1,12 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <hilti/ast/builder/builder.h>
-
-using namespace hilti;
-using namespace hilti::operator_;
 #include <hilti/ast/types/enum.h>
 #include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/port.h>
+
+using namespace hilti;
+using namespace hilti::operator_;
 
 namespace {
 namespace port {

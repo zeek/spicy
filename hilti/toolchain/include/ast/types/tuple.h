@@ -90,14 +90,14 @@ public:
         return ctx->make<Tuple>(ctx, util::toVector(elements), std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
+    static auto create(ASTContext* ctx, Wildcard /*_*/, const Meta& m = Meta()) {
         return ctx->make<Tuple>(ctx, Wildcard(), m);
     }
 
 protected:
     Tuple(ASTContext* ctx, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
-    Tuple(ASTContext* ctx, Wildcard _, Meta meta)
+    Tuple(ASTContext* ctx, Wildcard /*_*/, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"tuple(*)"}, std::move(meta)) {}
 
     HILTI_NODE_1(type::Tuple, UnqualifiedType, final);

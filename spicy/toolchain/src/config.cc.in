@@ -4,6 +4,7 @@
 #include <system_error>
 
 #include <hilti/rt/filesystem.h>
+#include <hilti/rt/safe-int.h>
 
 #include <hilti/autogen/config.h>
 #include <hilti/base/util.h>
@@ -133,10 +134,9 @@ void Configuration::init(bool use_build_directory) {
                                          prefix("${SPICY_CONFIG_RUNTIME_CXX_FLAGS_RELEASE}", "", installation_tag)});
 
 #ifdef _MSC_VER
-    runtime_ld_flags_debug =
-        flatten({prefix("${SPICY_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "-LIBPATH:", installation_tag),
-                 prefix("${SPICY_CONFIG_RUNTIME_LIBRARIES_DEBUG}", "", installation_tag),
-                 prefix("${SPICY_CONFIG_RUNTIME_LD_FLAGS_DEBUG}", "", installation_tag)});
+    runtime_ld_flags_debug = flatten({prefix("${SPICY_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "-LIBPATH:", installation_tag),
+                                      prefix("${SPICY_CONFIG_RUNTIME_LIBRARIES_DEBUG}", "", installation_tag),
+                                      prefix("${SPICY_CONFIG_RUNTIME_LD_FLAGS_DEBUG}", "", installation_tag)});
 
     runtime_ld_flags_release =
         flatten({prefix("${SPICY_CONFIG_RUNTIME_CXX_LIBRARY_DIRS}", "-LIBPATH:", installation_tag),
@@ -162,7 +162,7 @@ void Configuration::init(bool use_build_directory) {
     hlto_ld_flags_debug = flatten({});
     hlto_ld_flags_release = flatten({});
 
-    preprocessor_constants = {{"SPICY_VERSION", hilti::configuration().version_number}};
+    preprocessor_constants = {{"SPICY_VERSION", static_cast<int>(hilti::configuration().version_number)}};
 };
 
 Configuration& spicy::configuration() {

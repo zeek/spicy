@@ -73,7 +73,7 @@ public:
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* /*builder*/, const Expressions& operands, const Meta& /*meta*/) const final {
         return operands[1]->type()->type()->as<type::Type_>()->typeValue();
     }
 
@@ -98,7 +98,7 @@ public:
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* /*builder*/, const Expressions& operands, const Meta& /*meta*/) const final {
         return operands[1]->type()->type()->as<type::Type_>()->typeValue();
     }
 
@@ -126,7 +126,7 @@ Instantiates an enum instance initialized from a signed integer value. The value
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* /*builder*/, const Expressions& operands, const Meta& /*meta*/) const final {
         return operands[0]->type()->type()->as<type::Type_>()->typeValue();
     }
 
@@ -156,7 +156,7 @@ enumerator labels. It must not be larger than the maximum that a
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* /*builder*/, const Expressions& operands, const Meta& /*meta*/) const final {
         return operands[0]->type()->type()->as<type::Type_>()->typeValue();
     }
 

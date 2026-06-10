@@ -52,6 +52,7 @@ inline static auto pretty_print_number(uint64_t n) {
 inline void Driver::debug(const std::string& msg) { HILTI_RT_DEBUG("spicy-driver", msg); }
 
 void Driver::_debugStats(const hilti::rt::ValueReference<hilti::rt::Stream>& data) {
+    (void)data;
 #ifndef NDEBUG
     auto data_begin = data->begin().offset();
     auto data_end = data_begin + data->size();
@@ -85,6 +86,8 @@ void Driver::_debugStats(const hilti::rt::ValueReference<hilti::rt::Stream>& dat
 }
 
 void Driver::_debugStats(size_t current_flows, size_t current_connections) {
+    (void)current_flows;
+    (void)current_connections;
 #ifndef NDEBUG
     auto num_flows = pretty_print_number(current_flows);
     auto total_flows = pretty_print_number(_total_flows);

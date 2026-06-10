@@ -5,5 +5,5 @@
 
 using namespace hilti::rt;
 
-HILTI_NORETURN void optional::detail::throw_unset() { throw Unset(); }
-HILTI_NORETURN void optional::detail::throw_unset_optional() { throw UnsetOptional("unset optional value"); }
+[[noreturn]] void optional::detail::throw_unset() { throw Unset(); }
+[[noreturn]] void optional::detail::throw_unset_optional() { throw UnsetOptional("unset optional value"); }

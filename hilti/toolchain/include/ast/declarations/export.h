@@ -28,7 +28,7 @@ public:
      *
      * Should normally be called only by the resolver.
      */
-    void setResolvedDeclarationIndex(ASTContext* ctx, ast::DeclarationIndex index) {
+    void setResolvedDeclarationIndex(ASTContext* /*ctx*/, ast::DeclarationIndex index) {
         assert(index);
         _resolved_declaration_index = index;
     }

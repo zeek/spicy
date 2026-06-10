@@ -40,7 +40,7 @@ struct SizeVisitor : hilti::visitor::PreOrder {
     const spicy::type::unit::item::Field& field;
     Expression* result = nullptr;
 
-    void operator()(hilti::type::Address* n) final {
+    void operator()(hilti::type::Address* /*n*/) final {
         if ( field.attributes()->find(attribute::kind::IPv4) )
             result = builder->integer(4U);
         else if ( field.attributes()->find(attribute::kind::IPv6) )

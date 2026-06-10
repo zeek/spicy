@@ -224,7 +224,7 @@ static std::pair<bool, Result<std::pair<Declaration*, ID>>> lookupIDBackend(cons
     return std::make_pair(true, std::move(x));
 }
 
-Result<std::pair<Declaration*, ID>> Node::lookupID(const ID& id, const std::string_view& what) const {
+Result<std::pair<Declaration*, ID>> Node::lookupID(const ID& id, const std::string_view& /*what*/) const {
     for ( const auto* n = this; n; n = n->parent() ) {
         if ( ! n->scope() )
             continue;

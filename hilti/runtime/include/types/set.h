@@ -251,7 +251,7 @@ inline std::string to_string(const Set<T>& x, adl::tag /*unused*/) {
     return fmt("{%s}", rt::join(x | std::views::transform([](const T& y) { return rt::to_string(y); }), ", "));
 }
 
-inline std::string to_string(const set::Empty& x, adl::tag /*unused*/) { return "{}"; }
+inline std::string to_string(const set::Empty& /*x*/, adl::tag /*unused*/) { return "{}"; }
 
 template<typename T>
 inline std::string to_string(const set::Iterator<T>& /*unused*/, adl::tag /*unused*/) {

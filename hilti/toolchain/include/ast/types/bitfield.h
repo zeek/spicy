@@ -186,7 +186,7 @@ public:
         return ctx->make<Bitfield>(ctx, node::flatten(attrs, bits, value), width, m);
     }
 
-    static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
+    static auto create(ASTContext* ctx, Wildcard /*_*/, const Meta& m = Meta()) {
         return ctx->make<Bitfield>(ctx, Wildcard(), m);
     }
 
@@ -196,7 +196,7 @@ protected:
           WithUniqueID("bitfield"),
           _width(width) {}
 
-    Bitfield(ASTContext* ctx, Wildcard _, Meta meta)
+    Bitfield(ASTContext* ctx, Wildcard /*_*/, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"bitfield(*)"}, std::move(meta)), WithUniqueID("bitfield") {}
 
     HILTI_NODE_1(type::Bitfield, UnqualifiedType, final);

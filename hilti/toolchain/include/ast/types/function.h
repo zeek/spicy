@@ -109,7 +109,7 @@ public:
         return ctx->make<Function>(ctx, flatten(result, params), flavor, cc, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
+    static auto create(ASTContext* ctx, Wildcard /*_*/, const Meta& m = Meta()) {
         return ctx->make<Function>(ctx,
                                    Wildcard(),
                                    {QualifiedType::create(ctx, type::Unknown::create(ctx, m), Constness::Const)},
@@ -120,7 +120,7 @@ protected:
     Function(ASTContext* ctx, Nodes children, function::Flavor flavor, function::CallingConvention cc, Meta meta)
         : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)), _flavor(flavor), _cc(cc) {}
 
-    Function(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
+    Function(ASTContext* ctx, Wildcard /*_*/, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"function(*)"}, std::move(children), std::move(meta)),
           _flavor(function::Flavor::Function) {}
 

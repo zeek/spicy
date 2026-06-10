@@ -21,7 +21,7 @@ QualifiedType* expression::Name::type() const {
         void operator()(declaration::GlobalVariable* n) final { result = n->type(); }
         void operator()(declaration::LocalVariable* n) final { result = n->type(); }
         void operator()(declaration::Parameter* n) final { result = n->type(); }
-        void operator()(declaration::Type* n) final { result = name->child<QualifiedType>(0); }
+        void operator()(declaration::Type* /*n*/) final { result = name->child<QualifiedType>(0); }
     };
 
     if ( auto* decl = _context->lookup(_resolved_declaration_index) ) {

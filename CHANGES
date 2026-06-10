@@ -1,3 +1,73 @@
+1.17.0-dev.73 | 2026-06-10 12:49:15 +0200
+
+  * Fix windows workflow cache key (Benjamin Bannier, Corelight)
+
+    This was not a matrix job, so `matrix.release` did not exist.
+
+  * Display BTest errors in windows CI (Benjamin Bannier, Corelight)
+
+  * Fix msvc warnings about unused parameters (Benjamin Bannier, Corelight)
+
+    Instead of fixing all instances where msvc warns about this, address
+    this globally by addressing everything clang-tidy's
+    `misc-unused-parameters` lint reports. That lint support automatic
+    updates with a fixit, so almost all changes here were done
+    automatically; the only manual tweaks were updating uses of the
+    constructor of `ProductionFactory` where clang-tidy correctly dropped a
+    parameter, but did not update all users, and a removal of a now unused
+    value around use of the resolver's `fieldType` method.
+
+  * Implement rule-of-five for `FiberContext` (Benjamin Bannier, Corelight)
+
+  * Implement rule-of-five for generated exceptions (Benjamin Bannier, Corelight)
+
+  * Fix arg type in `Bytes::match` to avoid possible unintentional widening (Benjamin Bannier, Corelight)
+
+  * Fix msvc warning about widening cast from `uint32_t` to 64-bit `void*` (Benjamin Bannier, Corelight)
+
+  * Make implicit cast `size_t`->`int` explicit (Benjamin Bannier, Corelight)
+
+    msvc warned about this, but it should always have been safe. Fix it
+    nevertheless.
+
+  * Be explicit about type to prevent possible narrowing (Benjamin Bannier, Corelight)
+
+    msvc warned about this
+
+    ```
+    2
+    C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\numeric(31): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
+    C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\include\numeric(31): note: the template instantiation context (the oldest one first) is
+    ..\hilti\toolchain\src\compiler\optimizer\passes\dead-code-static.cc(68): note: see reference to function template instantiation '_Ty std::accumulate<std::_Tree_iterator<std::_Tree_val<std::_Tree_simple_types<std::pair<const hilti::ID,std::map<std::string,bool,std::less<std::string>,std::allocator<std::pair<const std::string,bool>>>>>>>,unsigned int,`anonymous-namespace'::Collector::run::<lambda_1>::()::<lambda_1>>(const _InIt,const _InIt,_Ty,_Fn)' being compiled
+                _InIt=std::_Tree_iterator<std::_Tree_val<std::_Tree_simple_types<std::pair<const hilti::ID,std::map<std::string,bool,std::less<std::string>,std::allocator<std::pair<const std::string,bool>>>>>>>,
+                _Fn=`anonymous-namespace'::Collector::run::<lambda_1>::()::<lambda_1>
+    ```
+
+  * Suppress warnings from libunistd (Benjamin Bannier, Corelight)
+
+    With msvc this triggers a lot of warnings of the following form which
+    are not interesting for us to fix.
+
+    ```
+    [162/444] Building CXX object hilti\toolchain\CMakeFiles\hilti-objects.dir\src\base\code-formatter.cc.obj
+    ..\3rdparty\libunistd\unistd\unistd.h(79): warning C4273: 'read': inconsistent dll linkage
+    C:\Program Files (x86)\Windows Kits\10\include\10.0.26100.0\ucrt\corecrt_io.h(525): note: see previous definition of 'read'
+    ```
+
+  * Fix declaration misplaced in include section (Benjamin Bannier, Corelight)
+
+  * Consistently use `[[noreturn]]` in favor of compiler-specific attributes (Benjamin Bannier, Corelight)
+
+    This also addresses the issue of a couple of functions not being marked
+    noreturn for msvc which caused it to emit warnings about unhandled code
+    paths.
+
+  * Hide GCC pragma from other compilers (Benjamin Bannier, Corelight)
+
+  * Add missing cast (Benjamin Bannier, Corelight)
+
+    This cast is already present in other places, but was missed here.
+
 1.17.0-dev.58 | 2026-06-10 09:00:57 +0200
 
   * Drop FreeBSD from CI (Benjamin Bannier, Corelight)

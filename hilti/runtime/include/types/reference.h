@@ -18,7 +18,7 @@
 namespace hilti::rt {
 
 namespace reference::detail {
-HILTI_NORETURN void throw_null();
+[[noreturn]] void throw_null();
 } // namespace reference::detail
 
 /** Base for classes that `ValueReference::self` can receive.  */

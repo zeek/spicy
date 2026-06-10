@@ -36,13 +36,6 @@
 #define HILTI_JIT_IMPORT_OR_INLINE inline
 #endif
 
-/** Marks a function as never returning. */
-#if defined(_MSC_VER)
-#define HILTI_NORETURN __declspec(noreturn)
-#else
-#define HILTI_NORETURN __attribute__((noreturn))
-#endif
-
 /** Prevents the compiler from inlining a function. */
 #if defined(_MSC_VER)
 #define HILTI_NOINLINE __declspec(noinline)

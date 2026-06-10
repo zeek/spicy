@@ -26,7 +26,7 @@ public:
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* /*builder*/, const Expressions& operands, const Meta& /*meta*/) const final {
         return operands[0]->type()->type()->as<type::Optional>()->dereferencedType();
     }
 
@@ -46,7 +46,7 @@ public:
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* /*builder*/, const Expressions& operands, const Meta& /*meta*/) const final {
         return operands[0]->type();
     }
 
@@ -66,7 +66,7 @@ public:
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* /*builder*/, const Expressions& operands, const Meta& /*meta*/) const final {
         return operands[0]->type();
     }
 

@@ -27,7 +27,7 @@ public:
         return ctx->make<StrongReference>(ctx, {type}, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
+    static auto create(ASTContext* ctx, Wildcard /*_*/, const Meta& m = Meta()) {
         return ctx->make<StrongReference>(ctx,
                                           Wildcard(),
                                           {QualifiedType::create(ctx, type::Null::create(ctx, m), Constness::Const)},
@@ -37,7 +37,7 @@ public:
 protected:
     StrongReference(ASTContext* ctx, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
-    StrongReference(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
+    StrongReference(ASTContext* ctx, Wildcard /*_*/, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"strong_ref(*)"}, std::move(children), std::move(meta)) {}
 
     HILTI_NODE_1(type::StrongReference, UnqualifiedType, final);
@@ -58,7 +58,7 @@ public:
         return ctx->make<WeakReference>(ctx, {type}, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
+    static auto create(ASTContext* ctx, Wildcard /*_*/, const Meta& m = Meta()) {
         return ctx->make<WeakReference>(ctx,
                                         Wildcard(),
                                         {QualifiedType::create(ctx, type::Null::create(ctx, m), Constness::Const)},
@@ -68,7 +68,7 @@ public:
 protected:
     WeakReference(ASTContext* ctx, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
-    WeakReference(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
+    WeakReference(ASTContext* ctx, Wildcard /*_*/, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"weak_ref(*)"}, std::move(children), std::move(meta)) {}
 
     bool isResolved(node::CycleDetector* cd) const final { return dereferencedType()->isResolved(cd); }
@@ -91,7 +91,7 @@ public:
         return ctx->make<ValueReference>(ctx, {type}, std::move(meta));
     }
 
-    static auto create(ASTContext* ctx, Wildcard _, const Meta& m = Meta()) {
+    static auto create(ASTContext* ctx, Wildcard /*_*/, const Meta& m = Meta()) {
         return ctx->make<ValueReference>(ctx,
                                          Wildcard(),
                                          {QualifiedType::create(ctx, type::Null::create(ctx, m), Constness::Const)},
@@ -101,7 +101,7 @@ public:
 protected:
     ValueReference(ASTContext* ctx, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, {}, std::move(children), std::move(meta)) {}
-    ValueReference(ASTContext* ctx, Wildcard _, Nodes children, Meta meta)
+    ValueReference(ASTContext* ctx, Wildcard /*_*/, Nodes children, Meta meta)
         : UnqualifiedType(ctx, NodeTags, Wildcard(), {"value_ref(*)"}, std::move(children), std::move(meta)) {}
 
     bool isResolved(node::CycleDetector* cd) const final { return dereferencedType()->isResolved(cd); }

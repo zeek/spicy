@@ -883,7 +883,7 @@ public:
      * @param l custom location to associate with the error
      * @param context further lines of context to show along with error
      */
-    void addError(std::string msg, const Location& l, std::vector<std::string> context = {}) {
+    void addError(std::string msg, const Location& /*l*/, std::vector<std::string> context = {}) {
         addError(std::move(msg), location(), node::ErrorPriority::Normal, std::move(context));
     }
 
@@ -998,7 +998,8 @@ protected:
     }
 
     /** Constructor initializing the node with meta data but no children. */
-    Node(ASTContext* ctx, node::Tags node_tags, Meta meta) : _node_tags(node_tags), _meta(Meta::get(std::move(meta))) {
+    Node(ASTContext* /*ctx*/, node::Tags node_tags, Meta meta)
+        : _node_tags(node_tags), _meta(Meta::get(std::move(meta))) {
         assert(! _node_tags.empty());
     }
 
@@ -1056,7 +1057,7 @@ private:
             end = static_cast<int>(_children.size()) + *end;
 
         if ( ! end )
-            end = _children.size();
+            end = static_cast<int>(_children.size());
 
         if ( end > begin )
             return end;

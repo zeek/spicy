@@ -32,14 +32,18 @@
 // about it.
 //
 // TODO(bbannier): Drop this once reproc puts out a release officially supporting gcc-13.
+#ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpragmas"
 #pragma GCC diagnostic ignored "-Wunknown-warning-option"
 #pragma GCC diagnostic ignored "-Wchanges-meaning"
+#endif
 #include <reproc++/drain.hpp>
 #include <reproc++/reproc.hpp>
 #include <reproc++/run.hpp>
+#ifdef __GNUC__
 #pragma GCC diagnostic pop
+#endif
 
 using namespace hilti;
 

@@ -73,7 +73,7 @@ private:
 } // namespace spicy::rt
 
 namespace hilti::rt::detail::adl {
-inline std::string to_string(const ::spicy::rt::ParsedUnit& u, adl::tag /*unused*/) { return "<parsed unit>"; };
+inline std::string to_string(const ::spicy::rt::ParsedUnit& /*u*/, adl::tag /*unused*/) { return "<parsed unit>"; };
 } // namespace hilti::rt::detail::adl
 
 namespace spicy::rt {

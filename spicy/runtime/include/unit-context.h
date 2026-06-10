@@ -93,7 +93,7 @@ inline UnitContext createContext(Context ctx, const hilti::rt::TypeInfo* ti) {
  */
 template<typename Context>
 inline void setContext(hilti::rt::StrongReference<Context>& context,
-                       const hilti::rt::TypeInfo* context_type,
+                       const hilti::rt::TypeInfo* /*context_type*/,
                        const hilti::rt::Optional<UnitContext>& new_ctx,
                        const hilti::rt::TypeInfo* ti) {
     if ( new_ctx )
@@ -108,7 +108,7 @@ inline void setContext(hilti::rt::StrongReference<Context>& context,
 
 namespace hilti::rt::detail::adl {
 
-inline std::string to_string(const spicy::rt::UnitContext& ctx, rt::detail::adl::tag /*unused*/) {
+inline std::string to_string(const spicy::rt::UnitContext& /*ctx*/, rt::detail::adl::tag /*unused*/) {
     return "<unit context>";
 }
 

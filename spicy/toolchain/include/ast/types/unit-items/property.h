@@ -25,13 +25,13 @@ public:
 
     QualifiedType* itemType() const final { return child<QualifiedType>(2); }
 
-    bool isResolved(hilti::node::CycleDetector* cd) const final { return true; }
+    bool isResolved(hilti::node::CycleDetector* /*cd*/) const final { return true; }
 
     std::string_view displayName() const final { return "unit property"; }
 
     void setExpression(ASTContext* ctx, Expression* e) { setChild(ctx, 0, e); }
 
-    static auto create(ASTContext* ctx, ID id, AttributeSet* attrs, bool inherited = false, Meta meta = {}) {
+    static auto create(ASTContext* ctx, ID id, AttributeSet* attrs, bool /*inherited*/ = false, Meta meta = {}) {
         if ( ! attrs )
             attrs = AttributeSet::create(ctx);
 

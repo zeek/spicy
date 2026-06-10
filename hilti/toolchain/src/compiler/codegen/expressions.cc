@@ -256,7 +256,7 @@ struct Visitor : hilti::visitor::PreOrder {
         logger().internalError("unresolved operator", n);
     }
 
-    void operator()(expression::Void* n) final { result = "<void-expression>"; }
+    void operator()(expression::Void* /*n*/) final { result = "<void-expression>"; }
 };
 
 } // anonymous namespace

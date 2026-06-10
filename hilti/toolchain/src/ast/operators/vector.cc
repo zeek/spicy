@@ -26,7 +26,7 @@ public:
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* /*builder*/, const Expressions& operands, const Meta& /*meta*/) const final {
         return operands[0]->type()->type()->dereferencedType();
     }
 
@@ -46,7 +46,7 @@ public:
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* /*builder*/, const Expressions& operands, const Meta& /*meta*/) const final {
         return operands[0]->type();
     }
 
@@ -66,7 +66,7 @@ public:
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* /*builder*/, const Expressions& operands, const Meta& /*meta*/) const final {
         return operands[0]->type();
     }
 
@@ -194,7 +194,7 @@ public:
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& /*meta*/) const final {
         return operands[0]->type()->type()->as<type::Vector>()->elementType()->recreateAsConst(builder->context());
     }
 
@@ -215,7 +215,7 @@ public:
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& /*meta*/) const final {
         return operands[0]->type()->type()->as<type::Vector>()->elementType()->recreateAsLhs(builder->context());
     }
 
@@ -236,7 +236,7 @@ public:
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* /*builder*/, const Expressions& operands, const Meta& /*meta*/) const final {
         return operands[0]->type();
     }
 
@@ -262,7 +262,7 @@ public:
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* /*builder*/, const Expressions& operands, const Meta& /*meta*/) const final {
         return operands[0]->type();
     }
 
@@ -365,7 +365,7 @@ empty.
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* /*builder*/, const Expressions& operands, const Meta& /*meta*/) const final {
         return operands[0]->type()->type()->as<type::Vector>()->elementType();
     }
 
@@ -389,7 +389,7 @@ empty.
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* /*builder*/, const Expressions& operands, const Meta& /*meta*/) const final {
         return operands[0]->type()->type()->as<type::Vector>()->elementType();
     }
 
@@ -469,7 +469,7 @@ Returns an iterator referring to the element at vector index *i*.
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* /*builder*/, const Expressions& operands, const Meta& /*meta*/) const final {
         return operands[0]->type()->type()->as<type::Vector>()->iteratorType();
     }
 
@@ -503,7 +503,7 @@ to (but not including) index *end*.
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* /*builder*/, const Expressions& operands, const Meta& /*meta*/) const final {
         return operands[0]->type();
     }
 
@@ -532,7 +532,7 @@ to (but not including) index *end*.
         };
     }
 
-    QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& meta) const final {
+    QualifiedType* result(Builder* /*builder*/, const Expressions& operands, const Meta& /*meta*/) const final {
         return operands[0]->type();
     }
 
