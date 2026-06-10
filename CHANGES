@@ -1,3 +1,16 @@
+1.17.0-dev.58 | 2026-06-10 09:00:57 +0200
+
+  * Drop FreeBSD from CI (Benjamin Bannier, Corelight)
+
+    Zeek has already removed FreeBSD from the list of supported platforms
+    and from testing, do the same here.
+
+  * Only run benchmarks on PRs targeting main (Benjamin Bannier, Corelight)
+
+    Codspeed only stores benchmark results for the `main` branch, so any PR
+    to other branches like `release/1.14` might report uninteresting
+    regressions since we do not do feature development on these branches.
+
 1.17.0-dev.55 | 2026-06-09 11:27:45 +0200
 
   * add windows variant to spicyc-cxx-link (Maor Hamami)
