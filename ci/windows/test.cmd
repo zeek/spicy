@@ -19,7 +19,7 @@ if %errorlevel% neq 0 set FAILED=1
 echo.
 echo === Running BTest ===
 cd ..
-"C:\Program Files\Git\bin\bash.exe" -c "export MSYS=disable_pcon; export SPICY_BUILD_DIRECTORY=$(cygpath -u '%CD%/build'); export HILTI_CXX_COMPILER_LAUNCHER=; cd tests && btest -j 5 -f diag.log -z 3 2>&1; rc=$?; if [ $rc -ne 0 ]; then echo; echo '=== Begin diagnostics ==='; cat diag.log; echo '=== End diagnostics ==='; fi; exit $rc"
+"C:\Program Files\Git\bin\bash.exe" -c "export MSYS=disable_pcon; export SPICY_BUILD_DIRECTORY=$(cygpath -u '%CD%/build'); export HILTI_CXX_COMPILER_LAUNCHER=; cd tests && btest -dj 5 -f diag.log -z 3 2>&1; rc=$?; if [ $rc -ne 0 ]; then echo; echo '=== Begin diagnostics ==='; cat diag.log; echo '=== End diagnostics ==='; fi; exit $rc"
 if %errorlevel% neq 0 (
     echo.
     echo === BTEST FAILED ===
