@@ -347,7 +347,7 @@ void ASTContext::garbageCollect() {
         changed = false;
 
         for ( auto& n : _nodes ) {
-            assert(n);
+            assert(n.get());
 
             if ( n->isRetained() ) {
                 ++retained;

@@ -1,3 +1,31 @@
+1.17.0-dev.75 | 2026-06-10 15:58:49 +0200
+
+  * Do not assume `assert` performs C++26 contextual conversions (Benjamin Bannier, Corelight)
+
+    In C++20 `assert` is standardized to take a scalar type, and the
+    assertion triggers if the passed value is zero. Our uses of requiring
+    set `std::unique_ptr` values conflicted with that, e.g., in
+
+        assert(some_unique_ptr_value);
+
+    the argument is not a scalar and since `std::unique_ptr`'s `operator
+    bool` is `explicit` also not implicitly convertible to a `bool` which
+    would be a scalar value. That this worked at all likely came from the
+    fact that most implementations of `assert` perform explicit conversions
+    to `bool`, but this is not required until C++26, see P2264R7 which
+    for `assert` introduced the notion of "contextually convertible" which
+    would apply here for `std::unique_ptr`. The concrete case were our
+    current code was failing were implementations of `assert` on freebsd-16
+    could be defined in a way which performed no explicit conversion.
+
+        #define __assert_sanitize(...)  (void)sizeof(((bool(*)(bool))0)(__VA_ARGS__))
+
+    This patch updates uses of `assert` with `std::unique_ptr` to explicitly
+    convert to a scalar value via `get` where we previously passed the
+    `std::unique_ptr` directly. We do not need to touch instances where we
+    already converted the argument to `assert` to `bool`, either
+    contextually or explicitly.
+
 1.17.0-dev.73 | 2026-06-10 12:49:15 +0200
 
   * Fix windows workflow cache key (Benjamin Bannier, Corelight)
