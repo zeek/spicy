@@ -447,7 +447,7 @@ void Sink::_close(bool orderly) {
                         fmt("error in connected unit %s during close (%s)", s->parser->name, err.what()));
                 }
 
-                assert(s->resumable); // must have conluded after freezing/aborting
+                assert(static_cast<bool>(s->resumable)); // must have conluded after freezing/aborting
             }
         }
 
