@@ -58,7 +58,7 @@ public:
      * loop body. This method must be called only after `preprocessLookAhead()`.
      */
     const production::LookAhead* lookAheadProduction() const {
-        assert(_body_for_grammar); // set by preprocessLookAhead() return
+        assert(_body_for_grammar.get()); // set by preprocessLookAhead() return
         return _body_for_grammar->as<production::LookAhead>();
     }
 

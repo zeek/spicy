@@ -384,7 +384,7 @@ hilti::Result<hilti::Nothing> GrammarBuilder::run(type::Unit* unit) {
     Grammar g(id.str(), unit->location());
     auto pf = ProductionFactory(cg(), this, &g);
     auto root = pf.createProduction(unit);
-    assert(root);
+    assert(root.get());
 
     if ( auto rc = g.setRoot(std::move(root)); ! rc )
         return rc.error();

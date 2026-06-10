@@ -59,7 +59,7 @@ public:
     Stream(std::ostream& s) : _stream(s) {}
 
     auto& state() const {
-        assert(detail::State::current);
+        assert(detail::State::current.get());
         return *detail::State::current;
     }
 

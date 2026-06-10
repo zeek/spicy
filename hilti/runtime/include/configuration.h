@@ -83,7 +83,7 @@ extern HILTI_JIT_IMPORT std::unique_ptr<hilti::rt::Configuration> __configuratio
  * matters.
  */
 inline const Configuration& unsafeGet() {
-    assert(detail::__configuration);
+    assert(detail::__configuration.get());
     return *detail::__configuration;
 }
 

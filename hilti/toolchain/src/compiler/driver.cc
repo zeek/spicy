@@ -772,7 +772,7 @@ Result<Nothing> Driver::_codegenUnits() {
 }
 
 Result<Nothing> Driver::compileUnits() {
-    assert(_builder);
+    assert(_builder.get());
 
     if ( auto rc = context()->astContext()->processAST(_builder.get(), this); ! rc ) {
         // hilti::detail::printer::print(std::cerr, context()->astContext()->root());
@@ -813,7 +813,7 @@ Result<Nothing> Driver::compileUnits() {
 Result<Nothing> Driver::run() {
     assert(! _builder);
     initialize();
-    assert(_builder);
+    assert(_builder.get());
 
     for ( const auto& i : _driver_options.inputs ) {
         if ( auto rc = addInput(i); ! rc )

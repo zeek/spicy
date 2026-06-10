@@ -43,7 +43,7 @@ namespace detail {
  * matters.
  */
 inline const Configuration& unsafeGet() {
-    assert(rt::detail::globalState()->configuration);
+    assert(rt::detail::globalState()->configuration.get());
     return *rt::detail::globalState()->configuration;
 }
 
