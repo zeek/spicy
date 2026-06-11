@@ -691,7 +691,7 @@ private:
 
     void _ensureValidChain() const {
         // This must have been checked at this point already.
-        assert(_chain);
+        assert(_chain.get());
 
         if ( ! _chain->isValid() )
             throw InvalidIterator("stream object no longer available");
@@ -1765,7 +1765,7 @@ public:
 
     /** Destructor. */
     ~Stream() {
-        assert(_chain);
+        assert(_chain.get());
         _chain->invalidate();
     }
 

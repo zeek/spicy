@@ -1,3 +1,10 @@
+1.17.0-dev.77 | 2026-06-11 11:06:28 +0200
+
+  * GH-2399: Additional fixes for #2399 (Craig Leres)
+
+    Here are more changes needed to compile spicy (zeek) on FreeBSD 16
+    current after 86326398b73b. Thanks to @bbannier.
+
 1.17.0-dev.75 | 2026-06-10 15:58:49 +0200
 
   * Do not assume `assert` performs C++26 contextual conversions (Benjamin Bannier, Corelight)
