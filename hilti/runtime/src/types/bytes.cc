@@ -261,9 +261,11 @@ integer::safe<int64_t> Bytes::toInt(uint64_t base) const {
 
 integer::safe<uint64_t> Bytes::toUInt(uint64_t base) const {
     int64_t x = 0;
-    if ( hilti::rt::atoi_n(str(), base, &x) == str().size() )
-        return x;
-
+    try {
+        if ( hilti::rt::atoi_n(str(), base, &x) == str().size() )
+            return x;
+    } catch ( ... ) {
+    }
     throw RuntimeError("cannot parse bytes as unsigned integer");
 }
 

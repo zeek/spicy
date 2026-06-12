@@ -1,12 +1,14 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <cstdint>
+#include <string>
 
 #include <hilti/rt/init.h>
 #include <hilti/rt/types/bytes.h>
 #include <hilti/rt/types/map.h>
 #include <hilti/rt/types/set.h>
 #include <hilti/rt/types/vector.h>
+#include <hilti/rt/util.h>
 
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -80,7 +82,19 @@ static void iterate_vector(benchmark::State& state) {
     }
 }
 
+static void atoi_n_uint64_t(benchmark::State& state) {
+    hilti::rt::init();
+
+    std::string data(state.range(), '1');
+
+    uint64_t x = 0;
+    // NOLINTNEXTLINE
+    for ( auto _ : state )
+        hilti::rt::atoi_n(data, 10, &x);
+}
+
 BENCHMARK(iterate_bytes)->ArgName("len")->RangeMultiplier(100)->Range(1, 1'000'000);
 BENCHMARK(iterate_map)->ArgName("len")->RangeMultiplier(100)->Range(1, 1'000'000);
 BENCHMARK(iterate_set)->ArgName("len")->RangeMultiplier(100)->Range(1, 1'000'000);
 BENCHMARK(iterate_vector)->ArgName("len")->RangeMultiplier(100)->Range(1, 1'000'000);
+BENCHMARK(atoi_n_uint64_t)->ArgName("digits")->Range(1, 20);

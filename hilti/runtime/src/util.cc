@@ -268,13 +268,13 @@ std::string hilti::rt::expandUTF8Escapes(std::string s) {
                     throw FormattingError("\\x used with no following hex digits");
                 auto remaining = s.end() - c;
                 auto end = c + std::min(static_cast<decltype(remaining)>(2), remaining);
-                char val = 0;
+                uint8_t val = 0;
                 c += atoi_n(std::string_view{c, end}, 16, &val);
 
                 if ( c != end )
                     throw FormattingError("cannot decode character");
 
-                *d++ = val;
+                *d++ = static_cast<char>(val);
                 break;
             }
 

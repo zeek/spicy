@@ -416,7 +416,7 @@ TEST_CASE("toInt") {
         CHECK_EQ("100"_b.toInt(2), 4);
         CHECK_EQ("-100"_b.toInt(2), -4);
 
-        CHECK_THROWS_WITH_AS(""_b.toInt(16), "cannot decode from empty range", const RuntimeError&);
+        CHECK_THROWS_WITH_AS(""_b.toInt(16), "input does not match expected pattern", const RuntimeError&);
         CHECK_THROWS_WITH_AS("12a"_b.toInt(), "cannot parse bytes as signed integer", const RuntimeError&);
     }
 
@@ -459,7 +459,7 @@ TEST_CASE("toUInt") {
     SUBCASE("with base") {
         CHECK_EQ("100"_b.toUInt(), 100U);
         CHECK_EQ("100"_b.toUInt(2), 4U);
-        CHECK_THROWS_WITH_AS("-100"_b.toUInt(2), "integer overflow", const RuntimeError&);
+        CHECK_THROWS_WITH_AS("-100"_b.toUInt(2), "cannot parse bytes as unsigned integer", const RuntimeError&);
 
         CHECK_THROWS_WITH_AS("12a"_b.toUInt(), "cannot parse bytes as unsigned integer", const RuntimeError&);
     }
