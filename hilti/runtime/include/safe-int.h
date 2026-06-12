@@ -2,8 +2,18 @@
 
 #pragma once
 
+#if defined(__clang__) || defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+#endif
+
 #define SAFEINT_DISABLE_ADDRESS_OPERATOR
 #include <hilti/rt/3rdparty/SafeInt/SafeInt.hpp>
+
+#if defined(__clang__) || defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+
 #include <hilti/rt/exception.h>
 #include <hilti/rt/macros.h>
 
