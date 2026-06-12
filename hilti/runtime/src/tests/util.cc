@@ -55,15 +55,15 @@ T atoi_n_(const std::string_view& input, int base, unsigned num_parsed) {
     CAPTURE(base);
 
     auto result = T();
-    std::string_view::iterator it;
+    unsigned n = 0;
 
     try {
-        it = atoi_n(input.cbegin(), input.cend(), base, &result);
+        n = atoi_n(input, base, &result);
     } catch ( ... ) {
         throw;
     }
 
-    CHECK_EQ(it - input.begin(), num_parsed);
+    CHECK_EQ(n, num_parsed);
     return result;
 };
 
@@ -73,16 +73,10 @@ TEST_CASE("atoi_n") {
 
         SUBCASE("empty range") {
             std::string_view s;
-            CHECK_THROWS_WITH_AS(atoi_n(s.begin(), s.end(), 10, &x),
-                                 "cannot decode from empty range",
-                                 const InvalidArgument&);
+            CHECK_THROWS_WITH_AS(atoi_n(s, 10, &x), "cannot decode from empty range", const InvalidArgument&);
         }
 
-        SUBCASE("invalid chars") {
-            std::string_view s = "abc";
-            const auto it = atoi_n(s.data(), s.data() + s.size(), 10, &x);
-            CHECK_EQ(it, s.data());
-        }
+        SUBCASE("invalid chars") { CHECK_EQ(atoi_n("abc", 10, &x), 0); }
 
         CHECK_EQ(x, -42);
     }
