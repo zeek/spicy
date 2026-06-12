@@ -9,9 +9,11 @@
 #include <limits>
 #include <locale>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include <hilti/rt/autogen/version.h>
+#include <hilti/rt/exception.h>
 #include <hilti/rt/fiber.h>
 #include <hilti/rt/filesystem.h>
 #include <hilti/rt/init.h>
@@ -69,16 +71,23 @@ T atoi_n_(const std::string_view& input, int base, unsigned num_parsed) {
 
 TEST_CASE("atoi_n") {
     SUBCASE("parse nothing") {
-        int64_t x = -42; // If nothing gets parse, this value should remain unchanged.
+        uint64_t x = 42; // If nothing gets parse, this value should remain unchanged.
 
         SUBCASE("empty range") {
-            std::string_view s;
-            CHECK_THROWS_WITH_AS(atoi_n(s, 10, &x), "cannot decode from empty range", const InvalidArgument&);
+            CHECK_THROWS_WITH_AS(atoi_n("", 10, &x), "input does not match expected pattern", const InvalidArgument&);
         }
 
-        SUBCASE("invalid chars") { CHECK_EQ(atoi_n("abc", 10, &x), 0); }
+        SUBCASE("invalid chars") {
+            CHECK_THROWS_WITH_AS(atoi_n("abc", 10, &x),
+                                 "input does not match expected pattern",
+                                 const InvalidArgument&);
+        }
 
-        CHECK_EQ(x, -42);
+        SUBCASE("value not in target range") {
+            CHECK_THROWS_WITH_AS(atoi_n("-1", 10, &x), "input does not match expected pattern", const InvalidArgument&);
+        }
+
+        CHECK_EQ(x, 42);
     }
 
     SUBCASE("parse something") {
@@ -138,18 +147,11 @@ TEST_CASE("atoi_n") {
                  std::numeric_limits<uint64_t>::min());
         CHECK_EQ(atoi_n_<uint64_t>(std::to_string(std::numeric_limits<uint64_t>::max()), 10, 20),
                  std::numeric_limits<uint64_t>::max());
-
-        // Parsing an a signed value into an unsigned type underflows.
-        CHECK_EQ(atoi_n_<uint8_t>("-1", 10, 2), 255);
     }
 
     SUBCASE("overflow") {
-        CHECK_THROWS_WITH_AS(atoi_n_<int32_t>("9901090097", 10, 0),
-                             "cannot decode value in chosen base",
-                             const OutOfRange&);
-        CHECK_THROWS_WITH_AS(atoi_n_<int32_t>("-9901090097", 10, 0),
-                             "cannot decode value in chosen base",
-                             const OutOfRange&);
+        CHECK_THROWS_WITH_AS(atoi_n_<int32_t>("9901090097", 10, 0), "passed value is out of range", const OutOfRange&);
+        CHECK_THROWS_WITH_AS(atoi_n_<int32_t>("-9901090097", 10, 0), "passed value is out of range", const OutOfRange&);
     }
 }
 
@@ -334,8 +336,9 @@ TEST_CASE("expandUTF8Escapes") {
     CHECK_EQ(expandUTF8Escapes("\\U0001F60E"), "😎");
 
     CHECK_THROWS_WITH_AS(expandUTF8Escapes("\\x"), "\\x used with no following hex digits", const Exception&);
-    CHECK_THROWS_WITH_AS(expandUTF8Escapes("\\xZ"), "cannot decode character", const Exception&);
+    CHECK_THROWS_WITH_AS(expandUTF8Escapes("\\xZ"), "input does not match expected pattern", const Exception&);
     CHECK_EQ(expandUTF8Escapes("\\xA"), "\xA");
+    CHECK_EQ(expandUTF8Escapes("\\x41"), "A");
     CHECK_EQ(expandUTF8Escapes("\\xAB"), "\xAB");
     CHECK_THROWS_WITH_AS(expandUTF8Escapes("\\xAZ"), "cannot decode character", const Exception&);
     CHECK_EQ(expandUTF8Escapes("\\xABC"), std::string("\xAB") + "C");

@@ -13,14 +13,15 @@
 #endif
 
 #include <algorithm>
+#include <charconv>
 #include <cstdint>
-#include <limits>
 #include <list>
 #include <memory>
 #include <ranges>
 #include <set>
 #include <string>
 #include <string_view>
+#include <system_error>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -465,75 +466,21 @@ inline uint8_t atoi_n(std::string_view input, uint8_t base, Result* result)
     if ( base < 2 || base > 36 )
         throw OutOfRange("base for numerical conversion must be between 2 and 36");
 
-    if ( input.empty() )
-        throw InvalidArgument("cannot decode from empty range");
+    // In contrast to `std::from_chars` this function allows e..g, `+123` as valid input.
+    if ( input.starts_with('+') )
+        return 1 + atoi_n(input.substr(1), base, result);
 
-    bool neg = false;
-    const auto* it = input.begin();
+    if ( auto [last, ec] = std::from_chars(input.data(), input.data() + input.size(), *result, base);
+         ec == std::errc() )
+        return std::distance(input.begin(), last);
 
-    if ( *it == '-' ) {
-        neg = true;
-        ++it;
-    }
-    else if ( *it == '+' ) {
-        neg = false;
-        ++it;
-    }
+    else if ( ec == std::errc::invalid_argument )
+        throw InvalidArgument("input does not match expected pattern");
 
-    // Compute range of possible values. For signed types the absolute minimum
-    // value typically does not fit into the type, so instead store the maximum
-    // value in the corresponding unsigned type which has enough range.
-    constexpr auto max = std::numeric_limits<Result>::max();
-    constexpr auto min = std::numeric_limits<Result>::min();
+    else if ( ec == std::errc::result_out_of_range )
+        throw OutOfRange("passed value is out of range");
 
-    // Sanity check since e.g., our own `hilti::rt::integer::safe` type does
-    // not implement `std::is_signed_v`, `std::make_unsigned_t`, or
-    // `std::numeric_limits` so `min` or `max` could be the default value for
-    // that type. Since we require a builtin integral type above we should
-    // never reach this.
-    static_assert(min < max);
-
-    using Unsigned = std::conditional_t<std::is_signed_v<Result>, std::make_unsigned_t<Result>, Result>;
-    constexpr auto max_value =
-        std::is_unsigned_v<Result> ? Unsigned(max) : static_cast<Unsigned>(0) - static_cast<Unsigned>(min);
-
-    // Since we handle any sign above we can accumulate into an unsigned
-    // integer when iterating digits. We pick `uint64_t` since it is large
-    // enough to handle any type we need to handle.
-    static_assert(max_value <= std::numeric_limits<uint64_t>::max());
-    uint64_t n = 0;
-    for ( ; it != input.end(); ++it ) {
-        auto c = *it;
-
-        // `uint8_t` is sufficient to store any digit up to max base 36.
-        uint8_t d;
-        if ( c >= '0' && c < '0' + base )
-            d = c - '0';
-        else if ( c >= 'a' && c < 'a' - 10 + base )
-            d = c - 'a' + 10;
-        else if ( c >= 'A' && c < 'A' - 10 + base )
-            d = c - 'A' + 10;
-        else
-            break;
-
-        if ( n > static_cast<uint64_t>(max_value / base) || d > max_value - (n * base) )
-            throw OutOfRange("cannot decode value in chosen base");
-
-        n = (n * base) + d;
-    }
-
-    if ( it == input.begin() )
-        return 0;
-
-    auto s = std::distance(input.begin(), it);
-
-    // Convert to and store in target value. We have already checked the range above.
-    if ( neg )
-        *result = static_cast<Result>(0ULL - n);
-    else
-        *result = static_cast<Result>(n);
-
-    return s;
+    cannot_be_reached();
 }
 
 /**
