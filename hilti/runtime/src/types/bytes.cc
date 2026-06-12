@@ -253,7 +253,7 @@ Bytes Bytes::upper(unicode::Charset cs, unicode::DecodeErrorStrategy errors) con
 
 integer::safe<int64_t> Bytes::toInt(uint64_t base) const {
     int64_t x = 0;
-    if ( hilti::rt::atoi_n(str().begin(), str().end(), base, &x) == str().end() )
+    if ( hilti::rt::atoi_n(str(), base, &x) == str().size() )
         return x;
 
     throw RuntimeError("cannot parse bytes as signed integer");
@@ -261,7 +261,7 @@ integer::safe<int64_t> Bytes::toInt(uint64_t base) const {
 
 integer::safe<uint64_t> Bytes::toUInt(uint64_t base) const {
     int64_t x = 0;
-    if ( hilti::rt::atoi_n(str().begin(), str().end(), base, &x) == str().end() )
+    if ( hilti::rt::atoi_n(str(), base, &x) == str().size() )
         return x;
 
     throw RuntimeError("cannot parse bytes as unsigned integer");

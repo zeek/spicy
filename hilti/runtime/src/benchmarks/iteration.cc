@@ -90,7 +90,7 @@ static void atoi_n_uint64_t(benchmark::State& state) {
     uint64_t x = 0;
     // NOLINTNEXTLINE
     for ( auto _ : state )
-        hilti::rt::atoi_n(data.begin(), data.end(), 10, &x);
+        hilti::rt::atoi_n(data, 10, &x);
 }
 
 BENCHMARK(iterate_bytes)->ArgName("len")->RangeMultiplier(100)->Range(1, 1'000'000);
