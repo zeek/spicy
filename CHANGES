@@ -1,3 +1,7 @@
+1.17.0-dev.79 | 2026-06-12 09:54:41 +0200
+
+  * Cache docker image directly with official Docker actions (Benjamin Bannier, Corelight)
+
 1.17.0-dev.77 | 2026-06-11 11:06:28 +0200
 
   * GH-2399: Additional fixes for #2399 (Craig Leres)
