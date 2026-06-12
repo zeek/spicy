@@ -1,3 +1,15 @@
+1.17.0-dev.85 | 2026-06-12 09:59:25 +0200
+
+  * Bump docker/build-push-action from 7.1.0 to 7.2.0 (dependabot[bot])
+
+  * Bump CodSpeedHQ/action from 4.15.1 to 4.17.0 (dependabot[bot])
+
+  * Bump 3rdparty/vcpkg from `41ff869` to `9849e07` (dependabot[bot])
+
+  * Bump 3rdparty/utfcpp from `660314d` to `819011b` (dependabot[bot])
+
+  * Bump hendrikmuhs/ccache-action from 1.2.22 to 1.2.23 (dependabot[bot])
+
 1.17.0-dev.79 | 2026-06-12 09:54:41 +0200
 
   * Cache docker image directly with official Docker actions (Benjamin Bannier, Corelight)
