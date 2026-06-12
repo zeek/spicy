@@ -452,26 +452,24 @@ class OutOfRange;
  * @pre The input sequence must not be empty, i.e., we require `s != e`.
  * @pre Base must be in the inclusive range [2, 36].
  *
- * @par s beginning of the input range.
- * @par e end of the input range.
+ * @par input buffer to parse number from.
  * @par base base of the input range.
  * @par result address of the memory location to used for storing
  *     a possible parsed result.
- * @return iterator to the first character not used in value
- *     extraction.
+ * @return number of bytes consumed in parsing.
  */
-template<class Iter, typename Result>
-inline Iter atoi_n(Iter s, Iter e, uint8_t base, Result* result)
-    requires std::is_integral_v<Result> && (sizeof(Result) <= sizeof(uint64_t)) && std::contiguous_iterator<Iter>
+template<typename Result>
+inline uint8_t atoi_n(std::string_view input, uint8_t base, Result* result)
+    requires std::is_integral_v<Result> && (sizeof(Result) <= sizeof(uint64_t))
 {
     if ( base < 2 || base > 36 )
         throw OutOfRange("base for numerical conversion must be between 2 and 36");
 
-    if ( s == e )
+    if ( input.empty() )
         throw InvalidArgument("cannot decode from empty range");
 
     bool neg = false;
-    auto it = s;
+    const auto* it = input.begin();
 
     if ( *it == '-' ) {
         neg = true;
@@ -504,7 +502,7 @@ inline Iter atoi_n(Iter s, Iter e, uint8_t base, Result* result)
     // enough to handle any type we need to handle.
     static_assert(max_value <= std::numeric_limits<uint64_t>::max());
     uint64_t n = 0;
-    for ( ; it != e; ++it ) {
+    for ( ; it != input.end(); ++it ) {
         auto c = *it;
 
         // `uint8_t` is sufficient to store any digit up to max base 36.
@@ -524,10 +522,10 @@ inline Iter atoi_n(Iter s, Iter e, uint8_t base, Result* result)
         n = (n * base) + d;
     }
 
-    if ( it == s )
-        return s;
+    if ( it == input.begin() )
+        return 0;
 
-    s = it;
+    auto s = std::distance(input.begin(), it);
 
     // Convert to and store in target value. We have already checked the range above.
     if ( neg )
