@@ -24,7 +24,7 @@ extern void hlt_internal::Foo::_t_init_globals(::hilti::rt::Context* ctx) { ::hl
 
 extern void hlt_internal::Foo::_t_init_module() {
       ::hilti::rt::location("<...>/globals.hlt:16:1-16:15");
-    ::hilti::rt::print((*hlt_internal::Foo::X), &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
+    ::hilti::rt::print((*hlt_internal::Foo::X), &::hilti::rt::type_info::string, ::hilti::rt::Bool{true});
 }
 
 extern void hlt_internal::Foo::_t_register_module() {

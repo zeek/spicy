@@ -34,11 +34,11 @@ extern void hlt_internal::Bar::_t_init_globals(::hilti::rt::Context* ctx) {
 
 extern void hlt_internal::Bar::_t_init_module() {
       ::hilti::rt::location("bar.hlt:10:1-10:38");
-    ::hilti::rt::print("Hello, world from Bar!"_hs, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
+    ::hilti::rt::print("Hello, world from Bar!"_hs, &::hilti::rt::type_info::string, ::hilti::rt::Bool{true});
       ::hilti::rt::location("bar.hlt:11:1-11:22");
-    ::hilti::rt::print(Foo::_t_globals()->foo, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
+    ::hilti::rt::print(Foo::_t_globals()->foo, &::hilti::rt::type_info::string, ::hilti::rt::Bool{true});
       ::hilti::rt::location("bar.hlt:12:1-12:17");
-    ::hilti::rt::print(Bar::_t_globals()->bar, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
+    ::hilti::rt::print(Bar::_t_globals()->bar, &::hilti::rt::type_info::string, ::hilti::rt::Bool{true});
 }
 
 extern void hlt_internal::Bar::_t_register_module() {
@@ -81,11 +81,11 @@ extern void hlt_internal::Foo::_t_init_globals(::hilti::rt::Context* ctx) {
 
 extern void hlt_internal::Foo::_t_init_module() {
       ::hilti::rt::location("foo.hlt:10:1-10:38");
-    ::hilti::rt::print("Hello, world from Foo!"_hs, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
+    ::hilti::rt::print("Hello, world from Foo!"_hs, &::hilti::rt::type_info::string, ::hilti::rt::Bool{true});
       ::hilti::rt::location("foo.hlt:11:1-11:17");
-    ::hilti::rt::print(Foo::_t_globals()->foo, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
+    ::hilti::rt::print(Foo::_t_globals()->foo, &::hilti::rt::type_info::string, ::hilti::rt::Bool{true});
       ::hilti::rt::location("foo.hlt:12:1-12:22");
-    ::hilti::rt::print(Bar::_t_globals()->bar, &::hilti::rt::type_info::string, ::hilti::rt::Bool(true));
+    ::hilti::rt::print(Bar::_t_globals()->bar, &::hilti::rt::type_info::string, ::hilti::rt::Bool{true});
 }
 
 extern void hlt_internal::Foo::_t_register_module() {
