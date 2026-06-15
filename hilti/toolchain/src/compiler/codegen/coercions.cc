@@ -74,9 +74,10 @@ struct Visitor : public hilti::visitor::PreOrder {
     }
 
     void operator()(type::List* n) final {
-        if ( dst->type()->isA<type::Set>() )
-            // Not using `Set{..}` to avoid calling into constructor taking initializer list.
-            result = fmt("::hilti::rt::Set(%s)", expr);
+        if ( dst->type()->isA<type::Set>() ) {
+            assert(type::same(n->elementType(), dst->type()->as<type::Set>()->elementType()));
+            result = expr;
+        }
 
         else if ( dst->type()->isA<type::Vector>() ) {
             assert(type::same(n->elementType(), dst->type()->as<type::Vector>()->elementType()));
