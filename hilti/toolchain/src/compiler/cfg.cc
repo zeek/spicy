@@ -30,6 +30,7 @@
 #include <hilti/ast/declarations/type.h>
 #include <hilti/ast/expression.h>
 #include <hilti/ast/expressions/assign.h>
+#include <hilti/ast/expressions/coerced.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/keyword.h>
 #include <hilti/ast/expressions/logical-and.h>
@@ -1222,6 +1223,9 @@ bool cfg::Cache::mayHaveSideEffects(const Expression* expr) {
     // Test statically for some expressions we know do not have side effects.
     // Once dataflow() is more precise, we can revisit if we want to keep the
     // static checks as well or rely entirely on dataflow information.
+    if ( ! expr )
+        return false;
+
     if ( const auto* ctor = expr->tryAs<expression::Ctor>() ) {
         if ( expr->isConstant() )
             return false;
@@ -1229,6 +1233,9 @@ bool cfg::Cache::mayHaveSideEffects(const Expression* expr) {
         if ( ctor->ctor()->isA<ctor::Default>() && ! ctor->type()->type()->isMutable() )
             return false;
     }
+
+    if ( const auto* coerced = expr->tryAs<expression::Coerced>() )
+        return mayHaveSideEffects(coerced->expression());
 
     if ( expr->isA<expression::Name>() )
         return false;
