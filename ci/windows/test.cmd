@@ -4,7 +4,7 @@
 :: Run Spicy unit tests on Windows.
 
 :: Import the MSVC compiler environment.
-call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
+call "%VSINSTALLDIR%VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 cd build
