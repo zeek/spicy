@@ -3,7 +3,7 @@
 
 :: Import the MSVC compiler environment. The path is hard-coded to the CI
 :: Docker image; adjust if running builds locally.
-call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
+call "%VSINSTALLDIR%VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
 if %errorlevel% neq 0 exit /b %errorlevel%
 
 echo === System Information ===

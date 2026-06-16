@@ -369,7 +369,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        choco install -y --no-progress winflexbison3 ccache msysgit python ccache
+        choco install -y --no-progress winflexbison3 ccache msysgit python
 
     - name: Set up environment
       run: |

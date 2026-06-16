@@ -1,3 +1,22 @@
+1.17.0-dev.89 | 2026-06-16 11:56:14 +0200
+
+  * Drop duplicate dependency install (Benjamin Bannier, Corelight)
+
+    This should be a non-functional change.
+
+  * Bump 3rdparty/libunistd for compatibility with newer CMake (Benjamin Bannier, Corelight)
+
+  * Do not hardcode paths to Visual Studio installation (Benjamin Bannier, Corelight)
+
+    On 2026-06-15 Github switched the `windows-2025` runner to mean instead
+    `windows-2025-vs2026`^[1]. This caused our Windows CI job to break since
+    it hardcoded the path to the Visual Studio installation.
+
+    This patch instead switches scripts over to use the environment variable
+    `VSINSTALLDIR` instead which is set up by our CI environment.
+
+    [1]: https://github.com/actions/runner-images/issues/14017
+
 1.17.0-dev.85 | 2026-06-12 09:59:25 +0200
 
   * Bump docker/build-push-action from 7.1.0 to 7.2.0 (dependabot[bot])
