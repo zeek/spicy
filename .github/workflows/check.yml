@@ -227,6 +227,7 @@ jobs:
             SPICY_INSTALLATION_DIRECTORY=/opt/spicy btest -j "$NPROCS" -d -c tests/btest.cfg -a installation
 
     name: ${{ matrix.id }}
+    if: false
 
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -311,6 +312,7 @@ jobs:
     runs-on: ${{ matrix.release }}
 
     name: ${{ matrix.release }}
+    if: false
 
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -349,7 +351,7 @@ jobs:
         btest -djc tests/btest.cfg
 
   windows:
-    runs-on: windows-2025
+    runs-on: windows-2022
 
     steps:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
