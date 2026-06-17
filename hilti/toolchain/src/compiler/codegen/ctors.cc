@@ -58,7 +58,7 @@ struct Visitor : hilti::visitor::PreOrder {
         return true;
     }
 
-    void operator()(ctor::Address* n) final { result = fmt("::hilti::rt::Address(\"%s\")", n->value()); }
+    void operator()(ctor::Address* n) final { result = fmt("::hilti::rt::Address{\"%s\"}", n->value()); }
 
     void operator()(ctor::Bitfield* n) final {
         std::vector<cxx::Type> types;
@@ -78,7 +78,7 @@ struct Visitor : hilti::visitor::PreOrder {
                      util::join(values, ", "),
                      cg->typeInfo(n->type()));
     }
-    void operator()(ctor::Bool* n) final { result = fmt("::hilti::rt::Bool(%s)", n->value() ? "true" : "false"); }
+    void operator()(ctor::Bool* n) final { result = fmt("::hilti::rt::Bool{%s}", n->value() ? "true" : "false"); }
 
     void operator()(ctor::Bytes* n) final { result = fmt("\"%s\"_b", util::escapeBytesForCxx(n->value())); }
 
@@ -96,11 +96,11 @@ struct Visitor : hilti::visitor::PreOrder {
             args = util::join(exprs, ", ");
         }
 
-        result = fmt("(%s(%s))", cg->compile(n->type(), codegen::TypeUsage::Ctor), args);
+        result = fmt("(%s{%s})", cg->compile(n->type(), codegen::TypeUsage::Ctor), args);
     }
 
     void operator()(ctor::Error* n) final {
-        result = fmt("::hilti::rt::result::Error(\"%s\")", hilti::util::escapeBytesForCxx(n->value()));
+        result = fmt("::hilti::rt::result::Error{\"%s\"}", hilti::util::escapeBytesForCxx(n->value()));
     }
 
     void operator()(ctor::Exception* n) final {
@@ -112,29 +112,29 @@ struct Visitor : hilti::visitor::PreOrder {
             type = cg->compile(n->type(), codegen::TypeUsage::Ctor);
 
         if ( auto* x = n->location() )
-            result = fmt("%s(%s, %s)", type, cg->compile(n->value()), cg->compile(x));
+            result = fmt("%s{%s, %s}", type, cg->compile(n->value()), cg->compile(x));
         else
-            result = fmt("%s(%s, \"%s\")", type, cg->compile(n->value()), n->meta().location());
+            result = fmt("%s{%s, \"%s\"}", type, cg->compile(n->value()), n->meta().location());
     }
 
     void operator()(ctor::Interval* n) final {
         result = fmt("::hilti::rt::Interval(::hilti::rt::integer::safe<int64_t>(%" PRId64
-                     "), ::hilti::rt::Interval::NanosecondTag())",
+                     "), ::hilti::rt::Interval::NanosecondTag{})",
                      n->value().nanoseconds());
     }
 
     void operator()(ctor::Library* n) final {
-        result = fmt("%s(%s)", n->type()->type()->as<type::Library>()->cxxName(), cg->compile(n->value()));
+        result = fmt("%s{%s}", n->type()->type()->as<type::Library>()->cxxName(), cg->compile(n->value()));
     }
 
     void operator()(ctor::List* n) final {
         if ( n->elementType()->type()->isA<type::Unknown>() )
             // Can only be the empty list.
-            result = "::hilti::rt::vector::Empty()";
+            result = "::hilti::rt::vector::Empty{}";
         else {
             auto [cxx_type, cxx_default] = cg->cxxTypeForVector(n->elementType());
             result =
-                fmt("%s({%s}%s)",
+                fmt("%s{%s}%s",
                     cxx_type,
                     util::join(n->value() | std::views::transform([this](auto e) { return cg->compile(e); }), ", "),
                     cxx_default);
@@ -144,7 +144,7 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(ctor::Map* n) final {
         if ( n->valueType()->type()->isA<type::Unknown>() ) {
             // Can only be the empty map.
-            result = "::hilti::rt::map::Empty()";
+            result = "::hilti::rt::map::Empty{}";
             return;
         }
 
@@ -168,11 +168,11 @@ struct Visitor : hilti::visitor::PreOrder {
             const auto* captures = (cg->cxxBlock() == nullptr) ? "" : "&";
             const auto* xs = HILTI_INTERNAL_ID("xs");
             result =
-                fmt("[%s]() { auto %s = ::hilti::rt::Map<%s, %s>(); %s return %s; }()", captures, xs, k, v, elems, xs);
+                fmt("[%s]() { auto %s = ::hilti::rt::Map<%s, %s>{}; %s return %s; }()", captures, xs, k, v, elems, xs);
         }
 
         else
-            result = fmt("::hilti::rt::Map<%s, %s>({%s})",
+            result = fmt("::hilti::rt::Map<%s, %s>{%s}",
                          k,
                          v,
                          util::join(n->value() | std::views::transform([this](const auto& e) {
@@ -182,19 +182,19 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     void operator()(ctor::Network* n) final {
-        result = fmt("::hilti::rt::Network(\"%s\", %u)", n->value().prefix(), n->value().length());
+        result = fmt("::hilti::rt::Network{\"%s\", %u}", n->value().prefix(), n->value().length());
     }
 
-    void operator()(ctor::Null* /*n*/) final { result = fmt("::hilti::rt::Null()"); }
+    void operator()(ctor::Null* /*n*/) final { result = fmt("::hilti::rt::Null{}"); }
 
     void operator()(ctor::Optional* n) final {
         if ( auto* e = n->value() )
             result = fmt("::hilti::rt::optional::make(%s)", cg->compile(e));
         else
-            result = fmt("::hilti::rt::Optional<%s>()", cg->compile(n->dereferencedType(), codegen::TypeUsage::Ctor));
+            result = fmt("::hilti::rt::Optional<%s>{}", cg->compile(n->dereferencedType(), codegen::TypeUsage::Ctor));
     }
 
-    void operator()(ctor::Port* n) final { result = fmt("::hilti::rt::Port(\"%s\")", n->value()); }
+    void operator()(ctor::Port* n) final { result = fmt("::hilti::rt::Port{\"%s\"}", n->value()); }
 
     void operator()(ctor::Real* n) final {
         // We use hexformat for lossless serialization. Older platforms like
@@ -212,14 +212,14 @@ struct Visitor : hilti::visitor::PreOrder {
         if ( n->type()->type()->isA<type::Void>() )
             result = fmt("::hilti::rt::Nothing{}");
         else if ( auto* e = n->value() )
-            result = fmt("%s(%s)", t, cg->compile(e));
+            result = fmt("%s{%s}", t, cg->compile(e));
         else
-            result = fmt("%s(%s)", t, cg->compile(n->error()));
+            result = fmt("%s{%s}", t, cg->compile(n->error()));
     }
 
     void operator()(ctor::StrongReference* n) final {
         result =
-            fmt("::hilti::rt::StrongReference<%s>()", cg->compile(n->dereferencedType(), codegen::TypeUsage::Ctor));
+            fmt("::hilti::rt::StrongReference<%s>{}", cg->compile(n->dereferencedType(), codegen::TypeUsage::Ctor));
     }
 
     void operator()(ctor::RegExp* n) final {
@@ -228,7 +228,7 @@ struct Visitor : hilti::visitor::PreOrder {
         if ( n->isNoSub() )
             flags.emplace_back(".no_sub = true");
 
-        result = fmt("::hilti::rt::RegExp({%s}, {%s})",
+        result = fmt("::hilti::rt::RegExp{{%s}, {%s}}",
                      util::join(n->patterns() | std::views::transform([&](const auto& p) {
                                     return fmt("::hilti::rt::regexp::Pattern{\"%s\", %s, %s}",
                                                util::escapeUTF8(p.value(), hilti::rt::render_style::UTF8::EscapeQuotes),
@@ -242,7 +242,7 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(ctor::Set* n) final {
         if ( n->elementType()->type()->isA<type::Unknown>() ) {
             // Can only be the empty list.
-            result = "::hilti::rt::set::Empty()";
+            result = "::hilti::rt::set::Empty{}";
             return;
         }
 
@@ -261,11 +261,11 @@ struct Visitor : hilti::visitor::PreOrder {
             // can be referenced without capturing.
             const auto* captures = (cg->cxxBlock() == nullptr) ? "" : "&";
             const auto* xs = HILTI_INTERNAL_ID("xs");
-            result = fmt("[%s]() { auto %s = ::hilti::rt::Set<%s>(); %s return %s; }()", captures, xs, k, elems, xs);
+            result = fmt("[%s]() { auto %s = ::hilti::rt::Set<%s>{}; %s return %s; }()", captures, xs, k, elems, xs);
         }
 
         else
-            result = fmt("::hilti::rt::Set<%s>({%s})",
+            result = fmt("::hilti::rt::Set<%s>{%s}",
                          k,
                          util::join(n->value() | std::views::transform(
                                                      [this](const auto& e) { return fmt("%s", cg->compile(e)); }),
@@ -280,7 +280,7 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     void operator()(ctor::Stream* n) final {
-        result = fmt("::hilti::rt::Stream(\"%s\"_b)", util::escapeBytesForCxx(n->value()));
+        result = fmt("::hilti::rt::Stream{\"%s\"_b}", util::escapeBytesForCxx(n->value()));
     }
 
     void operator()(ctor::String* n) final {
@@ -326,13 +326,13 @@ struct Visitor : hilti::visitor::PreOrder {
                                ", ");
 
         if ( args.empty() )
-            result = fmt("%s()", id);
+            result = fmt("%s{}", id);
         else
-            result = fmt("%s(::hilti::rt::struct_::tag::Inits(), %s)", id, args);
+            result = fmt("%s{::hilti::rt::struct_::tag::Inits(), %s}", id, args);
     }
 
     void operator()(ctor::Time* n) final {
-        result = fmt("::hilti::rt::Time(%" PRId64 ", ::hilti::rt::Time::NanosecondTag())", n->value().nanoseconds());
+        result = fmt("::hilti::rt::Time{%" PRId64 ", ::hilti::rt::Time::NanosecondTag()}", n->value().nanoseconds());
     }
 
     void operator()(ctor::Enum* n) final {
@@ -349,7 +349,7 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(ctor::Vector* n) final {
         if ( n->elementType()->type()->isA<type::Unknown>() ) {
             // Can only be the empty list.
-            result = "::hilti::rt::vector::Empty()";
+            result = "::hilti::rt::vector::Empty{}";
             return;
         }
 
@@ -368,7 +368,8 @@ struct Visitor : hilti::visitor::PreOrder {
             // can be referenced without capturing.
             const auto* captures = (cg->cxxBlock() == nullptr) ? "" : "&";
             const auto* xs = HILTI_INTERNAL_ID("xs");
-            result = fmt("[%s]() { auto %s = %s({}%s); %s.reserve(%d); %s return %s; }()",
+
+            result = fmt("[%s]() { auto %s = %s{}%s; %s.reserve(%d); %s return %s; }()",
                          captures,
                          xs,
                          cxx_type,
@@ -393,7 +394,7 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     void operator()(ctor::WeakReference* n) final {
-        result = fmt("::hilti::rt::WeakReference<%s>()", cg->compile(n->dereferencedType(), codegen::TypeUsage::Ctor));
+        result = fmt("::hilti::rt::WeakReference<%s>{}", cg->compile(n->dereferencedType(), codegen::TypeUsage::Ctor));
     }
 };
 

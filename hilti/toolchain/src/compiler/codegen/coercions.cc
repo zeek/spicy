@@ -40,7 +40,7 @@ struct Visitor : public hilti::visitor::PreOrder {
 
     void operator()(type::Bytes* /*n*/) final {
         if ( dst->type()->isA<type::Stream>() )
-            result = fmt("::hilti::rt::Stream(%s)", expr);
+            result = fmt("::hilti::rt::Stream{%s}", expr);
 
         else
             logger().internalError(fmt("codegen: unexpected type coercion from bytes to %s", dst->type()->typename_()));
@@ -56,7 +56,7 @@ struct Visitor : public hilti::visitor::PreOrder {
 
     void operator()(type::Error* /*n*/) final {
         if ( dst->type()->isA<type::Result>() )
-            result = fmt("%s(%s)", cg->compile(dst, codegen::TypeUsage::Storage), expr);
+            result = fmt("%s{%s}", cg->compile(dst, codegen::TypeUsage::Storage), expr);
 
         else
             logger().internalError(fmt("codegen: unexpected type coercion from error to %s", dst->type()->typename_()));
@@ -65,7 +65,7 @@ struct Visitor : public hilti::visitor::PreOrder {
     void operator()(type::Interval* /*n*/) final {
         if ( dst->type()->isA<type::Bool>() ) {
             auto id = cg->compile(src, codegen::TypeUsage::Storage);
-            result = fmt("(%s != ::hilti::rt::Interval())", expr);
+            result = fmt("(%s != ::hilti::rt::Interval{})", expr);
         }
 
         else
@@ -74,8 +74,10 @@ struct Visitor : public hilti::visitor::PreOrder {
     }
 
     void operator()(type::List* n) final {
-        if ( dst->type()->isA<type::Set>() )
-            result = fmt("::hilti::rt::Set(%s)", expr);
+        if ( dst->type()->isA<type::Set>() ) {
+            assert(type::same(n->elementType(), dst->type()->as<type::Set>()->elementType()));
+            result = expr;
+        }
 
         else if ( dst->type()->isA<type::Vector>() ) {
             assert(type::same(n->elementType(), dst->type()->as<type::Vector>()->elementType()));
@@ -95,7 +97,7 @@ struct Visitor : public hilti::visitor::PreOrder {
         if ( dst->type()->isA<type::Optional>() ) {
             // Create tmp to avoid evaluation "expr" twice.
             auto tmp = cg->addTmp("opt", cg->compile(src, codegen::TypeUsage::Storage));
-            result = {fmt("(%s = (%s), %s.hasValue() ? hilti::rt::optional::make(*%s) : hilti::rt::Null())",
+            result = {fmt("(%s = (%s), %s.hasValue() ? hilti::rt::optional::make(*%s) : hilti::rt::Null{})",
                           tmp,
                           expr,
                           tmp,
@@ -113,13 +115,13 @@ struct Visitor : public hilti::visitor::PreOrder {
 
     void operator()(type::StrongReference* n) final {
         if ( dst->type()->isA<type::Bool>() )
-            result = fmt("::hilti::rt::Bool(static_cast<bool>(%s))", expr);
+            result = fmt("::hilti::rt::Bool{static_cast<bool>(%s)}", expr);
 
         else if ( dst->type()->isA<type::ValueReference>() )
             result = fmt("%s.derefAsValue()", expr);
 
         else if ( auto* x = dst->type()->tryAs<type::WeakReference>() )
-            result = fmt("::hilti::rt::WeakReference<%s>(%s)",
+            result = fmt("::hilti::rt::WeakReference<%s>{%s}",
                          cg->compile(x->dereferencedType(), codegen::TypeUsage::Ctor),
                          expr);
 
@@ -133,13 +135,13 @@ struct Visitor : public hilti::visitor::PreOrder {
 
     void operator()(type::String* /*n*/) final {
         if ( dst->type()->isA<type::Error>() )
-            result = fmt("%s(%s)", cg->compile(dst, codegen::TypeUsage::Storage), expr);
+            result = fmt("%s{%s}", cg->compile(dst, codegen::TypeUsage::Storage), expr);
     }
 
     void operator()(type::Time* /*n*/) final {
         if ( dst->type()->isA<type::Bool>() ) {
             auto id = cg->compile(src, codegen::TypeUsage::Storage);
-            result = fmt("(%s != ::hilti::rt::Time())", expr);
+            result = fmt("(%s != ::hilti::rt::Time{})", expr);
         }
 
         else
@@ -148,12 +150,12 @@ struct Visitor : public hilti::visitor::PreOrder {
 
     void operator()(type::Result* /*n*/) final {
         if ( dst->type()->isA<type::Bool>() )
-            result = fmt("::hilti::rt::Bool(static_cast<bool>(%s))", expr);
+            result = fmt("::hilti::rt::Bool{static_cast<bool>(%s)}", expr);
 
         else if ( dst->type()->isA<type::Optional>() ) {
             // Create tmp to avoid evaluation "expr" twice.
             auto tmp = cg->addTmp("result", cg->compile(src, codegen::TypeUsage::Storage));
-            result = {fmt("(%s = (%s), %s.hasValue() ? hilti::rt::optional::make(*%s) : hilti::rt::Null())",
+            result = {fmt("(%s = (%s), %s.hasValue() ? hilti::rt::optional::make(*%s) : hilti::rt::Null{})",
                           tmp,
                           expr,
                           tmp,
@@ -168,13 +170,13 @@ struct Visitor : public hilti::visitor::PreOrder {
 
     void operator()(type::SignedInteger* /*n*/) final {
         if ( dst->type()->isA<type::Bool>() )
-            result = fmt("::hilti::rt::Bool(static_cast<bool>(%s))", expr);
+            result = fmt("::hilti::rt::Bool{static_cast<bool>(%s)}", expr);
 
         else if ( auto* x = dst->type()->tryAs<type::SignedInteger>() )
-            result = fmt("::hilti::rt::integer::safe<int%d_t>(%s)", x->width(), expr);
+            result = fmt("::hilti::rt::integer::safe<int%d_t>{%s}", x->width(), expr);
 
         else if ( auto* x = dst->type()->tryAs<type::UnsignedInteger>() )
-            result = fmt("::hilti::rt::integer::safe<uint%d_t>(%s)", x->width(), expr);
+            result = fmt("::hilti::rt::integer::safe<uint%d_t>{%s}", x->width(), expr);
 
         else
             logger().internalError(
@@ -256,13 +258,13 @@ struct Visitor : public hilti::visitor::PreOrder {
 
     void operator()(type::UnsignedInteger* /*n*/) final {
         if ( dst->type()->isA<type::Bool>() )
-            result = fmt("::hilti::rt::Bool(static_cast<bool>(%s))", expr);
+            result = fmt("::hilti::rt::Bool{static_cast<bool>(%s)}", expr);
 
         else if ( auto* x = dst->type()->tryAs<type::SignedInteger>() )
-            result = fmt("::hilti::rt::integer::safe<int%d_t>(%s)", x->width(), expr);
+            result = fmt("::hilti::rt::integer::safe<int%d_t>{%s}", x->width(), expr);
 
         else if ( auto* x = dst->type()->tryAs<type::UnsignedInteger>() )
-            result = fmt("::hilti::rt::integer::safe<uint%d_t>(%s)", x->width(), expr);
+            result = fmt("::hilti::rt::integer::safe<uint%d_t>{%s}", x->width(), expr);
 
         else if ( dst->type()->isA<type::Bitfield>() )
             result = cg->unsignedIntegerToBitfield(dst, expr, cxx::Expression("::hilti::rt::integer::BitOrder::LSB0"));
@@ -273,10 +275,10 @@ struct Visitor : public hilti::visitor::PreOrder {
 
     void operator()(type::WeakReference* n) final {
         if ( dst->type()->isA<type::Bool>() )
-            result = fmt("::hilti::rt::Bool(static_cast<bool>(%s))", expr);
+            result = fmt("::hilti::rt::Bool{static_cast<bool>(%s)}", expr);
 
         else if ( auto* x = dst->type()->tryAs<type::StrongReference>() )
-            result = fmt("::hilti::rt::StrongReference<%s>(%s.derefAsValue())",
+            result = fmt("::hilti::rt::StrongReference<%s>{%s.derefAsValue()}",
                          cg->compile(x->dereferencedType(), codegen::TypeUsage::Ctor),
                          expr);
 
@@ -300,12 +302,12 @@ struct Visitor : public hilti::visitor::PreOrder {
             result = fmt("%s", expr);
 
         else if ( auto* x = dst->type()->tryAs<type::StrongReference>() )
-            result = fmt("::hilti::rt::StrongReference<%s>(%s)",
+            result = fmt("::hilti::rt::StrongReference<%s>{%s}",
                          cg->compile(x->dereferencedType(), codegen::TypeUsage::Ctor),
                          expr);
 
         else if ( auto* x = dst->type()->tryAs<type::WeakReference>() )
-            result = fmt("::hilti::rt::WeakReference<%s>(%s)",
+            result = fmt("::hilti::rt::WeakReference<%s>{%s}",
                          cg->compile(x->dereferencedType(), codegen::TypeUsage::Ctor),
                          expr);
 
@@ -321,7 +323,7 @@ struct Visitor : public hilti::visitor::PreOrder {
         if ( dst->type()->tryAs<type::StrongReference>() || dst->type()->tryAs<type::WeakReference>() )
             result = expr;
         else if ( dst->type()->isA<type::Bool>() )
-            result = "::hilti::rt::Bool(false)";
+            result = "::hilti::rt::Bool{false}";
         else
             logger().internalError(fmt("codegen: unexpected type coercion from null to %s", dst->type()->typename_()));
     }

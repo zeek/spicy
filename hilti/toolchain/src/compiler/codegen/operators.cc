@@ -322,7 +322,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
     void operator()(operator_::error::Ctor* n) final {
         auto args = tupleArguments(n->op1());
-        result = fmt("::hilti::rt::result::Error(%s)", args[0]);
+        result = fmt("::hilti::rt::result::Error{%s}", args[0]);
     }
 
     void operator()(operator_::error::Equal* n) final { result = binary(n, "=="); }
@@ -341,11 +341,11 @@ struct Visitor : hilti::visitor::PreOrder {
         else
             type = cg->compile(n->op0()->type(), codegen::TypeUsage::Ctor);
 
-        result = fmt("%s(%s)", type, args[0]);
+        result = fmt("%s{%s}", type, args[0]);
     }
 
     void operator()(operator_::exception::Description* n) final {
-        result = fmt("::hilti::rt::String(%s.description())", op0(n));
+        result = fmt("::hilti::rt::String{%s.description()}", op0(n));
     }
 
     // Function
@@ -387,27 +387,27 @@ struct Visitor : hilti::visitor::PreOrder {
 
     void operator()(operator_::interval::CtorSignedIntegerSecs* n) final {
         auto args = tupleArguments(n->op1());
-        result = fmt("::hilti::rt::Interval(%s, ::hilti::rt::Interval::SecondTag())", args[0]);
+        result = fmt("::hilti::rt::Interval{%s, ::hilti::rt::Interval::SecondTag{}}", args[0]);
     }
 
     void operator()(operator_::interval::CtorSignedIntegerNs* n) final {
         auto args = tupleArguments(n->op1());
-        result = fmt("::hilti::rt::Interval(%s, ::hilti::rt::Interval::NanosecondTag())", args[0]);
+        result = fmt("::hilti::rt::Interval{%s, ::hilti::rt::Interval::NanosecondTag{}}", args[0]);
     }
 
     void operator()(operator_::interval::CtorUnsignedIntegerSecs* n) final {
         auto args = tupleArguments(n->op1());
-        result = fmt("::hilti::rt::Interval(%s, ::hilti::rt::Interval::SecondTag())", args[0]);
+        result = fmt("::hilti::rt::Interval{%s, ::hilti::rt::Interval::SecondTag{}}", args[0]);
     }
 
     void operator()(operator_::interval::CtorUnsignedIntegerNs* n) final {
         auto args = tupleArguments(n->op1());
-        result = fmt("::hilti::rt::Interval(%s, ::hilti::rt::Interval::NanosecondTag())", args[0]);
+        result = fmt("::hilti::rt::Interval{%s, ::hilti::rt::Interval::NanosecondTag{}}", args[0]);
     }
 
     void operator()(operator_::interval::CtorRealSecs* n) final {
         auto args = tupleArguments(n->op1());
-        result = fmt("::hilti::rt::Interval(%f, ::hilti::rt::Interval::SecondTag())", args[0]);
+        result = fmt("::hilti::rt::Interval{%f, ::hilti::rt::Interval::SecondTag{}}", args[0]);
     }
 
     // List
@@ -481,10 +481,10 @@ struct Visitor : hilti::visitor::PreOrder {
     /// Real
 
     void operator()(operator_::real::CastToInterval* n) final {
-        result = fmt("::hilti::rt::Interval(%f, ::hilti::rt::Interval::SecondTag())", op0(n));
+        result = fmt("::hilti::rt::Interval{%f, ::hilti::rt::Interval::SecondTag{}}", op0(n));
     }
     void operator()(operator_::real::CastToTime* n) final {
-        result = fmt("::hilti::rt::Time(%f, ::hilti::rt::Time::SecondTag())", op0(n));
+        result = fmt("::hilti::rt::Time{%f, ::hilti::rt::Time::SecondTag{}}", op0(n));
     }
     void operator()(operator_::real::Difference* n) final { result = binary(n, "-"); }
     void operator()(operator_::real::DifferenceAssign* n) final { result = binary(n, "-="); }
@@ -516,7 +516,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
     /// Result
     void operator()(operator_::error::Description* n) final {
-        result = fmt("::hilti::rt::String(%s.description())", op0(n));
+        result = fmt("::hilti::rt::String{%s.description()}", op0(n));
     }
 
     void operator()(operator_::result::Deref* n) final { result = fmt("%s.valueOrThrow()", op0(n)); }
@@ -627,7 +627,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
     void operator()(operator_::port::Ctor* n) final {
         auto args = tupleArguments(n->op1());
-        result = fmt("::hilti::rt::Port(%s, %s)", args[0], args[1]);
+        result = fmt("::hilti::rt::Port{%s, %s}", args[0], args[1]);
     }
 
     void operator()(operator_::port::Protocol* n) final { result = fmt("%s.protocol()", op0(n)); }
@@ -754,7 +754,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
     void operator()(operator_::stream::Ctor* n) final {
         auto args = tupleArguments(n->op1());
-        result = fmt("::hilti::rt::Stream(%s)", args[0]);
+        result = fmt("::hilti::rt::Stream{%s}", args[0]);
     }
 
     void operator()(operator_::stream::Freeze* n) final {
@@ -988,10 +988,10 @@ struct Visitor : hilti::visitor::PreOrder {
 
     // Signed integer
 
-    void operator()(operator_::signed_integer::CastToBool* n) final { result = fmt("::hilti::rt::Bool(%s)", op0(n)); }
+    void operator()(operator_::signed_integer::CastToBool* n) final { result = fmt("::hilti::rt::Bool{%s}", op0(n)); }
     void operator()(operator_::signed_integer::CastToInterval* n) final {
-        result = fmt("::hilti::rt::Interval(::hilti::rt::integer::safe<int64_t>(%" PRId64
-                     ") * 1000000000, ::hilti::rt::Interval::NanosecondTag())",
+        result = fmt("::hilti::rt::Interval{::hilti::rt::integer::safe<int64_t>{%" PRId64
+                     "} * 1000000000, ::hilti::rt::Interval::NanosecondTag{}}",
                      op0(n));
     }
     void operator()(operator_::signed_integer::CastToEnum* n) final {
@@ -1093,27 +1093,27 @@ struct Visitor : hilti::visitor::PreOrder {
 
     void operator()(operator_::time::CtorSignedIntegerSecs* n) final {
         auto args = tupleArguments(n->op1());
-        result = fmt("::hilti::rt::Time(%s, ::hilti::rt::Time::SecondTag())", args[0]);
+        result = fmt("::hilti::rt::Time{%s, ::hilti::rt::Time::SecondTag{}}", args[0]);
     }
 
     void operator()(operator_::time::CtorSignedIntegerNs* n) final {
         auto args = tupleArguments(n->op1());
-        result = fmt("::hilti::rt::Time(%s, ::hilti::rt::Time::NanosecondTag())", args[0]);
+        result = fmt("::hilti::rt::Time{%s, ::hilti::rt::Time::NanosecondTag{}}", args[0]);
     }
 
     void operator()(operator_::time::CtorUnsignedIntegerSecs* n) final {
         auto args = tupleArguments(n->op1());
-        result = fmt("::hilti::rt::Time(%s, ::hilti::rt::Time::SecondTag())", args[0]);
+        result = fmt("::hilti::rt::Time{%s, ::hilti::rt::Time::SecondTag{}}", args[0]);
     }
 
     void operator()(operator_::time::CtorUnsignedIntegerNs* n) final {
         auto args = tupleArguments(n->op1());
-        result = fmt("::hilti::rt::Time(%s, ::hilti::rt::Time::NanosecondTag())", args[0]);
+        result = fmt("::hilti::rt::Time{%s, ::hilti::rt::Time::NanosecondTag{}}", args[0]);
     }
 
     void operator()(operator_::time::CtorRealSecs* n) final {
         auto args = tupleArguments(n->op1());
-        result = fmt("::hilti::rt::Time(%f, ::hilti::rt::Time::SecondTag())", args[0]);
+        result = fmt("::hilti::rt::Time{%f, ::hilti::rt::Time::SecondTag{}}", args[0]);
     }
 
     // Tuple
@@ -1150,13 +1150,13 @@ struct Visitor : hilti::visitor::PreOrder {
         result = fmt("::hilti::rt::enum_::from_uint<%s>(%s)", cg->compile(t, codegen::TypeUsage::Storage), op0(n));
     }
     void operator()(operator_::unsigned_integer::CastToInterval* n) final {
-        result = fmt("::hilti::rt::Interval(::hilti::rt::integer::safe<uint64_t>(%" PRIu64
-                     ") * 1000000000, ::hilti::rt::Interval::NanosecondTag())",
+        result = fmt("::hilti::rt::Interval{::hilti::rt::integer::safe<uint64_t>{%" PRIu64
+                     "} * 1000000000, ::hilti::rt::Interval::NanosecondTag{}}",
                      op0(n));
     }
     void operator()(operator_::unsigned_integer::CastToTime* n) final {
-        result = fmt("::hilti::rt::Time(::hilti::rt::integer::safe<uint64_t>(%" PRIu64
-                     ") * 1'000'000'000, ::hilti::rt::Time::NanosecondTag())",
+        result = fmt("::hilti::rt::Time{::hilti::rt::integer::safe<uint64_t>{%" PRIu64
+                     "} * 1'000'000'000, ::hilti::rt::Time::NanosecondTag{}}",
                      op0(n));
     }
     void operator()(operator_::unsigned_integer::DecrPostfix* n) final { result = fmt("%s--", op0(n)); }

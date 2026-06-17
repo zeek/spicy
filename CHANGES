@@ -1,3 +1,32 @@
+1.17.0-dev.93 | 2026-06-17 12:34:15 +0200
+
+  * Stop emitting unneeded constructor in codegen for list comprehensions (Benjamin Bannier, Corelight)
+
+    Since `Set` can implicitly construct from an initializer list, there is
+    no need to add an explicit constructor call, so in this patch we remove
+    it to further reduced potential for us accidentally generating code
+    causing most vexing parses.
+
+  * Disambiguate constructor calls from function declarations (Benjamin Bannier, Corelight)
+
+    We previously called constructors as `T(..)` which without context could
+    lead to most vexing parses. In this patch we replace most constructor
+    calls in type creations and coercions with `T{..}` instead to avoid any
+    downstream issues, especially since we have passes which might remove
+    the LHS.
+
+  * GH-2404: Include coercions in detection of expressions with side effects (Benjamin Bannier, Corelight)
+
+    We previously would always consider expressions with coercions as having
+    side effects which in at least #2404 lead to us generating code which
+    caused a most vexing parse. Since coercions do not have side effects
+    themself, extend our detection to include them by querying the behavior
+    of the coerced expression. This should fix the majority of new failures
+    introduced by recent rewrites which removed the LHS of assignments; we
+    will do more structural fixes in follow-up patches.
+
+    Closes #2404.
+
 1.17.0-dev.89 | 2026-06-16 11:56:14 +0200
 
   * Drop duplicate dependency install (Benjamin Bannier, Corelight)
