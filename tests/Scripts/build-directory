@@ -8,16 +8,17 @@ if [ -n "${SPICY_BUILD_DIRECTORY}" ]; then
     if which cygpath >/dev/null 2>&1; then
         cygpath -u "${SPICY_BUILD_DIRECTORY}"
     else
-        echo ${SPICY_BUILD_DIRECTORY}
+        echo "${SPICY_BUILD_DIRECTORY}"
     fi
     exit 0
 fi
 
-base=$(cd $(dirname $0) && pwd)
+base=$(cd "$(dirname "$0")" && pwd)
 
+# shellcheck disable=SC2066
 for i in "${base}/../../build"; do
-    if [ -d ${i} -a -e ${i}/CMakeCache.txt ]; then
-        cd ${i}
+    if [ -d "${i}" ] && [ -e "${i}"/CMakeCache.txt ]; then
+        cd "${i}" || exit
         pwd
         exit 0
     fi

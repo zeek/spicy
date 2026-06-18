@@ -1,9 +1,10 @@
 #! /bin/sh
 
-base=$(cd $(dirname $0) && pwd)
+base=$(cd "$(dirname "$0")" && pwd)
 
-export SPICY_BUILD_DIRECTORY=$(${base}/build-directory)
-export PATH=${SPICY_BUILD_DIRECTORY}/bin:${PATH}
+SPICY_BUILD_DIRECTORY=$("${base}"/build-directory)
+export SPICY_BUILD_DIRECTORY
+export PATH="${SPICY_BUILD_DIRECTORY}"/bin:"${PATH}"
 
 if ! which hilti-config >/dev/null 2>&1; then
     # Fail silently if we got an installation directory. We are
@@ -15,4 +16,4 @@ if ! which hilti-config >/dev/null 2>&1; then
     exit 1
 fi
 
-exec $@
+exec "$@"

@@ -6,3 +6,5 @@ if [ "$1" = "--release" ]; then
 else
     debug="--debug"
 fi
+
+export debug
