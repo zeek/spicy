@@ -334,12 +334,6 @@ hilti::rt::filesystem::path currentExecutable();
 /** Dumps a backtrace to stderr and then aborts execution. */
 [[noreturn]] extern void abortWithBacktrace();
 
-/** Parses an string into an integer value. */
-template<class Iter, typename Result>
-inline auto atoi_n(Iter s, Iter e, int base, Result* result) {
-    return hilti::rt::atoi_n(s, e, base, result);
-}
-
 /**
  * Pairs up the elements of two lists.
  *
