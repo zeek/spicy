@@ -20,7 +20,7 @@ platforms to support and test.
     If your goal is to use Spicy with Zeek, you can skip these
     installation instructions. Zeek comes with Spicy support built-in
     by default since version 5.0. See the :zeek:`Zeek documentation
-    <devel/spicy/installation.html>` for more.
+    <install.html>` for more.
 
 Pre-built binaries
 ------------------
