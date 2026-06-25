@@ -108,4 +108,6 @@ target_link_libraries(spicy-rt-tests
 target_link_libraries(spicy-rt-tests PRIVATE $<IF:$<CONFIG:Debug>,spicy-rt-debug,spicy-rt> doctest)
 add_test(NAME spicy-rt-tests COMMAND ${PROJECT_BINARY_DIR}/bin/spicy-rt-tests)
 
-add_subdirectory(tests/benchmarks/)
+if (SPICY_ENABLE_BENCHMARKS)
+    add_subdirectory(tests/benchmarks/)
+endif ()

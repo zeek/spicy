@@ -8,5 +8,9 @@ add_dependencies(spicy-tests spicy-rt-tests)
 
 if (HAVE_TOOLCHAIN)
     add_subdirectory(toolchain)
-    add_dependencies(spicy-tests spicy-toolchain-tests spicy-rt-tests spicy-rt-parsing-benchmark)
+    add_dependencies(spicy-tests spicy-toolchain-tests spicy-rt-tests)
+
+    if (SPICY_ENABLE_BENCHMARKS)
+        add_dependencies(spicy-tests spicy-rt-parsing-benchmark)
+    endif ()
 endif ()
