@@ -22,6 +22,7 @@ cmake_clang_tidy=""
 cmake_flex_root=""
 cmake_generator=""
 cmake_install_prefix="/usr/local"
+cmake_build_benchmarks="yes"
 cmake_use_ccache="no"
 cmake_use_gold="yes"
 cmake_use_precompiled_headers="yes"
@@ -60,6 +61,7 @@ Usage: $0 [OPTION]... [VAR=VALUE]...
     --build-static-libs                   Build static libraries instead [default: shared]
     --build-toolchain={yes,no}            Build the Spicy compiler toolchain [default: ${cmake_build_toolchain}]
     --build-type=TYPE                     Set build type (Debug,Release,RelWithDebInfo) [default: ${cmake_build_type}]
+    --disable-benchmarks                  Do not build benchmarks
     --disable-gold                        On Linux, do not try to use the gold linker
     --disable-precompiled-headers         Disable use of precompiled headers for developer tests
     --disable-tests                       Disable building of tests and benchmarks
@@ -117,6 +119,7 @@ while [ $# -ne 0 ]; do
         --build-static-libs)               cmake_build_shared_libs="no";;
         --build-toolchain=*)               cmake_build_toolchain="${optarg}";;
         --build-type=*)                    cmake_build_type="${optarg}";;
+        --disable-benchmarks)              cmake_build_benchmarks="no";;
         --disable-gold)                    cmake_use_gold="no";;
         --disable-precompiled-headers)     cmake_use_precompiled_headers="no";;
         --disable-tests)                   cmake_spicy_enable_tests="no";;
@@ -181,6 +184,7 @@ append_cache_entry USE_SANITIZERS               STRING "${cmake_use_sanitizers}"
 append_cache_entry HILTI_DEV_PRECOMPILE_HEADERS BOOL   "${cmake_use_precompiled_headers}"
 append_cache_entry USE_WERROR                   BOOL   "${cmake_use_werror}"
 append_cache_entry SPICY_ENABLE_TESTS           BOOL   "${cmake_spicy_enable_tests}"
+append_cache_entry SPICY_ENABLE_BENCHMARKS      BOOL   "${cmake_build_benchmarks}"
 
 if [ -n "${cmake_generator}" ]; then
     cmake="${cmake_exe} -G '${cmake_generator}' ${cmake_cache_entries} ${source_dir}"
