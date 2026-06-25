@@ -40,6 +40,7 @@ set(FIBER_SHARED OFF)
 set(FIBER_OBJECT ON)
 add_subdirectory(fiber)
 
+if (SPICY_ENABLE_BENCHMARKS)
 # We use codspeed.io for benchmarking in CI. Pull in
 # their patched google-benchmark if we are running there.
 if (CODSPEED_MODE)
@@ -60,6 +61,7 @@ else()
     add_subdirectory(benchmark)
     set_target_properties(benchmark PROPERTIES EXCLUDE_FROM_ALL ON)
     set_target_properties(benchmark_main PROPERTIES EXCLUDE_FROM_ALL ON)
+endif()
 endif()
 
 set(REPROC++ ON)

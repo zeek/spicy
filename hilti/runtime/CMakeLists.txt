@@ -193,8 +193,10 @@ target_link_libraries(hilti-rt-configuration-tests
 add_test(NAME hilti-rt-configuration-tests
          COMMAND ${PROJECT_BINARY_DIR}/bin/hilti-rt-configuration-tests)
 
-add_executable(hilti-rt-benchmark EXCLUDE_FROM_ALL src/benchmarks/fiber.cc
-                                                   src/benchmarks/iteration.cc)
-target_compile_options(hilti-rt-benchmark PRIVATE "-Wall")
-target_link_libraries(hilti-rt-benchmark PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt>)
-target_link_libraries(hilti-rt-benchmark PRIVATE benchmark)
+if (SPICY_ENABLE_BENCHMARKS)
+    add_executable(hilti-rt-benchmark EXCLUDE_FROM_ALL src/benchmarks/fiber.cc
+                                                       src/benchmarks/iteration.cc)
+    target_compile_options(hilti-rt-benchmark PRIVATE "-Wall")
+    target_link_libraries(hilti-rt-benchmark PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt>)
+    target_link_libraries(hilti-rt-benchmark PRIVATE benchmark)
+endif ()
