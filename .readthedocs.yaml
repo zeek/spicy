@@ -13,7 +13,9 @@ sphinx:
 
 python:
   install:
-    - requirements: doc/requirements.txt
+    - method: uv
+      command: sync
+      path: doc
 
 search:
   ignore:

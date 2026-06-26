@@ -1,3 +1,20 @@
+1.17.0-dev.99 | 2026-06-26 16:47:52 +0200
+
+  * Switch docs dep management from `requirements.txt` to `pyproject.toml` (Benjamin Bannier, Corelight)
+
+    Using a `pyproject.toml` simplifies virtualenv management with tools
+    like `uv`, and I have been using this configuration for years.
+
+  * Update documentation for removal of release package artifacts (Benjamin Bannier, Corelight)
+
+    This drops the previous section on how to install from packages, and
+    expands on how to build from source.
+
+  * Update link to Zeek installation instructions (Benjamin Bannier, Corelight)
+
+    Previously we would point to a placeholder doc instead of actionable
+    instructions on how to install Zeek including Spicy.
+
 1.17.0-dev.95 | 2026-06-26 10:28:13 +0200
 
   * GH-2414: Allow disabling of building of benchmarks (Benjamin Bannier, Corelight)

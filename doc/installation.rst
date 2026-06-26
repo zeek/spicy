@@ -4,9 +4,8 @@
 Installation
 =============
 
-Spicy can be installed from pre-built binaries (Linux, macOS) or with
-Homebrew (macOS), executed via Docker containers (Linux), or built
-from source (Linux, macOS, FreeBSD):
+Spicy can be installed from source (Linux, macOS) or with
+Homebrew (macOS), and executed via Docker containers.
 
 .. contents::
     :local:
@@ -20,180 +19,7 @@ platforms to support and test.
     If your goal is to use Spicy with Zeek, you can skip these
     installation instructions. Zeek comes with Spicy support built-in
     by default since version 5.0. See the :zeek:`Zeek documentation
-    <devel/spicy/installation.html>` for more.
-
-Pre-built binaries
-------------------
-
-.. _prebuilt_linux:
-
-Linux
-~~~~~
-
-We provide pre-built Spicy binaries for a range of Linux
-distributions, both for the current release version and for
-development builds made from the Git ``main`` branch.
-
-These binary artifacts are distributed as either DEB or RPM packages
-for the corresponding distribution; or, in a couple cases, as TAR
-archives. To install the binaries, download the corresponding package
-and execute one of the following:
-
-DEB packages
-    .. code::
-
-        # dpkg --install spicy.deb
-
-RPM packages
-    .. code::
-
-        # rpm -i spicy.rpm
-
-TAR archives
-    The TAR archives need to be unpacked into ``/opt/spicy``. Any
-    previous installation must be removed first::
-
-        # rm -rf /opt/spicy && mkdir /opt/spicy
-        # tar xf spicy.tar.gz -C /opt/spicy --strip-components=1
-
-.. _dockerfiles:
-
-The binaries may require installation of additional dependencies; see
-the ``Dockerfile`` for the respective platform for what's needed.
-
-.. list-table::
-    :widths: auto
-    :header-rows: 1
-    :align: center
-
-    * - Platform
-      - Release Version
-      - Development Version
-      - Dockerfile
-
-    * - Alpine 3.18
-      - :package-release-tgz:`TAR <linux_alpine_3_18>`
-      - :package-dev-tgz:`TAR <docker_alpine_3_18>`
-      - :repo:`Dockerfile <docker/Dockerfile.alpine-3.18>`
-
-    * - CentOS Stream 9
-      - :package-release-rpm:`TAR <linux_centos_stream_9>`
-      - :package-dev-rpm:`RPM <docker_centos_stream_9>`
-      - :repo:`Dockerfile <docker/Dockerfile.centos-stream-9>`
-
-    * - Debian 12
-      - :package-release-deb:`DEB <linux_debian12>`
-      - :package-dev-deb:`DEB <docker_debian12>`
-      - :repo:`Dockerfile <docker/Dockerfile.debian-12>`
-
-    * - Debian 13
-      - :package-release-deb:`DEB <linux_debian13>`
-      - :package-dev-deb:`DEB <docker_debian13>`
-      - :repo:`Dockerfile <docker/Dockerfile.debian-13>`
-
-    * - Fedora 41
-      - :package-release-rpm:`RPM <linux_fedora41>`
-      - :package-dev-rpm:`RPM <docker_fedora41>`
-      - :repo:`Dockerfile <docker/Dockerfile.fedora-41>`
-
-    * - Fedora 42
-      - :package-release-rpm:`RPM <linux_fedora42>`
-      - :package-dev-rpm:`RPM <docker_fedora42>`
-      - :repo:`Dockerfile <docker/Dockerfile.fedora-42>`
-
-    * - Ubuntu 22
-      - :package-release-deb:`DEB <linux_ubuntu22>`
-      - :package-dev-deb:`DEB <docker_ubuntu22>`
-      - :repo:`Dockerfile <docker/Dockerfile.ubuntu-22>`
-
-    * - Ubuntu 24
-      - :package-release-deb:`DEB <linux_ubuntu24>`
-      - :package-dev-deb:`DEB <docker_ubuntu24>`
-      - :repo:`Dockerfile <docker/Dockerfile.ubuntu-24>`
-
-macOS
-~~~~~
-
-.. _homebrew_macos:
-
-Homebrew
-^^^^^^^^
-
-We provide a Homebrew formula for installation of Spicy. After
-`installing Homebrew <https://docs.brew.sh/Installation>`_ add the
-Zeek tap::
-
-    # brew tap zeek/zeek
-
-To install the most recent Spicy release version, execute::
-
-    # brew install spicy
-
-To instead install the current development version, execute::
-
-    # brew install --HEAD spicy
-
-.. _prebuilt_macos:
-
-Pre-built binaries
-^^^^^^^^^^^^^^^^^^
-
-We provide TAR archives with pre-built binaries for the following
-macOS versions:
-
-.. list-table::
-    :widths: auto
-    :header-rows: 1
-    :align: center
-
-    * - macOS
-      - Release Version
-      - Development Version
-
-    * - Monterey (12)
-      -
-      - :package-dev-tgz:`TAR <macos_monterey>`
-
-    * - Ventura (13)
-      -
-      - :package-dev-tgz:`TAR <macos_venture>`
-
-The TAR archives need to be unpacked into ``/opt/spicy``. Any previous
-installation must be removed first. To prevent macOS from quarantining
-the files, you should download and unpack via the command line::
-
-    # curl -L <link-per-above> -o spicy.tar.gz
-    # rm -rf /opt/spicy && mkdir /opt/spicy
-    # tar xf spicy.tar.gz -C /opt/spicy --strip-components 1
-
-For JIT support, these binaries require an Xcode installation.
-
-.. _docker:
-
-Using Docker
-------------
-
-The Zeek Docker images include Spicy. See their `documentation
-<https://docs.zeek.org/en/master/install.html#docker-images>`__ on how to
-run them.
-
-.. note::
-
-    Docker Desktop for Mac uses a VM behind the scenes to host the
-    Docker runtime environment. By default it allocates 2 GB of RAM to
-    the VM. This is not enough to compile Spicy analzers and will cause
-    an error that looks something like this::
-
-        c++: internal compiler error: Killed (program cc1plus)
-        Please submit a full bug report,
-        with preprocessed source if appropriate.
-        See <file:///usr/share/doc/gcc-7/README.Bugs> for instructions.
-
-    This is due to the VM hitting an out-of-memory condition. To avoid
-    this you will need to allocate more RAM to the VM. Click on the Docker
-    Icon in your menubar and select "Preferences". Click on the "Advanced"
-    tab and then use the slider to select 8 GB of RAM. Docker Desktop will
-    restart and then you will be ready to go.
+    <install.html>` for more.
 
 .. _building_from_source:
 
@@ -221,19 +47,16 @@ To build Spicy from source, you will need:
 
     - For building the documentation:
 
-        * `Python <https://www.python.org/downloads/>`_ >= 3.4
-        * `Sphinx <https://www.sphinx-doc.org/en/master>`_  >= 1.8
-        * `Pygments <https://pygments.org/>`_  >= 2.5
-        * `Read the Docs Sphinx Theme <https://sphinx-rtd-theme.readthedocs.io/en/stable/>`_  (``pip install sphinx_rtd_theme``)
+        * `Python <https://www.python.org/downloads/>`_ >= 3.10
+        * the Python packages requirements listed in :repo:`the doc/ folder <doc/requirements.txt>`.
 
 In the following we record how to get these dependencies in place on
-some popular platforms. Please :issue:`file an issue <>` if you have
-instructions for platforms not yet listed here.
+some popular platforms.
 
 Linux
 ^^^^^
 
-See the corresponding :ref:`Dockerfiles <dockerfiles>`.
+See the corresponding :repo:`Dockerfiles <docker/>`.
 
 macOS
 ^^^^^
@@ -248,67 +71,69 @@ If you are using `Homebrew <https://brew.sh>`_::
 
 If you are using `MacPorts <https://www.macports.org>`_::
 
-    # port install flex bison cmake ninja python38 py38-pip
+    # port install flex bison cmake ninja python310 py310-pip
     # pip install btest
 
 If you want to build the documentation as well, also install
-``sphinx_rtd_theme`` and ``diagrams`` through *pip*.
+``sphinx_rtd_theme`` and ``diagrams`` through ``pip``.
 
-FreeBSD
-^^^^^^^
+Building
+~~~~~~~~
 
-See the :repo:`prepare script <ci/prepare_freebsd.sh>` coming with
-the Spicy distribution.
+We provide a ``./configure`` script to set up and parameterize the build and to
+produce e.g., a ``Makefile``. See ``./configure --help`` for the available
+options. The general workflow is::
 
-Building Spicy
-~~~~~~~~~~~~~~
+    # ./configure
+    # make -C build
+    # make -C build install
 
-Get the code::
+See our :repo_main:`CI setup <.github/workflows/check.yml>` for typical
+configurations.
 
-    # git clone --recursive https://github.com/zeek/spicy
+Homebrew (macOS)
+----------------
 
-The short version to build Spicy is the usual process then::
+We provide a Homebrew formula for installation of Spicy. After
+`installing Homebrew <https://docs.brew.sh/Installation>`_ add the
+Zeek tap::
 
-    # ./configure && make && make install
+    # brew tap zeek/zeek
 
-However, you may want to customize the build a bit, see the output
-``./configure --help`` for the available options. In particular, you
-can use ``--prefix=/other/path`` to install into something else than
-``/usr/local``.
+To install the most recent Spicy release version, execute::
 
-The final ``configure`` output will summarize your build's
-configuration.
+    # brew install spicy
+
+To instead install the current development version, execute::
+
+    # brew install --HEAD spicy
+
+.. _docker:
+
+Using Docker
+------------
+
+The Zeek Docker images include Spicy. See their `documentation
+<https://docs.zeek.org/en/master/install.html#docker-images>`__ on how to
+run them.
 
 .. note::
 
-    For developers, the following ``configure`` options may be
-    particular useful:
+    Docker Desktop for Mac uses a VM behind the scenes to host the
+    Docker runtime environment. By default it allocates 2 GB of RAM to
+    the VM. This is not enough to compile Spicy analzers and will cause
+    an error that looks something like this::
 
-        - ``--enable-ccache``: use the ``ccache`` compiler cache to speed up compilation
-        - ``--enable-debug``: compile a non-optimized debug version
-        - ``--enable-sanitizer``: enable address & leak sanitizers
-        - ``--generator=Ninja``: use the faster ``ninja`` build system instead of ``make``
+        c++: internal compiler error: Killed (program cc1plus)
+        Please submit a full bug report,
+        with preprocessed source if appropriate.
+        See <file:///usr/share/doc/gcc-7/README.Bugs> for instructions.
 
-    Using Ninja and ``ccache`` will speed up compile times. On Linux,
-    compiling will also be quite a bit faster if you have the "Gold
-    linker" available. To check if you do, see if ``which ld.gold``
-    returns anything. If yes, ``configure`` will automatically pick it
-    up.
-
-Once you have configured Spicy, running ``make`` will change into the
-newly created ``build`` directory and start the compilation there.
-Once finished, ``make test`` will execute the test suite. It will take
-a bit, but all tests should be passing (unless explicitly reported as
-expected to fail). Finally, ``make install`` will install Spicy
-system-wide into the configured prefix. If you are installing into a
-non-standard location, make sure that ``<prefix>/bin`` is in your
-``PATH``.
-
-.. note:: You can also use the Spicy tools directly out of the build
-   directory without installing; the binaries land in ``build/bin``.
-
-To build Spicy's documentation, run ``make`` inside the ``docs/`` directory.
-Documentation will then be located in ``build/doc/html``.
+    This is due to the VM hitting an out-of-memory condition. To avoid
+    this you will need to allocate more RAM to the VM. Click on the Docker
+    Icon in your menubar and select "Preferences". Click on the "Advanced"
+    tab and then use the slider to select 8 GB of RAM. Docker Desktop will
+    restart and then you will be ready to go.
 
 .. _parser-development-setup:
 
