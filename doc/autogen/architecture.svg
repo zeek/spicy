@@ -15,7 +15,7 @@
 </g>
 <g id="clust3" class="cluster">
 <path fill="#ece8f6" stroke="#aeb6be" d="M498,-2081.6C498,-2081.6 720,-2081.6 720,-2081.6 726,-2081.6 732,-2087.6 732,-2093.6 732,-2093.6 732,-2367.55 732,-2367.55 732,-2373.55 726,-2379.55 720,-2379.55 720,-2379.55 498,-2379.55 498,-2379.55 492,-2379.55 486,-2373.55 486,-2367.55 486,-2367.55 486,-2093.6 486,-2093.6 486,-2087.6 492,-2081.6 498,-2081.6"/>
-<text xml:space="preserve" text-anchor="start" x="573.75" y="-2364.15" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Resolve AST</text>
+<text xml:space="preserve" text-anchor="start" x="573.75" y="-2365.8" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Resolve AST</text>
 </g>
 <g id="clust4" class="cluster">
 <path fill="none" stroke="#aeb6be" d="M530,-1857.3C530,-1857.3 688,-1857.3 688,-1857.3 694,-1857.3 700,-1863.3 700,-1869.3 700,-1869.3 700,-1936.2 700,-1936.2 700,-1942.2 694,-1948.2 688,-1948.2 688,-1948.2 530,-1948.2 530,-1948.2 524,-1948.2 518,-1942.2 518,-1936.2 518,-1936.2 518,-1869.3 518,-1869.3 518,-1863.3 524,-1857.3 530,-1857.3"/>
@@ -27,7 +27,7 @@
 </g>
 <g id="clust6" class="cluster">
 <path fill="#ece8f6" stroke="#aeb6be" d="M498,-1310.8C498,-1310.8 720,-1310.8 720,-1310.8 726,-1310.8 732,-1316.8 732,-1322.8 732,-1322.8 732,-1596.75 732,-1596.75 732,-1602.75 726,-1608.75 720,-1608.75 720,-1608.75 498,-1608.75 498,-1608.75 492,-1608.75 486,-1602.75 486,-1596.75 486,-1596.75 486,-1322.8 486,-1322.8 486,-1316.8 492,-1310.8 498,-1310.8"/>
-<text xml:space="preserve" text-anchor="start" x="573.75" y="-1593.35" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Resolve AST</text>
+<text xml:space="preserve" text-anchor="start" x="573.75" y="-1595" font-family="Sans-Serif" font-size="12.00" fill="#2d3436">Resolve AST</text>
 </g>
 <g id="clust7" class="cluster">
 <path fill="none" stroke="#aeb6be" d="M319,-2660.6C319,-2660.6 865,-2660.6 865,-2660.6 871,-2660.6 877,-2666.6 877,-2672.6 877,-2672.6 877,-2739.5 877,-2739.5 877,-2745.5 871,-2751.5 865,-2751.5 865,-2751.5 319,-2751.5 319,-2751.5 313,-2751.5 307,-2745.5 307,-2739.5 307,-2739.5 307,-2672.6 307,-2672.6 307,-2666.6 313,-2660.6 319,-2660.6"/>
@@ -59,7 +59,7 @@
 </g>
 <g id="node1" class="node">
 <polygon fill="lightyellow" stroke="black" points="623.5,-2350.8 508.5,-2350.8 508.5,-2300.4 623.5,-2300.4 623.5,-2350.8"/>
-<text xml:space="preserve" text-anchor="start" x="516.5" y="-2320.55" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Build scopes</text>
+<text xml:space="preserve" text-anchor="start" x="516.5" y="-2321.85" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Build scopes</text>
 <text xml:space="preserve" text-anchor="start" x="334.5" y="-2365.45" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
 <text xml:space="preserve" text-anchor="start" x="338.25" y="-2365.45" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">spicy::detail::scope_builder::build()</text>
 <text xml:space="preserve" text-anchor="start" x="504.75" y="-2365.45" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
@@ -69,7 +69,7 @@
 </g>
 <g id="node2" class="node">
 <polygon fill="lightyellow" stroke="black" points="600.38,-2245.4 493.62,-2245.4 493.62,-2195 600.38,-2195 600.38,-2245.4"/>
-<text xml:space="preserve" text-anchor="start" x="501.62" y="-2215.15" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Unify Types</text>
+<text xml:space="preserve" text-anchor="start" x="501.62" y="-2216.45" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Unify Types</text>
 <text xml:space="preserve" text-anchor="start" x="306.12" y="-2260.05" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
 <text xml:space="preserve" text-anchor="start" x="309.88" y="-2260.05" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">spicy::type_unifier::detail::unifyType()</text>
 <text xml:space="preserve" text-anchor="start" x="489.88" y="-2260.05" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
@@ -83,7 +83,7 @@
 </g>
 <g id="node3" class="node">
 <polygon fill="lightyellow" stroke="black" points="670.62,-2140 547.38,-2140 547.38,-2089.6 670.62,-2089.6 670.62,-2140"/>
-<text xml:space="preserve" text-anchor="start" x="555.38" y="-2109.75" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Resolve Nodes</text>
+<text xml:space="preserve" text-anchor="start" x="555.38" y="-2111.05" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Resolve Nodes</text>
 <text xml:space="preserve" text-anchor="start" x="386.88" y="-2154.65" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
 <text xml:space="preserve" text-anchor="start" x="390.62" y="-2154.65" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">spicy::detail::resolver::resolve()</text>
 <text xml:space="preserve" text-anchor="start" x="543.62" y="-2154.65" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
@@ -104,7 +104,7 @@
 </g>
 <g id="node5" class="node">
 <polygon fill="lightyellow" stroke="black" points="666.5,-2034.6 551.5,-2034.6 551.5,-1984.2 666.5,-1984.2 666.5,-2034.6"/>
-<text xml:space="preserve" text-anchor="start" x="559.5" y="-2004.35" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Validate AST</text>
+<text xml:space="preserve" text-anchor="start" x="559.5" y="-2005.65" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Validate AST</text>
 <text xml:space="preserve" text-anchor="start" x="364" y="-2049.25" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
 <text xml:space="preserve" text-anchor="start" x="367.75" y="-2049.25" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">spicy::detail::validator::validatePost()</text>
 <text xml:space="preserve" text-anchor="start" x="547.75" y="-2049.25" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
@@ -118,7 +118,7 @@
 </g>
 <g id="node4" class="node">
 <polygon fill="lightyellow" stroke="black" points="623.5,-2465.95 508.5,-2465.95 508.5,-2415.55 623.5,-2415.55 623.5,-2465.95"/>
-<text xml:space="preserve" text-anchor="start" x="516.5" y="-2435.7" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Validate AST</text>
+<text xml:space="preserve" text-anchor="start" x="516.5" y="-2437" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Validate AST</text>
 <text xml:space="preserve" text-anchor="start" x="325.5" y="-2430.2" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
 <text xml:space="preserve" text-anchor="start" x="329.25" y="-2430.2" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">spicy::detail::validator::validatePre()</text>
 <text xml:space="preserve" text-anchor="start" x="504.75" y="-2430.2" font-family="Sans-Serif" font-size="13.00" fill="#2d3436"> </text>
@@ -136,7 +136,7 @@
 <text xml:space="preserve" text-anchor="start" x="534.38" y="-1878.2" font-family="Courier,monospace" font-size="14.00" fill="#2d3436"> </text>
 <text xml:space="preserve" text-anchor="start" x="542.62" y="-1878.2" font-family="Helvetica,sans-Serif" font-style="italic" font-size="8.00" fill="#2d3436">Translates Spicy code into HILTI code</text>
 <text xml:space="preserve" text-anchor="start" x="675.38" y="-1878.2" font-family="Courier,monospace" font-size="14.00" fill="#2d3436"> </text>
-<text xml:space="preserve" text-anchor="start" x="364.38" y="-1917.85" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">spicy::detail::CodeGen::compileAST()</text>
+<text xml:space="preserve" text-anchor="start" x="364.38" y="-1918.7" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">spicy::detail::CodeGen::compileAST()</text>
 </g>
 <g id="edge6" class="edge">
 <path fill="none" stroke="#7b8894" d="M609,-1983.89C609,-1983.89 609,-1927.48 609,-1927.48"/>
@@ -155,13 +155,13 @@
 </g>
 <g id="node7" class="node">
 <polygon fill="lightyellow" stroke="black" points="666.5,-1580 551.5,-1580 551.5,-1529.6 666.5,-1529.6 666.5,-1580"/>
-<text xml:space="preserve" text-anchor="start" x="559.5" y="-1549.75" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Build scopes</text>
-<text xml:space="preserve" text-anchor="start" x="385" y="-1582.15" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::detail::scope_builder::build()</text>
+<text xml:space="preserve" text-anchor="start" x="559.5" y="-1551.05" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Build scopes</text>
+<text xml:space="preserve" text-anchor="start" x="385" y="-1583" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::detail::scope_builder::build()</text>
 </g>
 <g id="node8" class="node">
 <polygon fill="lightyellow" stroke="black" points="600.38,-1474.6 493.62,-1474.6 493.62,-1424.2 600.38,-1424.2 600.38,-1474.6"/>
-<text xml:space="preserve" text-anchor="start" x="501.62" y="-1444.35" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Unify Types</text>
-<text xml:space="preserve" text-anchor="start" x="313.62" y="-1476.75" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::type_unifier::detail::unifyType()</text>
+<text xml:space="preserve" text-anchor="start" x="501.62" y="-1445.65" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Unify Types</text>
+<text xml:space="preserve" text-anchor="start" x="313.62" y="-1477.6" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::type_unifier::detail::unifyType()</text>
 </g>
 <g id="edge7" class="edge">
 <path fill="none" stroke="#7b8894" d="M575.94,-1529.29C575.94,-1529.29 575.94,-1486.56 575.94,-1486.56"/>
@@ -169,8 +169,8 @@
 </g>
 <g id="node9" class="node">
 <polygon fill="lightyellow" stroke="black" points="716.62,-1369.2 593.38,-1369.2 593.38,-1318.8 716.62,-1318.8 716.62,-1369.2"/>
-<text xml:space="preserve" text-anchor="start" x="601.38" y="-1338.95" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Resolve Nodes</text>
-<text xml:space="preserve" text-anchor="start" x="440.38" y="-1371.35" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::detail::resolver::resolve()</text>
+<text xml:space="preserve" text-anchor="start" x="601.38" y="-1340.25" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Resolve Nodes</text>
+<text xml:space="preserve" text-anchor="start" x="440.38" y="-1372.2" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::detail::resolver::resolve()</text>
 </g>
 <g id="edge8" class="edge">
 <path fill="none" stroke="#7b8894" d="M596.88,-1423.89C596.88,-1423.89 596.88,-1381.16 596.88,-1381.16"/>
@@ -185,8 +185,8 @@
 </g>
 <g id="node11" class="node">
 <polygon fill="lightyellow" stroke="black" points="712.5,-1263.8 597.5,-1263.8 597.5,-1213.4 712.5,-1213.4 712.5,-1263.8"/>
-<text xml:space="preserve" text-anchor="start" x="605.5" y="-1233.55" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Validate AST</text>
-<text xml:space="preserve" text-anchor="start" x="417.5" y="-1265.95" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::detail::validator::validatePost()</text>
+<text xml:space="preserve" text-anchor="start" x="605.5" y="-1234.85" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Validate AST</text>
+<text xml:space="preserve" text-anchor="start" x="417.5" y="-1266.8" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::detail::validator::validatePost()</text>
 </g>
 <g id="edge11" class="edge">
 <path fill="none" stroke="#7b8894" d="M655,-1318.49C655,-1318.49 655,-1275.76 655,-1275.76"/>
@@ -194,8 +194,8 @@
 </g>
 <g id="node10" class="node">
 <polygon fill="lightyellow" stroke="black" points="666.5,-1695.15 551.5,-1695.15 551.5,-1644.75 666.5,-1644.75 666.5,-1695.15"/>
-<text xml:space="preserve" text-anchor="start" x="559.5" y="-1664.9" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Validate AST</text>
-<text xml:space="preserve" text-anchor="start" x="376" y="-1697.3" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::detail::validator::validatePre()</text>
+<text xml:space="preserve" text-anchor="start" x="559.5" y="-1666.2" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Validate AST</text>
+<text xml:space="preserve" text-anchor="start" x="376" y="-1698.15" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::detail::validator::validatePre()</text>
 </g>
 <g id="edge10" class="edge">
 <path fill="none" stroke="#7b8894" d="M609,-1644.39C609,-1644.39 609,-1591.8 609,-1591.8"/>
@@ -203,8 +203,8 @@
 </g>
 <g id="node12" class="node">
 <polygon fill="lightyellow" stroke="black" points="712.5,-1158.4 597.5,-1158.4 597.5,-1108 712.5,-1108 712.5,-1158.4"/>
-<text xml:space="preserve" text-anchor="start" x="605.5" y="-1128.15" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Optimize AST</text>
-<text xml:space="preserve" text-anchor="start" x="435.5" y="-1160.55" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::detail::optimizer::optimize()</text>
+<text xml:space="preserve" text-anchor="start" x="605.5" y="-1129.45" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Optimize AST</text>
+<text xml:space="preserve" text-anchor="start" x="435.5" y="-1161.4" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::detail::optimizer::optimize()</text>
 </g>
 <g id="edge12" class="edge">
 <path fill="none" stroke="#7b8894" d="M655,-1213.09C655,-1213.09 655,-1170.36 655,-1170.36"/>
@@ -212,8 +212,8 @@
 </g>
 <g id="node13" class="node">
 <polygon fill="lightyellow" stroke="black" points="712.5,-1053 597.5,-1053 597.5,-1002.6 712.5,-1002.6 712.5,-1053"/>
-<text xml:space="preserve" text-anchor="start" x="605.5" y="-1022.75" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Validate AST</text>
-<text xml:space="preserve" text-anchor="start" x="417.5" y="-1055.15" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::detail::validator::validatePost()</text>
+<text xml:space="preserve" text-anchor="start" x="605.5" y="-1024.05" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Validate AST</text>
+<text xml:space="preserve" text-anchor="start" x="417.5" y="-1056" font-family="Courier,monospace" font-size="8.00" fill="#2d3436">hilti::detail::validator::validatePost()</text>
 </g>
 <g id="edge13" class="edge">
 <path fill="none" stroke="#7b8894" d="M655,-1107.69C655,-1107.69 655,-1064.96 655,-1064.96"/>
@@ -221,7 +221,7 @@
 </g>
 <g id="node28" class="node">
 <polygon fill="lightblue" stroke="black" points="700.12,-947.6 609.88,-947.6 609.88,-897.2 700.12,-897.2 700.12,-947.6"/>
-<text xml:space="preserve" text-anchor="start" x="617.88" y="-917.35" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Final AST</text>
+<text xml:space="preserve" text-anchor="start" x="617.88" y="-918.65" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Final AST</text>
 </g>
 <g id="edge23" class="edge">
 <path fill="none" stroke="#7b8894" d="M655,-1002.29C655,-1002.29 655,-959.56 655,-959.56"/>
@@ -233,11 +233,11 @@
 </g>
 <g id="node15" class="node">
 <polygon fill="lightgreen" stroke="black" points="570.62,-2719 315.38,-2719 315.38,-2668.6 570.62,-2668.6 570.62,-2719"/>
-<text xml:space="preserve" text-anchor="start" x="323.38" y="-2688.75" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">hilti::detail::parser::Driver</text>
+<text xml:space="preserve" text-anchor="start" x="323.38" y="-2690.05" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">hilti::detail::parser::Driver</text>
 </g>
 <g id="node27" class="node">
 <polygon fill="lightblue" stroke="black" points="623.5,-2613.6 508.5,-2613.6 508.5,-2563.2 623.5,-2563.2 623.5,-2613.6"/>
-<text xml:space="preserve" text-anchor="start" x="516.5" y="-2583.35" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Original AST</text>
+<text xml:space="preserve" text-anchor="start" x="516.5" y="-2584.65" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Original AST</text>
 </g>
 <g id="edge20" class="edge">
 <path fill="none" stroke="#7b8894" d="M539.56,-2668.29C539.56,-2668.29 539.56,-2625.56 539.56,-2625.56"/>
@@ -245,7 +245,7 @@
 </g>
 <g id="node16" class="node">
 <polygon fill="lightgreen" stroke="black" points="868.62,-2719 613.38,-2719 613.38,-2668.6 868.62,-2668.6 868.62,-2719"/>
-<text xml:space="preserve" text-anchor="start" x="621.38" y="-2688.75" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">spicy::detail::parser::Driver</text>
+<text xml:space="preserve" text-anchor="start" x="621.38" y="-2690.05" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">spicy::detail::parser::Driver</text>
 </g>
 <g id="edge21" class="edge">
 <path fill="none" stroke="#7b8894" d="M618.44,-2668.29C618.44,-2668.29 618.44,-2625.56 618.44,-2625.56"/>
@@ -253,7 +253,7 @@
 </g>
 <g id="node17" class="node">
 <polygon fill="lightgreen" stroke="black" points="753.75,-828.7 556.25,-828.7 556.25,-778.3 753.75,-778.3 753.75,-828.7"/>
-<text xml:space="preserve" text-anchor="start" x="564.25" y="-798.45" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">hilti::detail::CodeGen</text>
+<text xml:space="preserve" text-anchor="start" x="564.25" y="-799.75" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">hilti::detail::CodeGen</text>
 </g>
 <g id="node19" class="node">
 <polygon fill="lightblue" stroke="black" points="642.5,-709.8 545.5,-709.8 545.5,-659.4 642.5,-659.4 642.5,-709.8"/>
@@ -308,7 +308,7 @@
 </g>
 <g id="node29" class="node">
 <polygon fill="lightgreen" stroke="black" points="747.38,-604.4 574.62,-604.4 574.62,-554 747.38,-554 747.38,-604.4"/>
-<text xml:space="preserve" text-anchor="start" x="582.62" y="-574.15" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">hilti::Unit::link()</text>
+<text xml:space="preserve" text-anchor="start" x="582.62" y="-575.45" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">hilti::Unit::link()</text>
 </g>
 <g id="edge25" class="edge">
 <path fill="none" stroke="#7b8894" d="M608.56,-659.09C608.56,-659.09 608.56,-616.36 608.56,-616.36"/>
@@ -324,11 +324,11 @@
 </g>
 <g id="node21" class="node">
 <polygon fill="orange" stroke="black" points="209.62,-261.2 20.38,-261.2 20.38,-210.8 209.62,-210.8 209.62,-261.2"/>
-<text xml:space="preserve" text-anchor="start" x="28.38" y="-230.95" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">HILTI Runtime Library</text>
+<text xml:space="preserve" text-anchor="start" x="28.38" y="-232.25" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">HILTI Runtime Library</text>
 </g>
 <g id="node31" class="node">
 <polygon fill="lightgreen" stroke="black" points="517.62,-155.8 394.38,-155.8 394.38,-105.4 517.62,-105.4 517.62,-155.8"/>
-<text xml:space="preserve" text-anchor="start" x="402.38" y="-125.55" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">System Linker</text>
+<text xml:space="preserve" text-anchor="start" x="402.38" y="-126.85" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">System Linker</text>
 </g>
 <g id="edge38" class="edge">
 <path fill="none" stroke="#7b8894" d="M115,-210.31C115,-179.23 115,-131 115,-131 115,-131 382.73,-131 382.73,-131"/>
@@ -336,7 +336,7 @@
 </g>
 <g id="node22" class="node">
 <polygon fill="orange" stroke="black" points="441.62,-261.2 252.38,-261.2 252.38,-210.8 441.62,-210.8 441.62,-261.2"/>
-<text xml:space="preserve" text-anchor="start" x="260.38" y="-230.95" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Spicy Runtime Library</text>
+<text xml:space="preserve" text-anchor="start" x="260.38" y="-232.25" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Spicy Runtime Library</text>
 </g>
 <g id="edge39" class="edge">
 <path fill="none" stroke="#7b8894" d="M418,-210.49C418,-210.49 418,-167.76 418,-167.76"/>
@@ -356,7 +356,7 @@
 </g>
 <g id="node25" class="node">
 <polygon fill="lightblue" stroke="black" points="479,-2837.9 407,-2837.9 407,-2787.5 479,-2787.5 479,-2837.9"/>
-<text xml:space="preserve" text-anchor="start" x="422.38" y="-2807.65" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">*.hlt</text>
+<text xml:space="preserve" text-anchor="start" x="422.38" y="-2808.95" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">*.hlt</text>
 </g>
 <g id="edge18" class="edge">
 <path fill="none" stroke="#7b8894" d="M443,-2787.19C443,-2787.19 443,-2730.78 443,-2730.78"/>
@@ -364,7 +364,7 @@
 </g>
 <g id="node26" class="node">
 <polygon fill="lightblue" stroke="black" points="777.88,-2837.9 704.12,-2837.9 704.12,-2787.5 777.88,-2787.5 777.88,-2837.9"/>
-<text xml:space="preserve" text-anchor="start" x="712.12" y="-2807.65" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">*.spicy</text>
+<text xml:space="preserve" text-anchor="start" x="712.12" y="-2808.95" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">*.spicy</text>
 </g>
 <g id="edge19" class="edge">
 <path fill="none" stroke="#7b8894" d="M741,-2787.19C741,-2787.19 741,-2730.78 741,-2730.78"/>
@@ -393,7 +393,7 @@
 </g>
 <g id="node32" class="node">
 <polygon fill="lightblue" stroke="black" points="550.62,-50.4 361.38,-50.4 361.38,0 550.62,0 550.62,-50.4"/>
-<text xml:space="preserve" text-anchor="start" x="369.38" y="-20.15" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Final executable code</text>
+<text xml:space="preserve" text-anchor="start" x="369.38" y="-21.45" font-family="Courier,monospace" font-size="14.00" fill="#2d3436">Final executable code</text>
 </g>
 <g id="edge37" class="edge">
 <path fill="none" stroke="#7b8894" d="M456,-105.09C456,-105.09 456,-62.36 456,-62.36"/>
