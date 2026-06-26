@@ -1,3 +1,13 @@
+1.17.0-dev.95 | 2026-06-26 10:28:13 +0200
+
+  * GH-2414: Allow disabling of building of benchmarks (Benjamin Bannier, Corelight)
+
+    We have a reoccurring and hard to diagnose issue with the
+    google/benchmark dependency failing to detect the regex backend, #2414.
+    Since the benchmarks and their dependencies are not needed during
+    regular use, add a configure option `--disable-benchmarks` and a CMake
+    variable `SPICY_ENABLE_BENCHMARKS` to allow turning benchmarks off.
+
 1.17.0-dev.93 | 2026-06-17 12:34:15 +0200
 
   * Stop emitting unneeded constructor in codegen for list comprehensions (Benjamin Bannier, Corelight)
