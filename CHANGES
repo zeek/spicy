@@ -1,3 +1,38 @@
+1.17.0-dev.102 | 2026-06-26 17:07:19 +0200
+
+  * Inside optimizer, index per-function state by canonical ID. (Robin Sommer, Corelight)
+
+    We were using `fullyQualifiedId()`, which isn't unique across module
+    imports: separate functions can have the same FQID inside a single
+    AST.
+
+    To facilitate the switch, we replace
+    `declaration::Function::functionID()` with ``Optimizer::functionID()`
+    that returns a function/method's canonical ID but follows any linked
+    declarations to its prototype before doing so. That way, it returns an
+    ID that's suitable to use as an index inside optimizer passes to store
+    state per function.
+
+    We then use that consistently across the optimizer.
+
+    Couple related tweaks included:
+
+    - `dead-code-static` now resolves `MemberCall` targets via
+      `op.declaration()` instead of `type::Struct::field(id)`, which only
+      returned the first matching field and masked overload bugs.
+
+    - `remove-unused-params` skips parameter removal when a struct has
+      overloaded methods of the same name, since stripping unused
+      parameters under canonical ID keys can collapse overloads to
+      identical signatures.
+
+  * Link free-function implementations to their prototypes. (Robin Sommer, Corelight)
+
+    When a free function is declared separately from its implementation,
+    the resolver now links the implementation to its prototype.
+    Previously, we did this only for methods, which means AST consumers
+    had to handle free functions themselves.
+
 1.17.0-dev.99 | 2026-06-26 16:47:52 +0200
 
   * Switch docs dep management from `requirements.txt` to `pyproject.toml` (Benjamin Bannier, Corelight)
