@@ -56,7 +56,7 @@ jobs:
           cmake -G Ninja -DCODSPEED_MODE=instrumentation -DCMAKE_BUILD_TYPE=RelWithDebInfo -Bbuild /spicy
           ninja -C build spicy-rt-parsing-benchmark hilti-rt-benchmark
 
-      - uses: CodSpeedHQ/action@9d332c4d90b43981c3e55ae8e38e68709996240f
+      - uses: CodSpeedHQ/action@a4a36bb07c0638b0b4ca52bf1f3dad1b4289e52f
         with:
           run: |
             ./build/bin/hilti-rt-benchmark
