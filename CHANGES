@@ -1,3 +1,16 @@
+1.17.0-dev.104 | 2026-06-30 18:19:47 +0200
+
+  * GH-2336: Fix regression causing removal of used fields (Benjamin Bannier, Corelight)
+
+    In 09c092a9733 from #2336 we changed how a number of optimizer passes
+    reference functions. A cleanup there caused a regression in the
+    `RemoveUnusedFields` pass so that we now remove fields even though they
+    are used. This leads to compilation failures, e.g., in Zeek's builtin
+    PostgreSQL parser.
+
+    Since that pass works on fields instead of general functions this patch
+    simply reverts the cleanup in that pass.
+
 1.17.0-dev.102 | 2026-06-26 17:07:19 +0200
 
   * Inside optimizer, index per-function state by canonical ID. (Robin Sommer, Corelight)
