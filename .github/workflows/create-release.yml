@@ -18,39 +18,19 @@ jobs:
     name: Upload Release Assets
     runs-on: ubuntu-latest
     steps:
-      - name: 'Wait for status checks'
-        id: waitforstatuschecks
-        uses: "WyriHaximus/github-action-wait-for-status@v1"
-        with:
-          ignoreActions: "Upload Release Assets"
-          checkInterval: 60
-        env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-      - name: Checkout code
-        uses: actions/checkout@v5
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           submodules: recursive
+          persist-credentials: false
       - name: Prepare archive
         run: |
           ./scripts/make-tarball.sh
-      - name: Fetch platform packages
-        shell: bash
-        run: |
-          ./scripts/store-release-artifacts --commit ${{ github.sha }}
-          for f in binary_artifacts/*.*; do
-              if [[ "$f" == *"docker"* ]]; then
-                mv "$f" "${f//docker/linux}"
-              fi
-          done
       - name: Upload Release Assets
         id: upload-release-assets
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           draft: true
           files: |
             spicy*.tar.gz
-            binary_artifacts/spicy*.tar.gz
-            binary_artifacts/spicy*.deb
-            binary_artifacts/spicy*.rpm
