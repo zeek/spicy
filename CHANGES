@@ -1,3 +1,83 @@
+1.16.1 | 2026-07-06 11:41:17 +0200
+
+  * Update release workflow [skip ci] (Benjamin Bannier, Corelight)
+
+    We previously dropped publishing of binary artifacts, but hadn't updated
+    the release workflow for that yet. This patch does that, and also
+    performs a bunch of bumps and pins of actions that workflow uses.
+
+    (cherry picked from commit 30cf38e9b4790f130edd63c50feedd3015609d32)
+
+  * GH-2414: Allow disabling of building of benchmarks (Benjamin Bannier, Corelight)
+
+    We have a reoccurring and hard to diagnose issue with the
+    google/benchmark dependency failing to detect the regex backend, #2414.
+    Since the benchmarks and their dependencies are not needed during
+    regular use, add a configure option `--disable-benchmarks` and a CMake
+    variable `SPICY_ENABLE_BENCHMARKS` to allow turning benchmarks off.
+
+    (cherry picked from commit 5b54b9911d192f866d90d2037eef20f2d95dd6f6)
+
+  * GH-2404: Include coercions in detection of expressions with side effects (Benjamin Bannier, Corelight)
+
+    We previously would always consider expressions with coercions as having
+    side effects which in at least #2404 lead to us generating code which
+    caused a most vexing parse. Since coercions do not have side effects
+    themself, extend our detection to include them by querying the behavior
+    of the coerced expression. This should fix the majority of new failures
+    introduced by recent rewrites which removed the LHS of assignments; we
+    will do more structural fixes in follow-up patches.
+
+    Closes #2404.
+
+    (cherry picked from commit d9ecb209f2593b038c10ea6d8d05e4a96873d2e9)
+
+  * Avoid underflow in `atoi_n` (Benjamin Bannier, Corelight)
+
+    We had previously fixed some overflows in this function, but missed a
+    case when extracting `INT64_MIN`. We were already parsing the absolute
+    value with enough range, but could underflow when negating it for the
+    final result since the negation was done in the target type which did
+    not have enough range.
+
+    With this patch we instead perform the negation in the unsigned type
+    which has enough range, and only cast to the target type after.
+
+    (cherry picked from commit 9645a0b7c0d7deb9c517b6ac4223badb0ffdd825)
+
+  * Handle overflows in `atoi_n` (Benjamin Bannier, Corelight)
+
+    (cherry picked from commit d2f46cc07448c46ba20f8288691eeead8c886a40)
+
+  * Handle overflows when checking whether an integer can coerce to `real`. (Benjamin Bannier, Corelight)
+
+    We were already handling the loss of precision, but not overflow.
+
+    (cherry picked from commit df9a65531692a169e7189ce99f8e4e218d915ac6)
+
+  * Fix Fiber constructor clobbering shared stack. (Arne Welzel, Corelight)
+
+    Previously, when constructing a Fiber with type SharedStack, we'd
+    initialize the underlying fiber with the global shared stack. This
+    isn't safe: The fiber_init() call writes to the shared stack, but
+    there's no guarantee that the shared stack isn't being used by
+    another fiber when this happens.
+
+    Circumvent this by moving the underlying fiber initialization into
+    __fiber_switch_trampoline(), where it is guaranteed that the previously
+    executing fiber has saved() the shared stack so that it is now free
+    to be used by a different fiber. Use the nullptr fiber_stack() return
+    as the indicator, that the initialization still needs to happen.
+
+    (cherry picked from commit 9b0cfac074f1189b9feb04944ac58156c686b960)
+
+  * Fix potential nullptr dereference in remove-unused-fields pass. (Benjamin Bannier, Corelight)
+
+    This was introduced in 79d44f786c so needs to be backported to
+    release/1.16.
+
+    (cherry picked from commit 72b27c93eb8f32d60cf09555c0bfd20cebcadc70)
+
 1.16.0 | 2026-05-05 15:04:16 +0200
 
 1.16.0-dev.173 | 2026-05-05 15:04:03 +0200
