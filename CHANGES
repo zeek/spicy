@@ -1,3 +1,11 @@
+1.17.0-dev.106 | 2026-07-06 09:17:01 +0200
+
+  * Update release workflow (Benjamin Bannier, Corelight)
+
+    We previously dropped publishing of binary artifacts, but hadn't updated
+    the release workflow for that yet. This patch does that, and also
+    performs a bunch of bumps and pins of actions that workflow uses.
+
 1.17.0-dev.104 | 2026-06-30 18:19:47 +0200
 
   * GH-2336: Fix regression causing removal of used fields (Benjamin Bannier, Corelight)
