@@ -3,6 +3,8 @@
 #include <doctest/doctest.h>
 
 #include <map>
+#include <ranges>
+#include <sstream>
 #include <vector>
 
 #include <hilti/rt/init.h>
@@ -16,6 +18,40 @@
 
 using namespace spicy::rt;
 using namespace hilti::rt::string::literals;
+
+namespace doctest {
+
+// Implement specialized stringification for parser maps used in checks below.
+// Since these maps use pointers stringifying them causes ambiguities in with
+// `to_string` functions (pointer vs multiple integer types). Implementing a
+// dedicated stringifier is simpler than fixing all tests.
+//
+// NOTE: This is horribly inefficient which is only fine since this runs on the
+// unlikely error path in a test. This must not be used as is elsewhere.
+template<>
+struct StringMaker<std::map<hilti::rt::String, std::vector<const Parser*>>> {
+    static String convert(const auto& xs) {
+        auto entries = xs | std::views::transform([](auto&& x) {
+                           auto&& [name, parsers] = x;
+                           auto ps = parsers | std::views::transform([](auto* p) {
+                                         std::stringstream ss;
+                                         ss << p;
+                                         return ss.str();
+                                     });
+
+                           std::stringstream ss;
+                           ss << name << ": {" << hilti::rt::join(ps, ", ") << "}";
+                           return ss.str();
+                       });
+
+        std::stringstream ss;
+        ss << "{" << hilti::rt::join(entries, ", ") << "}";
+
+        return ss.str();
+    }
+};
+
+} // namespace doctest
 
 TEST_SUITE_BEGIN("Init");
 
