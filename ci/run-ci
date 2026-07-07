@@ -149,9 +149,6 @@ function run_configure {
 
     test -z "${clang_tidy}" && log_stage "Warning: No clang-tidy found, will skip any related tests"
 
-    # Looks like Cirrus CI doesn't fetch tags.
-    git fetch --tags
-
     log_stage "Running configure ... (${configure})"
 
     ${configure} || exit 1

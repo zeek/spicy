@@ -228,8 +228,8 @@ if (BISON_ROOT)
         NO_DEFAULT_PATH)
 endif ()
 
-find_package(FLEX REQUIRED)
-find_package(BISON REQUIRED)
+find_package(FLEX "${flex_minimum_version}" REQUIRED)
+find_package(BISON "${bison_minimum_version}" REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(Backtrace)
 
@@ -271,9 +271,6 @@ if (APPLE)
     set(MACOS_FOUND "yes")
     require_version("macOS" MACOS_FOUND ${CMAKE_SYSTEM_VERSION} "${macos_minimum_version}" true)
 endif ()
-
-require_version("Flex" FLEX_FOUND FLEX_VERSION "${flex_minimum_version}" true)
-require_version("Bison" BISON_FOUND BISON_VERSION "${bison_minimum_version}" true)
 
 find_package(GoldLinker)
 find_package(Threads)

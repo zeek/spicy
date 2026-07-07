@@ -1,3 +1,38 @@
+1.17.0-dev.114 | 2026-07-07 14:41:15 +0200
+
+  * Do not fetch tags in CI (Benjamin Bannier, Corelight)
+
+    This probably has not been needed since the time we commit `VERSION` to
+    the repository. Dropping it since it messes with shallow clones.
+
+  * Prefer `find_package` with version requirement instead custom function (Benjamin Bannier, Corelight)
+
+  * Drop unused `cmake/TypeErase.cmake` (Benjamin Bannier, Corelight)
+
+    We have stopped using these a longer time ago.
+
+  * Fix CMake deprecation warnings from `3rdparty/fiber` (Benjamin Bannier, Corelight)
+
+    The fiber library requires too low CMake versions in the
+    `cmake_minimum_required` of its own dependencies with triggers
+    deprecation warnings. With this patch we enforce a minimum requirement
+    for 3rdparty projects consistent with our own.
+
+  * Correctly override `3rdparty/fiber` CMake option (Benjamin Bannier, Corelight)
+
+    We were setting a variable when `3rdparty/fiber` was declaring an
+    option. This triggers a warning in recent CMake versions, so with this
+    patch we now set the option like intended.
+
+  * Bump 3rdparty/doctest (Benjamin Bannier, Corelight)
+
+  * Fix potential ambiguity when stringifying parser maps in tests (Benjamin Bannier, Corelight)
+
+    In these tests we stringify parser maps which contain pointers. In newer
+    doctest versions the stringification of these pointers becomes ambiguous
+    (pointer versus integers of varying widths). Address this locally by
+    implementing a dedicated stringifier for tests with these parser maps.
+
 1.17.0-dev.106 | 2026-07-06 09:17:01 +0200
 
   * Update release workflow (Benjamin Bannier, Corelight)

@@ -1,3 +1,14 @@
+# Override `cmake_minimum_required` to suppress deprecation warnings from
+# 3rdparty projects using a lower version.
+#
+# NOTE: We use our own version here instead of the absolute minimum required
+# one which could cause policies to be enabled which are not expected by the
+# 3rdparty project; we likely will catch any incompatiblities via build
+# failures.
+macro(cmake_minimum_required)
+    _cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
+endmacro()
+
 # If we run clang-tidy as part of CMake we never want to check files in this
 # directory. We specify this in addition to the local `.clang-tidy` in this
 # directory since it is only valid in subdirectories which do not provided
@@ -36,7 +47,7 @@ set(CMAKE_ASM_COMPILER ${CMAKE_C_COMPILER})
 # call this out as needlessly insecure.
 set(CMAKE_ASM_FLAGS ${CMAKE_ASM_FLAGS} -Wa,--noexecstack)
 
-set(FIBER_SHARED OFF)
+option(FIBER_SHARED OFF)
 set(FIBER_OBJECT ON)
 add_subdirectory(fiber)
 
