@@ -36,7 +36,7 @@ set(CMAKE_ASM_COMPILER ${CMAKE_C_COMPILER})
 # call this out as needlessly insecure.
 set(CMAKE_ASM_FLAGS ${CMAKE_ASM_FLAGS} -Wa,--noexecstack)
 
-set(FIBER_SHARED OFF)
+option(FIBER_SHARED OFF)
 set(FIBER_OBJECT ON)
 add_subdirectory(fiber)
 
