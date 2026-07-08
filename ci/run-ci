@@ -94,8 +94,6 @@ function run_configure {
     mkdir -p ${install}
     configure="./configure --builddir=${build} --prefix=${install} --generator=Ninja --enable-werror --enable-ccache --with-hilti-compiler-launcher=ccache"
 
-    clang_tidy=$(which clang-tidy 2>/dev/null)
-
     if [ "${build_type}" == "release" ]; then
         :
     elif [ "${build_type}" == "debug" ]; then
