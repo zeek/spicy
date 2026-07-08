@@ -157,7 +157,7 @@ public:
      * @param `t` the element to check for
      * @return `true` if the element is part of the set.
      */
-    bool contains(const T& t) const { return this->count(t); }
+    bool contains(const T& t) const { return S::contains(t); }
 
     auto begin() const { return iterator(static_cast<const S&>(*this).begin(), _control); }
 
