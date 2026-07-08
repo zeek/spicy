@@ -40,17 +40,17 @@ RUN apt-get update \
  && pipx install pygments \
  # LLVM toolchain.
  && curl https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
- && echo 'deb http://apt.llvm.org/noble/ llvm-toolchain-noble-21 main' >> /etc/apt/sources.list.d/llvm21.list \
- && echo 'deb-src http://apt.llvm.org/noble/ llvm-toolchain-noble-21 main' >> /etc/apt/sources.list.d/llvm21.list \
+ && echo 'deb http://apt.llvm.org/noble/ llvm-toolchain-noble-22 main' >> /etc/apt/sources.list.d/llvm22.list \
+ && echo 'deb-src http://apt.llvm.org/noble/ llvm-toolchain-noble-22 main' >> /etc/apt/sources.list.d/llvm22.list \
  && curl https://apt.llvm.org/llvm-snapshot.gpg.key -o /etc/apt/trusted.gpg.d/llvm.asc \
  && apt-get update \
- && apt-get install -y --no-install-recommends llvm-21-dev clang-21 libclang-21-dev clang-tidy-21 libclang-rt-21-dev \
- && update-alternatives --install /usr/bin/clang clang $(which clang-21) 100 \
- && update-alternatives --install /usr/bin/clang++ clang++ $(which clang++-21) 100 \
- && update-alternatives --install /usr/bin/clang-tidy clang-tidy $(which clang-tidy-21) 100 \
- && update-alternatives --install /usr/bin/FileCheck FileCheck $(which FileCheck-21) 100 \
+ && apt-get install -y --no-install-recommends llvm-22-dev clang-22 libclang-22-dev clang-tidy-22 libclang-rt-22-dev \
+ && update-alternatives --install /usr/bin/clang clang $(which clang-22) 100 \
+ && update-alternatives --install /usr/bin/clang++ clang++ $(which clang++-22) 100 \
+ && update-alternatives --install /usr/bin/clang-tidy clang-tidy $(which clang-tidy-22) 100 \
+ && update-alternatives --install /usr/bin/FileCheck FileCheck $(which FileCheck-22) 100 \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
 ENV PATH=/root/.local/bin/:$PATH
-ENV LD_LIBRARY_PATH=/usr/lib/llvm-21/lib/clang/21/lib/linux
+ENV LD_LIBRARY_PATH=/usr/lib/llvm-22/lib/clang/22/lib/linux
