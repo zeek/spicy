@@ -135,7 +135,7 @@ TEST_CASE("save" * doctest::skip(is_elevated_user())) {
 
     SUBCASE("success") {
         hilti::rt::TemporaryDirectory tmp;
-        Env _("TMPDIR", tmp.path().string().c_str());
+        Env _("TMPDIR", tmp.path().string());
         CHECK_EQ(library.save(tmp.path()), Nothing());
 
         SUBCASE("overwrite existing") { CHECK_EQ(library.save(tmp.path()), Nothing()); }
