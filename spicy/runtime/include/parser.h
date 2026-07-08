@@ -460,7 +460,7 @@ namespace detail {
 template<typename UnitRef>
 inline void registerParser(::spicy::rt::Parser& p, // NOLINT(google-runtime-references)
                            uint64_t linker_scope,
-                           UnitRef /* not used, just for template instantiation */,
+                           const UnitRef& /* not used, just for template instantiation */,
                            const hilti::rt::TypeInfo* /* utype */) {
     // Note: This may may be called before spicy::rt::init(), and during
     // hilti::rt::init(). Cannot rely on any library functionality being

@@ -196,7 +196,7 @@ public:
      * @param value value to insert
      * @return iterator pointing to the inserted element
      * */
-    iterator insert(iterator hint, const T& value) {
+    iterator insert(const iterator& hint, const T& value) {
         auto it = S::insert(hint._iterator, value);
         return iterator(it, _control);
     }

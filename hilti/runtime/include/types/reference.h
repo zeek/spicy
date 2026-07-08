@@ -415,6 +415,7 @@ public:
      *
      * @param t initialization value
      */
+    // NOLINTNEXTLINE(performance-unnecessary-value-param)
     explicit StrongReference(T t) : Base(std::make_shared<T>(std::move(t))) {}
 
     /** Instantiate an unset reference. */
