@@ -6,7 +6,7 @@
 using namespace hilti;
 
 visitor::MutatingVisitorBase::MutatingVisitorBase(ASTContext* ctx, logging::DebugStream dbg)
-    : _context(ctx), _dbg(std::move(dbg)) {}
+    : _context(ctx), _dbg(dbg) {}
 
 void visitor::MutatingVisitorBase::replaceNode(Node* old, Node* new_, const std::string& msg) {
     assert(old && old->parent());

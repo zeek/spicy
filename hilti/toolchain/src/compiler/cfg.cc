@@ -1200,7 +1200,7 @@ class PrintCfgVisitor : public visitor::PreOrder {
     logging::DebugStream _stream;
 
 public:
-    PrintCfgVisitor(ASTContext* context, logging::DebugStream stream) : _context(context), _stream(std::move(stream)) {}
+    PrintCfgVisitor(ASTContext* context, logging::DebugStream stream) : _context(context), _stream(stream) {}
 
     void operator()(declaration::Function* f) override {
         if ( auto* body = f->function()->body() )
@@ -1215,7 +1215,7 @@ public:
 } // namespace
 
 void cfg::dump(ASTContext* context, logging::DebugStream stream, ASTRoot* root) {
-    auto v = PrintCfgVisitor(context, std::move(stream));
+    auto v = PrintCfgVisitor(context, stream);
     visitor::visit(v, root);
 }
 

@@ -101,7 +101,7 @@ public:
     Stream(logging::Level level) : std::ostream(&_buf), _buf(level) {}
 
     /** Creates a stream that sends output to a given debug stream. */
-    Stream(logging::DebugStream dbg) : std::ostream(&_buf), _buf(std::move(dbg)) {}
+    Stream(logging::DebugStream dbg) : std::ostream(&_buf), _buf(dbg) {}
 
 private:
     Buffer _buf;
