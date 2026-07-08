@@ -3,6 +3,7 @@
 ---
 Checks: '
   bugprone-*,
+  -bugprone-throwing-static-initialization,
   -bugprone-easily-swappable-parameters,
   -bugprone-exception-escape,
   -bugprone-reserved-identifier,
