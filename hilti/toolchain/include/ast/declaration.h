@@ -50,7 +50,7 @@ constexpr auto from_string(std::string_view s) { return util::enum_::from_string
 } // namespace declaration
 
 /** Base class for implementing declaration nodes. */
-class Declaration : public Node, public node::WithDocString {
+class Declaration : public Node, public node::WithDocString { // NOLINT(misc-multiple-inheritance)
 public:
     ~Declaration() override;
 

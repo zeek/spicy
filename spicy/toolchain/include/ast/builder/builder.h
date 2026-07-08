@@ -16,6 +16,7 @@ namespace spicy {
  * Base class for extended builder merging the HILTI-side API with the
  * Spicy-side factory methods.
  */
+// NOLINTNEXTLINE(misc-multiple-inheritance)
 class BuilderBase : public hilti::Builder, public spicy::builder::NodeFactory {
 public:
     BuilderBase(ASTContext* ctx) : hilti::Builder(ctx), spicy::builder::NodeFactory(ctx) {}

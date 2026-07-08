@@ -143,10 +143,12 @@ void validator::VisitorMixIn::checkTypeArguments(const node::Range<Expression>& 
 }
 
 namespace {
+// NOLINTNEXTLINE(misc-multiple-inheritance)
 struct VisitorPre : visitor::PreOrder, public validator::VisitorMixIn {
     using hilti::validator::VisitorMixIn::VisitorMixIn;
 };
 
+// NOLINTNEXTLINE(misc-multiple-inheritance)
 struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     using hilti::validator::VisitorMixIn::VisitorMixIn;
 
@@ -954,6 +956,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     }
 };
 
+// NOLINTNEXTLINE(misc-multiple-inheritance)
 struct VisitorCFG : visitor::PreOrder, public validator::VisitorMixIn {
     VisitorCFG(Builder* builder, cfg::Cache* cfg_cache) : validator::VisitorMixIn(builder), cfg_cache(cfg_cache) {}
 

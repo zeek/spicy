@@ -315,6 +315,7 @@ private:
 };
 
 template<Order order, typename Dispatcher, typename Builder>
+// NOLINTNEXTLINE(misc-multiple-inheritance)
 class MutatingVisitor : public Visitor<order, Dispatcher>, public MutatingVisitorBase {
 public:
     /**

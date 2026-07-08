@@ -112,7 +112,7 @@ private:
  * @tparam Ts types of the tuple elements
  **/
 template<typename... Ts>
-class Tuple : public TupleBase, protected std::tuple<Ts...> {
+class Tuple : public TupleBase, protected std::tuple<Ts...> { // NOLINT(misc-multiple-inheritance)
 public:
     using Base = std::tuple<Ts...>;
     static_assert(sizeof...(Ts) <= MaxElements, "tuples with more than 64 elements are not supported");

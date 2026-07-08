@@ -80,7 +80,7 @@ constexpr auto from_string(std::string_view s) { return util::enum_::from_string
 } // namespace level
 
 /** Ostream-variant that forwards output to the central logger. */
-class Stream : public std::ostream {
+class Stream : public std::ostream { // NOLINT(misc-multiple-inheritance)
 private:
     class Buffer : public std::stringbuf {
     public:

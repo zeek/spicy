@@ -136,7 +136,7 @@ using BitRanges = NodeVector<BitRange>;
 } // namespace bitfield
 
 /** AST node for a `bitfield` type. */
-class Bitfield : public UnqualifiedType, public node::WithUniqueID {
+class Bitfield : public UnqualifiedType, public node::WithUniqueID { // NOLINT(misc-multiple-inheritance)
 public:
     auto width() const { return _width; }
     auto attributes() const { return child<AttributeSet>(0); }
