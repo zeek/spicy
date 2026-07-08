@@ -642,7 +642,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
                 // We register operators here so that we have the type ID for
                 // the struct available.
                 recordChange(n, "creating member call operator");
-                std::unique_ptr<struct_::MemberCall> op(new struct_::MemberCall(n));
+                auto op = std::make_unique<struct_::MemberCall>(n);
                 n->setOperator(op.get());
                 operator_::registry().register_(std::move(op));
             }
@@ -734,7 +734,7 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
 
         if ( n->linkage() != declaration::Linkage::Struct && ! n->operator_() && n->function()->type()->isResolved() ) {
             recordChange(n, "creating function call operator");
-            std::unique_ptr<function::Call> op(new function::Call(n));
+            auto op = std::make_unique<function::Call>(n);
             n->setOperator(op.get());
             operator_::registry().register_(std::move(op));
         }
