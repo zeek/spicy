@@ -63,7 +63,7 @@ public:
     auto str() const { return _buffer.str(); }
 
 private:
-    std::stringstream _buffer = std::stringstream{};
+    std::stringstream _buffer;
     std::streambuf* _old = nullptr;
     std::ostream* _stream = nullptr;
 };
