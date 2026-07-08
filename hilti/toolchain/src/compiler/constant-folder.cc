@@ -381,6 +381,7 @@ Result<Ctor*> detail::constant_folder::foldExpression(Builder* builder, Expressi
     }
 }
 
+namespace {
 struct VisitorConstantFolderAST : visitor::MutatingPostOrder {
     explicit VisitorConstantFolderAST(Builder* builder, Node* /*root*/, bitmask<Style> style)
         : visitor::MutatingPostOrder(builder, logging::debug::Resolver), style(style) {}
@@ -402,6 +403,7 @@ struct VisitorConstantFolderAST : visitor::MutatingPostOrder {
         }
     }
 };
+} // namespace
 
 bool detail::constant_folder::fold(Builder* builder, Node* node, bitmask<Style> style) {
     bool modified = false;

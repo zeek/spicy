@@ -753,6 +753,7 @@ std::string CFG::dot(bool omit_dataflow) const {
     return ss.str();
 }
 
+namespace {
 struct DataflowVisitor : visitor::PreOrder {
     DataflowVisitor(GraphNode root_) : root(root_) {}
 
@@ -1003,6 +1004,7 @@ struct DataflowVisitor : visitor::PreOrder {
             transfer.keep = true;
     }
 };
+} // namespace
 
 void CFG::_populateDataflow() {
     auto visit_node = [](const GraphNode& n) -> Transfer {
@@ -1191,6 +1193,7 @@ static std::string dataflowDot(ASTContext* context, const hilti::Statement& stmt
     return cfg.dot(omit_dataflow);
 }
 
+namespace {
 // Helper class to print CFGs to a debug stream.
 class PrintCfgVisitor : public visitor::PreOrder {
     ASTContext* _context = nullptr;
@@ -1209,6 +1212,7 @@ public:
             HILTI_DEBUG(_stream, util::fmt("Module '%s'\n%s", m->id(), dataflowDot(_context, *body)));
     }
 };
+} // namespace
 
 void cfg::dump(ASTContext* context, logging::DebugStream stream, ASTRoot* root) {
     auto v = PrintCfgVisitor(context, std::move(stream));

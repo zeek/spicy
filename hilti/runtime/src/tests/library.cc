@@ -61,6 +61,7 @@ const hilti::rt::filesystem::path dummy2 =
     config::lib_directory /
     (config::shared_library_prefix + "hilti-rt-tests-library-dummy2" + config::shared_library_suffix);
 
+namespace {
 // RAII helper to set an environment variable.
 class Env {
 public:
@@ -88,6 +89,7 @@ public:
 private:
     std::pair<std::string, std::optional<std::string>> _prev;
 };
+} // namespace
 
 TEST_SUITE_BEGIN("Library");
 

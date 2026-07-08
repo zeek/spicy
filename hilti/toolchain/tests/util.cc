@@ -17,6 +17,7 @@
 
 TEST_SUITE_BEGIN("util");
 
+namespace {
 enum class Foo { AAA, BBB, CCC };
 constexpr hilti::util::enum_::Value<Foo> Values[] = {
     {.value = Foo::AAA, .name = "aaa"},
@@ -24,7 +25,8 @@ constexpr hilti::util::enum_::Value<Foo> Values[] = {
     {.value = Foo::CCC, .name = "ccc"},
 };
 
-constexpr static auto from_string(std::string_view s) { return hilti::util::enum_::from_string<Foo>(s, Values); }
+constexpr auto from_string(std::string_view s) { return hilti::util::enum_::from_string<Foo>(s, Values); }
+} // namespace
 
 TEST_SUITE_BEGIN("util");
 

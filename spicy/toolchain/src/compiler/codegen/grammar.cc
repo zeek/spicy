@@ -11,10 +11,12 @@ using namespace spicy::detail;
 using namespace spicy::detail::codegen;
 using hilti::util::fmt;
 
+namespace {
 class UnknownReference : public std::runtime_error {
 public:
     using std::runtime_error::runtime_error;
 };
+} // namespace
 
 std::string Grammar::_productionLocation(const Production* p) const {
     std::string loc;

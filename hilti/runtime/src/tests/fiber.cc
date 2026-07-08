@@ -311,7 +311,7 @@ TEST_CASE("copy-arg") {
     CHECK_EQ(std::get<1>(*args_on_heap)->str(), s2->str());
 }
 
-void X() {}
+static void X() {}
 
 static int fibo(int i) {
     hilti::rt::detail::checkStack(); // this will eventually throw
@@ -330,7 +330,7 @@ static int fibo(int i) {
     return x;
 }
 
-bool isMacosAsan() {
+static bool isMacosAsan() {
 #if defined(HILTI_HAVE_ASAN) && defined(__APPLE__)
     return true;
 #else

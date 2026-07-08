@@ -37,10 +37,12 @@ struct Test : trait::isStruct {
     int _y;
 };
 
+namespace {
 struct TestWithCustomStr : public Test {
     using Test::Test;
     std::optional<std::string> HILTI_INTERNAL(hook_to_string)() { return HILTI_INTERNAL_ID("hook_to_string"); }
 };
+} // namespace
 
 TEST_CASE("to_string") { CHECK_EQ(to_string(Test(42)), "[$_x=42, $_y=43]"); }
 TEST_CASE("to_string_custom") { CHECK_EQ(to_string(TestWithCustomStr(42)), HILTI_INTERNAL_ID("hook_to_string")); }

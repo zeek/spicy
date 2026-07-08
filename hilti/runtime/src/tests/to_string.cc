@@ -27,8 +27,6 @@
 
 using namespace hilti::rt;
 
-inline auto operator""_p(const char* str, size_t size) { return hilti::rt::regexp::Pattern(std::string(str, size)); }
-
 TEST_SUITE_BEGIN("to_string");
 
 TEST_CASE("any") { CHECK_EQ(to_string(hilti::rt::any()), "<any value>"); }

@@ -10,6 +10,7 @@ using namespace spicy::rt;
 
 TEST_SUITE_BEGIN("GlobalState");
 
+namespace {
 class TestState {
 public:
     TestState() { std::swap(_prev, detail::__global_state); }
@@ -22,6 +23,7 @@ public:
 private:
     detail::GlobalState* _prev{nullptr};
 };
+} // namespace
 
 TEST_CASE("createGlobalState") {
     TestState _;

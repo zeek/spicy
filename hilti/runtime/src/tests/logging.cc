@@ -18,6 +18,7 @@ using namespace hilti::rt::test;
 
 TEST_SUITE_BEGIN("Logging");
 
+namespace {
 // RAII helper to maintain global debug logger.
 class TestLogger {
 public:
@@ -34,6 +35,7 @@ private:
     TemporaryFile _file;
     std::unique_ptr<detail::DebugLogger> _prev;
 };
+} // namespace
 
 TEST_CASE("debug::isEnabled") {
     TestLogger log;

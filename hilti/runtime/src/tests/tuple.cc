@@ -10,6 +10,7 @@
 using namespace hilti::rt;
 using namespace hilti::rt::bytes::literals;
 
+namespace {
 // RAII helper to set the global `Configuration`'s `cout` stream.
 class TestCout {
 public:
@@ -26,6 +27,7 @@ private:
     std::stringstream _cout;
     std::unique_ptr<Configuration> _prev;
 };
+} // namespace
 
 TEST_SUITE_BEGIN("Tuple");
 

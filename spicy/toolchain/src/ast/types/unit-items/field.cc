@@ -33,6 +33,7 @@ void type::unit::item::Field::setDDType(ASTContext* ctx, QualifiedType* t) {
     setChild(ctx, 0, hilti::expression::Keyword::createDollarDollarDeclaration(ctx, t));
 }
 
+namespace {
 struct SizeVisitor : hilti::visitor::PreOrder {
     SizeVisitor(Builder* builder, const spicy::type::unit::item::Field& field) : builder(builder), field(field) {}
 
@@ -64,6 +65,7 @@ struct SizeVisitor : hilti::visitor::PreOrder {
                              builder->integer(8U));
     }
 };
+} // namespace
 
 Expression* spicy::type::unit::item::Field::size(ASTContext* ctx) const {
     Builder builder(ctx);

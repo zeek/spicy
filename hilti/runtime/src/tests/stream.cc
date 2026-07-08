@@ -16,7 +16,7 @@ using hilti::rt::to_string;
 
 TEST_SUITE_BEGIN("Stream");
 
-auto make_stream(std::initializer_list<Bytes> xs) {
+static auto make_stream(std::initializer_list<Bytes> xs) {
     Stream s;
     for ( auto&& x : xs )
         s.append(x);
@@ -912,7 +912,7 @@ TEST_CASE("to_string") {
 }
 
 template<typename T, int N>
-std::vector<T> vec(T (&xs)[N]) {
+static std::vector<T> vec(T (&xs)[N]) {
     std::vector<T> ys;
     ys.assign(xs, xs + N);
     return ys;

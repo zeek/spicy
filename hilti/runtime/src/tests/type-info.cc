@@ -34,6 +34,7 @@ extern const hilti::rt::TypeInfo __ti_Test_Y;
 } // namespace
 } // namespace HILTI_INTERNAL_NS::type_info
 
+namespace {
 namespace Test {
 
 // Reduced declaration of the struct types, trusting that ours will match the
@@ -49,6 +50,7 @@ struct X {
     Y y;
 };
 } // namespace Test
+} // namespace
 
 // Copied from output of hiltic.
 namespace HILTI_INTERNAL_NS::type_info {

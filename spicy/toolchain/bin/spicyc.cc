@@ -9,6 +9,7 @@
 #include <spicy/compiler/driver.h>
 #include <spicy/compiler/init.h>
 
+namespace {
 class Spicyc : public spicy::Driver {
 public:
     Spicyc() : spicy::Driver("spicyc", hilti::util::currentExecutable()) {
@@ -18,6 +19,7 @@ public:
     void hookInitRuntime() override { spicy::rt::init(); }
     void hookFinishRuntime() override { spicy::rt::done(); }
 };
+} // namespace
 
 int main(int argc, char** argv) try {
     hilti::init();

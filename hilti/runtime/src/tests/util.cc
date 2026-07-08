@@ -27,7 +27,7 @@ using namespace hilti::rt;
 using namespace hilti::rt::string::literals;
 
 namespace std {
-ostream& operator<<(ostream& stream, const vector<string_view>& xs) {
+static ostream& operator<<(ostream& stream, const vector<string_view>& xs) {
     stream << '[';
 
     for ( size_t i = 0; i < xs.size(); ++i ) {
@@ -41,7 +41,7 @@ ostream& operator<<(ostream& stream, const vector<string_view>& xs) {
 }
 
 template<typename U, typename V>
-ostream& operator<<(ostream& stream, const pair<U, V>& p) {
+static ostream& operator<<(ostream& stream, const pair<U, V>& p) {
     return stream << "(" << p.first << ", " << p.second << ")";
 }
 
@@ -50,7 +50,7 @@ ostream& operator<<(ostream& stream, const pair<U, V>& p) {
 TEST_SUITE_BEGIN("util");
 
 template<typename T>
-T atoi_n_(const std::string_view& input, int base, unsigned num_parsed) {
+static T atoi_n_(const std::string_view& input, int base, unsigned num_parsed) {
     CAPTURE(input);
     CAPTURE(base);
 

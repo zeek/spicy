@@ -701,6 +701,7 @@ Result<Nothing> ASTContext::processAST(Builder* builder, Driver* driver) {
     return Nothing();
 }
 
+namespace {
 // Visitor double-checking that all declarations have their canonical IDs set.
 struct VisitorCheckIDs : hilti::visitor::PreOrder {
     void operator()(Declaration* n) final {
@@ -710,6 +711,7 @@ struct VisitorCheckIDs : hilti::visitor::PreOrder {
         }
     }
 };
+} // namespace
 
 #ifndef NDEBUG
 void ASTContext::checkAST(bool finished) const {

@@ -14,7 +14,7 @@ using namespace hilti::rt::bytes::literals;
 
 namespace std {
 template<typename T>
-ostream& operator<<(ostream& stream, const Result<T>& x) {
+static ostream& operator<<(ostream& stream, const Result<T>& x) {
     if ( x.hasValue() )
         return stream << fmt("Ok(%s)", x.value());
     else

@@ -351,7 +351,9 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
 // in the meantime. This must not be derived from `std::exception` to guarantee
 // that it will bubble back up to the fiber code, without being caught by any
 // intermediary catch handlers.
+namespace {
 struct AbortException {};
+} // namespace
 
 detail::Fiber::~Fiber() {
 #ifndef NDEBUG

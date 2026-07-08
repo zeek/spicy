@@ -180,6 +180,7 @@ std::string operator_::detail::printSignature(Kind kind, const Expressions& oper
     return printOperator(kind, operands, true, meta);
 }
 
+namespace {
 class OperandResolver : public visitor::PreOrder {
 public:
     OperandResolver(Builder* builder) : builder(builder) {}
@@ -213,6 +214,7 @@ public:
             result = false;
     }
 };
+} // namespace
 
 bool Operator::init(Builder* builder, Node* scope_root) {
     auto sig = signature(builder);
