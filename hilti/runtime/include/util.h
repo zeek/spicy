@@ -563,6 +563,7 @@ inline I1 pow(I1 base, I2 exp) {
 namespace detail {
 template<typename T, typename F, std::size_t... Is>
 constexpr auto map_tuple(T&& tup, F& f, std::index_sequence<Is...> /*unused*/) {
+    // NOLINTNEXTLINE(bugprone-use-after-move)
     return std::make_tuple(f(std::get<Is>(std::forward<T>(tup)))...);
 }
 } // namespace detail
