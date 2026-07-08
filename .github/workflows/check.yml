@@ -46,30 +46,24 @@ jobs:
         include:
         - id: lint
           file: ci/Dockerfile
-          env:
-            LD_LIBRARY_PATH: /usr/lib/llvm-21/lib/clang/21/lib/linux/
           run: |
-            ./ci/run-ci -b build -j "$NPROCS" configure debug --cxx-compiler clang++-21 --clang-tidy /usr/bin/clang-tidy-21
+            ./ci/run-ci -b build -j "$NPROCS" configure debug --cxx-compiler clang++ --clang-tidy `which clang-tidy`
             ./ci/run-ci -b build -j "$NPROCS" build
             ./ci/run-ci -b build -j "$NPROCS" test-code
 
-        - id: clang21-ubuntu-debug
+        - id: clang-ubuntu-debug
           file: ci/Dockerfile
-          env:
-            LD_LIBRARY_PATH: /usr/lib/llvm-21/lib/clang/21/lib/linux/
           run: |
-            ./ci/run-ci -b build -j "$NPROCS" configure debug --cxx-compiler clang++-21
+            ./ci/run-ci -b build -j "$NPROCS" configure debug --cxx-compiler clang++
             ./ci/run-ci -b build -j "$NPROCS" build
             ./ci/run-ci -b build -j "$NPROCS" test-build
             ./ci/run-ci -b build -j "$NPROCS" install
             ninja -C build package
 
-        - id: clang21-lts-ubuntu-release
+        - id: clang-lts-ubuntu-release
           file: ci/Dockerfile
-          env:
-            LD_LIBRARY_PATH: /usr/lib/llvm-21/lib/clang/21/lib/linux/
           run: |
-            ./ci/run-ci -b build -j "$NPROCS" configure release --cxx-compiler clang++-21
+            ./ci/run-ci -b build -j "$NPROCS" configure release --cxx-compiler clang++
             ./ci/run-ci -b build -j "$NPROCS" build
             ./ci/run-ci -b build -j "$NPROCS" test-build
             ./ci/run-ci -b build -j "$NPROCS" install
@@ -77,12 +71,10 @@ jobs:
             ./ci/run-ci -b build -j "$NPROCS" test-install
             ninja -C build package
 
-        - id: clang21-lts-ubuntu-release-static
+        - id: clang-lts-ubuntu-release-static
           file: ci/Dockerfile
-          env:
-            LD_LIBRARY_PATH: /usr/lib/llvm-21/lib/clang/21/lib/linux/
           run: |
-            ./ci/run-ci -b build -j "$NPROCS" configure release --cxx-compiler clang++-21
+            ./ci/run-ci -b build -j "$NPROCS" configure release --cxx-compiler clang++
             ./ci/run-ci -b build -j "$NPROCS" build
             ./ci/run-ci -b build -j "$NPROCS" test-build
             ./ci/run-ci -b build -j "$NPROCS" install
