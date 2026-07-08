@@ -244,7 +244,7 @@ TEST_CASE("no-emit fields") {
     CHECK(! s->fields()[0].get().isEmitted());
 
     // We shouldn't see this field when iterating.
-    int count =
+    auto count =
         std::ranges::distance(hilti::rt::type_info::value::auxType<hilti::rt::type_info::Struct>(v)->iterate(v));
     CHECK_EQ(count, 0);
 }
