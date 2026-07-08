@@ -65,7 +65,7 @@ namespace {
 // RAII helper to set an environment variable.
 class Env {
 public:
-    Env(std::string k, const std::string_view& v) {
+    Env(const std::string& k, const std::string& v) {
         if ( auto* prev = ::getenv(k.data()) )
             _prev = {k, prev};
         else
