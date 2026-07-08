@@ -816,7 +816,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
         if ( auto* attrs = n->attributes() ) {
             if ( attrs->find(attribute::kind::Size) && attrs->find(attribute::kind::MaxSize) )
-                error(("attributes cannot be combined: &size, &max-size"), n);
+                error("attributes cannot be combined: &size, &max-size", n);
 
             for ( const auto& a : attrs->attributes() ) {
                 if ( a->kind() == attribute::kind::Size || a->kind() == attribute::kind::MaxSize ) {

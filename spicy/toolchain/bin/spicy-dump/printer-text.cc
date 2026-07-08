@@ -180,7 +180,7 @@ void TextPrinter::print(const hilti::rt::type_info::Value& v) {
                                 out() << "(unset)";
                         }
                         else
-                            out() << ("(optimized out)");
+                            out() << "(optimized out)";
                     }
 
                     empty = false;
