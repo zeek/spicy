@@ -271,7 +271,7 @@ integer::safe<int64_t> Bytes::toInt(ByteOrder byte_order) const {
     auto i = toUInt(byte_order).Ref(); // throws on size == 0 or size > 8
     auto size_ = static_cast<uint64_t>(size());
 
-    if ( i & (UINT64_C(1) << (size_ * 8 - 1)) ) {
+    if ( i & (UINT64_C(1) << ((size_ * 8) - 1)) ) {
         if ( size() == 8 )
             return static_cast<int64_t>(-(~i + 1));
 
