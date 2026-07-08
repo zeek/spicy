@@ -243,7 +243,7 @@ private:
     static auto _defaultStorage() {
         return Base{[]() {
             if constexpr ( tuple::detail::IsValueReference<Ts>::value ) {
-                using element_type = typename tuple::detail::IsValueReference<Ts>::element_type;
+                using element_type = tuple::detail::IsValueReference<Ts>::element_type;
                 return Ts(std::shared_ptr<element_type>(nullptr));
             }
             else

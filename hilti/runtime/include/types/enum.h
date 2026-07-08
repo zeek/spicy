@@ -41,7 +41,7 @@ bool has_label(const T& t, const TypeInfo* ti) {
  */
 template<typename T>
 T from_int(int64_t n) {
-    using Value = typename T::Value;
+    using Value = T::Value;
     static_assert(std::is_enum_v<Value>);
     static_assert(std::is_same_v<std::underlying_type_t<Value>, int64_t>);
     return static_cast<T>(n);
@@ -61,7 +61,7 @@ T from_int(int64_t n) {
  */
 template<typename T>
 T from_uint(uint64_t n) {
-    using Value = typename T::Value;
+    using Value = T::Value;
     static_assert(std::is_enum_v<Value>);
     static_assert(std::is_same_v<std::underlying_type_t<Value>, int64_t>);
 

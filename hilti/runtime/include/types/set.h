@@ -34,20 +34,20 @@ template<typename T>
 class Iterator {
     using S = Set<T>;
 
-    using Control = typename S::Control::Ref;
+    using Control = S::Control::Ref;
     Control _control;
-    typename S::S::iterator _iterator;
+    S::S::iterator _iterator;
 
 public:
-    using iterator_category = typename S::S::iterator::iterator_category;
-    using value_type = typename S::S::value_type;
-    using difference_type = typename S::S::difference_type;
-    using pointer = typename S::S::pointer;
-    using reference = typename S::S::reference;
+    using iterator_category = S::S::iterator::iterator_category;
+    using value_type = S::S::value_type;
+    using difference_type = S::S::difference_type;
+    using pointer = S::S::pointer;
+    using reference = S::S::reference;
 
     Iterator() = default;
 
-    typename S::reference operator*() const {
+    S::reference operator*() const {
         // Iterators to `end` cannot be dereferenced.
         if ( _iterator == static_cast<const std::set<T>&>(_control.get()).end() )
             throw IndexError("iterator is invalid");
@@ -84,8 +84,7 @@ public:
 protected:
     friend class Set<T>;
 
-    Iterator(typename S::S::iterator iterator, Control control)
-        : _control(std::move(control)), _iterator(std::move(iterator)) {}
+    Iterator(S::S::iterator iterator, Control control) : _control(std::move(control)), _iterator(std::move(iterator)) {}
 };
 
 } // namespace set
@@ -122,8 +121,8 @@ public:
     using reference = const T&;
     using const_reference = const T&;
 
-    using iterator = typename set::Iterator<T>;
-    using const_iterator = typename set::Iterator<T>;
+    using iterator = set::Iterator<T>;
+    using const_iterator = set::Iterator<T>;
 
     using key_type = T;
     using value_type = T;

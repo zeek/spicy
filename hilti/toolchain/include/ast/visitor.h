@@ -145,7 +145,7 @@ template<Order order>
 class Range {
 public:
     using iterator_t = Iterator<order>;
-    using value_type = typename Iterator<order>::value_type;
+    using value_type = Iterator<order>::value_type;
     Range(Node* root, std::string_view limit_to_tag) : _root(root), _limit_to_tag(limit_to_tag) {}
 
     auto begin(bool include_empty = false) {

@@ -415,7 +415,7 @@ struct is_Vector<Vector<T, Allocator>> : std::true_type {};
  * container of the same type class as `C` but with element type `Y`. */
 template<typename C, typename Y>
 constexpr auto transform_result_value(const C&) {
-    using X = typename C::value_type;
+    using X = C::value_type;
 
     if constexpr ( std::is_same_v<C, std::vector<X>> ) {
         return std::vector<Y>();
