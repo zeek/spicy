@@ -27,24 +27,11 @@ using namespace hilti::rt;
 using namespace hilti::rt::string::literals;
 
 namespace std {
-static ostream& operator<<(ostream& stream, const vector<string_view>& xs) {
-    stream << '[';
-
-    for ( size_t i = 0; i < xs.size(); ++i ) {
-        stream << xs[i];
-
-        if ( i != xs.size() - 1 )
-            stream << ", ";
-    }
-
-    return stream << ']';
-}
-
 template<typename U, typename V>
+// NOLINTNEXTLINE(bugprone-std-namespace-modification)
 static ostream& operator<<(ostream& stream, const pair<U, V>& p) {
     return stream << "(" << p.first << ", " << p.second << ")";
 }
-
 } // namespace std
 
 TEST_SUITE_BEGIN("util");

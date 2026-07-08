@@ -363,17 +363,16 @@ inline std::string detail::to_string_for_print<Optional<std::string_view>>(const
     return x ? std::string(*x) : "(not set)";
 }
 
-} // namespace hilti::rt
-
-namespace std {
-
 template<typename T>
 std::ostream& operator<<(std::ostream& out, const hilti::rt::Optional<T>& x) {
     return out << ::hilti::rt::to_string(x);
 }
 
+} // namespace hilti::rt
+
+namespace std {
 template<typename T>
-struct hash<hilti::rt::Optional<T>> {
+struct hash<hilti::rt::Optional<T>> { // NOLINT(bugprone-std-namespace-modification)
     size_t operator()(const hilti::rt::Optional<T>& opt) const noexcept {
         if ( opt.hasValue() )
             return std::hash<T>{}(opt.value());
@@ -381,5 +380,4 @@ struct hash<hilti::rt::Optional<T>> {
             return 0;
     }
 };
-
 } // namespace std

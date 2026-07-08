@@ -12,15 +12,15 @@
 using namespace hilti::rt;
 using namespace hilti::rt::bytes::literals;
 
-namespace std {
+namespace hilti::rt {
 template<typename T>
-static ostream& operator<<(ostream& stream, const Result<T>& x) {
+static std::ostream& operator<<(std::ostream& stream, const Result<T>& x) {
     if ( x.hasValue() )
         return stream << fmt("Ok(%s)", x.value());
     else
         return stream << fmt("Error(%s)", x.error());
 }
-} // namespace std
+} // namespace hilti::rt
 
 TEST_SUITE_BEGIN("real");
 

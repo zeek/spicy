@@ -23,6 +23,7 @@ TEST_CASE("value_or_exception") {
     debug::setLocation(nullptr);
 }
 
+namespace {
 struct Test : trait::isStruct {
     Test(int x) : _x(x), _y(x + 1) {}
 
@@ -37,7 +38,6 @@ struct Test : trait::isStruct {
     int _y;
 };
 
-namespace {
 struct TestWithCustomStr : public Test {
     using Test::Test;
     std::optional<std::string> HILTI_INTERNAL(hook_to_string)() { return HILTI_INTERNAL_ID("hook_to_string"); }

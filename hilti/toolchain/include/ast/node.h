@@ -1281,6 +1281,6 @@ inline hilti::node::Properties operator+(hilti::node::Properties p1, hilti::node
 }
 
 template<typename T>
-struct std::hash<hilti::node::RetainedPtr<T>> {
+struct std::hash<hilti::node::RetainedPtr<T>> { // NOLINT(bugprone-std-namespace-modification)
     size_t operator()(const hilti::node::RetainedPtr<T>& p) const { return std::hash<T*>()(p.get()); }
 };

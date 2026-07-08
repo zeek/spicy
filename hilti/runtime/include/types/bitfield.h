@@ -143,13 +143,9 @@ inline std::string to_string_for_print(const Bitfield<Ts...>& x, adl::tag /*unus
 }
 } // namespace detail::adl
 
-} // namespace hilti::rt
-
-namespace std {
-
 template<typename... Ts>
 inline std::ostream& operator<<(std::ostream& out, const hilti::rt::Bitfield<Ts...>& x) {
     return out << hilti::rt::to_string_for_print(x);
 }
 
-} // namespace std
+} // namespace hilti::rt
