@@ -88,7 +88,7 @@ const hilti::rt::TypeInfo __ti_Test_Y = {"Test::Y",
 TEST_CASE("traverse structs") {
     // Check that we can traverse the structs and get expected values.
 
-    auto sx = StrongReference<Test::X>({42, "foo", Test::Y{true, 3.14}});
+    auto sx = StrongReference<Test::X>({.i = 42, .s = "foo", .y = Test::Y{.b = true, .r = 3.14}});
     auto p = hilti::rt::type_info::value::Parent(sx);
     auto v = hilti::rt::type_info::Value(&*sx, &HILTI_INTERNAL_NS::type_info::__ti_Test_X, p);
 
@@ -123,9 +123,9 @@ TEST_CASE("traverse structs") {
 TEST_CASE("life-time") {
     // Check that we catch when values become inaccessible because of the
     // associated parent going away.
-    Test::Y y{true, 3.14};
+    Test::Y y{.b = true, .r = 3.14};
 
-    auto x = StrongReference<Test::X>({42, "foo", y});
+    auto x = StrongReference<Test::X>({.i = 42, .s = "foo", .y = y});
     auto p = hilti::rt::type_info::value::Parent(x);
     auto v = hilti::rt::type_info::Value(&*x, &HILTI_INTERNAL_NS::type_info::__ti_Test_X, p);
 
@@ -139,9 +139,9 @@ TEST_CASE("life-time") {
 }
 
 TEST_CASE("no parent") {
-    Test::Y y{true, 3.14};
+    Test::Y y{.b = true, .r = 3.14};
 
-    auto x = StrongReference<Test::X>({42, "foo", y});
+    auto x = StrongReference<Test::X>({.i = 42, .s = "foo", .y = y});
     auto p = hilti::rt::type_info::value::Parent(x);
     auto v = hilti::rt::type_info::Value(&*x, &HILTI_INTERNAL_NS::type_info::__ti_Test_X); // no parent
 
