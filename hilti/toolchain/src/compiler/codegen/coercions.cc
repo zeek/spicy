@@ -74,6 +74,7 @@ struct Visitor : public hilti::visitor::PreOrder {
     }
 
     void operator()(type::List* n) final {
+        (void)n;
         if ( dst->type()->isA<type::Set>() ) {
             assert(type::same(n->elementType(), dst->type()->as<type::Set>()->elementType()));
             result = expr;
