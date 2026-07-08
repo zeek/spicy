@@ -536,9 +536,9 @@ TEST_CASE("toReal") {
         std::string old_locale(saved ? saved : "C");
 
 #ifdef _WIN32
-        auto de_locale = "de-DE";
+        const auto* de_locale = "de-DE";
 #else
-        auto de_locale = "de_DE.UTF-8";
+        const auto* de_locale = "de_DE.UTF-8";
 #endif
 
         if ( ! std::setlocale(LC_ALL, de_locale) )

@@ -67,7 +67,7 @@ TEST_CASE("atoi_n") {
 
         SUBCASE("invalid chars") {
             std::string_view s = "abc";
-            const auto it = atoi_n(s.data(), s.data() + s.size(), 10, &x);
+            const auto* it = atoi_n(s.data(), s.data() + s.size(), 10, &x);
             CHECK_EQ(it, s.data());
         }
 
