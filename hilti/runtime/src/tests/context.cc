@@ -21,6 +21,7 @@ TEST_CASE("cookie") {
 
     CHECK_EQ(context::cookie(), nullptr);
 
+    // NOLINTNEXTLINE(performance-no-int-to-ptr)
     void* const cookie = reinterpret_cast<void*>(static_cast<std::uintptr_t>(0xDEADBEEF));
 
     context.cookie = cookie;
@@ -40,6 +41,7 @@ TEST_CASE("CookieSetter") {
     REQUIRE_EQ(context::cookie(), nullptr);
 
     {
+        // NOLINTNEXTLINE(performance-no-int-to-ptr)
         void* const cookie = reinterpret_cast<void*>(static_cast<std::uintptr_t>(0xDEADBEEF));
         context::CookieSetter _(cookie);
         CHECK_EQ(context::cookie(), cookie);
