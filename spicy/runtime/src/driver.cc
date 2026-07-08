@@ -240,8 +240,8 @@ void driver::ParsingStateForDriver::debug(const std::string& msg) {
 }
 
 void driver::ParsingState::debug(const std::string& msg, size_t size, const char* data) {
-    const auto& escaped =
-        data ? hilti::rt::escapeBytes(std::string(data, std::min(size_t(40), size))) : fmt("<gap length=%d>", size);
+    const auto& escaped = data ? hilti::rt::escapeBytes(std::string(data, std::min(static_cast<size_t>(40), size))) :
+                                 fmt("<gap length=%d>", size);
     debug(hilti::rt::fmt("%s: |%s%s|", msg, escaped, size > 40 ? "..." : ""));
 }
 

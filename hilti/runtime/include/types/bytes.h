@@ -369,7 +369,7 @@ public:
         if ( from._control != to._control )
             throw InvalidArgument("start and end iterator cannot belong to different bytes");
 
-        return sub(Offset(from - begin()), to._index);
+        return sub(static_cast<Offset>(from - begin()), to._index);
     }
 
     /**

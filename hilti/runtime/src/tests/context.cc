@@ -21,7 +21,7 @@ TEST_CASE("cookie") {
 
     CHECK_EQ(context::cookie(), nullptr);
 
-    void* const cookie = reinterpret_cast<void*>(std::uintptr_t(0xDEADBEEF));
+    void* const cookie = reinterpret_cast<void*>(static_cast<std::uintptr_t>(0xDEADBEEF));
 
     context.cookie = cookie;
     CHECK_EQ(context::cookie(), cookie);
@@ -40,7 +40,7 @@ TEST_CASE("CookieSetter") {
     REQUIRE_EQ(context::cookie(), nullptr);
 
     {
-        void* const cookie = reinterpret_cast<void*>(std::uintptr_t(0xDEADBEEF));
+        void* const cookie = reinterpret_cast<void*>(static_cast<std::uintptr_t>(0xDEADBEEF));
         context::CookieSetter _(cookie);
         CHECK_EQ(context::cookie(), cookie);
     }
