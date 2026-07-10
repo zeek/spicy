@@ -184,8 +184,6 @@ private:
          std::shared_ptr<detail::cxx::Unit> cxx_unit)
         : _context(context), _uid(std::move(uid)), _cxx_unit(std::move(cxx_unit)) {}
 
-    Result<std::shared_ptr<detail::cxx::Unit>> _codegenModule(const declaration::module::UID& uid);
-
     std::weak_ptr<Context> _context;              // global context
     declaration::module::UID _uid;                // module's globally unique ID
     std::shared_ptr<detail::cxx::Unit> _cxx_unit; // compiled C++ code for this unit, once available

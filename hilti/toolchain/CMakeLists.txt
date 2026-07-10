@@ -106,6 +106,7 @@ set(SOURCES
     src/compiler/coercer.cc
     src/compiler/constant-folder.cc
     src/compiler/context.cc
+    src/compiler/backend/cxx.cc
     src/compiler/cxx/elements.cc
     src/compiler/cxx/formatter.cc
     src/compiler/cxx/linker.cc

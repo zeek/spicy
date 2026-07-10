@@ -7,6 +7,7 @@
 #include <hilti/ast/declarations/module.h>
 #include <hilti/ast/node.h>
 #include <hilti/base/timing.h>
+#include <hilti/compiler/backend/cxx.h>
 #include <hilti/compiler/detail/codegen/codegen.h>
 #include <hilti/compiler/printer.h>
 #include <hilti/compiler/unit.h>
@@ -18,7 +19,6 @@ using util::fmt;
 
 namespace hilti::logging::debug {
 inline const DebugStream AstCodegen("ast-codegen");
-inline const DebugStream Compiler("compiler");
 } // namespace hilti::logging::debug
 
 Result<std::shared_ptr<Unit>> Unit::fromSource(const std::shared_ptr<Context>& context,
@@ -69,38 +69,20 @@ Result<Nothing> Unit::createPrototypes(std::ostream& out) {
     return _cxx_unit->createPrototypes(out);
 }
 
-Result<std::shared_ptr<detail::cxx::Unit>> Unit::_codegenModule(const declaration::module::UID& uid) {
-    auto* module = context()->astContext()->module(uid);
-    assert(module);
-
-    auto cxx = detail::CodeGen(context()).compileModule(module);
-
-    if ( logger().errors() )
-        return result::Error("errors encountered during code generation");
-
-    if ( ! cxx )
-        logger().internalError(
-            fmt("code generation for module %s failed, but did not log error (%s)", uid, cxx.error().description()));
-
-    return cxx;
-}
-
 Result<Nothing> Unit::codegen() {
     if ( ! _uid )
         return Nothing();
 
-    HILTI_DEBUG(logging::debug::Compiler, fmt("codegen module %s to C++", _uid));
-    logging::DebugPushIndent __(logging::debug::Compiler);
+    // TODO: Make this pluggable
+    auto backend = hilti::CxxBackend();
 
-    auto cxx = _codegenModule(_uid);
-    if ( ! cxx )
-        return cxx.error();
+    auto* module = context()->astContext()->module(_uid);
+    auto res = backend.compile(module, context());
+    if ( !  res )
+        return res.error();
 
-    HILTI_DEBUG(logging::debug::Compiler, fmt("finalizing module %s", _uid));
-    if ( auto x = (*cxx)->finalize(); ! x )
-        return x.error();
+    _cxx_unit = res.value();
 
-    _cxx_unit = *cxx;
     return Nothing();
 }
 
@@ -142,7 +124,7 @@ bool Unit::requiresCompilation() {
 
 Result<std::shared_ptr<Unit>> Unit::link(const std::shared_ptr<Context>& context,
                                          const std::vector<linker::MetaData>& mds) {
-    HILTI_DEBUG(logging::debug::Compiler, fmt("linking %u modules", mds.size()));
+    //HILTI_DEBUG(logging::debug::Compiler, fmt("linking %u modules", mds.size()));
     auto cxx_unit = detail::CodeGen(context).linkUnits(mds);
 
     if ( ! cxx_unit )
