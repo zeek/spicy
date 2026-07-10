@@ -199,8 +199,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
     // Ensures the declaration's type is a valid type.
     void checkDeclarationType(Declaration* decl, QualifiedType* ty) {
-        if ( ty->type()->isA<hilti::type::Struct>() || ty->type()->isA<hilti::type::Enum>() ||
-             ty->type()->isA<hilti::type::Union>() ) {
+        if ( ty->type()->isAnyOf<hilti::type::Struct, hilti::type::Enum, hilti::type::Union>() ) {
             if ( ! ty->type()->typeID() )
                 error(fmt("%s types must be named in declarations", ty->type()->typeClass()),
                       decl,

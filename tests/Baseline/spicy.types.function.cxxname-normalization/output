@@ -22,7 +22,7 @@
 [debug/resolver] [hilti.hlt:42:44-42:103] Attribute "&cxxname="hilti::rt::optional::detail::throw_unset_optional"" -> Attribute "&cxxname="::hilti::rt::optional::detail::throw_unset_optional""
 [debug/resolver] [hilti.hlt:43:47-43:108] Attribute "&cxxname="hilti::rt::struct_::detail::throw_attribute_not_set"" -> Attribute "&cxxname="::hilti::rt::struct_::detail::throw_attribute_not_set""
 [debug/resolver] [hilti.hlt:45:95-45:131] Attribute "&cxxname="hilti::rt::profiler::start"" -> Attribute "&cxxname="::hilti::rt::profiler::start""
-[debug/resolver] [hilti.hlt:46:89-46:124] Attribute "&cxxname="hilti::rt::profiler::stop"" -> Attribute "&cxxname="::hilti::rt::profiler::stop""
+[debug/resolver] [hilti.hlt:46:95-46:130] Attribute "&cxxname="hilti::rt::profiler::stop"" -> Attribute "&cxxname="::hilti::rt::profiler::stop""
 [debug/resolver] [hilti.hlt:49:35-49:65] Attribute "&cxxname="hilti::rt::Exception"" -> Attribute "&cxxname="::hilti::rt::Exception""
 [debug/resolver] [hilti.hlt:52:55-52:79] Attribute "&cxxname="std::exception"" -> Attribute "&cxxname="::std::exception""
 [debug/resolver] [hilti.hlt:56:52-56:85] Attribute "&cxxname="hilti::rt::RuntimeError"" -> Attribute "&cxxname="::hilti::rt::RuntimeError""

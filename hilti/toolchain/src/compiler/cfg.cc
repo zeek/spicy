@@ -321,8 +321,7 @@ GraphNode CFG::_addBlock(GraphNode predecessor, const Nodes& stmts, const Node* 
     // After this block `last` is the last reachable statement, either end of
     // children or a control flow statement.
     auto last = std::ranges::find_if(stmts, [](auto* c) {
-        return c && (c->template isA<statement::Return>() || c->template isA<statement::Throw>() ||
-                     c->template isA<statement::Continue>() || c->template isA<statement::Break>());
+        return c && (c->template isAnyOf<statement::Return, statement::Throw, statement::Continue, statement::Break>());
     });
     const bool has_dead_flow = last != stmts.end();
     if ( has_dead_flow )
@@ -818,8 +817,7 @@ struct DataflowVisitor : visitor::PreOrder {
             return;
 
         // Ignore a few name kinds we are not interested in tracking.
-        if ( decl->isA<declaration::Constant>() || decl->isA<declaration::Function>() ||
-             decl->isA<declaration::Type>() )
+        if ( decl->isAnyOf<declaration::Constant, declaration::Function, declaration::Type>() )
             return;
 
         auto* node = root.get();
@@ -882,13 +880,18 @@ struct DataflowVisitor : visitor::PreOrder {
                 transfer.maybe_alias.insert(decl);
         }
 
-        else if ( node->isA<operator_::struct_::MemberNonConst>() || node->isA<operator_::struct_::MemberConst>() ||
-                  node->isA<operator_::union_::MemberNonConst>() || node->isA<operator_::union_::MemberConst>() )
+        else if ( node->isAnyOf<operator_::struct_::MemberNonConst,
+                                operator_::struct_::MemberConst,
+                                operator_::union_::MemberNonConst,
+                                operator_::union_::MemberConst>() )
             transfer.read.insert(decl);
 
-        else if ( node->isA<statement::Return>() || node->isA<expression::LogicalOr>() ||
-                  node->isA<expression::LogicalAnd>() || node->isA<expression::LogicalNot>() ||
-                  node->isA<expression::Name>() || node->isA<statement::Assert>() )
+        else if ( node->isAnyOf<statement::Return,
+                                expression::LogicalOr,
+                                expression::LogicalAnd,
+                                expression::LogicalNot,
+                                expression::Name,
+                                statement::Assert>() )
             // Simply flows a value but does not generate or kill any.
             transfer.read.insert(decl);
 

@@ -797,6 +797,13 @@ public:
             return nullptr;
     }
 
+    /** Checks if this is one of many possible node types. */
+    template<typename... Ts>
+        requires(std::is_base_of_v<Node, Ts> && ...)
+    bool isAnyOf() const {
+        return (isA<Ts>() || ...);
+    }
+
     /**
      * Print out a HILTI source code representation of the node and all its
      * children. If the node is not the root of an AST, it's not guaranteed

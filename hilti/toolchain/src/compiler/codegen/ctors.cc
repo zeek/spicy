@@ -32,8 +32,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
     bool mayThrowAttributeNotSet(const Expression* e) const {
         // We whitelist a few expressions that are known to not throw `AttributeNotSet`.
-        if ( e->template isA<expression::Ctor>() || e->template isA<expression::Name>() ||
-             e->template isA<expression::Keyword>() )
+        if ( e->template isAnyOf<expression::Ctor, expression::Name, expression::Keyword>() )
             return false;
 
         if ( const auto* x = e->tryAs<expression::Coerced>() )

@@ -443,7 +443,7 @@ type_decl     : opt_linkage TYPE scoped_id '='   { _docs.emplace_back(driver->do
                                                    // Type decls can have attributes, but only for certain types
                                                    if ( $7 && ! $7->attributes().empty() ) {
                                                       auto ty = $6->type();
-                                                      if ( ! (ty->isA<hilti::type::Struct>() || ty->isA<hilti::type::Enum>() || ty->isA<hilti::type::Bitfield>()) )
+                                                      if ( ! (ty->isAnyOf<hilti::type::Struct, hilti::type::Enum, hilti::type::Bitfield>()) )
                                                           error(@7, "attributes are not allowed on type aliases");
                                                    }
 
