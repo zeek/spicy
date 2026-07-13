@@ -1,3 +1,16 @@
+1.17.0-dev.159 | 2026-07-13 21:31:55 +0200
+
+  * Use standard-compliant type for `std::string_view` iterator type (Benjamin Bannier, Corelight)
+
+    We previously assumed that `std::string_view` used `const char*` as
+    underlying iterator type, but this is not in the standard and in fact
+    msvc deviates. Use a generic iterator type instead.
+
+    This fixes a regression introduced in
+    7c0a1f12cd672dacd28573f974c59eb30b035f69.
+
+    fixup! Change `hilti::rt::atoi_n` to take a `string_view`
+
 1.17.0-dev.157 | 2026-07-13 16:22:59 +0200
 
   * Locally suppress GCC false positive (Benjamin Bannier, Corelight)
