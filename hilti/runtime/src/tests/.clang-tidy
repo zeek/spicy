@@ -1,6 +1,8 @@
 # Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 ---
+InheritParentConfig:          true
+
 Checks: '
   -clang-analyzer-optin.core.EnumCastOutOfRange,
   -modernize-type-traits,

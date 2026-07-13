@@ -93,11 +93,10 @@ class Range {
 public:
     using iterator = RangeIterator<T>;
     using const_iterator = RangeIterator<T>;
-    using value_type = typename iterator::value_type;
+    using value_type = iterator::value_type;
 
     explicit Range() {}
-    Range(typename NodeVector<T>::const_iterator begin, typename NodeVector<T>::const_iterator end)
-        : _begin(begin), _end(end) {}
+    Range(NodeVector<T>::const_iterator begin, NodeVector<T>::const_iterator end) : _begin(begin), _end(end) {}
 
     explicit Range(const NodeVector<T>& nodes) : Range(nodes.begin(), nodes.end()) {}
 

@@ -103,6 +103,7 @@ TEST_CASE("index") {
     CHECK_EQ(Union<int, String>("abc"_hs).index(), 2U);
 }
 
+namespace {
 struct TestUnion : Union<int, String> {
     TestUnion() = default;
 
@@ -119,6 +120,7 @@ struct TestUnion : Union<int, String> {
             return "<unset>";
     }
 };
+} // namespace
 
 TEST_CASE("to_string") {
     CHECK_EQ(to_string(TestUnion()), "<unset>");

@@ -123,20 +123,20 @@ class Iterator {
     using V = Vector<T, Allocator>;
     friend V;
 
-    using Control = typename V::Control::Ref;
+    using Control = V::Control::Ref;
     Control _control;
-    typename V::size_type _index = 0;
+    V::size_type _index = 0;
 
 public:
-    using difference_type = typename V::V::iterator::difference_type;
-    using value_type = typename V::V::iterator::value_type;
-    using pointer = typename V::V::iterator::pointer;
-    using reference = typename V::V::iterator::reference;
-    using const_reference = typename V::V::const_reference;
-    using iterator_category = typename V::V::iterator::iterator_category;
+    using difference_type = V::V::iterator::difference_type;
+    using value_type = V::V::iterator::value_type;
+    using pointer = V::V::iterator::pointer;
+    using reference = V::V::iterator::reference;
+    using const_reference = V::V::const_reference;
+    using iterator_category = V::V::iterator::iterator_category;
 
     Iterator() = default;
-    Iterator(typename V::size_type&& index, Control control) : _control(std::move(control)), _index(std::move(index)) {}
+    Iterator(V::size_type&& index, Control control) : _control(std::move(control)), _index(std::move(index)) {}
 
     reference operator*();
     const_reference operator*() const;
@@ -195,21 +195,20 @@ template<typename T, typename Allocator>
 class ConstIterator {
     using V = Vector<T, Allocator>;
 
-    using Control = typename V::Control::Ref;
+    using Control = V::Control::Ref;
     Control _control;
-    typename V::size_type _index = 0;
+    V::size_type _index = 0;
 
 public:
-    using difference_type = typename V::V::const_iterator::difference_type;
-    using value_type = typename V::V::const_iterator::value_type;
-    using pointer = typename V::V::const_iterator::pointer;
-    using reference = typename V::V::const_iterator::reference;
-    using const_reference = typename V::V::const_iterator::reference;
-    using iterator_category = typename V::V::const_iterator::iterator_category;
+    using difference_type = V::V::const_iterator::difference_type;
+    using value_type = V::V::const_iterator::value_type;
+    using pointer = V::V::const_iterator::pointer;
+    using reference = V::V::const_iterator::reference;
+    using const_reference = V::V::const_iterator::reference;
+    using iterator_category = V::V::const_iterator::iterator_category;
 
     ConstIterator() = default;
-    ConstIterator(typename V::size_type&& index, Control control)
-        : _control(std::move(control)), _index(std::move(index)) {}
+    ConstIterator(V::size_type&& index, Control control) : _control(std::move(control)), _index(std::move(index)) {}
 
     const_reference operator*() const;
 
@@ -634,7 +633,7 @@ bool operator!=(const Vector<T, Allocator>& a, const Vector<T, Allocator>& b) {
 }
 
 template<typename T, typename Allocator>
-typename vector::Iterator<T, Allocator>::reference vector::Iterator<T, Allocator>::operator*() {
+vector::Iterator<T, Allocator>::reference vector::Iterator<T, Allocator>::operator*() {
     auto&& data = _control.get();
 
     if ( _index >= data.size() ) {
@@ -645,7 +644,7 @@ typename vector::Iterator<T, Allocator>::reference vector::Iterator<T, Allocator
 }
 
 template<typename T, typename Allocator>
-typename vector::Iterator<T, Allocator>::const_reference vector::Iterator<T, Allocator>::operator*() const {
+vector::Iterator<T, Allocator>::const_reference vector::Iterator<T, Allocator>::operator*() const {
     auto&& data = _control.get();
 
     if ( _index >= data.size() ) {
@@ -670,7 +669,7 @@ inline std::ostream& operator<<(std::ostream& out, const vector::ConstIterator<T
 } // namespace vector
 
 template<typename T, typename Allocator>
-typename vector::ConstIterator<T, Allocator>::const_reference vector::ConstIterator<T, Allocator>::operator*() const {
+vector::ConstIterator<T, Allocator>::const_reference vector::ConstIterator<T, Allocator>::operator*() const {
     auto&& data = _control.get();
 
     if ( _index >= data.size() ) {

@@ -570,7 +570,7 @@ protected:
 
 namespace std {
 template<char Prefix>
-struct hash<hilti::ast::detail::ContextIndex<Prefix>> {
+struct hash<hilti::ast::detail::ContextIndex<Prefix>> { // NOLINT(bugprone-std-namespace-modification)
     size_t operator()(hilti::ast::detail::ContextIndex<Prefix> x) const { return x.value().Ref(); }
 };
 } // namespace std

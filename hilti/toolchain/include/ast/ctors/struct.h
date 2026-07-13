@@ -43,7 +43,7 @@ using Fields = NodeVector<Field>;
 } // namespace struct_
 
 /** AST node for a `struct` ctor. */
-class Struct : public Ctor, public node::WithUniqueID {
+class Struct : public Ctor, public node::WithUniqueID { // NOLINT(misc-multiple-inheritance)
 public:
     auto stype() const { return type()->type()->as<type::Struct>(); }
 

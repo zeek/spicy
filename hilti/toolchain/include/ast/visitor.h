@@ -145,7 +145,7 @@ template<Order order>
 class Range {
 public:
     using iterator_t = Iterator<order>;
-    using value_type = typename Iterator<order>::value_type;
+    using value_type = Iterator<order>::value_type;
     Range(Node* root, std::string_view limit_to_tag) : _root(root), _limit_to_tag(limit_to_tag) {}
 
     auto begin(bool include_empty = false) {
@@ -315,6 +315,7 @@ private:
 };
 
 template<Order order, typename Dispatcher, typename Builder>
+// NOLINTNEXTLINE(misc-multiple-inheritance)
 class MutatingVisitor : public Visitor<order, Dispatcher>, public MutatingVisitorBase {
 public:
     /**
@@ -374,7 +375,7 @@ using RangePostOrder = visitor::Range<visitor::Order::Post>;
 /** Return a range that iterates over AST, returning each node successively. */
 template<typename Visitor, typename Node>
 auto range(Visitor&& /*visitor*/, Node* root, std::string_view limit_to_tag = {}) {
-    return visitor::Range<std::remove_reference<Visitor>::type::Order_>(root, limit_to_tag);
+    return visitor::Range<std::remove_reference_t<Visitor>::Order_>(root, limit_to_tag);
 }
 
 /** Walks the AST recursively and calls dispatch for each node. */

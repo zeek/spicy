@@ -29,22 +29,32 @@ namespace logging {
 class DebugStream {
 public:
     /**
-     * @param name name of the stream, which must be unique across all stream
+     * @param name string literal for name of the stream, which must be unique across all stream
+     *
      */
-    explicit DebugStream(const std::string& name);
+    template<size_t N>
+    explicit DebugStream(const char (&name)[N]) noexcept : _name(name, N - 1) {
+        auto& _all = _streams();
+        if ( auto i = _all.find(name); i != _all.end() )
+            _id = i->second._id;
+        else {
+            _id = _all.size();
+            _all.emplace(name, *this);
+        }
+    }
     bool operator<(const DebugStream& other) const { return _id < other._id; }
     const auto& name() const { return _name; }
 
     /** Returns the names of all available debug streams. */
-    static std::vector<std::string> all();
+    static std::vector<std::string_view> all();
 
     /** Returns the stream for a given name. The stream must exist. */
-    static const auto& streamForName(const std::string& s) { return _streams().at(s); }
+    static const auto& streamForName(std::string_view s) { return _streams().at(s); }
 
 private:
     uint64_t _id;
-    std::string _name;
-    static std::map<std::string, DebugStream>& _streams();
+    std::string_view _name;
+    static std::map<std::string_view, DebugStream>& _streams();
 };
 
 namespace debug {} // namespace debug
@@ -70,7 +80,7 @@ constexpr auto from_string(std::string_view s) { return util::enum_::from_string
 } // namespace level
 
 /** Ostream-variant that forwards output to the central logger. */
-class Stream : public std::ostream {
+class Stream : public std::ostream { // NOLINT(misc-multiple-inheritance)
 private:
     class Buffer : public std::stringbuf {
     public:
@@ -91,7 +101,7 @@ public:
     Stream(logging::Level level) : std::ostream(&_buf), _buf(level) {}
 
     /** Creates a stream that sends output to a given debug stream. */
-    Stream(logging::DebugStream dbg) : std::ostream(&_buf), _buf(std::move(dbg)) {}
+    Stream(logging::DebugStream dbg) : std::ostream(&_buf), _buf(dbg) {}
 
 private:
     Buffer _buf;
@@ -184,9 +194,9 @@ public:
     }
 
     void debugEnable(const logging::DebugStream& dbg);
-    bool debugEnable(const std::string& dbg);
+    bool debugEnable(std::string_view dbg);
     void debugDisable(const logging::DebugStream& dbg) { _debug_streams.erase(dbg); }
-    bool debugDisable(const std::string& dbg);
+    bool debugDisable(std::string_view dbg);
 
     bool isEnabled(const logging::DebugStream& dbg) { return _debug_streams.contains(dbg); }
 

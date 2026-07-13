@@ -23,6 +23,7 @@ using namespace hilti::rt;
 
 TEST_SUITE_BEGIN("IntrusivePtr");
 
+namespace {
 class Managed : public intrusive_ptr::ManagedObject {
 public:
     Managed() { ++instances; }
@@ -31,6 +32,7 @@ public:
 };
 
 using ManagedPtr = IntrusivePtr<Managed>;
+} // namespace
 
 TEST_CASE("managed objects") {
     CHECK_EQ(Managed::instances, 0);
@@ -48,6 +50,7 @@ TEST_CASE("managed objects") {
     CHECK_EQ(Managed::instances, 0);
 }
 
+namespace {
 struct TestObject : intrusive_ptr::ManagedObject {
     static uint64_t instances;
     TestObject() { ++instances; }
@@ -63,6 +66,7 @@ uint64_t TestObject::instances = 0;
 struct TestObject2 : TestObject {
     using TestObject::TestObject;
 };
+} // namespace
 
 TEST_CASE("ManagedObject") {
     SUBCASE("valid object") {

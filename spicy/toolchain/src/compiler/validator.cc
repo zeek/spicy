@@ -281,10 +281,12 @@ Expression* methodArgument(const hilti::expression::ResolvedOperator& o, size_t 
     hilti::util::cannotBeReached();
 }
 
+// NOLINTNEXTLINE(misc-multiple-inheritance)
 struct VisitorPre : visitor::PreOrder, hilti::validator::VisitorMixIn {
     using hilti::validator::VisitorMixIn::VisitorMixIn;
 };
 
+// NOLINTNEXTLINE(misc-multiple-inheritance)
 struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     // Ensures that the node represented by tag is allowed to have all of the
     // provided attributes. This does not use any context, if more information
@@ -816,7 +818,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
         if ( auto* attrs = n->attributes() ) {
             if ( attrs->find(attribute::kind::Size) && attrs->find(attribute::kind::MaxSize) )
-                error(("attributes cannot be combined: &size, &max-size"), n);
+                error("attributes cannot be combined: &size, &max-size", n);
 
             for ( const auto& a : attrs->attributes() ) {
                 if ( a->kind() == attribute::kind::Size || a->kind() == attribute::kind::MaxSize ) {

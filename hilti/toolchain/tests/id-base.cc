@@ -16,6 +16,7 @@ static std::optional<std::string> normalizeID(std::string_view id) {
     return std::nullopt;
 }
 
+namespace {
 class ID : public detail::IDBase<ID, normalizeID> {
 public:
     using Base = detail::IDBase<ID, normalizeID>;
@@ -45,6 +46,7 @@ public:
 
     ID(Base&& other) noexcept : Base(other) {}
 };
+} // namespace
 
 TEST_SUITE_BEGIN("IDBase");
 

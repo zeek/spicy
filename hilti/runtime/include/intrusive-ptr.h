@@ -40,8 +40,21 @@ inline void Ref(const T* m) {
 
 template<typename T>
 inline void Unref(const T* m) {
+    // The GCC-12 series introduced `-Wuse-after-free` which while useful still
+    // triggers false positives, see e.g.,
+    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=106119. The code below is
+    // also affected by that bug, so locally disable the diagnostic.
+#if defined(__GNUC__) and not defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuse-after-free"
+#endif
+
     if ( m && --m->_references == 0 )
         delete m;
+
+#if defined(__GNUC__) and not defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 }
 
 } // namespace intrusive_ptr

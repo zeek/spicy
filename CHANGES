@@ -1,3 +1,100 @@
+1.17.0-dev.157 | 2026-07-13 16:22:59 +0200
+
+  * Locally suppress GCC false positive (Benjamin Bannier, Corelight)
+
+  * Bump to llvm-22 in CI (Benjamin Bannier, Corelight)
+
+  * Disable clang-tidy diagnostics triggered in generated code (Benjamin Bannier, Corelight)
+
+    We use macros to generate classes for the different AST nodes. The way
+    we use these can lead to inconsistent uses of `public` or `protected`
+    declarations, or lead to shadowing. We should definitely fix these
+    eventually, but this is a bigger exercise, so we simply disable the
+    diagnostics at this point.
+
+  * Address misc-unused-parameters diagnostics (Benjamin Bannier, Corelight)
+
+  * Address modernize-make-unique diagnostics (Benjamin Bannier, Corelight)
+
+  * Address bugprone-use-after-move diagnostics (Benjamin Bannier, Corelight)
+
+  * Address modernize-use-designated-initializers diagnostics (Benjamin Bannier, Corelight)
+
+  * Address readability-container-contains diagnostics (Benjamin Bannier, Corelight)
+
+  * Address readability-redundant-string-cstr diagnostics (Benjamin Bannier, Corelight)
+
+  * Address bugprone-suspicious-stringview-data-usage diagnostics (Benjamin Bannier, Corelight)
+
+  * Address bugprone-string-literal-with-embedded-nul diagnostics (Benjamin Bannier, Corelight)
+
+  * Address performance-unnecessary-value-param diagnostics (Benjamin Bannier, Corelight)
+
+  * Address readability-qualified-auto diagnostics (Benjamin Bannier, Corelight)
+
+  * Address performance-no-int-to-ptr diagnostics (Benjamin Bannier, Corelight)
+
+  * Address readability-redundant-member-init diagnostics (Benjamin Bannier, Corelight)
+
+  * Address bugprone-unintended-char-ostream-output diagnostics (Benjamin Bannier, Corelight)
+
+  * Address modernize-type-traits diagnostics (Benjamin Bannier, Corelight)
+
+  * Address performance-move-const-arg diagnostics (Benjamin Bannier, Corelight)
+
+  * Address readability-math-missing-parentheses diagnostics (Benjamin Bannier, Corelight)
+
+  * Address bugprone-std-namespace-modification diagnostics (Benjamin Bannier, Corelight)
+
+  * Address misc-use-internal-linkage diagnostics (Benjamin Bannier, Corelight)
+
+  * Address misc-multiple-inheritance diagnostics (Benjamin Bannier, Corelight)
+
+  * Address bugprone-throwing-static-initialization diagnostics (Benjamin Bannier, Corelight)
+
+    This only fixes a small number of issues since we still use many globals
+    of types with potentially throwing constructors, e.g., since they
+    allocate memory for internal strings. Overall we are pretty liberal with
+    global variables which is not great, but still a prevalent pattern.
+    Fixing these requires more work, so we disable the diagnostic for now.
+
+  * Address bugprone-narrowing-conversions diagnostics (Benjamin Bannier, Corelight)
+
+  * Address modernize-avoid-c-style-cast diagnostics (Benjamin Bannier, Corelight)
+
+  * Address readability-redundant-typename diagnostics (Benjamin Bannier, Corelight)
+
+  * Address readability-redundant-parentheses diagnostics (Benjamin Bannier, Corelight)
+
+  * Fix clang-tidy config to correctly inherit checks defined in parent dir (Benjamin Bannier, Corelight)
+
+  * Adapt logger classes for noexcept use (Benjamin Bannier, Corelight)
+
+    We typically create global static variables for the different
+    `DebugStream` values. In such a context we would not want to throw, so
+    this patch adjusts `DebugStream` so its constructor cannot throw. This
+    requires removing some allocations so we now use `std::string_view`
+    instead of `std::string` throughout.
+
+  * Only enable clang-tidy in CI if requested (Benjamin Bannier, Corelight)
+
+  * Move LLVM version management from GH actions workflow into Docker image (Benjamin Bannier, Corelight)
+
+  * Change `hilti::rt::atoi_n` to take a `string_view` (Benjamin Bannier, Corelight)
+
+    This function previously accepted and returned generic iterators. This
+    not only made calling it potentially error prone, but also lead to some
+    awkwardness in using its return value (e.g., use of iterator math to
+    decide whether anything was consumed). On the implementation side, it
+    also restricted what operations were possible on the passed iterators
+    which would make e.g., rewriting the function in terms of
+    `std::from_chars` harder than needed.
+
+    This patch changes the function to instead accept `std::string_view`
+    instead, and return the number of consumed bytes.
+
+  * Add benchmark for `hilti::rt::atoi_n` (Benjamin Bannier, Corelight)
+
 1.17.0-dev.123 | 2026-07-10 14:19:10 -0400
 
   * Mark `profiler::stop` first param as `inout` (Evan Typanski, Corelight)

@@ -3,6 +3,8 @@
 ---
 Checks: '
   bugprone-*,
+  -bugprone-derived-method-shadowing-base-method,
+  -bugprone-throwing-static-initialization,
   -bugprone-easily-swappable-parameters,
   -bugprone-exception-escape,
   -bugprone-reserved-identifier,
@@ -31,6 +33,7 @@ Checks: '
   -clang-analyzer-core.StackAddressEscape,
 
   misc-*,
+  -misc-override-with-different-visibility,
   -misc-macro-parentheses,
   -misc-non-private-member-variables-in-classes,
   -misc-suspicious-semicolon,

@@ -286,7 +286,7 @@ inline int64_t flip(int64_t v, uint64_t n) {
     if ( n == 0 )
         return v;
     auto i = static_cast<uint64_t>(v);
-    i = flip64(i) >> (64 - n * 8);
+    i = flip64(i) >> (64 - (n * 8));
     return static_cast<int64_t>(i);
 }
 
@@ -300,7 +300,7 @@ inline int64_t flip(int64_t v, uint64_t n) {
 inline uint64_t flip(uint64_t v, uint64_t n) {
     if ( n == 0 )
         return v;
-    return (flip64(v) >> (64 - n * 8));
+    return (flip64(v) >> (64 - (n * 8)));
 }
 
 /** Available bit orders. */

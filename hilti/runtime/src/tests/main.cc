@@ -5,9 +5,11 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 #include <doctest/doctest.h>
 
+namespace {
 struct RuntimeWrapper {
     ~RuntimeWrapper() { hilti::rt::done(); }
 };
+} // namespace
 
 int main(int argc, char** argv) {
     doctest::Context context;

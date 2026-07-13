@@ -7,12 +7,14 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 #include <doctest/doctest.h>
 
+namespace {
 struct RuntimeWrapper {
     ~RuntimeWrapper() {
         spicy::rt::done();
         hilti::rt::done();
     }
 };
+} // namespace
 
 int main(int argc, char** argv) {
     doctest::Context context;

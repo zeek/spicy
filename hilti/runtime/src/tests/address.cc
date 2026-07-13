@@ -16,7 +16,7 @@ using namespace hilti::rt::bytes::literals;
 
 namespace hilti::rt {
 template<typename T>
-std::ostream& operator<<(std::ostream& out, const Result<T>& x) {
+static std::ostream& operator<<(std::ostream& out, const Result<T>& x) {
     if ( x.hasValue() )
         return out << fmt("Ok(%s)", *x);
     else
@@ -24,9 +24,9 @@ std::ostream& operator<<(std::ostream& out, const Result<T>& x) {
 }
 } // namespace hilti::rt
 
-std::ostream& operator<<(std::ostream& out, const in_addr& addr) { return out << Address(addr); }
+static std::ostream& operator<<(std::ostream& out, const in_addr& addr) { return out << Address(addr); }
 
-std::ostream& operator<<(std::ostream& out, const in6_addr& addr) { return out << Address(addr); }
+static std::ostream& operator<<(std::ostream& out, const in6_addr& addr) { return out << Address(addr); }
 
 static auto make_in6_addr(const char* d) {
     auto addr = std::make_unique<::in6_addr>();

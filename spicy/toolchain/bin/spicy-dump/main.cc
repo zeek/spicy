@@ -62,6 +62,8 @@ static void fatalError(std::string_view msg) {
     exit(1);
 }
 
+namespace {
+// NOLINTNEXTLINE(misc-multiple-inheritance)
 class SpicyDump : public spicy::Driver, public spicy::rt::Driver {
 public:
     SpicyDump() : spicy::Driver("spicy-dump", hilti::util::currentExecutable()) {
@@ -82,6 +84,7 @@ private:
     void hookInitRuntime() override { spicy::rt::init(); }
     void hookFinishRuntime() override { spicy::rt::done(); }
 };
+} // namespace
 
 void SpicyDump::usage() {
     auto exts = hilti::util::join(hilti::plugin::registry().supportedExtensions() |

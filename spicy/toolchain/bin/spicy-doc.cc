@@ -108,12 +108,14 @@ static json operandToJSON(const hilti::operator_::Operand& o, const std::string&
     return op;
 }
 
+namespace {
 class SpicyDoc : public spicy::Driver {
 public:
     SpicyDoc() : spicy::Driver("spicy-doc", hilti::util::currentExecutable()) {
         spicy::Configuration::extendHiltiConfiguration();
     }
 };
+} // namespace
 
 int main(int argc, char** argv) try {
     hilti::init();

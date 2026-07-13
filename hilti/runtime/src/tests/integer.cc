@@ -17,7 +17,7 @@ using namespace hilti::rt;
 using namespace hilti::rt::bytes::literals;
 
 template<typename T>
-std::ostream& operator<<(std::ostream& stream, const Result<T>& x) {
+static std::ostream& operator<<(std::ostream& stream, const Result<T>& x) {
     if ( x.hasValue() )
         return stream << "Ok(" << *x << ')';
     else
@@ -35,12 +35,12 @@ TEST_CASE("flip16") {
     const auto max = std::numeric_limits<uint16_t>::max();
 
     // NOLINTNEXTLINE(bugprone-integer-division)
-    CHECK_EQ(integer::flip16(max / 2), std::pow(256, 2) - 256 / 2 - 1);
+    CHECK_EQ(integer::flip16(max / 2), std::pow(256, 2) - (256 / 2) - 1);
 
-    CHECK_EQ(integer::flip16(max - 3), std::pow(256, 2) - 256 * 3 - 1);
-    CHECK_EQ(integer::flip16(max - 2), std::pow(256, 2) - 256 * 2 - 1);
-    CHECK_EQ(integer::flip16(max - 1), std::pow(256, 2) - 256 * 1 - 1);
-    CHECK_EQ(integer::flip16(max - 0), std::pow(256, 2) - 256 * 0 - 1);
+    CHECK_EQ(integer::flip16(max - 3), std::pow(256, 2) - (256 * 3) - 1);
+    CHECK_EQ(integer::flip16(max - 2), std::pow(256, 2) - (256 * 2) - 1);
+    CHECK_EQ(integer::flip16(max - 1), std::pow(256, 2) - (256 * 1) - 1);
+    CHECK_EQ(integer::flip16(max - 0), std::pow(256, 2) - (256 * 0) - 1);
 }
 
 TEST_CASE("flip32") {
@@ -52,12 +52,12 @@ TEST_CASE("flip32") {
     const auto max = std::numeric_limits<uint32_t>::max();
 
     // NOLINTNEXTLINE(bugprone-integer-division)
-    CHECK_EQ(integer::flip32(max / 2), std::pow(static_cast<uint64_t>(256), 4) - 256 / 2 - 1);
+    CHECK_EQ(integer::flip32(max / 2), std::pow(static_cast<uint64_t>(256), 4) - (256 / 2) - 1);
 
-    CHECK_EQ(integer::flip32(max - 3), std::pow(static_cast<uint64_t>(256), 4) - std::pow(256, 3) * 3 - 1);
-    CHECK_EQ(integer::flip32(max - 2), std::pow(static_cast<uint64_t>(256), 4) - std::pow(256, 3) * 2 - 1);
-    CHECK_EQ(integer::flip32(max - 1), std::pow(static_cast<uint64_t>(256), 4) - std::pow(256, 3) * 1 - 1);
-    CHECK_EQ(integer::flip32(max - 0), std::pow(static_cast<uint64_t>(256), 4) - std::pow(256, 3) * 0 - 1);
+    CHECK_EQ(integer::flip32(max - 3), std::pow(static_cast<uint64_t>(256), 4) - (std::pow(256, 3) * 3) - 1);
+    CHECK_EQ(integer::flip32(max - 2), std::pow(static_cast<uint64_t>(256), 4) - (std::pow(256, 3) * 2) - 1);
+    CHECK_EQ(integer::flip32(max - 1), std::pow(static_cast<uint64_t>(256), 4) - (std::pow(256, 3) * 1) - 1);
+    CHECK_EQ(integer::flip32(max - 0), std::pow(static_cast<uint64_t>(256), 4) - (std::pow(256, 3) * 0) - 1);
 }
 
 TEST_CASE("flip64") {
@@ -202,9 +202,15 @@ TEST_CASE("unpack") {
     using Result64 = Result<Tuple<integer::safe<uint64_t>, Bytes>>;
 
     // TODO: Can we make this nicer, ideally without the lambdas?
-    static auto make_result16 = [](integer::safe<uint16_t> i, Bytes b) -> Result16 { return tuple::make(i, b); };
-    static auto make_result32 = [](integer::safe<uint32_t> i, Bytes b) -> Result32 { return tuple::make(i, b); };
-    static auto make_result64 = [](integer::safe<uint64_t> i, Bytes b) -> Result64 { return tuple::make(i, b); };
+    static auto make_result16 = [](integer::safe<uint16_t> i, Bytes b) -> Result16 {
+        return tuple::make(i, std::move(b));
+    };
+    static auto make_result32 = [](integer::safe<uint32_t> i, Bytes b) -> Result32 {
+        return tuple::make(i, std::move(b));
+    };
+    static auto make_result64 = [](integer::safe<uint64_t> i, Bytes b) -> Result64 {
+        return tuple::make(i, std::move(b));
+    };
 
     CHECK_EQ(integer::unpack<uint16_t>(""_b, ByteOrder::Little),
              Result16(result::Error("insufficient data to unpack integer")));

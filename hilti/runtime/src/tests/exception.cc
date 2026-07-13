@@ -16,6 +16,7 @@ using namespace hilti::rt;
 
 TEST_SUITE_BEGIN("Exception");
 
+namespace {
 // RAII helper to set a context with a location in tests.
 class TestLocation {
 public:
@@ -36,6 +37,7 @@ private:
     Context* _prev = nullptr;
     Context _current = Context(0);
 };
+} // namespace
 
 TEST_CASE("construct") {
     exception::DisableAbortOnExceptions _;

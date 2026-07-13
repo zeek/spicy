@@ -58,7 +58,7 @@ TEST_CASE("tryValue") {
     CHECK_EQ(Optional<int8_t>(42).tryValue(), 42);
 }
 
-Optional<std::string> foo(Optional<std::string> s) { return s; }
+static Optional<std::string> foo(Optional<std::string> s) { return s; }
 
 TEST_CASE("null") {
     Optional<int8_t> x;

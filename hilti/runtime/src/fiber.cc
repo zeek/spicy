@@ -59,7 +59,7 @@ static const auto FiberGuardFlags = 0; // leak sanitizer may abort with "Tracer 
 // Pre-allocate this so that we don't need to create a std::string on the fly
 // when HILTI_RT_FIBER_DEBUG executes. That avoids a false positive with
 // ASAN during fiber switching when using GCC/libc++.
-static const std::string debug_stream_fibers = "fibers";
+static const std::string_view debug_stream_fibers = "fibers";
 
 // Wrapper similar to HILTI_RT_DEBUG that adds the current fiber to the message.
 #define HILTI_RT_FIBER_DEBUG(tag, msg)                                                                                 \
@@ -351,7 +351,9 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
 // in the meantime. This must not be derived from `std::exception` to guarantee
 // that it will bubble back up to the fiber code, without being caught by any
 // intermediary catch handlers.
+namespace {
 struct AbortException {};
+} // namespace
 
 detail::Fiber::~Fiber() {
 #ifndef NDEBUG

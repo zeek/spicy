@@ -56,6 +56,8 @@ static void hookAcceptInput() { accepted = true; }
 static bool declined = false; // set by hook_decline_input()
 static void hookDeclineInput(const std::string& /*reason*/) { declined = true; }
 
+namespace {
+// NOLINTNEXTLINE(misc-multiple-inheritance)
 class SpicyDriver : public spicy::Driver, public spicy::rt::Driver {
 public:
     explicit SpicyDriver() : spicy::Driver("spicy-driver", hilti::util::currentExecutable()) {
@@ -76,6 +78,7 @@ private:
     void hookInitRuntime() override { spicy::rt::init(); }
     void hookFinishRuntime() override { spicy::rt::done(); }
 };
+} // namespace
 
 void SpicyDriver::usage() {
     auto exts = hilti::util::join(hilti::plugin::registry().supportedExtensions() |

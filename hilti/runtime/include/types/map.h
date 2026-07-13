@@ -37,9 +37,9 @@ template<typename K, typename V>
 class Iterator {
     using M = Map<K, V>;
 
-    using Control = typename M::Control::Ref;
+    using Control = M::Control::Ref;
     Control _control;
-    typename M::M::iterator _iterator;
+    M::M::iterator _iterator;
 
 public:
     Iterator() = default;
@@ -60,7 +60,7 @@ public:
             throw IndexError("iterator is invalid");
         }
 
-        if ( _iterator == static_cast<const typename M::M&>(_control.get()).end() )
+        if ( _iterator == static_cast<const M::M&>(_control.get()).end() )
             throw IndexError("iterator is invalid");
 
         ++_iterator;
@@ -73,11 +73,11 @@ public:
         return ret;
     }
 
-    const typename M::M::value_type* operator->() const { return &operator*(); }
+    const M::value_type* operator->() const { return &operator*(); }
 
-    typename M::M::const_reference operator*() const {
+    M::M::const_reference operator*() const {
         // Iterators to `end` cannot be dereferenced.
-        if ( _iterator == static_cast<const typename M::M&>(_control.get()).cend() )
+        if ( _iterator == static_cast<const M::M&>(_control.get()).cend() )
             throw IndexError("iterator is invalid");
 
         return *_iterator;
@@ -86,17 +86,16 @@ public:
 private:
     friend class Map<K, V>;
 
-    Iterator(typename M::M::iterator iterator, Control control)
-        : _control(std::move(control)), _iterator(std::move(iterator)) {}
+    Iterator(M::M::iterator iterator, Control control) : _control(std::move(control)), _iterator(std::move(iterator)) {}
 };
 
 template<typename K, typename V>
 class ConstIterator {
     using M = Map<K, V>;
 
-    using Control = typename M::Control::Ref;
+    using Control = M::Control::Ref;
     Control _control;
-    typename M::M::const_iterator _iterator;
+    M::M::const_iterator _iterator;
 
 public:
     ConstIterator() = default;
@@ -124,13 +123,13 @@ public:
         return ret;
     }
 
-    const typename M::M::value_type* operator->() const { return &operator*(); }
+    const M::value_type* operator->() const { return &operator*(); }
 
-    typename M::M::const_reference operator*() const {
+    M::M::const_reference operator*() const {
         auto&& data = _control.get();
 
         // Iterators to `end` cannot be dereferenced.
-        if ( _iterator == static_cast<const typename M::M&>(data).cend() )
+        if ( _iterator == static_cast<const M::M&>(data).cend() )
             throw IndexError("iterator is invalid");
 
         return *_iterator;
@@ -139,7 +138,7 @@ public:
 private:
     friend class Map<K, V>;
 
-    ConstIterator(typename M::M::const_iterator iterator, Control control)
+    ConstIterator(M::M::const_iterator iterator, Control control)
         : _control(std::move(control)), _iterator(std::move(iterator)) {}
 };
 
@@ -174,12 +173,12 @@ public:
     using Control = control::Block<Map<K, V>, InvalidIterator>;
     Control _control{this};
 
-    using key_type = typename M::key_type;
-    using value_type = typename M::value_type;
+    using key_type = M::key_type;
+    using value_type = M::value_type;
     using size_type = integer::safe<uint64_t>;
 
-    using iterator = typename map::Iterator<K, V>;
-    using const_iterator = typename map::ConstIterator<K, V>;
+    using iterator = map::Iterator<K, V>;
+    using const_iterator = map::ConstIterator<K, V>;
 
     Map() = default;
     Map(std::initializer_list<value_type> init) : M(std::move(init)) {}

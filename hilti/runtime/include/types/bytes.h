@@ -57,12 +57,12 @@ class SafeIterator {
 
     using Control = control::Reference<B, InvalidIterator>;
     Control _control;
-    typename integer::safe<std::uint64_t> _index = 0;
+    integer::safe<std::uint64_t> _index = 0;
 
 public:
     SafeIterator() = default;
 
-    SafeIterator(typename B::size_type index, Control control) : _control(std::move(control)), _index(index) {}
+    SafeIterator(B::size_type index, Control control) : _control(std::move(control)), _index(index) {}
 
     integer::safe<uint8_t> operator*() const {
         auto&& data = _control.get();
@@ -369,7 +369,7 @@ public:
         if ( from._control != to._control )
             throw InvalidArgument("start and end iterator cannot belong to different bytes");
 
-        return sub(Offset(from - begin()), to._index);
+        return sub(static_cast<Offset>(from - begin()), to._index);
     }
 
     /**

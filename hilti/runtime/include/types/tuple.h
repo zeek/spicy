@@ -112,7 +112,7 @@ private:
  * @tparam Ts types of the tuple elements
  **/
 template<typename... Ts>
-class Tuple : public TupleBase, protected std::tuple<Ts...> {
+class Tuple : public TupleBase, protected std::tuple<Ts...> { // NOLINT(misc-multiple-inheritance)
 public:
     using Base = std::tuple<Ts...>;
     static_assert(sizeof...(Ts) <= MaxElements, "tuples with more than 64 elements are not supported");
@@ -243,7 +243,7 @@ private:
     static auto _defaultStorage() {
         return Base{[]() {
             if constexpr ( tuple::detail::IsValueReference<Ts>::value ) {
-                using element_type = typename tuple::detail::IsValueReference<Ts>::element_type;
+                using element_type = tuple::detail::IsValueReference<Ts>::element_type;
                 return Ts(std::shared_ptr<element_type>(nullptr));
             }
             else
@@ -396,22 +396,21 @@ inline std::string to_string(const Tuple<Ts...>& x, adl::tag /*unused*/) {
 }
 
 } // namespace detail::adl
-} // namespace hilti::rt
 
-namespace std {
 template<typename... Ts>
 inline std::ostream& operator<<(std::ostream& out, const hilti::rt::Tuple<Ts...>& x) {
     out << hilti::rt::to_string_for_print(x);
     return out;
 }
-
-} // namespace std
+} // namespace hilti::rt
 
 // Add support for structured binding for Tuple.
 template<typename... Ts>
+// NOLINTNEXTLINE(bugprone-std-namespace-modification)
 struct std::tuple_size<hilti::rt::Tuple<Ts...>> : std::integral_constant<std::size_t, sizeof...(Ts)> {};
 
 template<std::size_t I, typename... Ts>
+// NOLINTNEXTLINE(bugprone-std-namespace-modification)
 struct std::tuple_element<I, hilti::rt::Tuple<Ts...>> {
     using type = std::tuple_element_t<I, std::tuple<Ts...>>;
 };

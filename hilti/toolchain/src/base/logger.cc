@@ -7,23 +7,13 @@
 
 using namespace hilti;
 
-std::map<std::string, logging::DebugStream>& logging::DebugStream::_streams() {
-    static std::map<std::string, logging::DebugStream> streams;
+std::map<std::string_view, logging::DebugStream>& logging::DebugStream::_streams() {
+    static std::map<std::string_view, logging::DebugStream> streams;
     return streams;
 }
 
-logging::DebugStream::DebugStream(const std::string& name) : _name(name) {
-    auto& _all = _streams();
-    if ( auto i = _all.find(name); i != _all.end() )
-        _id = i->second._id;
-    else {
-        _id = _all.size();
-        _all.emplace(name, *this);
-    }
-}
-
-std::vector<std::string> logging::DebugStream::all() {
-    std::vector<std::string> keys;
+std::vector<std::string_view> logging::DebugStream::all() {
+    std::vector<std::string_view> keys;
 
     const auto& _all = _streams();
 
@@ -77,7 +67,7 @@ void Logger::debugEnable(const logging::DebugStream& dbg) {
         _debug_streams[dbg] = 0;
 }
 
-bool Logger::debugEnable(const std::string& dbg) {
+bool Logger::debugEnable(std::string_view dbg) {
     try {
         debugEnable(logging::DebugStream::streamForName(dbg));
         return true;
@@ -86,7 +76,7 @@ bool Logger::debugEnable(const std::string& dbg) {
     }
 }
 
-bool Logger::debugDisable(const std::string& dbg) {
+bool Logger::debugDisable(std::string_view dbg) {
     try {
         debugDisable(logging::DebugStream::streamForName(dbg));
         return true;

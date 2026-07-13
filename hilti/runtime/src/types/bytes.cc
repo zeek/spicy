@@ -253,7 +253,7 @@ Bytes Bytes::upper(unicode::Charset cs, unicode::DecodeErrorStrategy errors) con
 
 integer::safe<int64_t> Bytes::toInt(uint64_t base) const {
     int64_t x = 0;
-    if ( hilti::rt::atoi_n(str().begin(), str().end(), base, &x) == str().end() )
+    if ( hilti::rt::atoi_n(str(), base, &x) == str().size() )
         return x;
 
     throw RuntimeError("cannot parse bytes as signed integer");
@@ -261,7 +261,7 @@ integer::safe<int64_t> Bytes::toInt(uint64_t base) const {
 
 integer::safe<uint64_t> Bytes::toUInt(uint64_t base) const {
     int64_t x = 0;
-    if ( hilti::rt::atoi_n(str().begin(), str().end(), base, &x) == str().end() )
+    if ( hilti::rt::atoi_n(str(), base, &x) == str().size() )
         return x;
 
     throw RuntimeError("cannot parse bytes as unsigned integer");
@@ -271,7 +271,7 @@ integer::safe<int64_t> Bytes::toInt(ByteOrder byte_order) const {
     auto i = toUInt(byte_order).Ref(); // throws on size == 0 or size > 8
     auto size_ = static_cast<uint64_t>(size());
 
-    if ( i & (UINT64_C(1) << (size_ * 8 - 1)) ) {
+    if ( i & (UINT64_C(1) << ((size_ * 8) - 1)) ) {
         if ( size() == 8 )
             return static_cast<int64_t>(-(~i + 1));
 

@@ -7,12 +7,14 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 #include <doctest/doctest.h>
 
+namespace {
 struct RuntimeWrapper {
     ~RuntimeWrapper() {
         spicy::rt::done();
         hilti::rt::done();
     }
 };
+} // namespace
 
 // NOLINTNEXTLINE(bugprone-exception-escape)
 int main(int argc, char** argv) {

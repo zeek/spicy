@@ -61,10 +61,11 @@ const hilti::rt::filesystem::path dummy2 =
     config::lib_directory /
     (config::shared_library_prefix + "hilti-rt-tests-library-dummy2" + config::shared_library_suffix);
 
+namespace {
 // RAII helper to set an environment variable.
 class Env {
 public:
-    Env(std::string k, const std::string_view& v) {
+    Env(const std::string& k, const std::string& v) {
         if ( auto* prev = ::getenv(k.data()) )
             _prev = {k, prev};
         else
@@ -88,6 +89,7 @@ public:
 private:
     std::pair<std::string, std::optional<std::string>> _prev;
 };
+} // namespace
 
 TEST_SUITE_BEGIN("Library");
 
@@ -133,7 +135,7 @@ TEST_CASE("save" * doctest::skip(is_elevated_user())) {
 
     SUBCASE("success") {
         hilti::rt::TemporaryDirectory tmp;
-        Env _("TMPDIR", tmp.path().string().c_str());
+        Env _("TMPDIR", tmp.path().string());
         CHECK_EQ(library.save(tmp.path()), Nothing());
 
         SUBCASE("overwrite existing") { CHECK_EQ(library.save(tmp.path()), Nothing()); }

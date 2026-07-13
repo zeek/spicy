@@ -460,7 +460,7 @@ namespace detail {
 template<typename UnitRef>
 inline void registerParser(::spicy::rt::Parser& p, // NOLINT(google-runtime-references)
                            uint64_t linker_scope,
-                           UnitRef /* not used, just for template instantiation */,
+                           const UnitRef& /* not used, just for template instantiation */,
                            const hilti::rt::TypeInfo* /* utype */) {
     // Note: This may may be called before spicy::rt::init(), and during
     // hilti::rt::init(). Cannot rely on any library functionality being
@@ -469,7 +469,7 @@ inline void registerParser(::spicy::rt::Parser& p, // NOLINT(google-runtime-refe
     p.linker_scope = linker_scope;
     globalState()->parsers.emplace_back(&p);
 
-    using unit_type = typename UnitRef::element_type;
+    using unit_type = UnitRef::element_type;
 
     if constexpr ( sink::detail::supports_sinks<unit_type>::value &&
                    ! std::is_base_of_v<hilti::rt::trait::hasParameters, unit_type> )

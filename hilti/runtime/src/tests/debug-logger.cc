@@ -15,12 +15,6 @@
 using namespace hilti::rt;
 using namespace hilti::rt::test;
 
-namespace std {
-ostream& operator<<(ostream& stream, const std::vector<std::string>& xs) {
-    return stream << "[" << join(xs, ", ") << "]";
-}
-} // namespace std
-
 TEST_SUITE_BEGIN("DebugLogger");
 
 TEST_CASE("enable") {

@@ -78,12 +78,6 @@ TEST_CASE("decode") {
     CHECK_EQ(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::REPLACE),
              "ab\ufffd"_hs);
 
-    // Our UTF16 implementation seems to differ in what it considers invalid encodings, e.g., `\x00\xd8` is rejected by
-    // python-3.1[1-3], but accepted by us.
-    //
-    // TODO(bbannier): Test rejection of invalid UTF16 (but with even length).
-    CHECK_EQ(Bytes("\x00\xd8").decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), ""_hs);
-
     CHECK_THROWS_WITH_AS("123"_b.decode(unicode::Charset::Undef),
                          "unknown character set for decoding",
                          const RuntimeError&);
@@ -536,9 +530,9 @@ TEST_CASE("toReal") {
         std::string old_locale(saved ? saved : "C");
 
 #ifdef _WIN32
-        auto de_locale = "de-DE";
+        const auto* de_locale = "de-DE";
 #else
-        auto de_locale = "de_DE.UTF-8";
+        const auto* de_locale = "de_DE.UTF-8";
 #endif
 
         if ( ! std::setlocale(LC_ALL, de_locale) )

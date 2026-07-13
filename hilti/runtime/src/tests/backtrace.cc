@@ -24,6 +24,7 @@ TEST_CASE("backtrace") {
 #endif
 }
 
+namespace {
 // Helper function to create a backtrace with one more frame as the caller.
 //
 // NOTE: Some compilers remove this function even if `noinline` is given via
@@ -35,6 +36,7 @@ HILTI_NOINLINE __attribute__((optimize(0))) auto make_backtrace() { return Backt
 #else
 HILTI_NOINLINE auto make_backtrace() { return Backtrace(); }
 #endif
+} // namespace
 
 TEST_CASE("comparison") {
     const auto bt1 = Backtrace();      // Backtrace to this call site.

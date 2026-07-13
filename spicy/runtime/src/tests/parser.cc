@@ -106,6 +106,7 @@ TEST_CASE("atEod") {
     }
 }
 
+namespace {
 struct UnitWithSinkSupport : std::enable_shared_from_this<UnitWithSinkSupport> {
     static Parser HILTI_INTERNAL(parser);
     std::shared_ptr<sink::detail::State> HILTI_INTERNAL(sink);
@@ -132,6 +133,7 @@ struct UnitWithSinkSupport : std::enable_shared_from_this<UnitWithSinkSupport> {
         return *this;
     }
 };
+} // namespace
 
 Parser UnitWithSinkSupport::HILTI_INTERNAL(parser){};
 

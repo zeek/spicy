@@ -16,7 +16,9 @@ using namespace hilti::rt::bytes::literals;
 
 TEST_SUITE_BEGIN("RegExp");
 
-inline auto operator""_p(const char* str, size_t size) { return hilti::rt::regexp::Pattern(std::string(str, size)); }
+static inline auto operator""_p(const char* str, size_t size) {
+    return hilti::rt::regexp::Pattern(std::string(str, size));
+}
 
 TEST_CASE("match") {
     SUBCASE("min-matcher") {

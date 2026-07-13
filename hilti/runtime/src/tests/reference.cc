@@ -19,6 +19,7 @@ using namespace hilti::rt;
 using namespace bytes::literals;
 using namespace string::literals;
 
+namespace {
 struct T : public hilti::rt::trait::isStruct, hilti::rt::Controllable<T> {
     /*implicit*/ T(int x = 0) : _x(x) {}
     int _x;
@@ -32,6 +33,7 @@ struct T : public hilti::rt::trait::isStruct, hilti::rt::Controllable<T> {
 
     friend bool operator==(const T& a, const T& b) { return a._x == b._x; }
 };
+} // namespace
 
 TEST_SUITE_BEGIN("ValueReference");
 
@@ -204,6 +206,8 @@ TEST_CASE("self") {
     CHECK_THROWS_WITH_AS(WeakReference<T>{self}, "reference to non-heap instance", const IllegalReference&);
 }
 
+namespace {
+
 struct Foo;
 
 struct Test : hilti::rt::Controllable<Test> {
@@ -213,6 +217,8 @@ struct Test : hilti::rt::Controllable<Test> {
 struct Foo : hilti::rt::Controllable<Foo> {
     hilti::rt::WeakReference<Test> t;
 };
+
+} // namespace
 
 TEST_CASE("cyclic") {
     hilti::rt::ValueReference<Test> test;
