@@ -469,7 +469,7 @@ inline uint8_t atoi_n(std::string_view input, uint8_t base, Result* result)
         throw InvalidArgument("cannot decode from empty range");
 
     bool neg = false;
-    const auto* it = input.begin();
+    std::string_view::const_iterator it = input.begin();
 
     if ( *it == '-' ) {
         neg = true;
