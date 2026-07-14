@@ -1,3 +1,12 @@
+1.17.0-dev.161 | 2026-07-14 14:40:41 +0200
+
+  * Synchronize minimum GCC version in CMake setup with docs (Benjamin Bannier, Corelight)
+
+    In 2bcf518c28fa8439e3253d866800eaaa84fa4e07 we bumped the minimum
+    required GCC version in the docs to a version with better support for
+    ranges, but missed updating the CMake version check. This patch fixes
+    the CMake requirements as well.
+
 1.17.0-dev.159 | 2026-07-13 21:31:55 +0200
 
   * Use standard-compliant type for `std::string_view` iterator type (Benjamin Bannier, Corelight)
