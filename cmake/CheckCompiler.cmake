@@ -9,10 +9,9 @@ set(clang_minimum_version "9.0")
 # 11.0 comes with 10.15 (Catalina) and works
 set(apple_clang_minimum_version "11.0")
 
-# 7.x is not compiling HILTI/Spicy, although the standard library seems to be recent enough.
-# 8.x is untested.
-# 9.1.1 works.
-set(gcc_minimum_version "8.3")
+# C++20 support in GCC 11 is incomplete, including range adapters.
+# GCC 12 works and is available on all supported platforms.
+set(gcc_minimum_version "12")
 
 include(CheckCXXSourceCompiles)
 
