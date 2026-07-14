@@ -7,8 +7,10 @@
 [debug/optimizer]     * function changed: fn
 [debug/optimizer]   [dataflow-unreachable.hlt:14:5-14:25] statement::Declaration "local uint<64> c = a;" -> statement::Expression "a;" (statement result unused)
 [debug/optimizer]     -> modified
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]     * resolver
+[debug/optimizer]       - updating function: fn
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]       - deleting function state: fn
 [debug/optimizer] pass: value-propagation (round 1, pass iteration 1)
@@ -47,8 +49,10 @@
 [debug/optimizer]   [dataflow-unreachable.hlt:10:5-10:9] statement::Expression "a = 1;" -> statement::Expression "1;" (statement result unused)
 [debug/optimizer]   [dataflow-unreachable.hlt:12:5-12:9] statement::Expression "b = 1;" -> statement::Expression "1;" (statement result unused)
 [debug/optimizer]     -> modified
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]     * resolver
+[debug/optimizer]       - updating function: fn
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]       - deleting function state: fn
 [debug/optimizer] pass: value-propagation (round 2, pass iteration 1)
@@ -72,8 +76,10 @@
 [debug/optimizer]     * function changed: fn
 [debug/optimizer]   [dataflow-unreachable.hlt:11:5-11:25] statement::Declaration "local uint<64> b = 1;" -> statement::Expression "1;" (statement result unused)
 [debug/optimizer]     -> modified
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]     * resolver
+[debug/optimizer]       - updating function: fn
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]       - deleting function state: fn
 [debug/optimizer] pass: value-propagation (round 3, pass iteration 1)

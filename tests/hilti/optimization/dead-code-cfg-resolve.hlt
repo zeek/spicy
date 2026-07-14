@@ -1,0 +1,20 @@
+# @TEST-DOC: Ensures removing unused declarations reresolves 'self' in the left-behind ctor without an internal error
+# @TEST-DOC: Regression test for the hilti assertion in #2433
+#
+# @TEST-EXEC: hiltic -p %INPUT
+
+module Test {
+
+public type S = struct {
+    uint<64> i;
+};
+
+function void f() {
+    # The LHS will get removed, but the RHS sticks around. Make sure that won't cause
+    # an assertion when checking the AST between passes.
+    local S two = [$i = 1];
+}
+
+f();
+
+}
