@@ -1,0 +1,15 @@
+# @TEST-DOC: Ensures function parameters won't cause a false-positive cycle; regression test for #2433
+#
+# @TEST-EXEC: spicyc -j %INPUT
+
+module Test;
+
+public type S = struct {
+    i: uint64;
+};
+
+function take_two(s1: S, s2: S): uint64 {
+    return s1.i + s2.i;
+}
+
+print take_two([$i = 1], [$i = 1]);
