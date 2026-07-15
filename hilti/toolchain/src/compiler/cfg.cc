@@ -508,9 +508,7 @@ GraphNode CFG::_addSwitch(GraphNode predecessor, const statement::Switch& switch
 
     auto mix = _getOrAddNode(_createMetaNode<Flow>());
 
-    if ( ! switch_.default_() )
-        _addEdge(condition, mix);
-
+    GraphNode prev = condition;
     for ( auto* case_ : switch_.cases() ) {
         GraphNode case_block;
 
@@ -523,18 +521,23 @@ GraphNode CFG::_addSwitch(GraphNode predecessor, const statement::Switch& switch
 
             for ( auto* x : expressions ) {
                 auto g = _getOrAddNode(x);
-                _addEdge(condition, g);
+                _addEdge(prev, g);
                 _addEdge(g, mix_expr);
+                prev = g;
             }
 
             case_block = _addBlock(mix_expr, case_->body()->children(), case_->body());
         }
 
         else
-            case_block = _addBlock(condition, case_->body()->children(), case_->body());
+            case_block = _addBlock(prev, case_->body()->children(), case_->body());
 
         _addEdge(case_block, mix);
     }
+
+    // Default fallthrough
+    if ( ! switch_.default_() )
+        _addEdge(prev, mix);
 
     return mix;
 }
