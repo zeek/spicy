@@ -1,3 +1,31 @@
+1.17.0-dev.164 | 2026-07-15 09:13:40 -0400
+
+  * GH-2433: Fix FP cycle in types with sequential, same types (Evan Typanski, Corelight)
+
+    Fixes #2433
+
+    This would cause an error:
+
+    cycle detected in definition of type 'Test::S'
+
+    Since there's logic for QualifiedTypes to use the unification if it
+    exists, the operand list should use it, too. Before, it would always
+    use the unqualified check (with the occurs check), which meant that it
+    would report cycles for sequential types that were the same (ie two
+    parameters with the same struct type).
+
+  * Fix unresolved struct `self` in replacement (Evan Typanski, Corelight)
+
+    If a hilti struct got the local decl replaced by its RHS when removing
+    the dead store, the new RHS would not be resolved. This would mean that
+    `self` does not properly resolve anymore. Instead, make sure the RHS gets
+    resolved if anything is replaced.
+
+    This would trigger an internal error between optimizer passes, with an
+    AST dump of the offending node first:
+
+      [internal-error] declaration without canonical ID found: self
+
 1.17.0-dev.161 | 2026-07-14 14:40:41 +0200
 
   * Synchronize minimum GCC version in CMake setup with docs (Benjamin Bannier, Corelight)

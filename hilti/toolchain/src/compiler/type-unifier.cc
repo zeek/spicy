@@ -80,7 +80,7 @@ public:
             unifier->add(to_string(op->kind()));
             unifier->add(op->id());
             unifier->add(":");
-            unifier->add(op->type()->type());
+            unifier->add(op->type());
             unifier->add(",");
         }
         unifier->add(")");

@@ -228,8 +228,6 @@ struct Mutator : public optimizer::visitor::Mutator {
 
 bool run(Optimizer* optimizer) { return Mutator(optimizer).run(); }
 
-optimizer::RegisterPass cfg({.id = PassID::DeadCodeCFG,
-                             .guarantees = Guarantees::Resolved | Guarantees::ConstantsFolded,
-                             .run = run});
+optimizer::RegisterPass cfg({.id = PassID::DeadCodeCFG, .guarantees = Guarantees::ConstantsFolded, .run = run});
 
 } // namespace

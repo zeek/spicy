@@ -17,8 +17,10 @@
 [debug/optimizer]     * function changed: f
 [debug/optimizer]   [unreachable-return.hlt:16:5-16:24] statement::Expression "hilti::print("bad!", True);" -> null (unreachable code)
 [debug/optimizer]     -> modified
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]     * resolver
+[debug/optimizer]       - updating function: f
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]       - deleting function state: f
 [debug/optimizer] pass: value-propagation (round 1, pass iteration 1)
@@ -32,8 +34,10 @@
 [debug/optimizer]     * function changed: f
 [debug/optimizer]   [unreachable-return.hlt:17:5-17:11] statement::Return "return;" -> null (unreachable code)
 [debug/optimizer]     -> modified
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
+[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-processing AST, round 1
+[debug/optimizer]     * resolver
+[debug/optimizer]       - updating function: f
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]       - deleting function state: f
 [debug/optimizer] pass: value-propagation (round 2, pass iteration 1)
