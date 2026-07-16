@@ -118,6 +118,11 @@ struct VisitorASTInfo : public visitor::PreOrder {
                 info->units_with_references.insert(t->canonicalID());
         }
     }
+
+    void operator()(type::Unit* n) final {
+        if ( n->attributes()->find(attribute::kind::OnHeap) )
+            info->units_forced_on_heap.insert(n->canonicalID());
+    }
 };
 
 // Visitor that runs over each module's AST at the beginning of their
@@ -189,7 +194,10 @@ struct VisitorPass1 : public visitor::MutatingPostOrder {
 
             // Add &on-heap to types that are recursively self-referencing.
             // Without, we couldn't express the type at the C++ level.
-            dependent_decls.contains(unit_decl);
+            dependent_decls.contains(unit_decl) ||
+
+            // Add &on-heap if explicitly requested.
+            info->units_forced_on_heap.contains(n->canonicalID());
 
         if ( add_on_heap ) {
             recordChange(n, hilti::util::fmt("marking struct type %s as %%on-heap", n->canonicalID()));
