@@ -28,6 +28,7 @@ const Kind IPv4("&ipv4");
 const Kind IPv6("&ipv6");
 const Kind MaxSize("&max-size");
 const Kind Nosub("&nosub");
+const Kind OnHeap("&on-heap");
 const Kind Optional("&optional");
 const Kind Originator("&originator");
 const Kind ParseAt("&parse-at");

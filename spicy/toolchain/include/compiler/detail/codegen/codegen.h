@@ -33,6 +33,7 @@ struct ASTInfo {
     std::set<ID> uses_sync_advance; // type ID of units implementing %sync_advance
     std::set<uint64_t> look_aheads_in_use;
     std::set<ID> units_with_references; // IDs of all unit types that are wrapped into a reference somewhere
+    std::set<ID> units_forced_on_heap;  // IDs of unit types explicitly requested &on-heap
 };
 
 } // namespace codegen

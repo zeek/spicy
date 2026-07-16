@@ -674,6 +674,22 @@ are mutable.
 
 .. include:: /autogen/types/struct.rst
 
+.. rubric:: Attributes
+
+.. _attribute_on_heap_struct:
+
+``&on-heap``
+    Forces the struct's internal storage to be allocated on the heap rather
+    than the stack. This can be useful for large structs to avoid stack
+    pressure. Example:
+
+    .. spicy-code::
+
+        type Foo = struct {
+            a: uint32;
+            b: bytes;
+        } &on-heap;
+
 .. _type_time:
 
 Time
