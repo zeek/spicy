@@ -47,11 +47,11 @@ hilti::rt::Result<hilti::rt::library::Version> hilti::rt::library::Version::from
 }
 
 void hilti::rt::library::Version::checkCompatibility() const {
-    if ( hilti_version != PROJECT_VERSION_NUMBER )
+    if ( hilti_version != HILTI_VERSION_NUMBER )
         warning(fmt("module %s was compiled with HILTI version %d, but using HILTI version %d",
                     path.filename(),
                     hilti_version,
-                    PROJECT_VERSION_NUMBER));
+                    HILTI_VERSION_NUMBER));
 }
 
 hilti::rt::Library::Library(const hilti::rt::filesystem::path& path) : _path(hilti::rt::filesystem::canonical(path)) {}

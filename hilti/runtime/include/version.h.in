@@ -2,9 +2,17 @@
 
 #pragma once
 
+// These are preexisting, but do not have a great name,
+// and we keep them for now for backwards compatibility.
+//
+// TODO: Drop these once we start work on spicy-1.18.
 #define PROJECT_VERSION_NUMBER @SPICY_VERSION_NUMBER@
 #define PROJECT_VERSION_STRING_SHORT "@SPICY_VERSION@"
 #define PROJECT_VERSION_STRING_LONG "@SPICY_VERSION_LONG@"
+
+#define HILTI_VERSION_NUMBER @SPICY_VERSION_NUMBER@
+#define HILTI_VERSION_STRING_SHORT "@SPICY_VERSION@"
+#define HILTI_VERSION_STRING_LONG "@SPICY_VERSION_LONG@"
 
 // A C function that has our version encoded into its name. One can link a
 // target against this to ensure that it won't load if the versions differ

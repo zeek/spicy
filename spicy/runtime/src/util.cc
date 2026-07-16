@@ -12,7 +12,7 @@
 using namespace hilti::rt::string::literals;
 
 std::string spicy::rt::version() {
-    constexpr char spicy_version[] = PROJECT_VERSION_STRING_LONG;
+    constexpr char spicy_version[] = HILTI_VERSION_STRING_LONG;
 
 #if HILTI_RT_BUILD_TYPE_DEBUG
     return hilti::rt::fmt("Spicy runtime library version %s [debug build]", spicy_version);
