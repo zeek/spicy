@@ -710,8 +710,8 @@ TEST_CASE("version") {
     CHECK_MESSAGE(version().find("HILTI runtime library") != std::string::npos,
                   fmt("version string '%s' does not contain 'HILTI runtime library'", version()));
 
-    CHECK_MESSAGE(version().find(PROJECT_VERSION_STRING_LONG) != std::string::npos,
-                  fmt("version string '%s' does not contain version '%s'", version(), PROJECT_VERSION_STRING_LONG));
+    CHECK_MESSAGE(version().find(HILTI_VERSION_STRING_LONG) != std::string::npos,
+                  fmt("version string '%s' does not contain version '%s'", version(), HILTI_VERSION_STRING_LONG));
 }
 
 TEST_SUITE_END();
