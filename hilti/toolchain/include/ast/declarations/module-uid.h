@@ -107,9 +107,9 @@ struct UID {
     explicit operator bool() const { return ! id.empty(); }
 
 private:
-    ID _makeUnique(const ID& id) const {
-        auto& x = _id_to_counter[id];
-        return ++x > 1 ? ID(util::fmt("%s_%" PRIu64, id, x)) : id;
+    ID _makeUnique(const ID& id_) const {
+        auto& x = _id_to_counter[id_];
+        return ++x > 1 ? ID(util::fmt("%s_%" PRIu64, id_, x)) : id_;
     }
 
     inline static uint64_t _no_file_counter = 0; // global counter for creating unique paths for modules without any
