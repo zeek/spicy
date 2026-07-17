@@ -32,7 +32,7 @@ Result<std::shared_ptr<Unit>> Unit::fromSource(const std::shared_ptr<Context>& c
 }
 
 Result<std::shared_ptr<Unit>> Unit::fromCXX(const std::shared_ptr<Context>& context,
-                                            std::shared_ptr<detail::cxx::Unit> cxx,
+                                            std::shared_ptr<detail::cxx::CxxUnit> cxx,
                                             const hilti::rt::filesystem::path& path) {
     auto uid = declaration::module::UID("<from-cpp-code>", path.native());
     return std::shared_ptr<Unit>(new Unit(context, std::move(uid), std::move(cxx)));

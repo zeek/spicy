@@ -36,7 +36,7 @@ void cxx::Linker::add(const linker::MetaData& md) {
 }
 
 void cxx::Linker::finalize() {
-    auto unit = std::shared_ptr<cxx::Unit>(new cxx::Unit(_codegen->context(), "__linker__"));
+    auto unit = std::shared_ptr<cxx::CxxUnit>(new cxx::CxxUnit(_codegen->context(), "__linker__"));
     unit->addComment("Linker code generated for modules:");
 
     for ( const auto& m : _modules )
@@ -132,7 +132,7 @@ void cxx::Linker::finalize() {
     _linker_unit = std::move(unit);
 }
 
-Result<std::shared_ptr<cxx::Unit>> cxx::Linker::linkerUnit() {
+Result<std::shared_ptr<cxx::CxxUnit>> cxx::Linker::linkerUnit() {
     if ( _linker_unit )
         return _linker_unit;
 

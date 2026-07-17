@@ -38,13 +38,13 @@ namespace {
 // This visitor will only receive AST nodes of the first two levels (i.e.,
 // the module and its declarations).
 struct GlobalsVisitor : hilti::visitor::PostOrder {
-    explicit GlobalsVisitor(CodeGen* cg, cxx::Unit* unit) : cg(cg), unit(unit) {}
+    explicit GlobalsVisitor(CodeGen* cg, cxx::CxxUnit* unit) : cg(cg), unit(unit) {}
 
     GlobalsVisitor(const GlobalsVisitor&) = delete;
     GlobalsVisitor(GlobalsVisitor&&) noexcept = delete;
 
     CodeGen* cg;
-    cxx::Unit* unit;
+    cxx::CxxUnit* unit;
 
     bool include_implementation = false;
     ID current_module;
@@ -663,7 +663,7 @@ struct GlobalsVisitor : hilti::visitor::PostOrder {
 CodeGen::CodeGen(const std::shared_ptr<Context>& context)
     : _context(context), _builder(new Builder(context->astContext())) {}
 
-cxx::Unit* CodeGen::unit() const {
+cxx::CxxUnit* CodeGen::unit() const {
     if ( ! _cxx_unit )
         logger().internalError("CodeGen method cannot be used outside of module compilation");
 
@@ -856,7 +856,7 @@ void GlobalsVisitor::addCxxDeclarationsFor(Declaration* d,
     dispatch(d);
 }
 
-void CodeGen::_addCxxDeclarations(cxx::Unit* unit) {
+void CodeGen::_addCxxDeclarations(cxx::CxxUnit* unit) {
     GlobalsVisitor v(this, unit);
 
     node::CycleDetector cd;
@@ -874,7 +874,7 @@ void CodeGen::_addCxxDeclarations(cxx::Unit* unit) {
     }
 }
 
-Result<std::shared_ptr<cxx::Unit>> CodeGen::compileModule(declaration::Module* module) {
+Result<std::shared_ptr<cxx::CxxUnit>> CodeGen::compileModule(declaration::Module* module) {
     if ( auto cxx = module->cxxUnit() )
         return cxx;
 
@@ -882,7 +882,7 @@ Result<std::shared_ptr<cxx::Unit>> CodeGen::compileModule(declaration::Module* m
     logging::DebugPushIndent __(logging::debug::Compiler);
     util::timing::Collector _("hilti/compiler/codegen");
 
-    _cxx_unit = std::make_unique<cxx::Unit>(context(), module);
+    _cxx_unit = std::make_unique<cxx::CxxUnit>(context(), module);
     _hilti_module = module;
 
     _addCxxDeclarations(_cxx_unit.get());
@@ -894,7 +894,7 @@ Result<std::shared_ptr<cxx::Unit>> CodeGen::compileModule(declaration::Module* m
     return module->cxxUnit();
 }
 
-Result<std::shared_ptr<cxx::Unit>> CodeGen::linkUnits(const std::vector<cxx::linker::MetaData>& mds) {
+Result<std::shared_ptr<cxx::CxxUnit>> CodeGen::linkUnits(const std::vector<cxx::linker::MetaData>& mds) {
     util::timing::Collector _("hilti/linker");
 
     cxx::Linker linker(this);

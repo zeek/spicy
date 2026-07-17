@@ -9,7 +9,7 @@
 namespace hilti {
 class CxxBackend : public Backend {
 public:
-    Result<std::shared_ptr<detail::cxx::Unit>> compile(declaration::Module* mod, const std::shared_ptr<Context>& ctx) override;
+    Result<std::shared_ptr<detail::cxx::CxxUnit>> compile(declaration::Module* mod, const std::shared_ptr<Context>& ctx) override;
 };
 
 } // namespace hilti

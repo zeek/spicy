@@ -119,7 +119,7 @@ namespace hilti::logging::debug {
 inline const DebugStream Driver("driver");
 } // namespace hilti::logging::debug
 
-CxxCode::CxxCode(const detail::cxx::Unit& u) {
+CxxCode::CxxCode(const detail::cxx::CxxUnit& u) {
     std::stringstream buffer;
     u.print(buffer);
     load(u.cxxModuleID(), buffer);

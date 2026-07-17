@@ -12,18 +12,18 @@ using namespace hilti::detail::cxx;
 using namespace hilti::detail::cxx::formatter;
 using hilti::util::fmt;
 
-Unit::Unit(const std::shared_ptr<Context>& context, ::hilti::declaration::Module* module)
+CxxUnit::CxxUnit(const std::shared_ptr<Context>& context, ::hilti::declaration::Module* module)
     : _context(context), _module(module) {
     _module_id = cxx::ID(module->uid().unique);
     _module_path = module->meta().location().file();
 }
 
-Unit::Unit(const std::shared_ptr<Context>& context, cxx::ID module_id, const std::string& cxx_code)
+CxxUnit::CxxUnit(const std::shared_ptr<Context>& context, cxx::ID module_id, const std::string& cxx_code)
     : _context(context), _module_id(std::move(module_id)), _no_linker_meta_data(true), _cxx_code(cxx_code) {}
 
-void Unit::add(std::string_view stmt, const Meta& /*m*/) { _statements.emplace_back(stmt); }
+void CxxUnit::add(std::string_view stmt, const Meta& /*m*/) { _statements.emplace_back(stmt); }
 
-void Unit::add(const linker::Join& f) {
+void CxxUnit::add(const linker::Join& f) {
     assert(f.callee.ftype == cxx::declaration::Function::Free);
 
     auto d = f.callee;
@@ -34,9 +34,9 @@ void Unit::add(const linker::Join& f) {
     _linker_joins.insert(f);
 }
 
-void Unit::addComment(std::string_view comment) { _comments.emplace_back(comment); }
+void CxxUnit::addComment(std::string_view comment) { _comments.emplace_back(comment); }
 
-void Unit::_addHeader(Formatter& f) {
+void CxxUnit::_addHeader(Formatter& f) {
     auto c = fmt("of %s", _module_id);
     if ( _module_path != "" )
         c += fmt(" (from %s)", _module_path);
@@ -46,7 +46,7 @@ void Unit::_addHeader(Formatter& f) {
       << declaration::IncludeFile("hilti/rt/compiler-setup.h") << separator();
 }
 
-void Unit::_addModuleInitFunction() {
+void CxxUnit::_addModuleInitFunction() {
     auto add_init_function = [&](Context* /*ctx*/, auto f, const std::string& id_) {
         auto id = cxx::ID{cxxInternalNamespace(), id_};
 
@@ -95,14 +95,14 @@ void Unit::_addModuleInitFunction() {
     }
 }
 
-void Unit::_emitDeclarations(const cxxDeclaration& decl,
+void CxxUnit::_emitDeclarations(const cxxDeclaration& decl,
                              Formatter& f,
                              Phase phase,
                              bool prototypes_only,
                              bool include_all_implementations) {
     struct Visitor {
         Visitor(Context* ctx,
-                Unit* unit,
+                CxxUnit* unit,
                 Formatter& f,
                 Phase phase,
                 bool prototypes_only,
@@ -115,7 +115,7 @@ void Unit::_emitDeclarations(const cxxDeclaration& decl,
               include_all_implementations(include_all_implementations) {}
 
         Context* ctx;
-        Unit* unit;
+        CxxUnit* unit;
         Formatter& f;
         Phase phase;
         bool prototypes_only;
@@ -218,7 +218,7 @@ void Unit::_emitDeclarations(const cxxDeclaration& decl,
     std::visit(Visitor(context().get(), this, f, phase, prototypes_only, include_all_implementations), decl);
 }
 
-void Unit::_generateCode(Formatter& f, bool prototypes_only, bool include_all_implementations) {
+void CxxUnit::_generateCode(Formatter& f, bool prototypes_only, bool include_all_implementations) {
     const Phase phases[] = {Phase::TypeInfoForwards,
                             Phase::Forwards,
                             Phase::Enums,
@@ -265,7 +265,7 @@ void Unit::_generateCode(Formatter& f, bool prototypes_only, bool include_all_im
         _emitDeclarations(decl, f, Phase::Implementations, prototypes_only, include_all_implementations);
 }
 
-hilti::Result<hilti::Nothing> Unit::finalize(bool include_all_implementations) {
+hilti::Result<hilti::Nothing> CxxUnit::finalize(bool include_all_implementations) {
     if ( ! _module_id )
         return result::Error("no module set");
 
@@ -289,7 +289,7 @@ hilti::Result<hilti::Nothing> Unit::finalize(bool include_all_implementations) {
     return Nothing();
 }
 
-hilti::Result<hilti::Nothing> Unit::print(std::ostream& out) const {
+hilti::Result<hilti::Nothing> CxxUnit::print(std::ostream& out) const {
     if ( ! _cxx_code )
         return result::Error("unit does not have any C++ code to print");
 
@@ -297,7 +297,7 @@ hilti::Result<hilti::Nothing> Unit::print(std::ostream& out) const {
     return Nothing();
 }
 
-hilti::Result<hilti::Nothing> Unit::createPrototypes(std::ostream& out) {
+hilti::Result<hilti::Nothing> CxxUnit::createPrototypes(std::ostream& out) {
     if ( ! (_module_id && _cxx_code) )
         return result::Error("cannot generate prototypes for module");
 
@@ -319,15 +319,15 @@ hilti::Result<hilti::Nothing> Unit::createPrototypes(std::ostream& out) {
     return Nothing();
 }
 
-hilti::detail::cxx::ID Unit::cxxInternalNamespace() const {
+hilti::detail::cxx::ID CxxUnit::cxxInternalNamespace() const {
     return cxx::ID(context()->options().cxx_namespace_intern, cxxModuleID());
 }
 
-hilti::detail::cxx::ID Unit::cxxExternalNamespace() const {
+hilti::detail::cxx::ID CxxUnit::cxxExternalNamespace() const {
     return cxx::ID(context()->options().cxx_namespace_extern, cxxModuleID());
 }
 
-hilti::Result<linker::MetaData> Unit::linkerMetaData() const {
+hilti::Result<linker::MetaData> CxxUnit::linkerMetaData() const {
     if ( _no_linker_meta_data )
         return result::Error("module does not have meta data");
 

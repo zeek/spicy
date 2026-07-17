@@ -20,7 +20,7 @@
 namespace hilti {
 
 namespace detail::cxx {
-class Unit;
+class CxxUnit;
 }
 
 namespace declaration {
@@ -48,7 +48,7 @@ public:
     void setSkipImplementation(bool skip_implementation) { _skip_implementation = skip_implementation; }
 
     auto cxxUnit() const { return _cxx_unit; }
-    void setCxxUnit(std::shared_ptr<::hilti::detail::cxx::Unit> unit) { _cxx_unit = std::move(unit); }
+    void setCxxUnit(std::shared_ptr<::hilti::detail::cxx::CxxUnit> unit) { _cxx_unit = std::move(unit); }
 
     /**
      * Removes any content from the module. The result is an empty module just
@@ -143,7 +143,7 @@ private:
     ID _scope_path;
     std::set<declaration::module::UID> _dependencies;
     bool _skip_implementation = true;
-    std::shared_ptr<::hilti::detail::cxx::Unit> _cxx_unit;
+    std::shared_ptr<::hilti::detail::cxx::CxxUnit> _cxx_unit;
 };
 
 } // namespace declaration

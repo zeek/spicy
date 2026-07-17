@@ -64,10 +64,10 @@ public:
     CodeGen(const std::shared_ptr<Context>& context);
 
     /** Entry point for code generation. */
-    Result<std::shared_ptr<cxx::Unit>> compileModule(declaration::Module* module);
+    Result<std::shared_ptr<cxx::CxxUnit>> compileModule(declaration::Module* module);
 
     /** Entry point for generating additional cross-unit C++ code through HILTI's linker. */
-    Result<std::shared_ptr<cxx::Unit>> linkUnits(const std::vector<cxx::linker::MetaData>& mds);
+    Result<std::shared_ptr<cxx::CxxUnit>> linkUnits(const std::vector<cxx::linker::MetaData>& mds);
 
     std::shared_ptr<Context> context() const { return _context.lock(); }
     const Options& options() const { return context()->options(); }
@@ -152,7 +152,7 @@ public:
     void pushCxxBlock(cxx::Block* b) { _cxx_blocks.push_back(b); }
     void popCxxBlock() { _cxx_blocks.pop_back(); }
 
-    cxx::Unit* unit() const;                         // will abort if not compiling a module.
+    cxx::CxxUnit* unit() const;                         // will abort if not compiling a module.
     hilti::declaration::Module* hiltiModule() const; // will abort if not compiling a module.
 
 private:
@@ -164,12 +164,12 @@ private:
     cxx::Expression _makeLhs(cxx::Expression expr, QualifiedType* type);
 
     // Add all required C++ declarations to a unit.
-    void _addCxxDeclarations(cxx::Unit* unit);
+    void _addCxxDeclarations(cxx::CxxUnit* unit);
 
     std::weak_ptr<Context> _context;
     std::unique_ptr<Builder> _builder;
 
-    std::shared_ptr<cxx::Unit> _cxx_unit;
+    std::shared_ptr<cxx::CxxUnit> _cxx_unit;
     hilti::declaration::Module* _hilti_module = nullptr;
     std::vector<detail::cxx::Expression> _self = {{HILTI_INTERNAL_ID("self"), Side::LHS}};
     std::vector<detail::cxx::Expression> _dd = {{HILTI_INTERNAL_ID("dd"), Side::LHS}};

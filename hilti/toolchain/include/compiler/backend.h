@@ -12,6 +12,6 @@ public:
     virtual ~Backend() = default;
     // TODO: This should not return a cxx unit, but it's tied to Unit.h - maybe
     // replace that file with these backends
-    virtual Result<std::shared_ptr<detail::cxx::Unit>> compile(declaration::Module* mod, const std::shared_ptr<Context>& ctx) = 0;
+    virtual Result<std::shared_ptr<detail::cxx::CxxUnit>> compile(declaration::Module* mod, const std::shared_ptr<Context>& ctx) = 0;
 };
 } // namespace hilti

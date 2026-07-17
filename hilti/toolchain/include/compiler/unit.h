@@ -155,7 +155,7 @@ public:
      * @return instantiated unit, or an appropriate error result if operation failed
      */
     static Result<std::shared_ptr<Unit>> fromCXX(const std::shared_ptr<Context>& context,
-                                                 std::shared_ptr<detail::cxx::Unit> cxx,
+                                                 std::shared_ptr<detail::cxx::CxxUnit> cxx,
                                                  const hilti::rt::filesystem::path& path = "");
 
     // Must already be part of AST.
@@ -181,12 +181,12 @@ private:
         : _context(context), _uid(std::move(uid)) {}
     Unit(const std::shared_ptr<Context>& context,
          declaration::module::UID uid,
-         std::shared_ptr<detail::cxx::Unit> cxx_unit)
+         std::shared_ptr<detail::cxx::CxxUnit> cxx_unit)
         : _context(context), _uid(std::move(uid)), _cxx_unit(std::move(cxx_unit)) {}
 
     std::weak_ptr<Context> _context;              // global context
     declaration::module::UID _uid;                // module's globally unique ID
-    std::shared_ptr<detail::cxx::Unit> _cxx_unit; // compiled C++ code for this unit, once available
+    std::shared_ptr<detail::cxx::CxxUnit> _cxx_unit; // compiled C++ code for this unit, once available
     bool _requires_compilation = false;           // mark explicitly as requiring compilation to C++
 };
 

@@ -64,9 +64,9 @@ struct MetaData {
 } // namespace linker
 
 /** One C++ code unit. */
-class Unit {
+class CxxUnit {
 public:
-    Unit(const std::shared_ptr<Context>& context, hilti::declaration::Module* module);
+    CxxUnit(const std::shared_ptr<Context>& context, hilti::declaration::Module* module);
 
     auto* module() const {
         assert(_module); // available only if module was passed to constructor
@@ -103,7 +103,7 @@ public:
 
 protected:
     friend class Linker;
-    Unit(const std::shared_ptr<Context>& context, cxx::ID module_id, const std::string& cxx_code = {});
+    CxxUnit(const std::shared_ptr<Context>& context, cxx::ID module_id, const std::string& cxx_code = {});
 
 private:
     enum class Phase {
@@ -157,7 +157,7 @@ private:
 };
 
 template<typename Declaration>
-void Unit::add(const Declaration& d, const Meta& /*m*/)
+void CxxUnit::add(const Declaration& d, const Meta& /*m*/)
     requires(std::is_base_of_v<declaration::DeclarationBase, Declaration>)
 {
     static_assert(std::is_base_of_v<declaration::DeclarationBase, Declaration>,

@@ -11,7 +11,7 @@ namespace hilti {
 
 using util::fmt;
 
-Result<std::shared_ptr<detail::cxx::Unit>> CxxBackend::compile(declaration::Module* mod, const std::shared_ptr<Context>& ctx) {
+Result<std::shared_ptr<detail::cxx::CxxUnit>> CxxBackend::compile(declaration::Module* mod, const std::shared_ptr<Context>& ctx) {
     // TODO
     HILTI_DEBUG(logging::debug::Compiler, fmt("codegen module %s to C++", mod->uid()));
     logging::DebugPushIndent __(logging::debug::Compiler);

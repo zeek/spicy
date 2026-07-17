@@ -54,7 +54,7 @@ public:
      *
      * @param u unit to initialize code instance from
      */
-    explicit CxxCode(const detail::cxx::Unit& u);
+    explicit CxxCode(const detail::cxx::CxxUnit& u);
 
     /**
      * Saves C++ code into a file.

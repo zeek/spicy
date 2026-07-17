@@ -10,7 +10,7 @@
 
 namespace hilti::detail::cxx {
 
-class Unit;
+class CxxUnit;
 
 /** Formatter for generating C++ code. */
 class Formatter : public CodeFormatter {
