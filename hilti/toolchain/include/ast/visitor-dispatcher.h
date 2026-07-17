@@ -23,6 +23,11 @@ public:
     Dispatcher(Tag tag = HILTI) : _tag(tag) {}
 
     /**
+     * Destructor. Only defined so it's marked virtual.
+     */
+    virtual ~Dispatcher() = default;
+
+    /**
      * Returns a tag identifying the dispatcher. By default, this returns
      * `dispatcher::HILTI`. A derived class can have it return a different tag
      * of its choice by passing the desired value into the constructor.
