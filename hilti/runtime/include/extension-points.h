@@ -11,7 +11,7 @@ namespace hilti::rt {
 namespace detail::adl {
 struct tag {};
 
-#if __GNUC__
+#ifdef __GNUC__
 // TODO(robin): gcc9 doesn't allow to delete these, not sure why. Using
 // extern instead, without implementation.
 extern std::string to_string();
