@@ -1110,7 +1110,7 @@ private:
         // `UnqualifiedType`. Most likely that's meant to instead cast
         // `this->type()`. We abort here to make debugging such problems
         // easier.
-        if ( std::is_base_of_v<UnqualifiedType, T> && ! std::is_same_v<UnqualifiedType, T> )
+        if constexpr ( std::is_base_of_v<UnqualifiedType, T> && ! std::is_same_v<UnqualifiedType, T> )
             _checkCastBackend();
     }
 #endif
