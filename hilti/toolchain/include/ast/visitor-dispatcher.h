@@ -111,368 +111,368 @@ public:
     virtual void operator()(hilti::operator_::function::Call*) {}
     virtual void operator()(hilti::operator_::struct_::MemberCall*) {}
     virtual void operator()(hilti::operator_::generic::CastedCoercion*) {}
-    virtual void operator()(hilti::operator_::address::Equal* n) {}
-    virtual void operator()(hilti::operator_::address::Unequal* n) {}
-    virtual void operator()(hilti::operator_::address::Family* n) {}
-    virtual void operator()(hilti::operator_::bitfield::Member* n) {}
-    virtual void operator()(hilti::operator_::bitfield::HasMember* n) {}
-    virtual void operator()(hilti::operator_::bool_::Equal* n) {}
-    virtual void operator()(hilti::operator_::bool_::Unequal* n) {}
-    virtual void operator()(hilti::operator_::bool_::BitAnd* n) {}
-    virtual void operator()(hilti::operator_::bool_::BitOr* n) {}
-    virtual void operator()(hilti::operator_::bool_::BitXor* n) {}
-    virtual void operator()(hilti::operator_::bytes::iterator::Deref* n) {}
-    virtual void operator()(hilti::operator_::bytes::iterator::IncrPostfix* n) {}
-    virtual void operator()(hilti::operator_::bytes::iterator::IncrPrefix* n) {}
-    virtual void operator()(hilti::operator_::bytes::iterator::Equal* n) {}
-    virtual void operator()(hilti::operator_::bytes::iterator::Unequal* n) {}
-    virtual void operator()(hilti::operator_::bytes::iterator::Lower* n) {}
-    virtual void operator()(hilti::operator_::bytes::iterator::LowerEqual* n) {}
-    virtual void operator()(hilti::operator_::bytes::iterator::Greater* n) {}
-    virtual void operator()(hilti::operator_::bytes::iterator::GreaterEqual* n) {}
-    virtual void operator()(hilti::operator_::bytes::iterator::Difference* n) {}
-    virtual void operator()(hilti::operator_::bytes::iterator::Sum* n) {}
-    virtual void operator()(hilti::operator_::bytes::iterator::SumAssign* n) {}
-    virtual void operator()(hilti::operator_::bytes::Size* n) {}
-    virtual void operator()(hilti::operator_::bytes::Equal* n) {}
-    virtual void operator()(hilti::operator_::bytes::Unequal* n) {}
-    virtual void operator()(hilti::operator_::bytes::Greater* n) {}
-    virtual void operator()(hilti::operator_::bytes::GreaterEqual* n) {}
-    virtual void operator()(hilti::operator_::bytes::In* n) {}
-    virtual void operator()(hilti::operator_::bytes::Lower* n) {}
-    virtual void operator()(hilti::operator_::bytes::LowerEqual* n) {}
-    virtual void operator()(hilti::operator_::bytes::Sum* n) {}
-    virtual void operator()(hilti::operator_::bytes::SumAssignBytes* n) {}
-    virtual void operator()(hilti::operator_::bytes::SumAssignStreamView* n) {}
-    virtual void operator()(hilti::operator_::bytes::SumAssignUInt8* n) {}
-    virtual void operator()(hilti::operator_::bytes::Find* n) {}
-    virtual void operator()(hilti::operator_::bytes::LowerCase* n) {}
-    virtual void operator()(hilti::operator_::bytes::UpperCase* n) {}
-    virtual void operator()(hilti::operator_::bytes::At* n) {}
-    virtual void operator()(hilti::operator_::bytes::Split* n) {}
-    virtual void operator()(hilti::operator_::bytes::Split1* n) {}
-    virtual void operator()(hilti::operator_::bytes::StartsWith* n) {}
+    virtual void operator()(hilti::operator_::address::Equal*) {}
+    virtual void operator()(hilti::operator_::address::Unequal*) {}
+    virtual void operator()(hilti::operator_::address::Family*) {}
+    virtual void operator()(hilti::operator_::bitfield::Member*) {}
+    virtual void operator()(hilti::operator_::bitfield::HasMember*) {}
+    virtual void operator()(hilti::operator_::bool_::Equal*) {}
+    virtual void operator()(hilti::operator_::bool_::Unequal*) {}
+    virtual void operator()(hilti::operator_::bool_::BitAnd*) {}
+    virtual void operator()(hilti::operator_::bool_::BitOr*) {}
+    virtual void operator()(hilti::operator_::bool_::BitXor*) {}
+    virtual void operator()(hilti::operator_::bytes::iterator::Deref*) {}
+    virtual void operator()(hilti::operator_::bytes::iterator::IncrPostfix*) {}
+    virtual void operator()(hilti::operator_::bytes::iterator::IncrPrefix*) {}
+    virtual void operator()(hilti::operator_::bytes::iterator::Equal*) {}
+    virtual void operator()(hilti::operator_::bytes::iterator::Unequal*) {}
+    virtual void operator()(hilti::operator_::bytes::iterator::Lower*) {}
+    virtual void operator()(hilti::operator_::bytes::iterator::LowerEqual*) {}
+    virtual void operator()(hilti::operator_::bytes::iterator::Greater*) {}
+    virtual void operator()(hilti::operator_::bytes::iterator::GreaterEqual*) {}
+    virtual void operator()(hilti::operator_::bytes::iterator::Difference*) {}
+    virtual void operator()(hilti::operator_::bytes::iterator::Sum*) {}
+    virtual void operator()(hilti::operator_::bytes::iterator::SumAssign*) {}
+    virtual void operator()(hilti::operator_::bytes::Size*) {}
+    virtual void operator()(hilti::operator_::bytes::Equal*) {}
+    virtual void operator()(hilti::operator_::bytes::Unequal*) {}
+    virtual void operator()(hilti::operator_::bytes::Greater*) {}
+    virtual void operator()(hilti::operator_::bytes::GreaterEqual*) {}
+    virtual void operator()(hilti::operator_::bytes::In*) {}
+    virtual void operator()(hilti::operator_::bytes::Lower*) {}
+    virtual void operator()(hilti::operator_::bytes::LowerEqual*) {}
+    virtual void operator()(hilti::operator_::bytes::Sum*) {}
+    virtual void operator()(hilti::operator_::bytes::SumAssignBytes*) {}
+    virtual void operator()(hilti::operator_::bytes::SumAssignStreamView*) {}
+    virtual void operator()(hilti::operator_::bytes::SumAssignUInt8*) {}
+    virtual void operator()(hilti::operator_::bytes::Find*) {}
+    virtual void operator()(hilti::operator_::bytes::LowerCase*) {}
+    virtual void operator()(hilti::operator_::bytes::UpperCase*) {}
+    virtual void operator()(hilti::operator_::bytes::At*) {}
+    virtual void operator()(hilti::operator_::bytes::Split*) {}
+    virtual void operator()(hilti::operator_::bytes::Split1*) {}
+    virtual void operator()(hilti::operator_::bytes::StartsWith*) {}
     virtual void operator()(hilti::operator_::bytes::EndsWith*) {}
-    virtual void operator()(hilti::operator_::bytes::Strip* n) {}
-    virtual void operator()(hilti::operator_::bytes::SubIterators* n) {}
-    virtual void operator()(hilti::operator_::bytes::SubIterator* n) {}
-    virtual void operator()(hilti::operator_::bytes::SubOffsets* n) {}
-    virtual void operator()(hilti::operator_::bytes::Join* n) {}
-    virtual void operator()(hilti::operator_::bytes::ToIntAscii* n) {}
-    virtual void operator()(hilti::operator_::bytes::ToUIntAscii* n) {}
-    virtual void operator()(hilti::operator_::bytes::ToIntBinary* n) {}
-    virtual void operator()(hilti::operator_::bytes::ToUIntBinary* n) {}
-    virtual void operator()(hilti::operator_::bytes::ToRealAscii* n) {}
-    virtual void operator()(hilti::operator_::bytes::ToTimeAscii* n) {}
-    virtual void operator()(hilti::operator_::bytes::ToTimeBinary* n) {}
-    virtual void operator()(hilti::operator_::bytes::Decode* n) {}
-    virtual void operator()(hilti::operator_::bytes::Match* n) {}
-    virtual void operator()(hilti::operator_::enum_::Equal* n) {}
-    virtual void operator()(hilti::operator_::enum_::Unequal* n) {}
-    virtual void operator()(hilti::operator_::enum_::CastToSignedInteger* n) {}
-    virtual void operator()(hilti::operator_::enum_::CastToUnsignedInteger* n) {}
-    virtual void operator()(hilti::operator_::enum_::CtorSigned* n) {}
-    virtual void operator()(hilti::operator_::enum_::CtorUnsigned* n) {}
-    virtual void operator()(hilti::operator_::enum_::HasLabel* n) {}
-    virtual void operator()(hilti::operator_::error::Ctor* n) {}
-    virtual void operator()(hilti::operator_::error::Equal* n) {}
-    virtual void operator()(hilti::operator_::error::Unequal* n) {}
-    virtual void operator()(hilti::operator_::error::Description* n) {}
-    virtual void operator()(hilti::operator_::exception::Ctor* n) {}
-    virtual void operator()(hilti::operator_::exception::Description* n) {}
-    virtual void operator()(hilti::operator_::generic::Pack* n) {}
-    virtual void operator()(hilti::operator_::generic::Unpack* n) {}
-    virtual void operator()(hilti::operator_::generic::Begin* n) {}
-    virtual void operator()(hilti::operator_::generic::End* n) {}
-    virtual void operator()(hilti::operator_::generic::New* n) {}
-    virtual void operator()(hilti::operator_::interval::Equal* n) {}
-    virtual void operator()(hilti::operator_::interval::Unequal* n) {}
-    virtual void operator()(hilti::operator_::interval::Sum* n) {}
-    virtual void operator()(hilti::operator_::interval::Difference* n) {}
-    virtual void operator()(hilti::operator_::interval::Greater* n) {}
-    virtual void operator()(hilti::operator_::interval::GreaterEqual* n) {}
-    virtual void operator()(hilti::operator_::interval::Lower* n) {}
-    virtual void operator()(hilti::operator_::interval::LowerEqual* n) {}
-    virtual void operator()(hilti::operator_::interval::MultipleUnsignedInteger* n) {}
-    virtual void operator()(hilti::operator_::interval::MultipleReal* n) {}
-    virtual void operator()(hilti::operator_::interval::CtorSignedIntegerNs* n) {}
-    virtual void operator()(hilti::operator_::interval::CtorSignedIntegerSecs* n) {}
-    virtual void operator()(hilti::operator_::interval::CtorUnsignedIntegerNs* n) {}
-    virtual void operator()(hilti::operator_::interval::CtorUnsignedIntegerSecs* n) {}
-    virtual void operator()(hilti::operator_::interval::CtorRealSecs* n) {}
-    virtual void operator()(hilti::operator_::interval::Seconds* n) {}
-    virtual void operator()(hilti::operator_::interval::Nanoseconds* n) {}
-    virtual void operator()(hilti::operator_::list::iterator::Deref* n) {}
-    virtual void operator()(hilti::operator_::list::iterator::IncrPostfix* n) {}
-    virtual void operator()(hilti::operator_::list::iterator::IncrPrefix* n) {}
-    virtual void operator()(hilti::operator_::list::iterator::Equal* n) {}
-    virtual void operator()(hilti::operator_::list::iterator::Unequal* n) {}
-    virtual void operator()(hilti::operator_::list::Size* n) {}
-    virtual void operator()(hilti::operator_::list::Equal* n) {}
-    virtual void operator()(hilti::operator_::list::Unequal* n) {}
-    virtual void operator()(hilti::operator_::map::iterator::Deref* n) {}
-    virtual void operator()(hilti::operator_::map::iterator::IncrPostfix* n) {}
-    virtual void operator()(hilti::operator_::map::iterator::IncrPrefix* n) {}
-    virtual void operator()(hilti::operator_::map::iterator::Equal* n) {}
-    virtual void operator()(hilti::operator_::map::iterator::Unequal* n) {}
-    virtual void operator()(hilti::operator_::map::Size* n) {}
-    virtual void operator()(hilti::operator_::map::Equal* n) {}
-    virtual void operator()(hilti::operator_::map::Unequal* n) {}
-    virtual void operator()(hilti::operator_::map::In* n) {}
-    virtual void operator()(hilti::operator_::map::Delete* n) {}
-    virtual void operator()(hilti::operator_::map::IndexConst* n) {}
-    virtual void operator()(hilti::operator_::map::IndexNonConst* n) {}
-    virtual void operator()(hilti::operator_::map::IndexAssign* n) {}
-    virtual void operator()(hilti::operator_::map::Get* n) {}
-    virtual void operator()(hilti::operator_::map::GetOptional* n) {}
-    virtual void operator()(hilti::operator_::map::Clear* n) {}
-    virtual void operator()(hilti::operator_::network::Equal* n) {}
-    virtual void operator()(hilti::operator_::network::Unequal* n) {}
-    virtual void operator()(hilti::operator_::network::In* n) {}
-    virtual void operator()(hilti::operator_::network::Family* n) {}
-    virtual void operator()(hilti::operator_::network::Prefix* n) {}
-    virtual void operator()(hilti::operator_::network::Length* n) {}
-    virtual void operator()(hilti::operator_::optional::Deref* n) {}
-    virtual void operator()(hilti::operator_::port::Equal* n) {}
-    virtual void operator()(hilti::operator_::port::Unequal* n) {}
-    virtual void operator()(hilti::operator_::port::Ctor* n) {}
-    virtual void operator()(hilti::operator_::port::Protocol* n) {}
-    virtual void operator()(hilti::operator_::real::SignNeg* n) {}
-    virtual void operator()(hilti::operator_::real::Difference* n) {}
-    virtual void operator()(hilti::operator_::real::DifferenceAssign* n) {}
-    virtual void operator()(hilti::operator_::real::Division* n) {}
-    virtual void operator()(hilti::operator_::real::DivisionAssign* n) {}
-    virtual void operator()(hilti::operator_::real::Equal* n) {}
-    virtual void operator()(hilti::operator_::real::Greater* n) {}
-    virtual void operator()(hilti::operator_::real::GreaterEqual* n) {}
-    virtual void operator()(hilti::operator_::real::Lower* n) {}
-    virtual void operator()(hilti::operator_::real::LowerEqual* n) {}
-    virtual void operator()(hilti::operator_::real::Modulo* n) {}
-    virtual void operator()(hilti::operator_::real::Multiple* n) {}
-    virtual void operator()(hilti::operator_::real::MultipleAssign* n) {}
-    virtual void operator()(hilti::operator_::real::Power* n) {}
-    virtual void operator()(hilti::operator_::real::Sum* n) {}
-    virtual void operator()(hilti::operator_::real::SumAssign* n) {}
-    virtual void operator()(hilti::operator_::real::Unequal* n) {}
-    virtual void operator()(hilti::operator_::real::CastToUnsignedInteger* n) {}
-    virtual void operator()(hilti::operator_::real::CastToSignedInteger* n) {}
-    virtual void operator()(hilti::operator_::real::CastToTime* n) {}
-    virtual void operator()(hilti::operator_::real::CastToInterval* n) {}
-    virtual void operator()(hilti::operator_::strong_reference::Deref* n) {}
-    virtual void operator()(hilti::operator_::strong_reference::Equal* n) {}
-    virtual void operator()(hilti::operator_::strong_reference::Unequal* n) {}
-    virtual void operator()(hilti::operator_::weak_reference::Deref* n) {}
-    virtual void operator()(hilti::operator_::weak_reference::Equal* n) {}
-    virtual void operator()(hilti::operator_::weak_reference::Unequal* n) {}
-    virtual void operator()(hilti::operator_::value_reference::Deref* n) {}
-    virtual void operator()(hilti::operator_::value_reference::Equal* n) {}
-    virtual void operator()(hilti::operator_::value_reference::Unequal* n) {}
-    virtual void operator()(hilti::operator_::regexp::Match* n) {}
-    virtual void operator()(hilti::operator_::regexp::Find* n) {}
-    virtual void operator()(hilti::operator_::regexp::MatchGroups* n) {}
-    virtual void operator()(hilti::operator_::regexp::TokenMatcher* n) {}
-    virtual void operator()(hilti::operator_::regexp_match_state::AdvanceBytes* n) {}
-    virtual void operator()(hilti::operator_::regexp_match_state::AdvanceView* n) {}
-    virtual void operator()(hilti::operator_::result::Deref* n) {}
-    virtual void operator()(hilti::operator_::result::Error* n) {}
-    virtual void operator()(hilti::operator_::set::iterator::Deref* n) {}
-    virtual void operator()(hilti::operator_::set::iterator::IncrPostfix* n) {}
-    virtual void operator()(hilti::operator_::set::iterator::IncrPrefix* n) {}
-    virtual void operator()(hilti::operator_::set::iterator::Equal* n) {}
-    virtual void operator()(hilti::operator_::set::iterator::Unequal* n) {}
-    virtual void operator()(hilti::operator_::set::Size* n) {}
-    virtual void operator()(hilti::operator_::set::Equal* n) {}
-    virtual void operator()(hilti::operator_::set::Unequal* n) {}
-    virtual void operator()(hilti::operator_::set::In* n) {}
-    virtual void operator()(hilti::operator_::set::Add* n) {}
-    virtual void operator()(hilti::operator_::set::Delete* n) {}
-    virtual void operator()(hilti::operator_::set::Clear* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::DecrPostfix* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::DecrPrefix* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::IncrPostfix* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::IncrPrefix* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::SignNeg* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::Difference* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::DifferenceAssign* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::Division* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::DivisionAssign* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::Equal* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::Greater* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::GreaterEqual* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::Lower* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::LowerEqual* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::Modulo* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::Multiple* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::MultipleAssign* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::Power* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::Sum* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::SumAssign* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::Unequal* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::CastToSigned* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::CastToUnsigned* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::CastToReal* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::CastToEnum* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::CastToInterval* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::CastToBool* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::CtorSigned8* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::CtorSigned16* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::CtorSigned32* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::CtorSigned64* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::CtorUnsigned8* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::CtorUnsigned16* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::CtorUnsigned32* n) {}
-    virtual void operator()(hilti::operator_::signed_integer::CtorUnsigned64* n) {}
-    virtual void operator()(hilti::operator_::stream::iterator::Deref* n) {}
-    virtual void operator()(hilti::operator_::stream::iterator::IncrPostfix* n) {}
-    virtual void operator()(hilti::operator_::stream::iterator::IncrPrefix* n) {}
-    virtual void operator()(hilti::operator_::stream::iterator::Equal* n) {}
-    virtual void operator()(hilti::operator_::stream::iterator::Unequal* n) {}
-    virtual void operator()(hilti::operator_::stream::iterator::Lower* n) {}
-    virtual void operator()(hilti::operator_::stream::iterator::LowerEqual* n) {}
-    virtual void operator()(hilti::operator_::stream::iterator::Greater* n) {}
-    virtual void operator()(hilti::operator_::stream::iterator::GreaterEqual* n) {}
-    virtual void operator()(hilti::operator_::stream::iterator::Difference* n) {}
-    virtual void operator()(hilti::operator_::stream::iterator::Sum* n) {}
-    virtual void operator()(hilti::operator_::stream::iterator::SumAssign* n) {}
-    virtual void operator()(hilti::operator_::stream::iterator::Offset* n) {}
-    virtual void operator()(hilti::operator_::stream::iterator::IsFrozen* n) {}
-    virtual void operator()(hilti::operator_::stream::view::Size* n) {}
-    virtual void operator()(hilti::operator_::stream::view::InBytes* n) {}
-    virtual void operator()(hilti::operator_::stream::view::InView* n) {}
-    virtual void operator()(hilti::operator_::stream::view::EqualView* n) {}
-    virtual void operator()(hilti::operator_::stream::view::EqualBytes* n) {}
-    virtual void operator()(hilti::operator_::stream::view::UnequalView* n) {}
-    virtual void operator()(hilti::operator_::stream::view::UnequalBytes* n) {}
-    virtual void operator()(hilti::operator_::stream::view::Offset* n) {}
-    virtual void operator()(hilti::operator_::stream::view::AdvanceBy* n) {}
-    virtual void operator()(hilti::operator_::stream::view::AdvanceToNextData* n) {}
-    virtual void operator()(hilti::operator_::stream::view::Limit* n) {}
-    virtual void operator()(hilti::operator_::stream::view::AdvanceTo* n) {}
-    virtual void operator()(hilti::operator_::stream::view::Find* n) {}
-    virtual void operator()(hilti::operator_::stream::view::At* n) {}
-    virtual void operator()(hilti::operator_::stream::view::StartsWith* n) {}
-    virtual void operator()(hilti::operator_::stream::view::SubIterators* n) {}
-    virtual void operator()(hilti::operator_::stream::view::SubIterator* n) {}
-    virtual void operator()(hilti::operator_::stream::view::SubOffsets* n) {}
-    virtual void operator()(hilti::operator_::stream::Ctor* n) {}
-    virtual void operator()(hilti::operator_::stream::Size* n) {}
-    virtual void operator()(hilti::operator_::stream::Unequal* n) {}
-    virtual void operator()(hilti::operator_::stream::SumAssignView* n) {}
-    virtual void operator()(hilti::operator_::stream::SumAssignBytes* n) {}
-    virtual void operator()(hilti::operator_::stream::Freeze* n) {}
-    virtual void operator()(hilti::operator_::stream::Unfreeze* n) {}
-    virtual void operator()(hilti::operator_::stream::IsFrozen* n) {}
-    virtual void operator()(hilti::operator_::stream::At* n) {}
-    virtual void operator()(hilti::operator_::stream::Trim* n) {}
-    virtual void operator()(hilti::operator_::stream::Statistics* n) {}
-    virtual void operator()(hilti::operator_::string::Equal* n) {}
-    virtual void operator()(hilti::operator_::string::Unequal* n) {}
-    virtual void operator()(hilti::operator_::string::Size* n) {}
-    virtual void operator()(hilti::operator_::string::Sum* n) {}
-    virtual void operator()(hilti::operator_::string::SumAssign* n) {}
-    virtual void operator()(hilti::operator_::string::Modulo* n) {}
-    virtual void operator()(hilti::operator_::string::Encode* n) {}
-    virtual void operator()(hilti::operator_::string::Split* n) {}
-    virtual void operator()(hilti::operator_::string::Split1* n) {}
-    virtual void operator()(hilti::operator_::string::StartsWith* n) {}
-    virtual void operator()(hilti::operator_::string::EndsWith* n) {}
-    virtual void operator()(hilti::operator_::string::LowerCase* n) {}
-    virtual void operator()(hilti::operator_::string::UpperCase* n) {}
-    virtual void operator()(hilti::operator_::struct_::Unset* n) {}
-    virtual void operator()(hilti::operator_::struct_::MemberNonConst* n) {}
-    virtual void operator()(hilti::operator_::struct_::MemberConst* n) {}
-    virtual void operator()(hilti::operator_::struct_::TryMember* n) {}
-    virtual void operator()(hilti::operator_::struct_::HasMember* n) {}
-    virtual void operator()(hilti::operator_::time::Equal* n) {}
-    virtual void operator()(hilti::operator_::time::Unequal* n) {}
-    virtual void operator()(hilti::operator_::time::SumInterval* n) {}
-    virtual void operator()(hilti::operator_::time::DifferenceTime* n) {}
-    virtual void operator()(hilti::operator_::time::DifferenceInterval* n) {}
-    virtual void operator()(hilti::operator_::time::Greater* n) {}
-    virtual void operator()(hilti::operator_::time::GreaterEqual* n) {}
-    virtual void operator()(hilti::operator_::time::Lower* n) {}
-    virtual void operator()(hilti::operator_::time::LowerEqual* n) {}
-    virtual void operator()(hilti::operator_::time::CtorSignedIntegerNs* n) {}
-    virtual void operator()(hilti::operator_::time::CtorSignedIntegerSecs* n) {}
-    virtual void operator()(hilti::operator_::time::CtorUnsignedIntegerNs* n) {}
-    virtual void operator()(hilti::operator_::time::CtorUnsignedIntegerSecs* n) {}
-    virtual void operator()(hilti::operator_::time::CtorRealSecs* n) {}
-    virtual void operator()(hilti::operator_::time::Seconds* n) {}
-    virtual void operator()(hilti::operator_::time::Nanoseconds* n) {}
-    virtual void operator()(hilti::operator_::tuple::Equal* n) {}
-    virtual void operator()(hilti::operator_::tuple::Unequal* n) {}
-    virtual void operator()(hilti::operator_::tuple::Index* n) {}
-    virtual void operator()(hilti::operator_::tuple::Member* n) {}
-    virtual void operator()(hilti::operator_::tuple::CustomAssign* n) {}
-    virtual void operator()(hilti::operator_::union_::Equal* n) {}
-    virtual void operator()(hilti::operator_::union_::Unequal* n) {}
-    virtual void operator()(hilti::operator_::union_::MemberConst* n) {}
-    virtual void operator()(hilti::operator_::union_::MemberNonConst* n) {}
-    virtual void operator()(hilti::operator_::union_::HasMember* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::DecrPostfix* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::DecrPrefix* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::IncrPostfix* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::IncrPrefix* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::SignNeg* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::Difference* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::DifferenceAssign* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::Division* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::DivisionAssign* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::Equal* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::Greater* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::GreaterEqual* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::Lower* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::LowerEqual* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::Modulo* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::Multiple* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::MultipleAssign* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::Power* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::Sum* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::SumAssign* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::Unequal* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::Negate* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::BitAnd* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::BitOr* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::BitXor* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::ShiftLeft* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::ShiftRight* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::CastToUnsigned* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::CastToSigned* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::CastToReal* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::CastToEnum* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::CastToInterval* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::CastToTime* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::CastToBool* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::CtorSigned8* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::CtorSigned16* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::CtorSigned32* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::CtorSigned64* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::CtorUnsigned8* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::CtorUnsigned16* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::CtorUnsigned32* n) {}
-    virtual void operator()(hilti::operator_::unsigned_integer::CtorUnsigned64* n) {}
-    virtual void operator()(hilti::operator_::vector::iterator::Deref* n) {}
-    virtual void operator()(hilti::operator_::vector::iterator::IncrPostfix* n) {}
-    virtual void operator()(hilti::operator_::vector::iterator::IncrPrefix* n) {}
-    virtual void operator()(hilti::operator_::vector::iterator::Equal* n) {}
-    virtual void operator()(hilti::operator_::vector::iterator::Unequal* n) {}
-    virtual void operator()(hilti::operator_::vector::Size* n) {}
-    virtual void operator()(hilti::operator_::vector::Equal* n) {}
-    virtual void operator()(hilti::operator_::vector::Unequal* n) {}
-    virtual void operator()(hilti::operator_::vector::IndexConst* n) {}
-    virtual void operator()(hilti::operator_::vector::IndexNonConst* n) {}
-    virtual void operator()(hilti::operator_::vector::Sum* n) {}
-    virtual void operator()(hilti::operator_::vector::SumAssign* n) {}
-    virtual void operator()(hilti::operator_::vector::Assign* n) {}
-    virtual void operator()(hilti::operator_::vector::PushBack* n) {}
-    virtual void operator()(hilti::operator_::vector::PopBack* n) {}
-    virtual void operator()(hilti::operator_::vector::Front* n) {}
-    virtual void operator()(hilti::operator_::vector::Back* n) {}
-    virtual void operator()(hilti::operator_::vector::Reserve* n) {}
-    virtual void operator()(hilti::operator_::vector::Resize* n) {}
-    virtual void operator()(hilti::operator_::vector::At* n) {}
-    virtual void operator()(hilti::operator_::vector::SubRange* n) {}
-    virtual void operator()(hilti::operator_::vector::SubEnd* n) {}
+    virtual void operator()(hilti::operator_::bytes::Strip*) {}
+    virtual void operator()(hilti::operator_::bytes::SubIterators*) {}
+    virtual void operator()(hilti::operator_::bytes::SubIterator*) {}
+    virtual void operator()(hilti::operator_::bytes::SubOffsets*) {}
+    virtual void operator()(hilti::operator_::bytes::Join*) {}
+    virtual void operator()(hilti::operator_::bytes::ToIntAscii*) {}
+    virtual void operator()(hilti::operator_::bytes::ToUIntAscii*) {}
+    virtual void operator()(hilti::operator_::bytes::ToIntBinary*) {}
+    virtual void operator()(hilti::operator_::bytes::ToUIntBinary*) {}
+    virtual void operator()(hilti::operator_::bytes::ToRealAscii*) {}
+    virtual void operator()(hilti::operator_::bytes::ToTimeAscii*) {}
+    virtual void operator()(hilti::operator_::bytes::ToTimeBinary*) {}
+    virtual void operator()(hilti::operator_::bytes::Decode*) {}
+    virtual void operator()(hilti::operator_::bytes::Match*) {}
+    virtual void operator()(hilti::operator_::enum_::Equal*) {}
+    virtual void operator()(hilti::operator_::enum_::Unequal*) {}
+    virtual void operator()(hilti::operator_::enum_::CastToSignedInteger*) {}
+    virtual void operator()(hilti::operator_::enum_::CastToUnsignedInteger*) {}
+    virtual void operator()(hilti::operator_::enum_::CtorSigned*) {}
+    virtual void operator()(hilti::operator_::enum_::CtorUnsigned*) {}
+    virtual void operator()(hilti::operator_::enum_::HasLabel*) {}
+    virtual void operator()(hilti::operator_::error::Ctor*) {}
+    virtual void operator()(hilti::operator_::error::Equal*) {}
+    virtual void operator()(hilti::operator_::error::Unequal*) {}
+    virtual void operator()(hilti::operator_::error::Description*) {}
+    virtual void operator()(hilti::operator_::exception::Ctor*) {}
+    virtual void operator()(hilti::operator_::exception::Description*) {}
+    virtual void operator()(hilti::operator_::generic::Pack*) {}
+    virtual void operator()(hilti::operator_::generic::Unpack*) {}
+    virtual void operator()(hilti::operator_::generic::Begin*) {}
+    virtual void operator()(hilti::operator_::generic::End*) {}
+    virtual void operator()(hilti::operator_::generic::New*) {}
+    virtual void operator()(hilti::operator_::interval::Equal*) {}
+    virtual void operator()(hilti::operator_::interval::Unequal*) {}
+    virtual void operator()(hilti::operator_::interval::Sum*) {}
+    virtual void operator()(hilti::operator_::interval::Difference*) {}
+    virtual void operator()(hilti::operator_::interval::Greater*) {}
+    virtual void operator()(hilti::operator_::interval::GreaterEqual*) {}
+    virtual void operator()(hilti::operator_::interval::Lower*) {}
+    virtual void operator()(hilti::operator_::interval::LowerEqual*) {}
+    virtual void operator()(hilti::operator_::interval::MultipleUnsignedInteger*) {}
+    virtual void operator()(hilti::operator_::interval::MultipleReal*) {}
+    virtual void operator()(hilti::operator_::interval::CtorSignedIntegerNs*) {}
+    virtual void operator()(hilti::operator_::interval::CtorSignedIntegerSecs*) {}
+    virtual void operator()(hilti::operator_::interval::CtorUnsignedIntegerNs*) {}
+    virtual void operator()(hilti::operator_::interval::CtorUnsignedIntegerSecs*) {}
+    virtual void operator()(hilti::operator_::interval::CtorRealSecs*) {}
+    virtual void operator()(hilti::operator_::interval::Seconds*) {}
+    virtual void operator()(hilti::operator_::interval::Nanoseconds*) {}
+    virtual void operator()(hilti::operator_::list::iterator::Deref*) {}
+    virtual void operator()(hilti::operator_::list::iterator::IncrPostfix*) {}
+    virtual void operator()(hilti::operator_::list::iterator::IncrPrefix*) {}
+    virtual void operator()(hilti::operator_::list::iterator::Equal*) {}
+    virtual void operator()(hilti::operator_::list::iterator::Unequal*) {}
+    virtual void operator()(hilti::operator_::list::Size*) {}
+    virtual void operator()(hilti::operator_::list::Equal*) {}
+    virtual void operator()(hilti::operator_::list::Unequal*) {}
+    virtual void operator()(hilti::operator_::map::iterator::Deref*) {}
+    virtual void operator()(hilti::operator_::map::iterator::IncrPostfix*) {}
+    virtual void operator()(hilti::operator_::map::iterator::IncrPrefix*) {}
+    virtual void operator()(hilti::operator_::map::iterator::Equal*) {}
+    virtual void operator()(hilti::operator_::map::iterator::Unequal*) {}
+    virtual void operator()(hilti::operator_::map::Size*) {}
+    virtual void operator()(hilti::operator_::map::Equal*) {}
+    virtual void operator()(hilti::operator_::map::Unequal*) {}
+    virtual void operator()(hilti::operator_::map::In*) {}
+    virtual void operator()(hilti::operator_::map::Delete*) {}
+    virtual void operator()(hilti::operator_::map::IndexConst*) {}
+    virtual void operator()(hilti::operator_::map::IndexNonConst*) {}
+    virtual void operator()(hilti::operator_::map::IndexAssign*) {}
+    virtual void operator()(hilti::operator_::map::Get*) {}
+    virtual void operator()(hilti::operator_::map::GetOptional*) {}
+    virtual void operator()(hilti::operator_::map::Clear*) {}
+    virtual void operator()(hilti::operator_::network::Equal*) {}
+    virtual void operator()(hilti::operator_::network::Unequal*) {}
+    virtual void operator()(hilti::operator_::network::In*) {}
+    virtual void operator()(hilti::operator_::network::Family*) {}
+    virtual void operator()(hilti::operator_::network::Prefix*) {}
+    virtual void operator()(hilti::operator_::network::Length*) {}
+    virtual void operator()(hilti::operator_::optional::Deref*) {}
+    virtual void operator()(hilti::operator_::port::Equal*) {}
+    virtual void operator()(hilti::operator_::port::Unequal*) {}
+    virtual void operator()(hilti::operator_::port::Ctor*) {}
+    virtual void operator()(hilti::operator_::port::Protocol*) {}
+    virtual void operator()(hilti::operator_::real::SignNeg*) {}
+    virtual void operator()(hilti::operator_::real::Difference*) {}
+    virtual void operator()(hilti::operator_::real::DifferenceAssign*) {}
+    virtual void operator()(hilti::operator_::real::Division*) {}
+    virtual void operator()(hilti::operator_::real::DivisionAssign*) {}
+    virtual void operator()(hilti::operator_::real::Equal*) {}
+    virtual void operator()(hilti::operator_::real::Greater*) {}
+    virtual void operator()(hilti::operator_::real::GreaterEqual*) {}
+    virtual void operator()(hilti::operator_::real::Lower*) {}
+    virtual void operator()(hilti::operator_::real::LowerEqual*) {}
+    virtual void operator()(hilti::operator_::real::Modulo*) {}
+    virtual void operator()(hilti::operator_::real::Multiple*) {}
+    virtual void operator()(hilti::operator_::real::MultipleAssign*) {}
+    virtual void operator()(hilti::operator_::real::Power*) {}
+    virtual void operator()(hilti::operator_::real::Sum*) {}
+    virtual void operator()(hilti::operator_::real::SumAssign*) {}
+    virtual void operator()(hilti::operator_::real::Unequal*) {}
+    virtual void operator()(hilti::operator_::real::CastToUnsignedInteger*) {}
+    virtual void operator()(hilti::operator_::real::CastToSignedInteger*) {}
+    virtual void operator()(hilti::operator_::real::CastToTime*) {}
+    virtual void operator()(hilti::operator_::real::CastToInterval*) {}
+    virtual void operator()(hilti::operator_::strong_reference::Deref*) {}
+    virtual void operator()(hilti::operator_::strong_reference::Equal*) {}
+    virtual void operator()(hilti::operator_::strong_reference::Unequal*) {}
+    virtual void operator()(hilti::operator_::weak_reference::Deref*) {}
+    virtual void operator()(hilti::operator_::weak_reference::Equal*) {}
+    virtual void operator()(hilti::operator_::weak_reference::Unequal*) {}
+    virtual void operator()(hilti::operator_::value_reference::Deref*) {}
+    virtual void operator()(hilti::operator_::value_reference::Equal*) {}
+    virtual void operator()(hilti::operator_::value_reference::Unequal*) {}
+    virtual void operator()(hilti::operator_::regexp::Match*) {}
+    virtual void operator()(hilti::operator_::regexp::Find*) {}
+    virtual void operator()(hilti::operator_::regexp::MatchGroups*) {}
+    virtual void operator()(hilti::operator_::regexp::TokenMatcher*) {}
+    virtual void operator()(hilti::operator_::regexp_match_state::AdvanceBytes*) {}
+    virtual void operator()(hilti::operator_::regexp_match_state::AdvanceView*) {}
+    virtual void operator()(hilti::operator_::result::Deref*) {}
+    virtual void operator()(hilti::operator_::result::Error*) {}
+    virtual void operator()(hilti::operator_::set::iterator::Deref*) {}
+    virtual void operator()(hilti::operator_::set::iterator::IncrPostfix*) {}
+    virtual void operator()(hilti::operator_::set::iterator::IncrPrefix*) {}
+    virtual void operator()(hilti::operator_::set::iterator::Equal*) {}
+    virtual void operator()(hilti::operator_::set::iterator::Unequal*) {}
+    virtual void operator()(hilti::operator_::set::Size*) {}
+    virtual void operator()(hilti::operator_::set::Equal*) {}
+    virtual void operator()(hilti::operator_::set::Unequal*) {}
+    virtual void operator()(hilti::operator_::set::In*) {}
+    virtual void operator()(hilti::operator_::set::Add*) {}
+    virtual void operator()(hilti::operator_::set::Delete*) {}
+    virtual void operator()(hilti::operator_::set::Clear*) {}
+    virtual void operator()(hilti::operator_::signed_integer::DecrPostfix*) {}
+    virtual void operator()(hilti::operator_::signed_integer::DecrPrefix*) {}
+    virtual void operator()(hilti::operator_::signed_integer::IncrPostfix*) {}
+    virtual void operator()(hilti::operator_::signed_integer::IncrPrefix*) {}
+    virtual void operator()(hilti::operator_::signed_integer::SignNeg*) {}
+    virtual void operator()(hilti::operator_::signed_integer::Difference*) {}
+    virtual void operator()(hilti::operator_::signed_integer::DifferenceAssign*) {}
+    virtual void operator()(hilti::operator_::signed_integer::Division*) {}
+    virtual void operator()(hilti::operator_::signed_integer::DivisionAssign*) {}
+    virtual void operator()(hilti::operator_::signed_integer::Equal*) {}
+    virtual void operator()(hilti::operator_::signed_integer::Greater*) {}
+    virtual void operator()(hilti::operator_::signed_integer::GreaterEqual*) {}
+    virtual void operator()(hilti::operator_::signed_integer::Lower*) {}
+    virtual void operator()(hilti::operator_::signed_integer::LowerEqual*) {}
+    virtual void operator()(hilti::operator_::signed_integer::Modulo*) {}
+    virtual void operator()(hilti::operator_::signed_integer::Multiple*) {}
+    virtual void operator()(hilti::operator_::signed_integer::MultipleAssign*) {}
+    virtual void operator()(hilti::operator_::signed_integer::Power*) {}
+    virtual void operator()(hilti::operator_::signed_integer::Sum*) {}
+    virtual void operator()(hilti::operator_::signed_integer::SumAssign*) {}
+    virtual void operator()(hilti::operator_::signed_integer::Unequal*) {}
+    virtual void operator()(hilti::operator_::signed_integer::CastToSigned*) {}
+    virtual void operator()(hilti::operator_::signed_integer::CastToUnsigned*) {}
+    virtual void operator()(hilti::operator_::signed_integer::CastToReal*) {}
+    virtual void operator()(hilti::operator_::signed_integer::CastToEnum*) {}
+    virtual void operator()(hilti::operator_::signed_integer::CastToInterval*) {}
+    virtual void operator()(hilti::operator_::signed_integer::CastToBool*) {}
+    virtual void operator()(hilti::operator_::signed_integer::CtorSigned8*) {}
+    virtual void operator()(hilti::operator_::signed_integer::CtorSigned16*) {}
+    virtual void operator()(hilti::operator_::signed_integer::CtorSigned32*) {}
+    virtual void operator()(hilti::operator_::signed_integer::CtorSigned64*) {}
+    virtual void operator()(hilti::operator_::signed_integer::CtorUnsigned8*) {}
+    virtual void operator()(hilti::operator_::signed_integer::CtorUnsigned16*) {}
+    virtual void operator()(hilti::operator_::signed_integer::CtorUnsigned32*) {}
+    virtual void operator()(hilti::operator_::signed_integer::CtorUnsigned64*) {}
+    virtual void operator()(hilti::operator_::stream::iterator::Deref*) {}
+    virtual void operator()(hilti::operator_::stream::iterator::IncrPostfix*) {}
+    virtual void operator()(hilti::operator_::stream::iterator::IncrPrefix*) {}
+    virtual void operator()(hilti::operator_::stream::iterator::Equal*) {}
+    virtual void operator()(hilti::operator_::stream::iterator::Unequal*) {}
+    virtual void operator()(hilti::operator_::stream::iterator::Lower*) {}
+    virtual void operator()(hilti::operator_::stream::iterator::LowerEqual*) {}
+    virtual void operator()(hilti::operator_::stream::iterator::Greater*) {}
+    virtual void operator()(hilti::operator_::stream::iterator::GreaterEqual*) {}
+    virtual void operator()(hilti::operator_::stream::iterator::Difference*) {}
+    virtual void operator()(hilti::operator_::stream::iterator::Sum*) {}
+    virtual void operator()(hilti::operator_::stream::iterator::SumAssign*) {}
+    virtual void operator()(hilti::operator_::stream::iterator::Offset*) {}
+    virtual void operator()(hilti::operator_::stream::iterator::IsFrozen*) {}
+    virtual void operator()(hilti::operator_::stream::view::Size*) {}
+    virtual void operator()(hilti::operator_::stream::view::InBytes*) {}
+    virtual void operator()(hilti::operator_::stream::view::InView*) {}
+    virtual void operator()(hilti::operator_::stream::view::EqualView*) {}
+    virtual void operator()(hilti::operator_::stream::view::EqualBytes*) {}
+    virtual void operator()(hilti::operator_::stream::view::UnequalView*) {}
+    virtual void operator()(hilti::operator_::stream::view::UnequalBytes*) {}
+    virtual void operator()(hilti::operator_::stream::view::Offset*) {}
+    virtual void operator()(hilti::operator_::stream::view::AdvanceBy*) {}
+    virtual void operator()(hilti::operator_::stream::view::AdvanceToNextData*) {}
+    virtual void operator()(hilti::operator_::stream::view::Limit*) {}
+    virtual void operator()(hilti::operator_::stream::view::AdvanceTo*) {}
+    virtual void operator()(hilti::operator_::stream::view::Find*) {}
+    virtual void operator()(hilti::operator_::stream::view::At*) {}
+    virtual void operator()(hilti::operator_::stream::view::StartsWith*) {}
+    virtual void operator()(hilti::operator_::stream::view::SubIterators*) {}
+    virtual void operator()(hilti::operator_::stream::view::SubIterator*) {}
+    virtual void operator()(hilti::operator_::stream::view::SubOffsets*) {}
+    virtual void operator()(hilti::operator_::stream::Ctor*) {}
+    virtual void operator()(hilti::operator_::stream::Size*) {}
+    virtual void operator()(hilti::operator_::stream::Unequal*) {}
+    virtual void operator()(hilti::operator_::stream::SumAssignView*) {}
+    virtual void operator()(hilti::operator_::stream::SumAssignBytes*) {}
+    virtual void operator()(hilti::operator_::stream::Freeze*) {}
+    virtual void operator()(hilti::operator_::stream::Unfreeze*) {}
+    virtual void operator()(hilti::operator_::stream::IsFrozen*) {}
+    virtual void operator()(hilti::operator_::stream::At*) {}
+    virtual void operator()(hilti::operator_::stream::Trim*) {}
+    virtual void operator()(hilti::operator_::stream::Statistics*) {}
+    virtual void operator()(hilti::operator_::string::Equal*) {}
+    virtual void operator()(hilti::operator_::string::Unequal*) {}
+    virtual void operator()(hilti::operator_::string::Size*) {}
+    virtual void operator()(hilti::operator_::string::Sum*) {}
+    virtual void operator()(hilti::operator_::string::SumAssign*) {}
+    virtual void operator()(hilti::operator_::string::Modulo*) {}
+    virtual void operator()(hilti::operator_::string::Encode*) {}
+    virtual void operator()(hilti::operator_::string::Split*) {}
+    virtual void operator()(hilti::operator_::string::Split1*) {}
+    virtual void operator()(hilti::operator_::string::StartsWith*) {}
+    virtual void operator()(hilti::operator_::string::EndsWith*) {}
+    virtual void operator()(hilti::operator_::string::LowerCase*) {}
+    virtual void operator()(hilti::operator_::string::UpperCase*) {}
+    virtual void operator()(hilti::operator_::struct_::Unset*) {}
+    virtual void operator()(hilti::operator_::struct_::MemberNonConst*) {}
+    virtual void operator()(hilti::operator_::struct_::MemberConst*) {}
+    virtual void operator()(hilti::operator_::struct_::TryMember*) {}
+    virtual void operator()(hilti::operator_::struct_::HasMember*) {}
+    virtual void operator()(hilti::operator_::time::Equal*) {}
+    virtual void operator()(hilti::operator_::time::Unequal*) {}
+    virtual void operator()(hilti::operator_::time::SumInterval*) {}
+    virtual void operator()(hilti::operator_::time::DifferenceTime*) {}
+    virtual void operator()(hilti::operator_::time::DifferenceInterval*) {}
+    virtual void operator()(hilti::operator_::time::Greater*) {}
+    virtual void operator()(hilti::operator_::time::GreaterEqual*) {}
+    virtual void operator()(hilti::operator_::time::Lower*) {}
+    virtual void operator()(hilti::operator_::time::LowerEqual*) {}
+    virtual void operator()(hilti::operator_::time::CtorSignedIntegerNs*) {}
+    virtual void operator()(hilti::operator_::time::CtorSignedIntegerSecs*) {}
+    virtual void operator()(hilti::operator_::time::CtorUnsignedIntegerNs*) {}
+    virtual void operator()(hilti::operator_::time::CtorUnsignedIntegerSecs*) {}
+    virtual void operator()(hilti::operator_::time::CtorRealSecs*) {}
+    virtual void operator()(hilti::operator_::time::Seconds*) {}
+    virtual void operator()(hilti::operator_::time::Nanoseconds*) {}
+    virtual void operator()(hilti::operator_::tuple::Equal*) {}
+    virtual void operator()(hilti::operator_::tuple::Unequal*) {}
+    virtual void operator()(hilti::operator_::tuple::Index*) {}
+    virtual void operator()(hilti::operator_::tuple::Member*) {}
+    virtual void operator()(hilti::operator_::tuple::CustomAssign*) {}
+    virtual void operator()(hilti::operator_::union_::Equal*) {}
+    virtual void operator()(hilti::operator_::union_::Unequal*) {}
+    virtual void operator()(hilti::operator_::union_::MemberConst*) {}
+    virtual void operator()(hilti::operator_::union_::MemberNonConst*) {}
+    virtual void operator()(hilti::operator_::union_::HasMember*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::DecrPostfix*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::DecrPrefix*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::IncrPostfix*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::IncrPrefix*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::SignNeg*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::Difference*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::DifferenceAssign*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::Division*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::DivisionAssign*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::Equal*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::Greater*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::GreaterEqual*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::Lower*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::LowerEqual*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::Modulo*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::Multiple*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::MultipleAssign*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::Power*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::Sum*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::SumAssign*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::Unequal*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::Negate*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::BitAnd*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::BitOr*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::BitXor*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::ShiftLeft*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::ShiftRight*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::CastToUnsigned*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::CastToSigned*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::CastToReal*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::CastToEnum*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::CastToInterval*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::CastToTime*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::CastToBool*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::CtorSigned8*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::CtorSigned16*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::CtorSigned32*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::CtorSigned64*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::CtorUnsigned8*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::CtorUnsigned16*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::CtorUnsigned32*) {}
+    virtual void operator()(hilti::operator_::unsigned_integer::CtorUnsigned64*) {}
+    virtual void operator()(hilti::operator_::vector::iterator::Deref*) {}
+    virtual void operator()(hilti::operator_::vector::iterator::IncrPostfix*) {}
+    virtual void operator()(hilti::operator_::vector::iterator::IncrPrefix*) {}
+    virtual void operator()(hilti::operator_::vector::iterator::Equal*) {}
+    virtual void operator()(hilti::operator_::vector::iterator::Unequal*) {}
+    virtual void operator()(hilti::operator_::vector::Size*) {}
+    virtual void operator()(hilti::operator_::vector::Equal*) {}
+    virtual void operator()(hilti::operator_::vector::Unequal*) {}
+    virtual void operator()(hilti::operator_::vector::IndexConst*) {}
+    virtual void operator()(hilti::operator_::vector::IndexNonConst*) {}
+    virtual void operator()(hilti::operator_::vector::Sum*) {}
+    virtual void operator()(hilti::operator_::vector::SumAssign*) {}
+    virtual void operator()(hilti::operator_::vector::Assign*) {}
+    virtual void operator()(hilti::operator_::vector::PushBack*) {}
+    virtual void operator()(hilti::operator_::vector::PopBack*) {}
+    virtual void operator()(hilti::operator_::vector::Front*) {}
+    virtual void operator()(hilti::operator_::vector::Back*) {}
+    virtual void operator()(hilti::operator_::vector::Reserve*) {}
+    virtual void operator()(hilti::operator_::vector::Resize*) {}
+    virtual void operator()(hilti::operator_::vector::At*) {}
+    virtual void operator()(hilti::operator_::vector::SubRange*) {}
+    virtual void operator()(hilti::operator_::vector::SubEnd*) {}
     virtual void operator()(hilti::statement::Assert*) {}
     virtual void operator()(hilti::statement::Block*) {}
     virtual void operator()(hilti::statement::Break*) {}
@@ -512,7 +512,7 @@ public:
     virtual void operator()(hilti::type::Network*) {}
     virtual void operator()(hilti::type::Null*) {}
     virtual void operator()(hilti::type::OperandList*) {}
-    virtual void operator()(hilti::type::operand_list::Operand* n) {}
+    virtual void operator()(hilti::type::operand_list::Operand*) {}
     virtual void operator()(hilti::type::Optional*) {}
     virtual void operator()(hilti::type::Port*) {}
     virtual void operator()(hilti::type::Real*) {}

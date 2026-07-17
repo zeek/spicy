@@ -304,7 +304,7 @@ public:
      *
      * @param qtype the qualified type now embedding this type
      */
-    virtual void newlyQualified(const QualifiedType* qtype) const {}
+    virtual void newlyQualified(const QualifiedType* /*qtype*/) const {}
 
     hilti::node::Properties properties() const override;
 

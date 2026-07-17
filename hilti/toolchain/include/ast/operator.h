@@ -357,7 +357,7 @@ public:
      * Performs semantics validation of an instantiated operator. To record any
      * errors, add them to the given AST node.
      */
-    virtual void validate(expression::ResolvedOperator* n) const {};
+    virtual void validate(expression::ResolvedOperator* /*n*/) const {};
 
     /** Instantiates the operator as an AST node, given specific operand expressions. */
     virtual Result<expression::ResolvedOperator*> instantiate(Builder* builder,

@@ -425,20 +425,20 @@ protected:
      * Hook for derived classes to execute custom code when a new unit
      * is being added as an input file.
      */
-    virtual void hookAddInput(std::shared_ptr<Unit> unit) {} // NOLINT(performance-unnecessary-value-param)
+    virtual void hookAddInput(std::shared_ptr<Unit> /*unit*/) {} // NOLINT(performance-unnecessary-value-param)
 
     /**
      * Hook for derived classes to execute custom code when a new source code
      * file is being added as an input file.
      */
-    virtual void hookAddInput(const hilti::rt::filesystem::path& path) {}
+    virtual void hookAddInput(const hilti::rt::filesystem::path& /*path*/) {}
 
     /**
      * Hook for derived classes to execute custom code when an HILTI AST has
      * been initially set up for processing by a plugin. This hook will run
      * before the AST has been processed any further by that plugin.
      */
-    virtual void hookNewASTPreCompilation(const Plugin& plugin, ASTRoot* root) {}
+    virtual void hookNewASTPreCompilation(const Plugin& /*plugin*/, ASTRoot* /*root*/) {}
 
     /**
      * Hook for derived classes to execute custom code when an HILTI AST been

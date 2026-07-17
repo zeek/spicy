@@ -18,37 +18,37 @@ public:
     using hilti::visitor::Dispatcher::operator();
 
     virtual void operator()(spicy::operator_::unit::MemberCall*) {}
-    virtual void operator()(spicy::operator_::sink::Size* n) {}
-    virtual void operator()(spicy::operator_::sink::Close* n) {}
-    virtual void operator()(spicy::operator_::sink::Connect* n) {}
-    virtual void operator()(spicy::operator_::sink::ConnectMIMETypeString* n) {}
-    virtual void operator()(spicy::operator_::sink::ConnectMIMETypeBytes* n) {}
-    virtual void operator()(spicy::operator_::sink::ConnectFilter* n) {}
-    virtual void operator()(spicy::operator_::sink::Gap* n) {}
-    virtual void operator()(spicy::operator_::sink::SequenceNumber* n) {}
-    virtual void operator()(spicy::operator_::sink::SetAutoTrim* n) {}
-    virtual void operator()(spicy::operator_::sink::SetInitialSequenceNumber* n) {}
-    virtual void operator()(spicy::operator_::sink::SetPolicy* n) {}
-    virtual void operator()(spicy::operator_::sink::Skip* n) {}
-    virtual void operator()(spicy::operator_::sink::Trim* n) {}
-    virtual void operator()(spicy::operator_::sink::Write* n) {}
-    virtual void operator()(spicy::operator_::unit::Unset* n) {}
-    virtual void operator()(spicy::operator_::unit::MemberNonConst* n) {}
-    virtual void operator()(spicy::operator_::unit::MemberConst* n) {}
-    virtual void operator()(spicy::operator_::unit::TryMember* n) {}
-    virtual void operator()(spicy::operator_::unit::HasMember* n) {}
-    virtual void operator()(spicy::operator_::unit::Offset* n) {}
-    virtual void operator()(spicy::operator_::unit::Position* n) {}
-    virtual void operator()(spicy::operator_::unit::Input* n) {}
-    virtual void operator()(spicy::operator_::unit::SetInput* n) {}
-    virtual void operator()(spicy::operator_::unit::Find* n) {}
-    virtual void operator()(spicy::operator_::unit::ConnectFilter* n) {}
-    virtual void operator()(spicy::operator_::unit::Forward* n) {}
-    virtual void operator()(spicy::operator_::unit::ForwardEod* n) {}
-    virtual void operator()(spicy::operator_::unit::Backtrack* n) {}
-    virtual void operator()(spicy::operator_::unit::ContextConst* n) {}
-    virtual void operator()(spicy::operator_::unit::ContextNonConst* n) {}
-    virtual void operator()(spicy::operator_::unit::Stream* n) {}
+    virtual void operator()(spicy::operator_::sink::Size*) {}
+    virtual void operator()(spicy::operator_::sink::Close*) {}
+    virtual void operator()(spicy::operator_::sink::Connect*) {}
+    virtual void operator()(spicy::operator_::sink::ConnectMIMETypeString*) {}
+    virtual void operator()(spicy::operator_::sink::ConnectMIMETypeBytes*) {}
+    virtual void operator()(spicy::operator_::sink::ConnectFilter*) {}
+    virtual void operator()(spicy::operator_::sink::Gap*) {}
+    virtual void operator()(spicy::operator_::sink::SequenceNumber*) {}
+    virtual void operator()(spicy::operator_::sink::SetAutoTrim*) {}
+    virtual void operator()(spicy::operator_::sink::SetInitialSequenceNumber*) {}
+    virtual void operator()(spicy::operator_::sink::SetPolicy*) {}
+    virtual void operator()(spicy::operator_::sink::Skip*) {}
+    virtual void operator()(spicy::operator_::sink::Trim*) {}
+    virtual void operator()(spicy::operator_::sink::Write*) {}
+    virtual void operator()(spicy::operator_::unit::Unset*) {}
+    virtual void operator()(spicy::operator_::unit::MemberNonConst*) {}
+    virtual void operator()(spicy::operator_::unit::MemberConst*) {}
+    virtual void operator()(spicy::operator_::unit::TryMember*) {}
+    virtual void operator()(spicy::operator_::unit::HasMember*) {}
+    virtual void operator()(spicy::operator_::unit::Offset*) {}
+    virtual void operator()(spicy::operator_::unit::Position*) {}
+    virtual void operator()(spicy::operator_::unit::Input*) {}
+    virtual void operator()(spicy::operator_::unit::SetInput*) {}
+    virtual void operator()(spicy::operator_::unit::Find*) {}
+    virtual void operator()(spicy::operator_::unit::ConnectFilter*) {}
+    virtual void operator()(spicy::operator_::unit::Forward*) {}
+    virtual void operator()(spicy::operator_::unit::ForwardEod*) {}
+    virtual void operator()(spicy::operator_::unit::Backtrack*) {}
+    virtual void operator()(spicy::operator_::unit::ContextConst*) {}
+    virtual void operator()(spicy::operator_::unit::ContextNonConst*) {}
+    virtual void operator()(spicy::operator_::unit::Stream*) {}
     virtual void operator()(spicy::declaration::Hook*) {}
     virtual void operator()(spicy::ctor::Unit*) {}
     virtual void operator()(spicy::declaration::UnitHook*) {}
