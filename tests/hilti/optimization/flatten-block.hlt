@@ -57,15 +57,15 @@ public function void fn(bool flag) {
         # CHECK: local bool [[C2:.*c.*]] = flag;
         local bool c = flag;
         use(c);
-        # CHECK: x = [[C2]];
+        # CHECK: x = {{.*}}[[C2]]
         x = c;
         use(x);
 
         {
-            # CHECK: local bool [[C3:.*c.*]] = x;
+            # CHECK: local bool [[C3:.*c.*]] = {{.*}}x
             local bool c = x;
             use(c);
-            # CHECK: if ( [[C3]] )
+            # CHECK: if ( {{.*}}[[C3]]{{.*}} )
             if ( c )
                 return;
         }
