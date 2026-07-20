@@ -334,7 +334,7 @@ struct Visitor : hilti::visitor::PreOrder {
             else
                 default_ = throw_on_default(static_cast<std::string>(cxx_switch_cond));
 
-            block->addSwitch(fmt("auto&& %s = %s; %s", cxx_id, cxx_init, cxx_switch_cond), cases, std::move(default_));
+            block->addSwitch(fmt("auto %s = %s; %s", cxx_id, cxx_init, cxx_switch_cond), cases, std::move(default_));
         };
 
         // Emit a C++ if/else chain for complex condition values.
@@ -356,7 +356,7 @@ struct Visitor : hilti::visitor::PreOrder {
                 auto body = cg->compile(c->body());
 
                 if ( first ) {
-                    block->addIf(fmt("auto&& %s = %s", cxx_id, cxx_init), std::move(cond), std::move(body));
+                    block->addIf(fmt("auto %s = %s", cxx_id, cxx_init), std::move(cond), std::move(body));
                     first = false;
                 }
                 else
