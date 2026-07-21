@@ -224,6 +224,8 @@ inline std::ostream& operator<<(std::ostream& out, const UnsafeConstIterator& /*
 
 } // namespace detail
 
+inline std::ostream& operator<<(std::ostream& out, const Side& x) { return out << hilti::rt::to_string(x); }
+
 } // namespace bytes
 
 /** HILTI's `Bytes` is a `std::string`-like type for wrapping raw bytes with

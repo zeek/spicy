@@ -355,6 +355,8 @@ inline hilti::rt::integer::safe<UINT> noop(hilti::rt::integer::safe<UINT> v) {
     return v;
 }
 
+inline std::ostream& operator<<(std::ostream& out, const BitOrder& x) { return out << to_string(x); }
+
 } // namespace integer
 
 namespace detail::adl {

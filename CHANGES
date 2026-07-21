@@ -1,3 +1,13 @@
+1.17.0-dev.166 | 2026-07-21 21:28:15 +0200
+
+  * GH-2439: Add missing `operator<<` for a bunch of runtime enum types (Benjamin Bannier, Corelight)
+
+    These had implementations of `to_string` so we could e.g., use them with
+    `print`, but were missing `operator<<` which is required for formatting
+    with `"..." % ..`, so this commits adds them.
+
+    Closes #2439.
+
 1.17.0-dev.164 | 2026-07-15 09:13:40 -0400
 
   * GH-2433: Fix FP cycle in types with sequential, same types (Evan Typanski, Corelight)
