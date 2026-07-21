@@ -105,6 +105,10 @@ TEST_CASE("integer::BitOrder") {
     CHECK_EQ(to_string(Enum(integer::BitOrder::LSB0)), "BitOrder::LSB0");
     CHECK_EQ(to_string(Enum(integer::BitOrder::MSB0)), "BitOrder::MSB0");
     CHECK_EQ(to_string(Enum(integer::BitOrder::Undef)), "BitOrder::Undef");
+
+    CHECK_EQ(fmt("%s", Enum(integer::BitOrder::LSB0)), "BitOrder::LSB0");
+    CHECK_EQ(fmt("%s", Enum(integer::BitOrder::MSB0)), "BitOrder::MSB0");
+    CHECK_EQ(fmt("%s", Enum(integer::BitOrder::Undef)), "BitOrder::Undef");
 }
 
 TEST_CASE("bytes::Charset") {
@@ -113,18 +117,32 @@ TEST_CASE("bytes::Charset") {
     CHECK_EQ(to_string(Enum(unicode::Charset::UTF16BE)), "Charset::UTF16BE");
     CHECK_EQ(to_string(Enum(unicode::Charset::UTF16LE)), "Charset::UTF16LE");
     CHECK_EQ(to_string(Enum(unicode::Charset::Undef)), "Charset::Undef");
+
+    CHECK_EQ(fmt("%s", Enum(unicode::Charset::ASCII)), "Charset::ASCII");
+    CHECK_EQ(fmt("%s", Enum(unicode::Charset::UTF8)), "Charset::UTF8");
+    CHECK_EQ(fmt("%s", Enum(unicode::Charset::UTF16BE)), "Charset::UTF16BE");
+    CHECK_EQ(fmt("%s", Enum(unicode::Charset::UTF16LE)), "Charset::UTF16LE");
+    CHECK_EQ(fmt("%s", Enum(unicode::Charset::Undef)), "Charset::Undef");
 }
 
 TEST_CASE("unicode::DecodeErrorStrategy") {
     CHECK_EQ(to_string(Enum(unicode::DecodeErrorStrategy::IGNORE)), "DecodeErrorStrategy::IGNORE");
     CHECK_EQ(to_string(Enum(unicode::DecodeErrorStrategy::REPLACE)), "DecodeErrorStrategy::REPLACE");
     CHECK_EQ(to_string(Enum(unicode::DecodeErrorStrategy::STRICT)), "DecodeErrorStrategy::STRICT");
+
+    CHECK_EQ(fmt("%s", Enum(unicode::DecodeErrorStrategy::IGNORE)), "DecodeErrorStrategy::IGNORE");
+    CHECK_EQ(fmt("%s", Enum(unicode::DecodeErrorStrategy::REPLACE)), "DecodeErrorStrategy::REPLACE");
+    CHECK_EQ(fmt("%s", Enum(unicode::DecodeErrorStrategy::STRICT)), "DecodeErrorStrategy::STRICT");
 }
 
 TEST_CASE("bytes::Side") {
     CHECK_EQ(to_string(Enum(bytes::Side::Left)), "Side::Left");
     CHECK_EQ(to_string(Enum(bytes::Side::Right)), "Side::Right");
     CHECK_EQ(to_string(Enum(bytes::Side::Both)), "Side::Both");
+
+    CHECK_EQ(fmt("%s", Enum(bytes::Side::Left)), "Side::Left");
+    CHECK_EQ(fmt("%s", Enum(bytes::Side::Right)), "Side::Right");
+    CHECK_EQ(fmt("%s", Enum(bytes::Side::Both)), "Side::Both");
 }
 
 TEST_CASE("ByteOrder") {
@@ -133,6 +151,12 @@ TEST_CASE("ByteOrder") {
     CHECK_EQ(to_string(Enum(ByteOrder::Network)), "ByteOrder::Network");
     CHECK_EQ(to_string(Enum(ByteOrder::Host)), "ByteOrder::Host");
     CHECK_EQ(to_string(Enum(ByteOrder::Undef)), "ByteOrder::Undef");
+
+    CHECK_EQ(fmt("%s", Enum(ByteOrder::Little)), "ByteOrder::Little");
+    CHECK_EQ(fmt("%s", Enum(ByteOrder::Big)), "ByteOrder::Big");
+    CHECK_EQ(fmt("%s", Enum(ByteOrder::Network)), "ByteOrder::Network");
+    CHECK_EQ(fmt("%s", Enum(ByteOrder::Host)), "ByteOrder::Host");
+    CHECK_EQ(fmt("%s", Enum(ByteOrder::Undef)), "ByteOrder::Undef");
 }
 
 TEST_CASE("Bytes") {
@@ -241,6 +265,10 @@ TEST_CASE("real::Type") {
     CHECK_EQ(to_string(Enum(real::Type::IEEE754_Double)), "Type::IEEE754_Double");
     CHECK_EQ(to_string(Enum(real::Type::IEEE754_Single)), "Type::IEEE754_Single");
     CHECK_EQ(to_string(Enum(real::Type::Undef)), "Type::Undef");
+
+    CHECK_EQ(fmt("%s", Enum(real::Type::IEEE754_Double)), "Type::IEEE754_Double");
+    CHECK_EQ(fmt("%s", Enum(real::Type::IEEE754_Single)), "Type::IEEE754_Single");
+    CHECK_EQ(fmt("%s", Enum(real::Type::Undef)), "Type::Undef");
 }
 
 TEST_CASE("RegExp") {

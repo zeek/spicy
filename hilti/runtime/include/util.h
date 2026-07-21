@@ -599,6 +599,8 @@ namespace detail::adl {
 std::string to_string(const ByteOrder& x, tag /*unused*/);
 }
 
+inline std::ostream& operator<<(std::ostream& out, const ByteOrder& x) { return out << to_string(x); }
+
 /** Parse time from string.
  *
  * This function uses the currently active locale and timezone to parse values.

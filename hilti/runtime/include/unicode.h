@@ -29,6 +29,9 @@ HILTI_RT_ENUM(Charset, UTF8, UTF16LE, UTF16BE, ASCII);
 
 constexpr uint32_t REPLACEMENT_CHARACTER = 0x0000FFFD;
 
+inline std::ostream& operator<<(std::ostream& out, const DecodeErrorStrategy& x) { return out << to_string(x); }
+inline std::ostream& operator<<(std::ostream& out, const Charset& x) { return out << to_string(x); }
+
 } // namespace unicode
 
 namespace detail::adl {

@@ -24,6 +24,8 @@ extern Result<Tuple<double, Bytes>> unpack(const Bytes& data, Type type, ByteOrd
 /** Unpacks a floatingpoint value from a binary representation, following the protocol for `unpack` operator. */
 extern Result<Tuple<double, stream::View>> unpack(const stream::View& data, Type type, ByteOrder fmt);
 
+inline std::ostream& operator<<(std::ostream& out, const Type& x) { return out << to_string(x); }
+
 } // namespace real
 
 namespace detail::adl {
