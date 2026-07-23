@@ -21,7 +21,7 @@ module sync;
 
 public type X1 = unit {
     %port = 80/tcp;
-    xs: (/(A|B|C)/ &synchronize)[];
+    xs: (/A|B|C/ &synchronize)[];
     on %synced {
         confirm;
     }
