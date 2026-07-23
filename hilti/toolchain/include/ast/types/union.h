@@ -39,7 +39,7 @@ public:
     unsigned int index(const ID& id) const {
         for ( const auto&& [i, f] : util::enumerate(fields()) ) {
             if ( f->id() == id )
-                return i + 1;
+                return static_cast<unsigned int>(i + 1);
         }
 
         return 0;

@@ -176,7 +176,7 @@ public:
     static const Order Order_ = order;
 
     Visitor() = default;
-    virtual ~Visitor() = default;
+    ~Visitor() override = default;
 
     virtual void dispatch(Node* n) {
         if ( n )
@@ -201,6 +201,8 @@ public:
      * @param dbg debug stream to log modifications to
      */
     MutatingVisitorBase(ASTContext* ctx, logging::DebugStream dbg);
+
+    virtual ~MutatingVisitorBase() = default;
 
     /** Returns the AST context the nodes are part of. */
     auto context() const { return _context; }

@@ -1,3 +1,17 @@
+1.17.0-dev.173 | 2026-07-23 14:53:51 +0200
+
+  * Fix warning about implicit integer conversion (Tim Wojtulewicz, Corelight)
+
+  * Make if statement that is only typechecking as constexpr (Tim Wojtulewicz, Corelight)
+
+  * Fix compiler warnings about missing virtual destructors for classes with virtual methods (Tim Wojtulewicz, Corelight)
+
+  * Fix compiler warnings about unused arguments (Tim Wojtulewicz, Corelight)
+
+  * Fix compiler warning about shadowed member variable (Tim Wojtulewicz, Corelight)
+
+  * Use #ifdef instead of #if when checking for existence of definition (Tim Wojtulewicz, Corelight)
+
 1.17.0-dev.166 | 2026-07-21 21:28:15 +0200
 
   * GH-2439: Add missing `operator<<` for a bunch of runtime enum types (Benjamin Bannier, Corelight)
