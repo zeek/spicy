@@ -156,21 +156,42 @@ struct Visitor : public visitor::PreOrder {
             if ( ! result && state().literal_mode != LiteralMode::Skip )
                 result = lp->destination(builder()->typeBytes());
 
+            const auto has_captures = state().captures && std::ranges::any_of(n->patterns(), [](const auto& p) {
+                                          auto n = p.numberOfCaptures();
+                                          return n && *n > 0;
+                                      });
+
             bool check_for_look_ahead = needToCheckForLookAhead(n->meta());
             if ( check_for_look_ahead ) {
-                auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
+                if ( has_captures ) {
+                    // If the regexp has captures we need to rematch later with the concrete matching one,
+                    // so simply detect record which one that was here, but do not consume any input.
+                    pushBuilder(builder()->addIf(state().lahead));
 
-                pushBuilder(std::move(have_lah));
+                    pushBuilder(builder()->addIf(
+                        builder()->unequal(state().lahead, builder()->integer(lp->production->tokenID()))));
+                    pb()->parseError("unexpected token to consume", n->meta());
+                    popBuilder();
 
-                pushBuilder(builder()->addIf(
-                    builder()->unequal(state().lahead, builder()->integer(lp->production->tokenID()))));
-                pb()->parseError("unexpected token to consume", n->meta());
-                popBuilder();
+                    builder()->addAssign(state().lahead, builder()->integer(look_ahead::None));
+                    popBuilder();
+                }
+                else {
+                    // We don't have captures so simply consume input.
+                    auto [have_lah, no_lah] = builder()->addIfElse(state().lahead);
 
-                pb()->consumeLookAhead(result);
-                popBuilder();
+                    pushBuilder(std::move(have_lah));
 
-                pushBuilder(std::move(no_lah));
+                    pushBuilder(builder()->addIf(
+                        builder()->unequal(state().lahead, builder()->integer(lp->production->tokenID()))));
+                    pb()->parseError("unexpected token to consume", n->meta());
+                    popBuilder();
+
+                    pb()->consumeLookAhead(result);
+                    popBuilder();
+
+                    pushBuilder(std::move(no_lah));
+                }
             }
 
             auto* ncur = builder()->addTmp(ID("ncur"), state().cur);
@@ -228,7 +249,7 @@ struct Visitor : public visitor::PreOrder {
 
             popBuilder();
 
-            if ( check_for_look_ahead )
+            if ( check_for_look_ahead && ! has_captures )
                 popBuilder();
 
             return result;

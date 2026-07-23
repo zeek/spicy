@@ -1,0 +1,19 @@
+# @TEST-DOC: Validate that captures are filled when used in lookahead parsing. Regression test for #2438.
+#
+# @TEST-EXEC: spicyc -d %INPUT -j -o foo.hlto
+# @TEST-EXEC: printf 'A ' | spicy-driver foo.hlto >>output 2>&1
+# @TEST-EXEC: printf 'B' | spicy-driver foo.hlto >>output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+public type A = unit {
+    switch {
+        -> b: /(A)/ {
+            print $1;
+        }
+        -> c: b"B" {
+            print $$;
+        }
+    };
+};
