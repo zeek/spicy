@@ -1,3 +1,19 @@
+1.17.0-dev.176 | 2026-07-27 16:48:21 +0200
+
+  * GH-2438: Fix parsing of regexps with capture groups in lookahead (Benjamin Bannier, Corelight)
+
+    The lookahead fast path consumed the look-ahead token and skipped the
+    regex loop, so capture groups were never populated. For regexp fields
+    that have captures, we now skip the fast path and let the regex loop run
+    instead so captures are filled normally.
+
+    Fixes #2438.
+
+  * Remove capture group in `spicy.types.unit.synchronize-on-gap` test (Benjamin Bannier, Corelight)
+
+    The test was using a capture group when all it cared about was an
+    alternation.
+
 1.17.0-dev.173 | 2026-07-23 14:53:51 +0200
 
   * Fix warning about implicit integer conversion (Tim Wojtulewicz, Corelight)
