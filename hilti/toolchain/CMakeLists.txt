@@ -192,12 +192,12 @@ if (MSVC)
     # include_directories() in the top-level CMakeLists.txt.
     set_config_val(
         HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS
-        "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/3rdparty/libunistd/unistd !BUILD!${PROJECT_SOURCE_DIR}/hilti/runtime/include !BUILD!${PROJECT_BINARY_DIR}/include"
+        "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR}/hilti/rt/3rdparty !INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/3rdparty/libunistd/unistd !BUILD!${PROJECT_SOURCE_DIR}/hilti/runtime/include !BUILD!${PROJECT_BINARY_DIR}/include !BUILD!${PROJECT_SOURCE_DIR}/3rdparty/json/include"
     )
 else ()
     set_config_val(
         HILTI_CONFIG_RUNTIME_CXX_INCLUDE_DIRS
-        "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/hilti/runtime/include !BUILD!${PROJECT_BINARY_DIR}/include"
+        "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR}/hilti/rt/3rdparty !INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/hilti/runtime/include !BUILD!${PROJECT_BINARY_DIR}/include !BUILD!${PROJECT_SOURCE_DIR}/3rdparty/json/include"
     )
 endif ()
 set_config_val(

@@ -70,8 +70,9 @@ foreach (lib hilti-rt hilti-rt-debug)
                                PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
     target_include_directories(${lib}-objects BEFORE
                                PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
-    target_include_directories(${lib}-objects BEFORE
-                               PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty>)
+    target_include_directories(
+        ${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty>
+                                     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/json/include>)
 
     add_dependencies(${lib}-objects jrx-objects)
     target_include_directories(${lib}-objects BEFORE
@@ -158,6 +159,7 @@ install_headers(${PROJECT_SOURCE_DIR}/3rdparty/ArticleEnumClass-v2
                 hilti/rt/3rdparty/ArticleEnumClass-v2)
 install_headers(${PROJECT_SOURCE_DIR}/3rdparty/SafeInt hilti/rt/3rdparty/SafeInt SafeInt.hpp)
 install_headers(${PROJECT_SOURCE_DIR}/3rdparty/tinyformat hilti/rt/3rdparty/tinyformat)
+
 install_headers(${PROJECT_SOURCE_DIR}/3rdparty/json/include/nlohmann hilti/rt/3rdparty/nlohmann)
 
 ##### Tests
