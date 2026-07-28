@@ -12,6 +12,8 @@
 #include <process.h>
 #endif
 
+#include <ArticleEnumClass-v2/EnumClass.h>
+
 #include <algorithm>
 #include <cstdint>
 #include <limits>
@@ -26,7 +28,6 @@
 #include <utility>
 #include <vector>
 
-#include <hilti/rt/3rdparty/ArticleEnumClass-v2/EnumClass.h>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/filesystem.h>
 #include <hilti/rt/macros.h>
@@ -103,7 +104,8 @@ namespace hilti::rt {
 
 #undef TINYFORMAT_ERROR
 #define TINYFORMAT_ERROR(reason) throw ::hilti::rt::FormattingError(reason)
-#include <hilti/rt/3rdparty/tinyformat/tinyformat.h>
+#include <tinyformat/tinyformat.h>
+
 #include <hilti/rt/extension-points.h>
 #include <hilti/rt/fmt.h>
 

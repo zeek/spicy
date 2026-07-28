@@ -2,10 +2,11 @@
 
 #pragma once
 
-#define SAFEINT_DISABLE_ADDRESS_OPERATOR
-#include <hilti/rt/3rdparty/SafeInt/SafeInt.hpp>
 #include <hilti/rt/exception.h>
 #include <hilti/rt/macros.h>
+
+#define SAFEINT_DISABLE_ADDRESS_OPERATOR
+#include <SafeInt/SafeInt.hpp>
 
 namespace hilti::rt::integer {
 

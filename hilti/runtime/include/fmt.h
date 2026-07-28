@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include <string>
+#include <tinyformat/tinyformat.h>
 
-#include <hilti/rt/3rdparty/tinyformat/tinyformat.h>
+#include <string>
 
 namespace hilti::rt {
 

@@ -9,7 +9,7 @@ using namespace hilti::rt;
 
 #define SAFE_MATH_FAIL_DEFINED
 extern "C" {
-#include <hilti/rt/3rdparty/SafeInt/safe_math_impl.h>
+#include <SafeInt/safe_math_impl.h>
 }
 
 int64_t integer::safe_negate(uint64_t x) { return safe_sub_int64_uint64(0, x); }

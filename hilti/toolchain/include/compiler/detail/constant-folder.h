@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <hilti/rt/3rdparty/ArticleEnumClass-v2/EnumClass.h>
+#include <ArticleEnumClass-v2/EnumClass.h>
 
 #include <hilti/ast/forward.h>
 #include <hilti/base/result.h>

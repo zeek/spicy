@@ -121,13 +121,11 @@ endif ()
 target_compile_definitions(hilti-rt-debug-objects PRIVATE "HILTI_RT_BUILD_TYPE_DEBUG")
 
 add_library(hilti-rt-tests-library-dummy1 EXCLUDE_FROM_ALL SHARED src/tests/library-dummy.cc)
-target_include_directories(hilti-rt-tests-library-dummy1
-                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(hilti-rt-tests-library-dummy1 PRIVATE hilti-rt)
 target_compile_definitions(hilti-rt-tests-library-dummy1 PUBLIC RETURN_VALUE=1)
 
 add_library(hilti-rt-tests-library-dummy2 EXCLUDE_FROM_ALL SHARED src/tests/library-dummy.cc)
-target_include_directories(hilti-rt-tests-library-dummy2
-                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_link_libraries(hilti-rt-tests-library-dummy2 PRIVATE hilti-rt)
 target_compile_definitions(hilti-rt-tests-library-dummy2 PUBLIC RETURN_VALUE=2)
 
 ##### Configuration files
@@ -157,9 +155,9 @@ install(CODE "file(REMOVE \"\$ENV\{DESTDIR\}${CMAKE_INSTALL_FULL_INCLUDEDIR}/hil
 # Install the 3rdparty headers that we need individually.
 install_headers(${PROJECT_SOURCE_DIR}/3rdparty/ArticleEnumClass-v2
                 hilti/rt/3rdparty/ArticleEnumClass-v2)
-install_headers(${PROJECT_SOURCE_DIR}/3rdparty/SafeInt hilti/rt/3rdparty/SafeInt SafeInt.hpp)
+install_headers(${PROJECT_SOURCE_DIR}/3rdparty/SafeInt hilti/rt/3rdparty/SafeInt SafeInt.hpp
+                safe_math_impl.h safe_math.h)
 install_headers(${PROJECT_SOURCE_DIR}/3rdparty/tinyformat hilti/rt/3rdparty/tinyformat)
-
 install_headers(${PROJECT_SOURCE_DIR}/3rdparty/json/include/nlohmann hilti/rt/3rdparty/nlohmann)
 
 ##### Tests
