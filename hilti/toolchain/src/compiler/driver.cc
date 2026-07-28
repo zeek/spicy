@@ -72,7 +72,7 @@ static struct option long_driver_options[] =
      {.name = "version", .has_arg = no_argument, .flag = nullptr, .val = 'v'},
      {.name = nullptr, .has_arg = 0, .flag = nullptr, .val = 0}};
 
-Driver::Driver(std::string name) : _name(std::move(name)) { configuration().initLocation(false); }
+Driver::Driver(std::string name) : _name(std::move(name)) { configuration().initLocation(util::currentExecutable()); }
 
 Driver::Driver(std::string name, const hilti::rt::filesystem::path& argv0) : _name(std::move(name)) {
     configuration().initLocation(argv0);
