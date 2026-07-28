@@ -1,3 +1,49 @@
+1.17.0-dev.183 | 2026-07-28 15:36:31 -0400
+
+  * GH-1960: Implement optimizer pass to `move` last uses (Evan Typanski, Corelight)
+
+    Closes #1960
+
+    Adds an optimization pass that adds moves when it's the last use. This is
+    relatively conservative; it doesn't try to understand expression ordering
+    and won't move in many cases. But, in user-code (not generated parser
+    code) this could give a bit of a speedup.
+
+    The analysis is just a liveness analysis. If the name isn't live after a
+    CFG node, we theoretically can move it.
+
+  * Fix CFG for switch cases (Evan Typanski, Corelight)
+
+    The CFG was making many parallel branches for a switch:
+
+    This bug would make 's' appear dead after each case expression
+    (comparison with "a", "b", and "c") when in reality it's only dead after
+    the comparison with "c".
+
+    This just updated the switch CFG baselines, since including the test for
+    move last uses that caused it (basically a switch over multiple strings)
+    would require baselining C++, which is a bit brittle.
+
+  * Make hilti moves a RT function (Evan Typanski, Corelight)
+
+    This avoids adding C++ semantics to the hilti codegen. Instead, it's just
+    a runtime helper that moves-or-not.
+
+    This also uncovered a "bug" in codegen: switch statements used auto&&,
+    which could bind to an lvalue, but everything in hilti sees it as an
+    rvalue. This was fixed in the commit before, but it arose because of
+    this and the move last uses optimizer pass.
+
+  * Make `switch` and `if` assignments into values (Evan Typanski, Corelight)
+
+    When making optimizer passes, the values from initializers in switch and
+    if statements look like values, not references. Using `&&` can make a
+    reference, which would make the optimizer do the wrong thing if it messed
+    with it.
+
+    This forces them to just use `auto` so that future optimizer passes don't
+    accidentally move from an aliased reference, for example.
+
 1.17.0-dev.178 | 2026-07-28 20:53:34 +0200
 
   * Drop unnecessary CMake policy changes (Benjamin Bannier, Corelight)

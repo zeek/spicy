@@ -844,4 +844,21 @@ struct scope_exit {
     EF _f;
 };
 
+namespace detail {
+template<typename T>
+concept should_move =
+    ! std::is_const_v<std::remove_reference_t<T>> && ! std::is_trivially_move_constructible_v<std::remove_cvref_t<T>>;
+
+template<typename T>
+[[nodiscard]] constexpr std::remove_cvref_t<T> move_non_trivial(T&& t) {
+    if constexpr ( should_move<T> )
+        // We should not emit cases that this is actually bugprone.
+        // A forward here would not do anything.
+        return std::move(t); // NOLINT(bugprone-move-forwarding-reference)
+    else
+        // Forward here since P2266 is only fixed in C++23.
+        return std::forward<T>(t);
+}
+} // namespace detail
+
 } // namespace hilti::rt

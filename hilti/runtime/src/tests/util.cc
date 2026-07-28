@@ -15,8 +15,12 @@
 #include <hilti/rt/fiber.h>
 #include <hilti/rt/filesystem.h>
 #include <hilti/rt/init.h>
+#include <hilti/rt/types/address.h>
 #include <hilti/rt/types/integer.h>
+#include <hilti/rt/types/map.h>
 #include <hilti/rt/types/null.h>
+#include <hilti/rt/types/port.h>
+#include <hilti/rt/types/regexp.h>
 #include <hilti/rt/types/result.h>
 #include <hilti/rt/types/set.h>
 #include <hilti/rt/types/time.h>
@@ -712,6 +716,39 @@ TEST_CASE("version") {
 
     CHECK_MESSAGE(version().find(PROJECT_VERSION_STRING_LONG) != std::string::npos,
                   fmt("version string '%s' does not contain version '%s'", version(), PROJECT_VERSION_STRING_LONG));
+}
+
+TEST_CASE("no_move") {
+    // const types should not move out
+    SUBCASE("const") {
+        CHECK_FALSE(detail::should_move<const Bytes>);
+        CHECK_FALSE(detail::should_move<const std::string>);
+        CHECK_FALSE(detail::should_move<const Bytes&>);
+        CHECK_FALSE(detail::should_move<const std::string&>);
+    }
+    SUBCASE("trivial") {
+        CHECK_FALSE(detail::should_move<integer::safe<uint64_t>>);
+        CHECK_FALSE(detail::should_move<int>);
+        CHECK_FALSE(detail::should_move<bool>);
+        CHECK_FALSE(detail::should_move<double>);
+
+        CHECK_FALSE(detail::should_move<Address>);
+        CHECK_FALSE(detail::should_move<Port>);
+        CHECK_FALSE(detail::should_move<Interval>);
+        CHECK_FALSE(detail::should_move<Time>);
+    }
+}
+
+TEST_CASE("move") {
+    CHECK(detail::should_move<std::string>);
+    CHECK(detail::should_move<Bytes>);
+    CHECK(detail::should_move<Vector<int>>);
+    CHECK(detail::should_move<Map<int, int>>);
+    CHECK(detail::should_move<RegExp>);
+    CHECK(detail::should_move<stream::View>);
+
+    CHECK(detail::should_move<Bytes&>);
+    CHECK(detail::should_move<Bytes&&>);
 }
 
 TEST_SUITE_END();

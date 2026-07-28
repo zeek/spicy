@@ -120,7 +120,7 @@ struct Visitor : hilti::visitor::PreOrder {
 
     void operator()(expression::Move* n) final {
         if ( ! lhs )
-            result = fmt("std::move(%s)", cg->compile(n->expression()));
+            result = fmt("::hilti::rt::detail::move_non_trivial(%s)", cg->compile(n->expression()));
         else
             result = cg->compile(n->expression(), true);
     }

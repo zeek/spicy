@@ -111,7 +111,7 @@ method extern view<stream> foo::B::parse1(inout value_ref<stream> _t_data, optio
     # "<...>/unused-functions.spicy:21:17-21:23"
 
     # Begin parsing production: Unit: foo__B ->
-    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*move(_t_unit))._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, move(_t_lahead), _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__B ->
 
     if ( _t_error ) 
@@ -131,7 +131,7 @@ method extern view<stream> foo::B::parse3(inout value_ref<spicy_rt::ParsedUnit> 
     # "<...>/unused-functions.spicy:21:17-21:23"
 
     # Begin parsing production: Unit: foo__B ->
-    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*move(_t_unit))._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, move(_t_lahead), _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__B ->
 
     if ( _t_error ) 
@@ -149,7 +149,7 @@ method extern view<stream> foo::B::parse2(inout value_ref<B> _t_unit, inout valu
     # "<...>/unused-functions.spicy:21:17-21:23"
 
     # Begin parsing production: Unit: foo__B ->
-    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, move(_t_lahead), _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__B ->
 
     if ( _t_error ) 
@@ -192,7 +192,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
     # Begin parsing production: Unit: foo__C_2 ->
     _t_transient__anon = default<C>();
-    _t_error = _t_transient__anon._t_parse_stage1(_t_error);
+    _t_error = move(_t_transient__anon)._t_parse_stage1(_t_error);
     # End parsing production: Unit: foo__C_2 ->
 
     hilti::debugDedent("spicy");
@@ -209,7 +209,7 @@ method extern view<stream> foo::D::parse1(inout value_ref<stream> _t_data, optio
     # "<...>/unused-functions.spicy:25:17-27:1"
 
     # Begin parsing production: Unit: foo__D -> Resolved_5
-    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*move(_t_unit))._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, move(_t_lahead), _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__D -> Resolved_5
 
     if ( _t_error ) 
@@ -229,7 +229,7 @@ method extern view<stream> foo::D::parse3(inout value_ref<spicy_rt::ParsedUnit> 
     # "<...>/unused-functions.spicy:25:17-27:1"
 
     # Begin parsing production: Unit: foo__D -> Resolved_5
-    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*move(_t_unit))._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, move(_t_lahead), _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__D -> Resolved_5
 
     if ( _t_error ) 
@@ -247,7 +247,7 @@ method extern view<stream> foo::D::parse2(inout value_ref<D> _t_unit, inout valu
     # "<...>/unused-functions.spicy:25:17-27:1"
 
     # Begin parsing production: Unit: foo__D -> Resolved_5
-    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, move(_t_lahead), _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__D -> Resolved_5
 
     if ( _t_error ) 

@@ -66,6 +66,7 @@ function void test() {
     (x, ) = s.use_one(x);
 
     # Use the variables again so nothing funky happens
+    hilti::print(s);
     hilti::print(x);
     hilti::print(y);
     hilti::print(z);

@@ -62,7 +62,7 @@ function void branching(bool b) {
     if (b) {
         a = 10;
     }
-    # CHECK: local uint<64> c = a
+    # CHECK: local uint<64> c = {{.*}}a
     local uint<64> c = a;
     useval(c);
 }
@@ -118,11 +118,11 @@ function void copy_prop(uint<64> x) {
         else
             b = 15;
 
-        # CHECK: a = b
+        # CHECK: a = {{.*}}b
         a = b;
     }
 
-    # CHECK: take_num(a
+    # CHECK: take_num({{.*}}a
     take_num(a);
 
     # We can, however, constant propagate
@@ -132,7 +132,7 @@ function void copy_prop(uint<64> x) {
         # CHECK: n = 15
         n = m;
     }
-    # CHECK: take_num(n
+    # CHECK: take_num({{.*}}n
     take_num(n);
 }
 

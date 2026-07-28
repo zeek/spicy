@@ -171,7 +171,7 @@ method extern view<stream> foo::Pub2::parse1(inout value_ref<stream> _t_data, op
     # "<...>/unused-types.spicy:16:20-16:26"
 
     # Begin parsing production: Unit: foo__Pub2 ->
-    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*move(_t_unit))._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, move(_t_lahead), _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__Pub2 ->
 
     if ( _t_error ) 
@@ -191,7 +191,7 @@ method extern view<stream> foo::Pub2::parse3(inout value_ref<spicy_rt::ParsedUni
     # "<...>/unused-types.spicy:16:20-16:26"
 
     # Begin parsing production: Unit: foo__Pub2 ->
-    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*move(_t_unit))._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, move(_t_lahead), _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__Pub2 ->
 
     if ( _t_error ) 
@@ -209,7 +209,7 @@ method extern view<stream> foo::Pub2::parse2(inout value_ref<Pub2> _t_unit, inou
     # "<...>/unused-types.spicy:16:20-16:26"
 
     # Begin parsing production: Unit: foo__Pub2 ->
-    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, move(_t_lahead), _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__Pub2 ->
 
     if ( _t_error ) 
@@ -276,7 +276,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
     # Begin parsing production: Unit: foo__Priv5_2 ->
     _t_transient__anon_2 = default<Priv5>();
-    _t_error = _t_transient__anon_2._t_parse_stage1(_t_error);
+    _t_error = move(_t_transient__anon_2)._t_parse_stage1(_t_error);
     # End parsing production: Unit: foo__Priv5_2 ->
 
     # "<...>/unused-types.spicy:28:14-28:20"
@@ -300,7 +300,7 @@ method extern view<stream> foo::Pub3::parse1(inout value_ref<stream> _t_data, op
     # "<...>/unused-types.spicy:29:20-32:1"
 
     # Begin parsing production: Unit: foo__Pub3 -> Resolved_11 Resolved_12
-    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*move(_t_unit))._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, move(_t_lahead), _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__Pub3 -> Resolved_11 Resolved_12
 
     if ( _t_error ) 
@@ -320,7 +320,7 @@ method extern view<stream> foo::Pub3::parse3(inout value_ref<spicy_rt::ParsedUni
     # "<...>/unused-types.spicy:29:20-32:1"
 
     # Begin parsing production: Unit: foo__Pub3 -> Resolved_11 Resolved_12
-    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*move(_t_unit))._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, move(_t_lahead), _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__Pub3 -> Resolved_11 Resolved_12
 
     if ( _t_error ) 
@@ -338,7 +338,7 @@ method extern view<stream> foo::Pub3::parse2(inout value_ref<Pub3> _t_unit, inou
     # "<...>/unused-types.spicy:29:20-32:1"
 
     # Begin parsing production: Unit: foo__Pub3 -> Resolved_11 Resolved_12
-    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, move(_t_lahead), _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__Pub3 -> Resolved_11 Resolved_12
 
     if ( _t_error ) 
@@ -375,7 +375,7 @@ method extern view<stream> foo::Priv10::parse1(inout value_ref<stream> _t_data, 
     # "<...>/unused-types.spicy:43:22-46:1"
 
     # Begin parsing production: Unit: foo__Priv10 ->
-    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*move(_t_unit))._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, move(_t_lahead), _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__Priv10 ->
 
     if ( _t_error ) 
@@ -395,7 +395,7 @@ method extern view<stream> foo::Priv10::parse3(inout value_ref<spicy_rt::ParsedU
     # "<...>/unused-types.spicy:43:22-46:1"
 
     # Begin parsing production: Unit: foo__Priv10 ->
-    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*move(_t_unit))._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, move(_t_lahead), _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__Priv10 ->
 
     if ( _t_error ) 
@@ -413,7 +413,7 @@ method extern view<stream> foo::Priv10::parse2(inout value_ref<Priv10> _t_unit, 
     # "<...>/unused-types.spicy:43:22-46:1"
 
     # Begin parsing production: Unit: foo__Priv10 ->
-    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, _t_lahead, _t_lahead_end, _t_error);
+    (_t_ncur, _t_lahead, _t_lahead_end, _t_error) = (*_t_unit)._t_parse_stage1(_t_data, begin(_t_ncur), _t_ncur, True, move(_t_lahead), _t_lahead_end, _t_error);
     # End parsing production: Unit: foo__Priv10 ->
 
     if ( _t_error ) 
