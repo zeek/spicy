@@ -3,9 +3,6 @@
 cmake_minimum_required(VERSION 3.15.0)
 
 if (WIN32)
-    # Enable usage of CMAKE_MSVC_RUNTIME_LIBRARY variable.
-    cmake_policy(SET CMP0091 NEW)
-
     # Set up vcpkg toolchain for Windows builds. The toolchain file must be set
     # before the project() call.
     get_filename_component(_toolchain ./3rdparty/vcpkg/scripts/buildsystems/vcpkg.cmake ABSOLUTE)

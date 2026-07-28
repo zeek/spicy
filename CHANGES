@@ -1,3 +1,10 @@
+1.17.0-dev.178 | 2026-07-28 20:53:34 +0200
+
+  * Drop unnecessary CMake policy changes (Benjamin Bannier, Corelight)
+
+    Since we require cmake-3.15 these did nothing and can be dropped without
+    problem.
+
 1.17.0-dev.176 | 2026-07-27 16:48:21 +0200
 
   * GH-2438: Fix parsing of regexps with capture groups in lookahead (Benjamin Bannier, Corelight)
