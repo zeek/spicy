@@ -4,7 +4,14 @@
 # introduced the issue, validate tests still reproduce the issue before
 # changing names.
 #
+# Single module with `&convert` to a non-public type.
 # @TEST-EXEC: spicyc -dj %INPUT
+#
+# Cross-module import of a unit with `&convert` to a non-public type.
+# @TEST-EXEC: spicyc -dj proto.spicy consumer.spicy
+#
+# External hook on a unit with `&convert` to a non-public type.
+# @TEST-EXEC: spicyc -dj hook.spicy proto.spicy
 
 module Consumer;
 
@@ -17,3 +24,39 @@ type Outer = unit {
 };
 
 type Foo = unit {};
+
+# @TEST-START-FILE proto.spicy
+
+module Proto;
+
+public type Outer = unit {
+    a: Foo &convert=new Foo($$);
+};
+
+type Foo = unit {
+    a: uint8;
+};
+
+# @TEST-END-FILE
+
+# @TEST-START-FILE consumer.spicy
+
+module Consumer2;
+
+import Proto;
+
+public type Bar = unit {
+    a: Proto::Outer;
+};
+
+# @TEST-END-FILE
+
+# @TEST-START-FILE hook.spicy
+
+module Hook;
+
+import Proto;
+
+on Proto::Outer::%done { }
+
+# @TEST-END-FILE
