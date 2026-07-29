@@ -1,0 +1,19 @@
+# @TEST-DOC: Converting a field value to a reference compiles correctly. Regression test for #2456.
+#
+# NOTE: Since the order of node traversal depends on e.g., module names
+# introduced the issue, validate tests still reproduce the issue before
+# changing names.
+#
+# @TEST-EXEC: spicyc -dj %INPUT
+
+module Consumer;
+
+public type Bar = unit {
+    a: Outer;
+};
+
+type Outer = unit {
+    a: Foo &convert=new Foo($$);
+};
+
+type Foo = unit {};
