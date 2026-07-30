@@ -105,7 +105,7 @@ if (NOT MSVC)
         string(REPLACE " " ";" cxx_flags_release ${CMAKE_CXX_FLAGS_RELEASE})
     endif ()
     target_compile_options(hilti-rt-objects PRIVATE ${cxx_flags_release})
-    target_compile_options(hilti-rt-objects PRIVATE "-g;-O3;-DNDEBUG;-Wall")
+    target_compile_options(hilti-rt-objects PRIVATE "-O3;-DNDEBUG;-Wall")
 endif ()
 target_compile_definitions(hilti-rt-objects PRIVATE "HILTI_RT_BUILD_TYPE_RELEASE")
 

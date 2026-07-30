@@ -1,3 +1,25 @@
+1.17.0-dev.189 | 2026-07-30 08:50:23 +0200
+
+  * GH-62: GH-1102: Do not include debug info in non-debug HLTO files (Benjamin Bannier, Corelight)
+
+    Including debug information significantly increases the size of these
+    artifacts, something users have often complained about. Additionally,
+    compiling with both `-O3` and `-g` can make release builds even slower.
+
+    Since no user-visible feature depends on this, codegen is mostly
+    identical between between, and I do not recall ever being unable to
+    debug an issue which required debug symbols in release HLTO files,
+    simply drop the flag. If this is really needed, we could always patch it
+    back in temporarily while debugging without affecting all users.
+
+    Closes #62.
+    Closes #1102.
+
+  * Bump softprops/action-gh-release from 3.0.1 to 3.0.2 (dependabot[bot])
+  * Bump actions/checkout from 7.0.0 to 7.0.1 (dependabot[bot])
+  * Bump CodSpeedHQ/action from 4.18.1 to 4.19.1 (dependabot[bot])
+  * Bump 3rdparty/vcpkg from `fab1c6d` to `b6b50b3` (dependabot[bot])
+
 1.17.0-dev.183 | 2026-07-28 15:36:31 -0400
 
   * GH-1960: Implement optimizer pass to `move` last uses (Evan Typanski, Corelight)

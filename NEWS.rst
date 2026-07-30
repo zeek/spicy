@@ -9,6 +9,11 @@ Version 1.17 (in progress)
 
 .. rubric:: Changed Functionality
 
+- GH-62, GH-1102: Release builds no longer include debug information in
+  JIT-compiled code and the hilti-rt library which significantly reduces
+  the size of ``.hlto`` files. Users who need debug information in JIT-compiled
+  code can use ``spicyc -d``, which retains full debug symbols.
+
 .. rubric:: Bug fixes
 
 .. rubric:: Documentation

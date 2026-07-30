@@ -201,7 +201,6 @@ void Configuration::init(bool use_build_directory) {
     runtime_cxx_flags_release = flatten({
         "-fPIC",
         "-std=c++20",
-        "-g",
         "-O3",
         "-DNDEBUG",
         "-fvisibility=hidden",
