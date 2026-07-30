@@ -7,6 +7,16 @@ build:
   tools:
     python: "3.11"
 
+  # Workaround for https://github.com/readthedocs/readthedocs.org/issues/13213.
+  jobs:
+    create_environment:
+      - uv venv --project $READTHEDOCS_REPOSITORY_PATH/doc $READTHEDOCS_VIRTUALENV_PATH
+    build:
+      html:
+        - cd $READTHEDOCS_REPOSITORY_PATH/doc &&
+          uv run --project $READTHEDOCS_REPOSITORY_PATH/doc --no-sync --no-dev
+          sphinx-build -T -b html -d _build/doctrees -D language=en . $READTHEDOCS_OUTPUT/html
+
 sphinx:
   fail_on_warning: false
   configuration: doc/conf.py
