@@ -7,6 +7,10 @@ Version 1.17 (in progress)
 
 .. rubric:: New Functionality
 
+- GH-2460: ``new T(x)`` now supports copy construction when ``x`` is a value
+  of type ``T``. Previously this was silently accepted but produced a
+  default-constructed object, ignoring the argument.
+
 .. rubric:: Changed Functionality
 
 - GH-62, GH-1102: Release builds no longer include debug information in
