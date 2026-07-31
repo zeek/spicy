@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <climits>
 #include <cmath>
-#include <initializer_list>
 #include <iostream>
 #include <iterator>
 #include <list>
@@ -37,7 +36,7 @@ namespace hilti::util::detail {
 
 #undef TINYFORMAT_ERROR
 #define TINYFORMAT_ERROR(reason) ::util::detail::__internal_error(reason)
-#include <hilti/rt/3rdparty/tinyformat/tinyformat.h>
+#include <tinyformat/tinyformat.h>
 
 namespace hilti {
 

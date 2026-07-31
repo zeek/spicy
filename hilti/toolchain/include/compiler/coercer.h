@@ -2,10 +2,10 @@
 
 #pragma once
 
+#include <ArticleEnumClass-v2/EnumClass.h>
+
 #include <string>
 #include <utility>
-
-#include <hilti/rt/3rdparty/ArticleEnumClass-v2/EnumClass.h>
 
 #include <hilti/ast/ctor.h>
 #include <hilti/ast/expression.h>

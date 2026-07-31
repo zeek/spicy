@@ -1,3 +1,91 @@
+1.17.0-dev.201 | 2026-07-31 13:54:20 +0200
+
+  * Correctly set up driver when invoked without path (Benjamin Bannier, Corelight)
+
+    When a driver instance is invoked without path, e.g., via `PATH` lookup
+    we previously would not set up infra correctly which for some cases
+    would leave the configuration in broken state, e.g., this surfaced with
+    zeek/zeek's `spicyz` when using during its test suite. Instead just use
+    the correct setup.
+
+  * Express dependency on 3rdparty headers in config, not via symlinks (Benjamin Bannier, Corelight)
+
+    We previously used symlinks to contain how 3rdparty headers we ship are
+    used throughout the runtime libraries. Since we could do without the
+    symlinks for nlohmann/json in a previous commit (actually there we could
+    not make the symlinks work at all), I believe there is no good reason to
+    keep using them for other dependencies either, so this commit moves us
+    over to explicitly expressing the dependencies in both the CMake setup
+    as well as in the flags construction for code compilation after install.
+    This does not seem much more complicated to me, but it removes one
+    additional fragile component in the workflow we needed to worry about.
+
+  * Remove dead ghc link in 3rdparty runtime include directory (Benjamin Bannier, Corelight)
+
+    We dropped this dependency some time ago, but never cleared out the
+    symlink.
+
+  * Bump nlohmann/json to v3.12.0 (Benjamin Bannier, Corelight)
+
+  * Use a directory symlink for nlohmann/json as well (Benjamin Bannier, Corelight)
+
+    We usually pull 3rdparty modules into our runtime prefix directory with
+    directory symlinks. For nlohmann/json we used a different approach since
+    their headers are not self-contained, but they provided a subdirectory
+    `single_include/` which was meant to provide self-contained headers; we
+    symlinked individual source files there directly to make this work.
+
+    With json-3.11.0 even the `single_include/` headers now require additional
+    headers, so this approach no longer works. Instead we switch to a directory
+    symlink like for other 3rdparty dependencies, and thread the include path
+    for `3rdparty/json/include` through in a couple more places.
+
+    On Windows, Git does not create correct symlinks pointing into submodule
+    content during main-tree checkout: `3rdparty/json/include/nlohmann` does not
+    exist yet when the `hilti/rt/3rdparty/nlohmann` symlink is created because
+    the submodule is only an empty placeholder at that point. The other
+    `3rdparty/` directory symlinks point directly at submodule roots, which Git
+    creates as empty placeholder directories before populating them, so those
+    symlinks worked. For that reason we include nlohmann headers via the bare
+    `nlohmann/` path in `json-fwd.h` and `json.h` which resolves via
+    `3rdparty/json/include` at build time and via the `hilti/rt/3rdparty`
+    install-time include root post-install. This root is listed before the
+    general include prefix so that our bundled headers take precedence over
+    any system-installed copies.
+
+  * Move from vendored nlohmann/json back to submodule (Benjamin Bannier, Corelight)
+
+    We moved to vendored sources to work around an embarrassing, big blob in
+    nlohmann/json's Git history, but since submodules can be shallow this
+    isn't really needed. It also makes bumping this particular dependency
+    much harder which is why it is much further behind compared to others.
+
+    This patch moves nlohmann/json back to a Git submodule, this time
+    shallow.
+
+  * Switch to shallow submodules (Benjamin Bannier, Corelight)
+
+    There is no good reason to pull the full Git history of submodules, so
+    this switches all of them to use shallow clones to speed up recursive
+    clones. I am not sure why this is not the default behavior of Git
+    submodules.
+
+  * Switch Docker layer cache from GHA to GHCR (Benjamin Bannier, Corelight)
+
+    The GHA cache has a 10 GB limit shared across all workflows, causing
+    frequent evictions and poor hit rates for our large CI matrix. GHCR
+    container storage is currently free with no stated cap (GitHub commits
+    to one month notice before changing this).
+
+  * GH-13213: Fix RTD build broken by uv 0.12 relative path bug [skip ci] (Benjamin Bannier, Corelight)
+
+    RTD's uv 0.12 integration passes `UV_PROJECT` as a relative path but
+    runs commands from a different CWD, causing "Project directory does
+    not exist" errors (readthedocs/readthedocs.org#13213).
+
+    Work around by overriding `create_environment` and `build.html` with
+    absolute paths.
+
 1.17.0-dev.189 | 2026-07-30 08:50:23 +0200
 
   * GH-62: GH-1102: Do not include debug info in non-debug HLTO files (Benjamin Bannier, Corelight)

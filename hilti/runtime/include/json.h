@@ -11,7 +11,8 @@
 #pragma GCC diagnostic push
 #endif
 
-#include <hilti/rt/3rdparty/nlohmann/json.hpp>
+// See `json-fwd.h` for why we use the bare `<nlohmann/json.hpp>` path here.
+#include <nlohmann/json.hpp>
 
 #if defined(__clang__)
 #pragma clang diagnostic pop
