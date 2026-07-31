@@ -31,7 +31,7 @@
 #include <hilti/rt/util.h>
 
 std::string hilti::rt::version() {
-    constexpr char hilti_version[] = PROJECT_VERSION_STRING_LONG;
+    constexpr char hilti_version[] = HILTI_VERSION_STRING_LONG;
 
 #if HILTI_RT_BUILD_TYPE_DEBUG
     return hilti::rt::fmt("HILTI runtime library version %s [debug build]", hilti_version);
