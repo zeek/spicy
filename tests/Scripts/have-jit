@@ -2,4 +2,4 @@
 #
 # Returns success if we have JIT support available.
 
-test $(spicy-config --jit-support) = "yes"
+test "$(spicy-config --jit-support)" = "yes"

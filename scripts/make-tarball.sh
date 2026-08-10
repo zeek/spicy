@@ -13,6 +13,7 @@ rm -f "$TARBALL"
 git archive -o "${TARBALL}" HEAD
 
 # Add all submodules to archive.
+# shellcheck disable=SC2016
 git submodule foreach --quiet 'cd $toplevel && tar rf '"${TARBALL}"' $sm_path'
 
 # Introduce a top-level `spicy` directory and compress the tarball.

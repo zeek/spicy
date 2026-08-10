@@ -3,7 +3,7 @@
 # Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 if [ $# != 1 ]; then
-    echo "usage: $(basename $0) <cxx-path>"
+    echo "usage: $(basename "$0") <cxx-path>"
     exit 1
 fi
 
