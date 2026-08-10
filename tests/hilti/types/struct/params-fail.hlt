@@ -11,10 +11,20 @@ type A = struct {
 type B = struct(string X, real Y = 3.14) {
 };
 
+type C = struct {
+    uint<64> x;
+};
+
+type D = struct {
+    uint<64> x;
+    string y;
+};
+
 global A a1("a");
 global auto a2 = default<A>("a");
 global A a3("a");
 global auto a4 = new A("a");
+global auto a7 = new A("a", "b");
 
 global B b1(42);
 global auto b2 = default<B>(42);
@@ -28,4 +38,7 @@ global auto b6 = new B("x", 3.14); # pass
 global auto b7 = new B("x"); # pass
 
 local auto b7 = default<value_ref<B>>(42);
+
+global auto c1 = new C(42);
+global auto d1 = new D(42, "hello");
 }

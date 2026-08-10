@@ -1,0 +1,98 @@
+# @TEST-DOC: `new T(x)` copy-constructs from values, references, and self-referential types; type parameters take precedence.
+# @TEST-EXEC: hiltic -dj %INPUT
+
+module Foo {
+
+import hilti;
+
+type X = struct {
+    int<64> n;
+};
+
+function void copy_from_value() {
+    local X x = [$n = 42];
+    local strong_ref<X> r = new X(x);
+    assert (*r).n == x.n;
+
+    (*r).n = 99;
+    assert x.n == 42;
+    assert (*r).n == 99;
+
+    hilti::print(True);
+}
+
+function void copy_from_strong_ref() {
+    local X x = [$n = 42];
+    local strong_ref<X> r1 = new X(x);
+    local strong_ref<X> r2 = new X(r1);
+    assert (*r2).n == x.n;
+
+    (*r2).n = 99;
+    assert (*r1).n == 42;
+
+    hilti::print(True);
+}
+
+function void copy_from_weak_ref() {
+    local X x = [$n = 42];
+    local strong_ref<X> r = new X(x);
+    local weak_ref<X> w = r;
+    local strong_ref<X> r2 = new X(w);
+    assert (*r2).n == x.n;
+
+    (*r2).n = 99;
+    assert (*r).n == 42;
+
+    hilti::print(True);
+}
+
+type Y = struct {
+    strong_ref<Y> ref;
+    int<64> n;
+};
+
+function void copy_self_referential_by_ref() {
+    local Y y = [$ref = Null, $n = 42];
+    local strong_ref<Y> s = new Y(y);
+    assert (*s).n == y.n;
+    assert (*s).ref == Null;
+
+    hilti::print(True);
+}
+
+type W = struct {
+    optional<value_ref<W>> ref;
+    int<64> n;
+};
+
+function void copy_self_referential_by_optional() {
+    local W w = [$ref = Null, $n = 10];
+    local strong_ref<W> rw = new W(w);
+    assert (*rw).n == w.n;
+    assert ! (*rw).ref;
+
+    hilti::print(True);
+}
+
+type Z = struct(strong_ref<Z> z) {
+    strong_ref<Z> ref &default = z;
+};
+
+function void type_parameter_not_copy() {
+    local strong_ref<Z> z1 = new Z(Null);
+    assert (*z1).ref == Null;
+
+    local strong_ref<Z> z2 = new Z(z1);
+    assert (*z2).ref == z1;
+
+    hilti::print(True);
+}
+
+copy_from_value();
+copy_from_strong_ref();
+copy_from_weak_ref();
+copy_self_referential_by_ref();
+copy_self_referential_by_optional();
+type_parameter_not_copy();
+
+}

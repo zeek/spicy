@@ -936,23 +936,43 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
     // Operators (only special cases here, most validation happens where they are defined)
 
     void operator()(operator_::generic::New* n) final {
-        // We reuse checkTypeArguments() here, that's why this operator is covered here.
-        if ( auto* t = n->operands()[0]->type()->type()->tryAs<type::Type_>() ) {
-            if ( ! t->typeValue()->type()->parameters().empty() ) {
-                node::Range<Expression> args;
-                if ( n->operands().size() > 1 ) {
-                    auto* ctor = n->operands()[1]->as<expression::Ctor>()->ctor();
-                    if ( auto* x = ctor->tryAs<ctor::Coerced>() )
-                        ctor = x->coercedCtor();
+        auto* t = n->operands()[0]->type()->type()->tryAs<type::Type_>();
 
-                    args = ctor->as<ctor::Tuple>()->value();
-                }
-
-                checkTypeArguments(args, t->typeValue()->type()->parameters(), n);
-            }
+        if ( ! t ) {
+            if ( ! n->operands()[0]->isA<expression::Ctor>() )
+                error("new operator expects a type or constant as its argument", n);
+            return;
         }
-        else if ( ! n->operands()[0]->isA<expression::Ctor>() )
-            error("new operator expects a type or constant as its argument", n);
+
+        node::Range<Expression> args;
+        if ( n->operands().size() > 1 ) {
+            auto* ctor = n->operands()[1]->as<expression::Ctor>()->ctor();
+            if ( auto* x = ctor->tryAs<ctor::Coerced>() )
+                ctor = x->coercedCtor();
+
+            args = ctor->as<ctor::Tuple>()->value();
+        }
+
+        auto* target_type = t->typeValue()->type();
+
+        // Types with declared parameters validate against those.
+        if ( ! target_type->parameters().empty() ) {
+            checkTypeArguments(args, target_type->parameters(), n);
+            return;
+        }
+
+        // Without type parameters only `new T(x)` for copy construction is valid.
+        if ( args.size() == 1 ) {
+            auto* arg_type = args[0]->type()->type();
+            if ( arg_type->isReferenceType() )
+                arg_type = arg_type->dereferencedType()->type();
+
+            if ( type::same(arg_type, target_type) )
+                return;
+        }
+
+        if ( ! args.empty() )
+            error("type does not accept constructor arguments", n);
     }
 };
 

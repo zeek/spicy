@@ -142,8 +142,17 @@ public:
     void operator()(declaration::Type* n) final { insert(n); }
 
     void operator()(QualifiedType* n) final {
-        if ( n->isExternal() )
-            follow(n->type());
+        if ( n->isExternal() ) {
+            auto* t = n->type();
+            if ( auto* decl = t->typeDeclaration() ) {
+                // Skip self-references, e.g., a unit's parse methods referencing its own type.
+                if ( ! cd.haveSeen(decl) )
+                    insert(decl);
+                follow(decl);
+            }
+            else
+                follow(t);
+        }
     }
 
     void operator()(expression::Name* n) final {

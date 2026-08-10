@@ -1,3 +1,58 @@
+1.17.0-dev.207 | 2026-08-10 18:48:43 +0200
+
+  * Run BTest in windows CI job with default parallelism (Benjamin Bannier, Corelight)
+
+    No idea why we picked five jobs here, but hardcoding any number is
+    problematic since it can deviate wildly from what the actual runner has.
+    Currently the GH action runner gets four cpus, so we slightly
+    oversubscribed.
+
+  * Reject `new T(args)` when T has no type parameters (Benjamin Bannier, Corelight)
+
+    Previously, `new T(args)` would silently discard arguments when T
+    declared no type parameters -- codegen produced a default-constructed
+    object. Now the validator rejects such calls unless the single argument
+    is copy construction (same type as T).
+
+  * GH-2460: Support copy construction in `new T(x)` codegen (Benjamin Bannier, Corelight)
+
+    When `new T(x)` is used with a single argument whose type matches
+    `T` (directly or through any reference type), compile it as copy/move
+    construction rather than routing through the type-parameter
+    constructor path. Previously, if `T` had no type parameters,
+    `compileCallArguments` would return an empty list and the argument
+    was silently dropped, producing a default-constructed object.
+
+    Closes #2460.
+
+  * GH-2456: Fix dependency tracking for external `QualifiedType` nodes (Benjamin Bannier, Corelight)
+
+    External `QualifiedType` nodes reference resolved types via a type index
+    rather than as AST children. The dependency tracker's `follow()` only
+    traverses child nodes, so these types were invisible to it. After AST
+    transforms lower `&convert` attributes into implementation code, the
+    original `expression::Name` references disappear and external
+    `QualifiedType` nodes become the sole path to the type. Compilation
+    units referencing such types then fail due to missing declarations.
+
+    The self-reference guard prevents spurious self-dependencies that would
+    otherwise arise from a unit's own parse methods referencing its type,
+    which downstream causes incorrect `&on-heap` annotations.
+
+  * Fix namespace for type code emission during C++ codegen (Benjamin Bannier, Corelight)
+
+    We now enter the correct namespace before emitting a type declaration's
+    implementation code during `Phase::Functions`. Previously the formatter
+    stayed in whatever namespace the previous declaration left active,
+    causing C++ compilation failures when declaration ordering placed a
+    type's code after an unrelated namespace block.
+
+    The sensitivity to module naming (e.g., "Consumer" failing while "foo"
+    works) comes from declaration insertion order: the dependency graph
+    traversal places different declarations between a type's struct code
+    and its implementation depending on names, which changes whether an
+    intervening declaration switches the formatter's active namespace away.
+
 1.17.0-dev.201 | 2026-07-31 13:54:20 +0200
 
   * Correctly set up driver when invoked without path (Benjamin Bannier, Corelight)

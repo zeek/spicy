@@ -1,0 +1,18 @@
+# @TEST-DOC: `&convert=new T($$)` heap-allocates a copy of the parsed unit. Regression test for #2460.
+# @TEST-EXEC: ${SCRIPTS}/printf '\x41\x41' | spicy-driver -d %INPUT
+
+module Test;
+
+type Inner = unit {
+    n: uint8;
+};
+
+public type Outer = unit {
+    x: Inner &convert=new Inner($$);
+    y: Inner;
+
+    on %done {
+        assert self.x.n == 65;
+        assert self.y.n == 65;
+    }
+};

@@ -186,6 +186,7 @@ void Unit::_emitDeclarations(const cxxDeclaration& decl,
 
             else if ( phase == Phase::Functions ) {
                 if ( d.code.size() && ! prototypes_only ) {
+                    f.enterNamespace(d.id.namespace_());
                     f << d.code << eol();
                 }
             }

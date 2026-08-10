@@ -563,11 +563,30 @@ struct Visitor : hilti::visitor::PreOrder {
             if ( auto* x = ctor->tryAs<ctor::Coerced>() )
                 ctor = x->coercedCtor();
 
+            auto tuple_args = ctor->as<ctor::Tuple>()->value();
+            auto* target_type = tv->typeValue()->type();
+
+            const auto is_copy_construction = [&]() {
+                if ( ! (tuple_args.size() == 1 && target_type->parameters().empty()) )
+                    return false;
+
+                auto* arg_type = tuple_args[0]->type()->type();
+                if ( arg_type->isReferenceType() )
+                    arg_type = arg_type->dereferencedType()->type();
+
+                return type::same(arg_type, target_type);
+            }();
+
             std::string args;
 
-            if ( ctor->as<ctor::Tuple>()->value().size() )
-                args = util::join(cg->compileCallArguments(ctor->as<ctor::Tuple>()->value(),
-                                                           tv->typeValue()->type()->parameters(),
+            if ( is_copy_construction ) {
+                args = cg->compile(tuple_args[0]);
+                if ( tuple_args[0]->type()->type()->isReferenceType() )
+                    args = fmt("(*%s)", args);
+            }
+            else if ( tuple_args.size() )
+                args = util::join(cg->compileCallArguments(tuple_args,
+                                                           target_type->parameters(),
                                                            hilti::detail::CodeGen::CtorKind::Parameters),
                                   ", ");
             else if ( auto def = cg->typeDefaultValue(tv->typeValue()) )
