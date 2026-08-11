@@ -63,6 +63,24 @@ public:
     /** Returns the CFG cache in use. */
     auto* cfgCache() { return _cfg_cache; }
 
+    /**
+     * Records that a function part of the AST has been modified. This will
+     * later trigger a re-computation of state related to that function by
+     * `updateAST()`.
+     *
+     * @param function the modified function
+     */
+    void functionChanged(hilti::Function* function);
+
+    /**
+     * Records that a module part of the AST has been modified. This will later
+     * trigger a re-computation of state related to that module by
+     * `updateAST()`.
+     *
+     * @param module the modified module
+     */
+    void moduleChanged(declaration::Module* module);
+
 protected:
     friend class hilti::detail::Optimizer;
     friend class visitor::Collector;
@@ -87,20 +105,6 @@ protected:
         _pinfo = pinfo;
         return util::scope_exit([&]() { _pinfo = nullptr; });
     }
-
-    /**
-     * Records that a function part of the AST has been modified. This will
-     * later trigger a re-computation of state related to that function by
-     * `updateAST()`.
-     */
-    void functionChanged(hilti::Function* function);
-
-    /**
-     * Records that a module part of the AST has been modified. This will later
-     * trigger a re-computation of state related to that module by
-     * `updateAST()`.
-     */
-    void moduleChanged(declaration::Module* module);
 
     /**
      * Updates the AST state after modifications made by a pass. This may run
@@ -260,11 +264,11 @@ public:
 
     /**
      * Returns true if the optimizer may modify a given type in ways that
-     * are externally visible.
+     * are externally visible, including removing it entirely.
      *
      * @param t the type declaration to check
      */
-    bool mayModify(const declaration::Type* t) const {
+    bool mayModifyOrRemove(const declaration::Type* t) const {
         if ( t->linkage() == declaration::Linkage::Export )
             return false;
 
@@ -281,12 +285,11 @@ public:
     }
 
     /**
-     * Returns true if the optimizer may modify a given function in ways that
-     * are externally visible.
+     * Returns true if the optimizer may remove a given function entirely.
      *
      * @param f the function declaration to check
      */
-    bool mayModify(const declaration::Function* f) const {
+    bool mayRemove(const declaration::Function* f) const {
         if ( f->function()->attributes()->find(attribute::kind::AlwaysEmit) )
             return false;
 
@@ -298,29 +301,36 @@ public:
             return false;
         }
 
-        if ( ! f->linkedDeclarationIndex() ) {
-            if ( const auto* ftype = f->function()->ftype();
-                 ftype->callingConvention() == type::function::CallingConvention::Extern ||
-                 ftype->callingConvention() == type::function::CallingConvention::ExternNoSuspend )
-                return false;
-        }
-
         if ( f->isPublic() && options().public_api_mode == Options::PublicAPIMode::Strict )
             return false;
 
-        if ( const auto* type_decl = f->linkedDeclaration(context()); type_decl && ! mayModify(type_decl) )
+        if ( const auto* type_decl = f->linkedDeclaration(context()); type_decl && ! mayModifyOrRemove(type_decl) )
             return false;
 
         return true;
     }
 
     /**
+     * Returns true if the optimizer may modify a given function in ways that
+     * are externally visible. Permitted modifications do not include removing
+     * the function entirely, there's `mayRemove()` for that.
+     *
+     * @param f the function declaration to check
+     */
+    bool mayModify(const declaration::Function* f) const {
+        if ( f->function()->attributes()->find(attribute::kind::Public) )
+            return false;
+
+        return mayRemove(f);
+    }
+
+    /**
      * Returns true if the optimizer may modify a given struct field in ways that
-     * are externally visible.
+     * are externally visible, including removing it entirely.
      *
      * @param f the field declaration to check
      */
-    bool mayModify(const declaration::Field* f) const {
+    bool mayModifyOrRemove(const declaration::Field* f) const {
         const auto* struct_ = f->linkedType(context())->tryAs<type::Struct>();
         if ( ! struct_ )
             // Do not modify fields of non-struct types.
@@ -330,7 +340,7 @@ public:
         if ( ! struct_decl )
             return false; // some anonymous struct
 
-        if ( ! mayModify(struct_decl) )
+        if ( ! mayModifyOrRemove(struct_decl) )
             return false;
 
         if ( f->attributes()->find(attribute::kind::AlwaysEmit) )

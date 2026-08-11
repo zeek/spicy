@@ -21,8 +21,8 @@ public type B = struct {
 };
 type C = struct {
     optional<hilti::RecoverableFailure> _t_error &always-emit &internal;
-    method optional<hilti::RecoverableFailure> _t_parse_stage1(copy optional<hilti::RecoverableFailure> _t_error);
-    method optional<hilti::RecoverableFailure> _t_parse_foo__C_stage2(copy optional<hilti::RecoverableFailure> _t_error);
+    method optional<hilti::RecoverableFailure> _t_parse_stage1(optional<hilti::RecoverableFailure> _t_error);
+    method optional<hilti::RecoverableFailure> _t_parse_foo__C_stage2(optional<hilti::RecoverableFailure> _t_error);
 };
 public type D = struct {
     C _anon &optional &anonymous &no-emit="private";
@@ -163,13 +163,13 @@ init function void _t_register_foo_B() {
     spicy_rt::registerParser(foo::B::_t_parser, $scope, Null);
 }
 
-method optional<hilti::RecoverableFailure> foo::C::_t_parse_stage1(copy optional<hilti::RecoverableFailure> _t_error) {
+method optional<hilti::RecoverableFailure> foo::C::_t_parse_stage1(optional<hilti::RecoverableFailure> _t_error) {
     # "<...>/unused-functions.spicy:24:10-24:16"
     hilti::debugIndent("spicy");
     return (*self)._t_parse_foo__C_stage2(_t_error);
 }
 
-method optional<hilti::RecoverableFailure> foo::C::_t_parse_foo__C_stage2(copy optional<hilti::RecoverableFailure> _t_error) {
+method optional<hilti::RecoverableFailure> foo::C::_t_parse_foo__C_stage2(optional<hilti::RecoverableFailure> _t_error) {
     # "<...>/unused-functions.spicy:24:10-24:16"
     hilti::debugDedent("spicy");
     return _t_error;

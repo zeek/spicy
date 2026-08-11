@@ -1,4 +1,4 @@
-# @TEST-EXEC: hiltic -p %INPUT >opt.hlt
+# @TEST-EXEC: hiltic --strict-public-api -p %INPUT >opt.hlt
 # @TEST-EXEC: btest-diff opt.hlt
 #
 # @TEST-DOC: Test that catch-blocks that just rethrow get removed.

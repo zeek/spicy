@@ -1,0 +1,50 @@
+# @TEST-EXEC: hiltic %INPUT -p -o opt.hlt
+# @TEST-EXEC: btest-diff opt.hlt
+# @TEST-EXEC: hiltic %INPUT -dj
+#
+# @TEST-DOC: Tests promoting `copy/inout` parameters to `in` when surely never modified.
+
+module Test {
+
+import hilti;
+
+# Function. Promote x and y, not z.
+function void f(copy uint<64> x, inout uint<64> y, inout uint<64> z) {
+    z = 42;
+    hilti::print(x);
+    hilti::print(y);
+    hilti::print(z);
+}
+
+type S = struct {
+    # Inline method. Promote x and y, not z.
+    method void m_inline(copy uint<64> x, inout uint<64> y, inout uint<64> z) {
+        z = 42;
+        hilti::print(x);
+        hilti::print(y);
+        hilti::print(z);
+    }
+
+    # Declaration of out of line method.
+    method void m_outofline(copy uint<64> x, inout uint<64> y, inout uint<64> z);
+};
+
+# Out of line method. Promote x and y, not z.
+method void S::m_outofline(copy uint<64> x, inout uint<64> y, inout uint<64> z) {
+    z = 42;
+    hilti::print(x);
+    hilti::print(y);
+    hilti::print(z);
+}
+
+global uint<64> a = 1;
+global uint<64> b = 2;
+global uint<64> c = 3;
+
+f(a, b, c);
+
+global S s;
+s.m_inline(a, b, c);
+s.m_outofline(a, b, c);
+
+}

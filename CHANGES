@@ -1,3 +1,73 @@
+1.17.0-dev.213 | 2026-08-11 19:16:18 +0200
+
+  * Add optimizer logic promoting unmodified `copy`/`inout` parameters to `in`. (Robin Sommer, Corelight)
+
+    We add this to the existing `OptimizeParameters` pass. The new logic
+    uses CFG dataflow to detect when a `copy` or `inout` parameter is
+    never written inside the function body, and promotes it to `in`.
+
+  * Rename `RemoveUnusedParameters` optimizer pass to `OptimizeParameters.` (Robin Sommer, Corelight)
+
+    This prepares for adding additional parameter optimizations.
+
+  * Make a couple optimizer state management functions public. (Robin Sommer, Corelight)
+
+  * GH-2322: Fix optimization of `extern` functions. (Robin Sommer, Corelight)
+
+    We were inconsistent, and partially incorrect, in how we treated
+    functions and methods declared as `extern` — I believe that worked
+    only by chance (or by construction, if you want).
+
+    As a reminder, `extern` is a *calling convention*, not a visibility
+    attribute. It really means only one thing: the codegen will create a
+    stub function that facilitates yield/resume functionality when called
+    from external C++ code. It does not, by itself, mean we cannot remove
+    the function if it's not needed.
+
+    Now, in the existing code, we allowed removal of `extern` free
+    standing functions, but not of `extern` methods. That doesn't make
+    sense. So this change allows the optimizer to remove any `extern`
+    functions/methods if unused by the AST, unless there's something else
+    forcing them to stay around (like linkage).
+
+    Unfortunately, our many notions of visibility are a bit of mess (also
+    see #2322), and hence technically this needs some pieces. We split the
+    optimizer's `mayModify()` method for functions into two separate ones:
+    one remains about allowing changes (name stays `mayModify()`, and one
+    that is about allowing removal (name `mayRemove()`):
+
+    - `mayModify()` permits changes to function/methods like before with
+      two tweaks: 1. any `extern` functions/methods can now be changed;
+      and 2. if a function/method has a `&public` attribute, it must not
+      be changed. That `&public` attribute is pre-existing, and badly
+      named: we actually use it for callback methods that must not change
+      their signature (Spicy uses that for its parse1/2/3 functions).
+
+    - `mayRemove()` permits removal of functions in all the same cases as
+      `mayModify()`, except that it ignores that `&public` attribute. It's
+      fine to remove a `&public` function/method if it's not used
+      anywhere.
+
+    For consistency, the non-function versions of `mayModify()` get
+    renamed to `mayModifyOrRemove()`.
+
+    Two small additional changes:
+
+    - We had lost marking `&cxxname` functions as "defined" for dead code
+      analysis, so we bring this back.
+
+    - The validator did not permit `&always-emit` for functions, which is
+      useful for testing.
+
+    This all makes the optimizer slightly more aggressive, which leads to
+    a few baseline changes and tests that need to switch to
+    ``--strict-public-api`` to remain useful.
+
+  * When computing dataflow, apply same logic for member calls that we do already for function calls. (Robin Sommer, Corelight)
+
+    Doesn't change any semantics right away, but will be used (and needed)
+    by upcoming change.
+
 1.17.0-dev.207 | 2026-08-10 18:48:43 +0200
 
   * Run BTest in windows CI job with default parallelism (Benjamin Bannier, Corelight)
