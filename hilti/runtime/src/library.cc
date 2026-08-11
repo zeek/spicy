@@ -10,6 +10,7 @@
 #endif
 
 #include <cassert>
+#include <fstream>
 #include <functional>
 #include <utility>
 
@@ -165,13 +166,15 @@ hilti::rt::Result<Nothing> hilti::rt::Library::remove() const {
 hilti::rt::Result<hilti::rt::Nothing> hilti::rt::Library::save(const hilti::rt::filesystem::path& path) const {
     std::error_code ec;
 
-    // On macOS ARM, there are weird crashes during execution if we don't remove an existing file first. Note that
-    // `is_regular_file(`) fails if we cannot access the file due to permissions, but we let it fail during removal.
-    if ( hilti::rt::filesystem::is_regular_file(path, ec) ) {
-        hilti::rt::filesystem::remove(path, ec);
-        if ( ec )
-            return result::Error(fmt("could not remove existing library when saving to %s: %s", path, ec.message()));
-    }
+    // Remove any existing file first. On macOS ARM this avoids crashes during
+    // execution, and on virtiofs it clears stale 0200-mode debris that cannot
+    // be stat'd or opened.
+    hilti::rt::filesystem::remove(path, ec);
+    ec.clear();
+
+    // Pre-create the destination so that fs::copy's `O_CREAT|O_TRUNC` opens the
+    // existing file instead of creating one with mode 0200 (which virtiofs rejects).
+    (void)std::ofstream(path, std::ios::binary);
 
     hilti::rt::filesystem::copy(_path, path, hilti::rt::filesystem::copy_options::overwrite_existing, ec);
 
