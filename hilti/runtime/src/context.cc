@@ -13,10 +13,11 @@ using namespace hilti::rt::detail;
 
 namespace hilti::rt::context::detail {
 
-// Not part of global state, it's per thread.
-static HILTI_THREAD_LOCAL Context* __current = nullptr;
+HILTI_THREAD_LOCAL Context* __current = nullptr;
 
+#ifdef _MSC_VER
 Context*& current() { return __current; }
+#endif
 
 hilti::rt::Context* set(Context* ctx) {
     auto* old = current();
