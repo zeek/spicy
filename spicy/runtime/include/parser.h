@@ -545,6 +545,13 @@ extern void waitForEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NO
                        const hilti::rt::stream::View& cur,
                        hilti::rt::StrongReference<spicy::rt::filter::detail::Filters> filters);
 
+extern void waitForInputSlow(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NOLINT(google-runtime-references)
+                             const hilti::rt::stream::View& cur,
+                             uint64_t min,
+                             std::string_view error_msg,
+                             std::string_view location,
+                             hilti::rt::StrongReference<spicy::rt::filter::detail::Filters> filters);
+
 /**
  * Used by generated parsers to wait until a minimum amount of input becomes
  * available. If a end-of-data is reached before that, will trigger a parse
@@ -562,12 +569,16 @@ extern void waitForEod(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NO
  * @param location location associated with the situation
  * @param filter filter state associated with current unit instance (which may be null)
  */
-extern void waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NOLINT(google-runtime-references)
+inline void waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, // NOLINT(google-runtime-references)
                          const hilti::rt::stream::View& cur,
                          uint64_t min,
                          std::string_view error_msg,
                          std::string_view location,
-                         hilti::rt::StrongReference<spicy::rt::filter::detail::Filters> filters);
+                         hilti::rt::StrongReference<spicy::rt::filter::detail::Filters> filters) {
+    if ( min <= cur.size() ) [[likely]]
+        return;
+    waitForInputSlow(data, cur, min, error_msg, location, std::move(filters));
+}
 
 /**
  * Used by generated parsers to wait until a minimum amount of input becomes is
@@ -619,6 +630,10 @@ extern void waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, // 
                          std::string_view location,
                          const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters);
 
+extern bool atEodSlow(hilti::rt::ValueReference<hilti::rt::Stream>& data,
+                      const hilti::rt::stream::View& cur,
+                      const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters);
+
 /**
  * Used by generated parsers to recognize end-of-data.
  *
@@ -626,9 +641,13 @@ extern void waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data, // 
  * @param cur view of *data* that's being parsed
  * @return true if end-of-data has been reached
  */
-extern bool atEod(hilti::rt::ValueReference<hilti::rt::Stream>& data,
+inline bool atEod(hilti::rt::ValueReference<hilti::rt::Stream>& data,
                   const hilti::rt::stream::View& cur,
-                  const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters);
+                  const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters) {
+    if ( cur.size() > 0 ) [[likely]]
+        return false;
+    return atEodSlow(data, cur, filters);
+}
 
 /**
  * Manually trigger a backtrack operation, reverting back to the most revent &try.
