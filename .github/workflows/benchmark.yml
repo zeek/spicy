@@ -62,4 +62,4 @@ jobs:
             ./build/bin/hilti-rt-benchmark
             ./build/bin/spicy-rt-parsing-benchmark
           token: ${{ secrets.CODSPEED_TOKEN }}
-          mode: instrumentation
+          mode: simulation
