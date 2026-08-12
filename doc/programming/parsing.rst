@@ -923,6 +923,24 @@ Unit types support the following type attributes:
     The expression ``N`` has access to ``self`` as well as to the
     unit's parameters.
 
+.. _attribute_on_heap:
+
+``&on-heap``
+    Forces the unit's internal storage to be allocated on the heap rather than
+    the stack. This can be useful for large units to avoid stack pressure.
+    Example:
+
+    .. spicy-code::
+
+        type Foo = unit {
+            a: uint32;
+            data: bytes &eod;
+        } &on-heap;
+
+    Note that Spicy automatically uses heap allocation in some cases
+    (e.g., for units referenced via ``inout`` or self-referencing types), so
+    this attribute is only needed to force the behaviour explicitly.
+
 .. _unit_meta_data:
 
 Meta data

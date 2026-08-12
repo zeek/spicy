@@ -102,9 +102,9 @@ void Configuration::init(bool use_build_directory) {
     build_directory = "${PROJECT_BINARY_DIR}";
     lib_directory = (uses_build_directory ? "${PROJECT_BINARY_DIR}/lib" : "${CMAKE_INSTALL_FULL_LIBDIR}");
     hiltic = (uses_build_directory ? "${PROJECT_BINARY_DIR}/bin/hiltic" : "${CMAKE_INSTALL_PREFIX}/bin/hiltic");
-    version_number = PROJECT_VERSION_NUMBER;
-    version_string = PROJECT_VERSION_STRING_SHORT;
-    version_string_long = PROJECT_VERSION_STRING_LONG;
+    version_number = HILTI_VERSION_NUMBER;
+    version_string = HILTI_VERSION_STRING_SHORT;
+    version_string_long = HILTI_VERSION_STRING_LONG;
 
     std::vector<std::string> library_paths;
 

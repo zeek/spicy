@@ -1,0 +1,17 @@
+# @TEST-REQUIRES: which FileCheck
+# @TEST-EXEC: spicyc -p %INPUT -o output.hlt
+# @TEST-EXEC: FileCheck %INPUT < output.hlt
+#
+# @TEST-DOC: Test that `&on-heap` on a struct type causes the generated HILTI struct to carry `&on-heap`.
+
+module foo;
+
+type Inner = struct {
+    x: uint8;
+} &on-heap;
+
+global g: Inner;
+print g;
+
+# CHECK: type Inner = struct {
+# CHECK: } &on-heap;

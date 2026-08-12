@@ -1,0 +1,8 @@
+# @TEST-EXEC-FAIL: spicyc -p %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Check that `&on-heap` is rejected on non-struct, non-unit type declarations.
+
+module foo;
+
+type Foo = enum { A, B } &on-heap;

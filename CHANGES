@@ -1,3 +1,42 @@
+1.17.0-dev.218 | 2026-08-12 09:51:51 +0200
+
+  * Mention `&on-heap` in stack exhaustion error message (Benjamin Bannier, Corelight)
+
+    When a user hits `StackSizeExceeded`, the error now suggests
+    `&on-heap` as a remedy. This makes the attribute more discoverable
+    without requiring users to find it in documentation first.
+
+  * GH-1781: GH-2434: Support `&on-heap` on Spicy unit and struct type declarations (Benjamin Bannier, Corelight)
+
+    This adds support for a `&on-heap` attribute to both unit and struct
+    type declarations. This provides an escape hatch for the default
+    behavior introduced in #1781 so that user can explicitly force huge
+    types to be allocated on the heap instead of the stack.
+
+    Since whether a type is huge is static information we could in principle
+    implement heuristics to switch to heap allocations automatically, but
+    I punted on that since actual cutoff values can be subtle. Users running
+    into this typically see problems under most inputs, so they have a
+    chance to address the issue before rolling out to production.
+    Unfortunately the only symptom is that stack space is exhausted which
+    makes it hard to point them to this attribute as a workaround.
+
+    Closes #2434.
+
+  * Fix duplicate key in `allowed_attributes` for `type::Unit` (Benjamin Bannier, Corelight)
+
+    The map had two entries for `hilti::node::tag::type::Unit`, one for
+    attributes on unit type declarations, and one intended for per-type
+    field validation. Since `std::unordered_map` silently drops duplicate
+    keys, the second entry containing `&parse-at` was being discarded, so we
+    now merge what we had into a single entry.
+
+  * Introduce proper version macros (Benjamin Bannier, Corelight)
+
+    We previously only exported version macros with generic names which was
+    not great, so this patch adds properly named macros as well. We keep the
+    old macros for now for backwards compatibility.
+
 1.17.0-dev.213 | 2026-08-11 19:16:18 +0200
 
   * Add optimizer logic promoting unmodified `copy`/`inout` parameters to `in`. (Robin Sommer, Corelight)

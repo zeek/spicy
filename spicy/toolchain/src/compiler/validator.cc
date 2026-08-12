@@ -40,13 +40,16 @@ std::unordered_map<node::Tag, std::unordered_set<hilti::attribute::Kind>> allowe
     {hilti::node::tag::declaration::Hook,
      {attribute::kind::Foreach, attribute::kind::Error, attribute::kind::Debug, attribute::kind::Priority}},
     {hilti::node::tag::declaration::Parameter, {attribute::kind::CxxAnyAsPtr}},
-    {hilti::node::tag::declaration::Type, {attribute::kind::Cxxname, attribute::kind::BitOrder}},
+    {hilti::node::tag::declaration::Type,
+     {attribute::kind::Cxxname, attribute::kind::BitOrder, attribute::kind::OnHeap}},
     {hilti::node::tag::Function,
      {attribute::kind::AlwaysEmit, attribute::kind::Cxxname, attribute::kind::Priority, attribute::kind::Debug}},
     {hilti::node::tag::type::Enum, {attribute::kind::Cxxname}},
     {hilti::node::tag::type::Unit,
      {attribute::kind::ByteOrder,
       attribute::kind::Convert,
+      attribute::kind::OnHeap,
+      attribute::kind::ParseAt,
       attribute::kind::Size,
       attribute::kind::MaxSize,
       attribute::kind::Requires}},
@@ -92,7 +95,6 @@ std::unordered_map<node::Tag, std::unordered_set<hilti::attribute::Kind>> allowe
     {hilti::node::tag::type::Real, {attribute::kind::Type, attribute::kind::ByteOrder}},
     {hilti::node::tag::type::RegExp, {attribute::kind::Nosub}},
     {hilti::node::tag::type::SignedInteger, {attribute::kind::ByteOrder, attribute::kind::BitOrder}},
-    {hilti::node::tag::type::Unit, {attribute::kind::ParseAt}},
     {hilti::node::tag::type::UnsignedInteger, {attribute::kind::ByteOrder, attribute::kind::BitOrder}},
     {hilti::node::tag::type::Vector,
      {attribute::kind::UntilIncluding,
@@ -502,6 +504,10 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
     void operator()(hilti::declaration::Type* n) final {
         checkNodeAttributes(n, n->attributes(), "type declaration");
+
+        if ( n->attributes()->find(attribute::kind::OnHeap) &&
+             ! n->type()->type()->isAnyOf<hilti::type::Struct, spicy::type::Unit>() )
+            error("'&on-heap' is only valid for struct and unit types", n);
 
         if ( n->isPublic() && n->type()->alias() ) {
             if ( auto* resolved = n->type()->alias()->resolvedDeclaration(); resolved && ! resolved->isPublic() )
