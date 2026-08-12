@@ -1,3 +1,10 @@
+1.17.0-dev.222 | 2026-08-12 10:29:35 +0200
+
+  * GH-13213: Remove workaround for readthedocs/readthedocs.org#13213 [skip ci] (Benjamin Bannier, Corelight)
+
+    An upstream fix for the issue has landed and we can remove our
+    workaround again.
+
 1.17.0-dev.220 | 2026-08-12 10:16:49 +0200
 
   * GH-5771: Avoid mode 0200 file creation in `Library::save()` for virtiofs (Benjamin Bannier, Corelight)
