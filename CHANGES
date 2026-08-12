@@ -1,3 +1,18 @@
+1.17.0-dev.220 | 2026-08-12 10:16:49 +0200
+
+  * GH-5771: Avoid mode 0200 file creation in `Library::save()` for virtiofs (Benjamin Bannier, Corelight)
+
+    libstdc++'s `fs::copy` creates the destination with mode 0200 (write-only).
+    Apple's virtiofs layer rejects file creation without the owner-read bit,
+    causing `spicyz -o` to fail with "Permission denied" on host bind mounts
+    in podman/Docker on macOS.
+
+    We unconditionally attempt removal of any pre-existing destination to
+    handle stale debris, then pre-create the file with a sane mode before
+    letting `fs::copy` overwrite it.
+
+    Closes zeek/zeek#5771.
+
 1.17.0-dev.218 | 2026-08-12 09:51:51 +0200
 
   * Mention `&on-heap` in stack exhaustion error message (Benjamin Bannier, Corelight)
