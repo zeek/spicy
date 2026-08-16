@@ -240,8 +240,10 @@ private:
 
     std::map<logging::DebugStream, size_t> _debug_streams;
 
-    constinit inline static std::unique_ptr<Logger> _singleton;
+    static std::unique_ptr<Logger> _singleton;
 };
+
+constinit inline std::unique_ptr<Logger> Logger::_singleton;
 
 inline Logger& logger() {
     if ( ! Logger::_singleton )

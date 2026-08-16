@@ -1,0 +1,3 @@
+#! /bin/sh
+
+printf 'int main() {}\n' | "$(spicy-config --cxx)" -std=c++23 -x c++ -fsyntax-only - >/dev/null 2>&1

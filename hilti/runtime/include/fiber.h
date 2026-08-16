@@ -3,6 +3,7 @@
 #pragma once
 
 #include <csetjmp>
+#include <exception>
 #include <memory>
 #include <optional>
 #include <string>
