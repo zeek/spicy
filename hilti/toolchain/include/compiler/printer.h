@@ -48,9 +48,12 @@ struct State {
     bool compact = false;
     bool user_visible = true;
 
-    inline static std::unique_ptr<State> current;
+    static std::unique_ptr<State> current;
     inline static uint64_t depth = 0;
 };
+
+constinit inline std::unique_ptr<State> State::current;
+
 } // namespace detail
 
 /** Output stream formatting HILTI source code. */

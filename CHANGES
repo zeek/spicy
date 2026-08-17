@@ -1,3 +1,18 @@
+1.17.0-dev.230 | 2026-08-17 08:45:54 +0200
+
+  * Fix toolchain headers under C++23 (Matthias Vallentin)
+
+  * Bump 3rdparty/vcpkg from `b6b50b3` to `d92484e` (dependabot[bot])
+
+  * Bump 3rdparty/json from `55f9368` to `9cca280` (dependabot[bot])
+
+  * Switch benchmark job to `simulation` mode (Benjamin Bannier, Corelight)
+
+    The `instrumentation` mode we were using previously has been deprecated
+    for some time.
+
+  * Bump CodSpeedHQ/action from 4.19.1 to 5.0.3 (dependabot[bot])
+
 1.17.0-dev.222 | 2026-08-12 10:29:35 +0200
 
   * GH-13213: Remove workaround for readthedocs/readthedocs.org#13213 [skip ci] (Benjamin Bannier, Corelight)
