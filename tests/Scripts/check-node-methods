@@ -16,9 +16,9 @@ $2 in cls { next; } { for ( c in cls ) if ( $0 ~ c ) print $2;}
 
 getOperators() {
     includes=$1
-    find ${includes} -type f -name '*h' -exec cat {} + \
-        | awk -F '[,()]' '/^(STANDARD_|BEGIN_(OPERATOR|METHOD))/ { gsub(/^[ \t]+/,"",$3); printf "operator_::%s::%s\n", $2, $3; };' \
-        | grep -v operator_::ns::op
+    find ${includes} -type f -name '*h' -exec cat {} + |
+        awk -F '[,()]' '/^(STANDARD_|BEGIN_(OPERATOR|METHOD))/ { gsub(/^[ \t]+/,"",$3); printf "operator_::%s::%s\n", $2, $3; };' |
+        grep -v operator_::ns::op
 }
 
 checkNodes() {
@@ -45,7 +45,6 @@ error() {
     have_errors=1
 }
 
-
 ### Main
 
 if [ $# != 1 ]; then
@@ -67,7 +66,7 @@ for file in hilti/include/hilti/ast/nodes.decl hilti/src/compiler/visitors/print
 done
 
 for n in $(getOperators hilti/include/ast/operators); do
-      find_visitor "${n}" hilti/src/compiler/codegen/operators.cc
+    find_visitor "${n}" hilti/src/compiler/codegen/operators.cc
 done
 
 for file in spicy/include/spicy/ast/nodes.decl spicy/src/compiler/visitors/validator.cc; do

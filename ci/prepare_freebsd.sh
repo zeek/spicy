@@ -8,7 +8,7 @@ set -e
 set -x
 
 # Detection of whether we run in the build directory requires `/proc`.
-echo "proc /proc procfs rw,noauto 0 0" >> /etc/fstab
+echo "proc /proc procfs rw,noauto 0 0" >>/etc/fstab
 mount /proc
 
 env ASSUME_ALWAYS_YES=YES pkg bootstrap
