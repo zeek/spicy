@@ -14,15 +14,15 @@ if test $# -ne 1; then
     exit 1
 fi
 
-echo "module Overflow {" >> "$filename"
+echo "module Overflow {" >>"$filename"
 
 i=0
 while [ $i -le $NUM_ITERATIONS ]; do
-    echo "type Data$i = Data$((i+1));" >> "$filename"
-    i=$((i+1))
+    echo "type Data$i = Data$((i + 1));" >>"$filename"
+    i=$((i + 1))
 done
 
 # Doesn't matter, just make it resolve
-echo "type Data$i = uint<8>;" >> "$filename"
+echo "type Data$i = uint<8>;" >>"$filename"
 
-echo "}" >> "$filename"
+echo "}" >>"$filename"

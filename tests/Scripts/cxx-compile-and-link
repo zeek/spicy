@@ -1,9 +1,11 @@
 #! /bin/sh
+# shellcheck disable=SC2086
 
-. $(dirname $0)/cxx-common.sh
+# shellcheck source=tests/Scripts/cxx-common.sh
+. "$(dirname "$0")"/cxx-common.sh
 
 cxx="$(spicy-config --cxx)"
 cxxflags="$(hilti-config ${debug}) $(spicy-config --cxxflags ${debug})"
 ldflags="$(hilti-config ${debug}) $(spicy-config --ldflags ${debug})"
 
-exec "${cxx}" ${cxxflags} $@ ${ldflags}
+exec "${cxx}" ${cxxflags} "$@" ${ldflags}

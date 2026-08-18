@@ -5,13 +5,6 @@
 repos:
 - repo: local
   hooks:
-  - id: checkbashisms
-    name: Check for bashisms in /bin/sh scripts
-    entry: ./tests/Scripts/3rdparty/checkbashisms.pl
-    language: script
-    types: ["sh"]
-    stages: ["pre-commit"]
-
   - id: license
     name: Check for license headers
     entry: ./tests/Scripts/license-header.py
@@ -92,11 +85,21 @@ repos:
     exclude: 'tests/.*/regexp/.*|.clang-tidy'
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  # Ruff version.
   rev: c60c980e561ed3e73101667fe8365c609d19a438  # frozen: v0.15.9
   hooks:
   - id: ruff-check
     args: [ --fix ]
   - id: ruff-format
+
+- repo: https://github.com/shellcheck-py/shellcheck-py
+  rev: v0.11.0.1
+  hooks:
+  - id: shellcheck
+
+- repo: https://github.com/maxwinterstein/shfmt-py
+  rev: 85cc16bc0319e182d7b62b0a2de351358083ce4c  # frozen: v4.0.0
+  hooks:
+  - id: shfmt
+    args: ["-w", "-i", "4", "-ci"]
 
 exclude: 3rdparty/|doc/(autogen|.*examples)/|/Baseline/|(\.svg$)|(\.dat$)

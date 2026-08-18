@@ -1,8 +1,10 @@
 #! /bin/sh
+# shellcheck disable=SC2086
 
-. $(dirname $0)/cxx-common.sh
+# shellcheck source=tests/Scripts/cxx-common.sh
+. "$(dirname "$0")"/cxx-common.sh
 
 cxx=$(spicy-config --cxx)
 cxxflags=$(spicy-config --cxxflags ${debug})
 
-exec "${cxx}" ${cxxflags} $@
+exec "${cxx}" ${cxxflags} "$@"

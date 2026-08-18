@@ -1,3 +1,11 @@
+1.17.0-dev.234 | 2026-08-18 09:21:30 +0200
+
+  * Format shell scripts with shfmt (Benjamin Bannier, Corelight)
+
+  * Remove unused helper scripts (Benjamin Bannier, Corelight)
+
+  * Switch from checkbashisms.pl to shellcheck (Benjamin Bannier, Corelight)
+
 1.17.0-dev.230 | 2026-08-17 08:45:54 +0200
 
   * Fix toolchain headers under C++23 (Matthias Vallentin)
