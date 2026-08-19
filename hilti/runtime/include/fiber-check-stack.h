@@ -18,19 +18,19 @@ namespace hilti::rt::detail {
  * \throws StackSizeExceeded if the minimum size is not available
  */
 inline void checkStack() {
-    static uint64_t cnt = 0;
+    static HILTI_THREAD_LOCAL uint64_t cnt = 0;
 
     // Check stack only every other time, to reduce overhead.
-    if ( ++cnt % 2 != 0 )
+    if ( ++cnt % 2 != 0 ) [[likely]]
         return;
 
     if ( context::detail::get()->fiber.current->stackBuffer().liveRemainingSize() <
-         ::hilti::rt::configuration::detail::unsafeGet().fiber_min_stack_size )
+         ::hilti::rt::configuration::detail::unsafeGet().fiber_min_stack_size ) [[unlikely]]
         throw StackSizeExceeded(
             "not enough stack space remaining, consider using '&on-heap' on large unit types to reduce stack pressure");
 
     // Do additional book-keeping every 8th time.
-    if ( cnt % 8 == 0 )
+    if ( cnt % 8 == 0 ) [[unlikely]]
         trackStack();
 }
 

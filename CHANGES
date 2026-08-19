@@ -1,3 +1,55 @@
+1.17.0-dev.241 | 2026-08-19 16:58:55 +0200
+
+  * GH-2447: Mark `public` unit alias parser struct with `&always-emit` (Benjamin Bannier, Corelight)
+
+    The way we annotated `public` type aliases was inconsistent with how we
+    treated `public` units, in particular `public` units are `&always-emit`
+    while `public` type aliases were not. The absence of `&always-emit`
+    allowed the dead code removal pass to remove the type alias, even though
+    we'd still register a parser from the alias which would then fail to
+    compile.
+
+    With this patch we declare `public` aliases `&always-emit`, consistent
+    with how we already treat `public` unit types.
+
+    Closes #2447.
+
+  * Make `checkStack()` counter thread-local and add branch hints (Benjamin Bannier, Corelight)
+
+    The static counter was shared across threads, causing a data race on the
+    non-atomic increment and false sharing in multi-threaded use. Make it
+    thread-local and annotate branches for the common fast path (skip check)
+    and the rare slow paths (stack exceeded, book-keeping).
+
+  * Inline fast paths for `waitForInput` and `atEod` (Benjamin Bannier, Corelight)
+
+    In the common case (frozen stream with sufficient data), these functions
+    just check `cur.size()` and return. Move that check into inline wrappers
+    so the compiler can avoid the function call overhead entirely, delegating
+    to out-of-line slow paths only when input is actually insufficient.
+
+  * Inline context `current()` to avoid extern function call overhead (Benjamin Bannier, Corelight)
+
+    Expose the thread-local context pointer via an inline function returning
+    a reference to an extern thread-local variable. This lets the compiler
+    fold repeated `current()` calls within a function body and avoids the
+    overhead of an extern function call on platforms with efficient TLS
+    (single %fs-relative load on Linux).
+
+  * Add branch hints to debug logging and location hot paths (Benjamin Bannier, Corelight)
+
+    Mark `indent()`/`dedent()` debug logger checks as `[[unlikely]]` since
+    debug logging is disabled in production. Use `unsafeGlobalState()` to
+    avoid the redundant null check. Mark `setLocation()`'s context check as
+    `[[likely]]` since a context is always present during parsing.
+
+  * Add parsing benchmarks for switch, nesting, and bytes (Benjamin Bannier, Corelight)
+
+    The existing benchmarks only covered vector-with-size,
+    vector-with-lookahead, and regex parsing. Add benchmarks for TLV-style
+    switch dispatch, deeply nested unit composition, and length-prefixed
+    bytes to cover more of the critical parsing paths.
+
 1.17.0-dev.234 | 2026-08-18 09:21:30 +0200
 
   * Format shell scripts with shfmt (Benjamin Bannier, Corelight)

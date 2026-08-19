@@ -70,14 +70,14 @@ inline bool isEnabled(std::string_view stream) {
 
 /** Increases the indentation level for a debug stream. */
 inline void indent(std::string_view stream) {
-    if ( ::hilti::rt::detail::globalState()->debug_logger )
-        ::hilti::rt::detail::globalState()->debug_logger->indent(stream);
+    if ( auto* logger = ::hilti::rt::detail::unsafeGlobalState()->debug_logger.get() ) [[unlikely]]
+        logger->indent(stream);
 }
 
 /** Decreases the indentation level for a debug stream. */
-inline void dedent(const std::string_view stream) {
-    if ( ::hilti::rt::detail::globalState()->debug_logger )
-        ::hilti::rt::detail::globalState()->debug_logger->dedent(stream);
+inline void dedent(std::string_view stream) {
+    if ( auto* logger = ::hilti::rt::detail::unsafeGlobalState()->debug_logger.get() ) [[unlikely]]
+        logger->dedent(stream);
 }
 
 /**
@@ -100,7 +100,7 @@ inline const char* location() {
  * @param l pointer to a statically allocated string that won't go out of scope.
  */
 inline void setLocation(const char* l = nullptr) {
-    if ( auto* ctx = ::hilti::rt::context::detail::current() ) {
+    if ( auto* ctx = ::hilti::rt::context::detail::current() ) [[likely]] {
         if ( auto* r = ctx->resumable )
             r->setLocation(l);
         else

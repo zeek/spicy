@@ -27,3 +27,51 @@ public type Regex = unit {
     data: /A*/;
     end_: b"END";
 };
+
+# TLV-style switch dispatch: 1-byte tag selects among field types.
+type TLVEntry = unit {
+    tag: uint8;
+    switch ( self.tag ) {
+        1 -> a: uint8;
+        2 -> b: uint16;
+        3 -> c: uint32;
+        * -> d: uint64;
+    };
+};
+
+public type UnitSwitch = unit {
+    length: uint64;
+    entries: TLVEntry[] &size=self.length;
+};
+
+# Deep nested unit composition: fixed-size fields only.
+type Leaf = unit {
+    a: uint8;
+    b: uint8;
+};
+
+type Inner = unit {
+    x: Leaf;
+    y: Leaf;
+};
+
+type Middle = unit {
+    m: Inner;
+    n: uint16;
+};
+
+public type UnitNested = unit {
+    length: uint64;
+    items: Middle[] &size=self.length;
+};
+
+# Bytes with constraints.
+type BytesEntry = unit {
+    len: uint8;
+    payload: bytes &size=self.len;
+};
+
+public type UnitBytes = unit {
+    length: uint64;
+    entries: BytesEntry[] &size=self.length;
+};

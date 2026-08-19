@@ -72,13 +72,17 @@ namespace context {
 namespace detail {
 
 /**
- * Helper returning a reference to a thread-local variable storing the
- * current context. We can't access the pointer directly as that leads to
- * trouble with JITted code not resolving it correctly.
+ * Returns a reference to a thread-local variable storing the current context.
  *
- * Normally, this function should not be used; use `get()`/`set()` instead.
+ * Inlined on non-MSVC platforms; on Windows we always use an out-of-line
+ * accessor since JIT DLLs cannot directly resolve extern thread-local storage.
  */
+#ifdef _MSC_VER
 extern Context*& current();
+#else
+extern HILTI_THREAD_LOCAL Context* __current;
+inline Context*& current() { return __current; }
+#endif
 
 /** Returns the context for the main thread. */
 extern Context* master();

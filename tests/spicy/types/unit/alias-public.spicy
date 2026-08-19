@@ -1,0 +1,14 @@
+# @TEST-DOC: Validate that public unit aliases do not get optimized away incorrectly. Regression test for #2447.
+#
+# NOTE: We do not pass `-d` here since it would enable strict public
+# API mode which would prevent possible removal of the public alias.
+#
+# @TEST-EXEC: echo 123 | spicy-driver %INPUT -p foo::X2
+
+module foo;
+
+public type X2 = X;
+
+public type X = unit {
+    x: bytes &eod;
+};

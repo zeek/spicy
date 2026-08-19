@@ -160,13 +160,13 @@ void detail::waitForEod(hilti::rt::ValueReference<hilti::rt::Stream>& data,
     waitForInputOrEod(data, cur, min, std::move(filters));
 }
 
-void detail::waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data,
-                          const hilti::rt::stream::View& cur,
-                          uint64_t min,
-                          std::string_view error_msg,
-                          std::string_view location,
-                          hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>
-                              filters) { // NOLINT(performance-unnecessary-value-param)
+void detail::waitForInputSlow(hilti::rt::ValueReference<hilti::rt::Stream>& data,
+                              const hilti::rt::stream::View& cur,
+                              uint64_t min,
+                              std::string_view error_msg,
+                              std::string_view location,
+                              hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>
+                                  filters) { // NOLINT(performance-unnecessary-value-param)
     while ( min > cur.size() )
         if ( ! waitForInputOrEod(data, cur, filters) ) {
             SPICY_RT_DEBUG_VERBOSE(
@@ -248,12 +248,9 @@ void detail::waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data,
     }
 }
 
-bool detail::atEod(hilti::rt::ValueReference<hilti::rt::Stream>& data,
-                   const hilti::rt::stream::View& cur,
-                   const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters) {
-    if ( cur.size() > 0 )
-        return false;
-
+bool detail::atEodSlow(hilti::rt::ValueReference<hilti::rt::Stream>& data,
+                       const hilti::rt::stream::View& cur,
+                       const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters) {
     if ( cur.isComplete() )
         return true;
 
