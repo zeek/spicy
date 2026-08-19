@@ -440,7 +440,8 @@ void CodeGen::compilePublicUnitAlias(hilti::declaration::Module* module, const I
     auto* attrs = builder()->attributeSet(
         {builder()->attribute(hilti::attribute::kind::Static),
          builder()->attribute(hilti::attribute::kind::Internal),
-         builder()->attribute(hilti::attribute::kind::NeededByFeature, builder()->stringLiteral("supports_filters"))});
+         builder()->attribute(hilti::attribute::kind::NeededByFeature, builder()->stringLiteral("supports_filters")),
+         builder()->attribute(hilti::attribute::kind::AlwaysEmit)});
 
     auto* parser_field = builder()->declarationField(ID(HILTI_INTERNAL_ID("parser")),
                                                      builder()->qualifiedType(builder()->typeName("spicy_rt::Parser"),
@@ -448,11 +449,13 @@ void CodeGen::compilePublicUnitAlias(hilti::declaration::Module* module, const I
                                                      attrs);
 
     auto struct_id = ID(alias_id.namespace_(), HILTI_INTERNAL_ID("parser_") + alias_id.local().str());
-    auto* struct_decl = builder()->declarationType(struct_id.local(),
-                                                   builder()->qualifiedType(builder()->typeStruct({parser_field}),
-                                                                            hilti::Constness::Mutable),
-                                                   hilti::declaration::Linkage::Public,
-                                                   unit->meta());
+    auto* struct_decl =
+        builder()->declarationType(struct_id.local(),
+                                   builder()->qualifiedType(builder()->typeStruct({parser_field}),
+                                                            hilti::Constness::Mutable),
+                                   builder()->attributeSet({builder()->attribute(hilti::attribute::kind::AlwaysEmit)}),
+                                   hilti::declaration::Linkage::Public,
+                                   unit->meta());
     module->add(context(), struct_decl);
 
     _compileParserRegistration(alias_id, struct_id, unit);
