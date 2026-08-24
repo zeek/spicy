@@ -1,0 +1,21 @@
+# @TEST-DOC: Validate that `void` fields are ignored in lookahead parsing, regression test for #2477.
+
+# @TEST-EXEC: $SCRIPTS/printf "abcd\x00efg" | spicy-dump -d %INPUT
+
+module foo;
+
+public type X = unit {
+    xs: (bytes &size=1)[];
+
+    # This field is `void` and determining the lookahead token
+    # for above parsing should look at the next field.
+    : void {
+        print "foo";
+    }
+
+    lahead_end: skip b"\x00";
+
+    on %done {
+        assert |self.xs| == 4;
+    }
+};
