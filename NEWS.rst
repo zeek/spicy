@@ -7,9 +7,42 @@ Version 1.17 (in progress)
 
 .. rubric:: New Functionality
 
+- GH-2434: Add ``&on-heap`` attribute for unit and struct type declarations.
+
+  Since 1.16, Spicy places parsed unit instances on the stack rather than
+  heap-allocating them, which improves throughput by avoiding allocation
+  overhead and improving cache locality. For very large types stack allocation
+  can exhaust the available stack space. Declaring a type ``&on-heap`` forces
+  it back to heap allocation at the cost of some performance:
+
+  .. code-block:: spicy
+
+      type Large = unit {
+          # ...
+      } &on-heap;
+
+  When stack exhaustion occurs, the error message now also points to this
+  attribute.
+
 - GH-2460: ``new T(x)`` now supports copy construction when ``x`` is a value
   of type ``T``. Previously this was silently accepted but produced a
   default-constructed object, ignoring the argument.
+
+- GH-1960: New optimizer pass that inserts ``std::move`` for last uses of
+  variables, reducing unnecessary copies in both user code and generated
+  parser code.
+
+- GH-2323: New optimizer pass that promotes unmodified ``copy`` and ``inout``
+  function parameters to ``in``, avoiding unnecessary copies when dataflow
+  analysis shows the parameter is never written.
+
+- GH-2444: Add properly named version macros (``HILTI_VERSION_NUMBER``,
+  ``HILTI_VERSION_STRING_SHORT``, ``HILTI_VERSION_STRING_LONG``) for use in
+  host applications. The previous generic ``PROJECT_VERSION_*`` macros remain
+  available for backwards compatibility.
+
+- GH-2416: Allow disabling building of benchmarks with ``--disable-benchmarks``
+  configure option.
 
 .. rubric:: Changed Functionality
 
@@ -18,9 +51,84 @@ Version 1.17 (in progress)
   the size of ``.hlto`` files. Users who need debug information in JIT-compiled
   code can use ``spicyc -d``, which retains full debug symbols.
 
+- GH-2471: Runtime performance improvements: inlined fast paths for
+  ``waitForInput``, ``atEod``, and context access; added branch hints to debug
+  logging and location tracking; made the stack depth counter thread-local to
+  eliminate cross-thread contention.
+
+- GH-2358: Spicy now rejects regular expression patterns containing non-ASCII
+  characters.
+
+- GH-2461: ``new T(args)`` is now rejected when ``T`` has no type parameters.
+  Previously the arguments were silently discarded.
+
+- GH-2391: Continued improvements to Windows support, contributed by Maor
+  Hamami.
+
 .. rubric:: Bug fixes
 
+- GH-2477: Fix ``void`` unit fields confusing lookahead parsing by treating
+  them as epsilon productions.
+
+- GH-2438: Fix parsing of regular expressions with capture groups in
+  lookahead contexts.
+
+- GH-2447: Fix optimizer incorrectly removing ``public`` type alias parser
+  structs.
+
+- GH-2433: Fix false-positive cycle detection for types with sequential
+  fields of the same type.
+
+- GH-2258: Fix transitive aliases not being tracked correctly in optimizer
+  dataflow.
+
+- GH-2404: Fix most-vexing-parse issues in generated C++ code caused by
+  coercions incorrectly flagged as having side effects.
+
+- GH-2439: Add missing ``operator<<`` for several runtime enum types, fixing
+  formatting with the ``%`` operator.
+
+- GH-2354: Fix Fiber constructor clobbering the shared stack, causing a race
+  condition in multithreaded parsing.
+
+- zeek/zeek#5771: Fix ``spicyz -o`` failing with "Permission denied" on macOS
+  virtiofs host bind mounts (podman/Docker).
+
+- GH-2420: Fix regression causing the optimizer to remove fields that are
+  still used.
+
+- GH-2382, GH-2397: Fix overflows in ``atoi_n`` integer parsing.
+
+- GH-2376, GH-2394: Fix overflows in compile-time checks for
+  ``real``-to-integer and integer-to-``real`` coercion.
+
+- GH-2457: Fix dependency tracking for external ``QualifiedType`` nodes
+  causing cross-unit compilation failures.
+
+- GH-2457: Fix namespace errors in type code emission during C++ codegen.
+
+- GH-2336: Fix optimizer indexing per-function state by non-unique ID,
+  confusing separate functions with the same short name.
+
+- GH-2444: Fix duplicate key in ``allowed_attributes`` silently ignoring
+  ``&parse-at`` on units.
+
+- GH-2474: Fix toolchain headers under C++23.
+
+- GH-2437: Fix optimizer producing unresolved struct ``self`` references after
+  dead-store replacement.
+
+- GH-2253: Fix CFG construction for switch cases.
+
+- GH-2451: Fix driver setup when invoked without an explicit path.
+
+- GH-2361: Fix potential nullptr dereference in the remove-unused-fields
+  optimizer pass.
+
 .. rubric:: Documentation
+
+- GH-2417: Updated installation instructions to reflect removal of binary
+  release packages.
 
 Version 1.16
 ============
