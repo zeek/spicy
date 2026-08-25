@@ -70,9 +70,15 @@ foreach (lib hilti-rt hilti-rt-debug)
                                PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
     target_include_directories(${lib}-objects BEFORE
                                PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
+    target_include_directories(${lib}-objects BEFORE
+                               PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty>)
+
+    # Suppress warnings from nlohmann/json. For one of the warnings, the deprecation
+    # is attributed in a libc++ header, which might be lexed before including. That
+    # means more pragmas cannot actually suppress the warnings!
     target_include_directories(
-        ${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty>
-                                     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/json/include>)
+        ${lib}-objects SYSTEM BEFORE
+        PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/json/include>)
 
     add_dependencies(${lib}-objects jrx-objects)
     target_include_directories(${lib}-objects BEFORE
