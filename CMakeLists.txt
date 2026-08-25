@@ -326,6 +326,22 @@ add_subdirectory(spicy)
 add_subdirectory(scripts)
 add_subdirectory(3rdparty)
 
+if (MSVC)
+    set_property(TARGET fiber APPEND PROPERTY COMPILE_OPTIONS "/w")
+else ()
+    set_property(TARGET fiber APPEND PROPERTY COMPILE_OPTIONS "-w")
+endif ()
+
+# Suppress warnings from bundled headers when their targets are consumed.
+foreach (target benchmark fiber header-utils jrx-objects reproc reproc++)
+    if (TARGET ${target})
+        set_property(
+            TARGET ${target} APPEND
+            PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
+                     "$<TARGET_PROPERTY:${target},INTERFACE_INCLUDE_DIRECTORIES>")
+    endif ()
+endforeach ()
+
 ## Print build summary
 string(TOUPPER ${CMAKE_BUILD_TYPE} BuildType)
 

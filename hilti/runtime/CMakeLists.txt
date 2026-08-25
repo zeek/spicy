@@ -71,16 +71,17 @@ foreach (lib hilti-rt hilti-rt-debug)
     target_include_directories(${lib}-objects BEFORE
                                PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
     target_include_directories(
-        ${lib}-objects BEFORE PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty>
-                                     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/json/include>)
+        ${lib}-objects SYSTEM BEFORE
+        PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty>
+               $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/json/include>)
 
     add_dependencies(${lib}-objects jrx-objects)
-    target_include_directories(${lib}-objects BEFORE
+    target_include_directories(${lib}-objects SYSTEM BEFORE
                                PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/justrx/include)
 
     add_dependencies(${lib}-objects fiber)
     target_include_directories(
-        ${lib}-objects
+        ${lib}-objects SYSTEM BEFORE
         PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/fiber/include
                 ${PROJECT_SOURCE_DIR}/3rdparty/fiber/deps/cxx-header-utils/include
                 ${PROJECT_SOURCE_DIR}/3rdparty/utfcpp/source)

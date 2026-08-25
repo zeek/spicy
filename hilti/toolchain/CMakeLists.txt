@@ -162,7 +162,7 @@ target_link_libraries(hilti-objects
 target_link_libraries(hilti-objects PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 
 add_dependencies(hilti-objects reproc++)
-target_include_directories(hilti-objects BEFORE
+target_include_directories(hilti-objects SYSTEM BEFORE
                            PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/reproc/reproc++/include)
 
 add_library(hilti)
