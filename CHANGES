@@ -1,3 +1,16 @@
+1.17.0-dev.243 | 2026-08-25 11:10:09 +0200
+
+  * GH-2477: Treat `void` unit fields as epsilon (Benjamin Bannier, Corelight)
+
+    We would previously treat `void` fields as producing normal variables.
+    Since they consume no data this is incorrect and also confuses lookahead
+    parsing.
+
+    This patch switches `void` fields to instead generate epsilon
+    productions.
+
+    Closes #2477.
+
 1.17.0-dev.241 | 2026-08-19 16:58:55 +0200
 
   * GH-2447: Mark `public` unit alias parser struct with `&always-emit` (Benjamin Bannier, Corelight)

@@ -319,6 +319,8 @@ struct Visitor : public visitor::PreOrder {
 
     void operator()(hilti::declaration::Type* n) final { result = pf->createProduction(n->type()); }
 
+    void operator()(hilti::type::Void*) final { result = std::make_unique<production::Epsilon>(context()); }
+
     void operator()(type::Unit* n) final {
         // Note: We can't use the cache's getOrCreate() here because of the
         // unique_ptr storage semantics.
