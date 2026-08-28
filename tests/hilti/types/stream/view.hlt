@@ -27,6 +27,11 @@ assert ! v.starts_with(b"XYZ");
 
 assert |v| == 9;
 
+assert v.sub(3) == b"123";
+assert v.sub(0) == b"";
+assert v.sub(|v|) == b"123456789";
+assert all.sub(5) == b"01234";
+
 global stream x2 = stream(b"AbCdEf");
 v2 = cast<view<stream>>(x2).sub(x2.at(1), x2.at(5));
 

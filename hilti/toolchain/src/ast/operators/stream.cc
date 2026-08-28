@@ -676,6 +676,32 @@ offset *end*. The offsets are relative to the beginning of the view.
 };
 HILTI_OPERATOR_IMPLEMENTATION(SubOffsets);
 
+class SubOffset : public BuiltInMemberCall {
+public:
+    Signature signature(Builder* builder) const final {
+        return Signature{
+            .kind = Kind::MemberCall,
+            .self = {.kind = parameter::Kind::In, .type = builder->typeStreamView()},
+            .member = "sub",
+            .param0 =
+                {
+                    .name = "end",
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
+                },
+            .result = {.constness = Constness::Const, .type = builder->typeStreamView()},
+            .ns = "stream::view",
+            .doc = R"(
+Returns a new view of the subsequence from the beginning of the view to (but
+not including) offset *end*. The offset is relative to the beginning of the
+view.
+)",
+        };
+    }
+
+    HILTI_OPERATOR(hilti, stream::view::SubOffset);
+};
+HILTI_OPERATOR_IMPLEMENTATION(SubOffset);
+
 } // namespace view
 
 class Ctor : public Operator {
