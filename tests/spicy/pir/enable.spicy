@@ -1,0 +1,21 @@
+# @TEST-EXEC: spicyc %INPUT -p -D spicy-pir >/dev/null 2>off.log
+# @TEST-EXEC: btest-diff off.log
+
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: Tests that `--experimental-pir` runs the Parser IR phase, and that it stays off by default.
+
+module foo;
+
+public type P1 = unit {
+    x: uint8;
+};
+
+type P2 = unit {
+    y: uint8;
+};
+
+public type P3 = unit {
+    p: P2;
+};

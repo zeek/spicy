@@ -1,5 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <variant>
+
 #include <hilti/ast/builder/builder.h>
 
 #include <spicy/ast/builder/builder.h>
@@ -7,6 +9,7 @@
 #include <spicy/compiler/detail/codegen/codegen.h>
 #include <spicy/compiler/detail/coercer.h>
 #include <spicy/compiler/detail/parser/driver.h>
+#include <spicy/compiler/detail/pir/pir.h>
 #include <spicy/compiler/detail/plugin.h>
 #include <spicy/compiler/detail/printer.h>
 #include <spicy/compiler/detail/resolver.h>
@@ -98,6 +101,27 @@ hilti::Plugin spicy::detail::createSpicyPlugin() {
         .ast_transform = [](hilti::Builder* builder, hilti::ASTRoot* m) -> bool {
             assert(dynamic_cast<spicy::Builder*>(builder));
             auto* spicy_builder = static_cast<spicy::Builder*>(builder);
+
+            // Read-only side path; the code generator below remains authoritative.
+            if ( builder->options().getAuxOption<bool>("spicy.experimental_pir", false) ) {
+                auto result = pir::build(*spicy_builder->context());
+                if ( ! result ) {
+                    // A failure inside PIR is not a reason to fall back.
+                    hilti::logger().error(hilti::util::fmt("PIR: %s", result.error().description()));
+                    return false;
+                }
+
+                if ( const auto* unsupported = std::get_if<pir::Unsupported>(&*result) ) {
+                    for ( const auto& f : unsupported->features )
+                        HILTI_DEBUG(spicy::logging::debug::PIR,
+                                    hilti::util::fmt("unsupported: %s (%s)", f.feature, f.reason));
+
+                    HILTI_DEBUG(spicy::logging::debug::PIR, "falling back to the standard code generator");
+                }
+                else
+                    HILTI_DEBUG(spicy::logging::debug::PIR, "PIR built");
+            }
+
             return CodeGen(spicy_builder).compileAST(m);
         },
     };

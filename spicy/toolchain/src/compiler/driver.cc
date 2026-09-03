@@ -5,17 +5,24 @@
 
 using namespace spicy;
 
+namespace {
+// Values for our long-only command-line options.
+constexpr int OptExperimentalPIR = hilti::driver::LongOptionValueBase;
+} // namespace
+
 spicy::Options Driver::spicyCompilerOptions() const {
     spicy::Options options;
 
     const auto& hilti_options = hiltiOptions();
     options.track_offsets = hilti_options.getAuxOption<bool>("spicy.track_offsets", false);
+    options.experimental_pir = hilti_options.getAuxOption<bool>("spicy.experimental_pir", false);
     return options;
 }
 
 void Driver::setSpicyCompilerOptions(const spicy::Options& options) {
     auto hilti_options = hiltiOptions();
     hilti_options.setAuxOption("spicy.track_offsets", options.track_offsets);
+    hilti_options.setAuxOption("spicy.experimental_pir", options.experimental_pir);
     setCompilerOptions(std::move(hilti_options));
 }
 
@@ -26,7 +33,8 @@ std::unique_ptr<hilti::Builder> Driver::createBuilder(hilti::ASTContext* ctx) co
 std::string Driver::hookAddCommandLineOptions() { return "Q"; }
 
 std::vector<hilti::driver::LongOption> Driver::hookAddCommandLineLongOptions() {
-    return {{.name = "include-offsets", .has_argument = false, .val = 'Q'}};
+    return {{.name = "include-offsets", .has_argument = false, .val = 'Q'},
+            {.name = "experimental-pir", .has_argument = false, .val = OptExperimentalPIR}};
 }
 
 bool Driver::hookProcessCommandLineOption(int opt, const char* /*optarg*/) {
@@ -34,6 +42,7 @@ bool Driver::hookProcessCommandLineOption(int opt, const char* /*optarg*/) {
 
     switch ( opt ) {
         case 'Q': hilti_options.setAuxOption("spicy.track_offsets", true); break;
+        case OptExperimentalPIR: hilti_options.setAuxOption("spicy.experimental_pir", true); break;
         default: return false;
     }
 
@@ -42,5 +51,6 @@ bool Driver::hookProcessCommandLineOption(int opt, const char* /*optarg*/) {
 }
 
 std::string Driver::hookAugmentUsage() {
-    return "  -Q | --include-offsets            Include stream offsets of parsed data in output.\n";
+    return "  -Q | --include-offsets            Include stream offsets of parsed data in output.\n"
+           "       --experimental-pir           Run the experimental Parser IR phase (for development only).\n";
 }
