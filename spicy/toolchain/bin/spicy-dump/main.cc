@@ -41,6 +41,7 @@ static struct option long_options[] = {
     {.name = "enable-profiling", .has_arg = no_argument, .flag = nullptr, .val = 'Z'},
     {.name = "file", .has_arg = required_argument, .flag = nullptr, .val = 'f'},
     {.name = "help", .has_arg = no_argument, .flag = nullptr, .val = 'h'},
+    {.name = "include-offsets", .has_arg = no_argument, .flag = nullptr, .val = 'Q'},
     {.name = "json", .has_arg = no_argument, .flag = nullptr, .val = 'J'},
     {.name = "library-path", .has_arg = required_argument, .flag = nullptr, .val = 'L'},
     {.name = "list-parsers", .has_arg = no_argument, .flag = nullptr, .val = 'l'},

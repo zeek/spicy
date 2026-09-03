@@ -25,6 +25,10 @@ std::unique_ptr<hilti::Builder> Driver::createBuilder(hilti::ASTContext* ctx) co
 
 std::string Driver::hookAddCommandLineOptions() { return "Q"; }
 
+std::vector<hilti::driver::LongOption> Driver::hookAddCommandLineLongOptions() {
+    return {{.name = "include-offsets", .has_argument = false, .val = 'Q'}};
+}
+
 bool Driver::hookProcessCommandLineOption(int opt, const char* /*optarg*/) {
     auto hilti_options = hiltiOptions();
 

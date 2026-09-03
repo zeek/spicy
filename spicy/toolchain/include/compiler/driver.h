@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <hilti/compiler/driver.h>
 
@@ -65,6 +66,7 @@ protected:
     std::unique_ptr<hilti::Builder> createBuilder(hilti::ASTContext* ctx) const override;
 
     std::string hookAddCommandLineOptions() override;
+    std::vector<hilti::driver::LongOption> hookAddCommandLineLongOptions() override;
     bool hookProcessCommandLineOption(int opt, const char* optarg) override;
     std::string hookAugmentUsage() override;
 
