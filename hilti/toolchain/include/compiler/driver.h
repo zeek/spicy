@@ -68,6 +68,25 @@ struct Options {
     Options() { logger = std::make_unique<Logger>(); }
 };
 
+/**
+ * Description of a command-line option that a derived driver adds to the
+ * driver's long-option table. The option either stands on its own or is the
+ * long form of a short option that the driver already registers.
+ */
+struct LongOption {
+    std::string name;  /**< option's name, without leading dashes */
+    bool has_argument; /**< true if the option expects an argument */
+    int val; /**< value passed to `Driver::hookProcessCommandLineOption()` when the option is seen; either the short
+                option this is the long form of, or at least `LongOptionValueBase` */
+};
+
+/**
+ * Smallest `LongOption::val` available to a long-only option of a derived
+ * driver. Values below this are either short options or reserved for the
+ * driver's own options.
+ */
+constexpr int LongOptionValueBase = 2000;
+
 } // namespace driver
 
 /**
@@ -411,6 +430,13 @@ protected:
      * string.
      */
     virtual std::string hookAddCommandLineOptions() { return ""; }
+
+    /**
+     * Hook for derived classes to add options to the driver's long-option
+     * table. The `val` of each option must be unique among the driver's
+     * options; see `driver::LongOption` for the values available.
+     */
+    virtual std::vector<driver::LongOption> hookAddCommandLineLongOptions() { return {}; }
 
     /** Hook for derived classes for parsing additional options. */
     virtual bool hookProcessCommandLineOption(int /*opt*/, const char* /*optarg*/) { return false; }

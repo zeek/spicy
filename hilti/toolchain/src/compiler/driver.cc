@@ -6,6 +6,7 @@
 #include <getopt.h>
 
 #include <algorithm>
+#include <cassert>
 #include <exception>
 #include <fstream>
 #include <iostream>
@@ -275,8 +276,28 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
     opterr = 0; // don't print errors
     std::string option_string = "ABlL:cCpP:vjhvx:VdX:o:D:TUEeSRgZ" + hookAddCommandLineOptions();
 
+    // Merge our own long options with any that a derived driver adds. The
+    // additional options must stay alive as long as we use their names.
+    auto addl_long_options = hookAddCommandLineLongOptions();
+    std::vector<struct option> long_options;
+    for ( const auto* o = long_driver_options; o->name; ++o )
+        long_options.push_back(*o);
+
+    for ( const auto& o : addl_long_options ) {
+        // The value must either come from the space reserved for derived
+        // drivers, or be a short option that's already registered.
+        assert(o.val >= driver::LongOptionValueBase ||
+               option_string.find(static_cast<char>(o.val)) != std::string::npos);
+        long_options.push_back({.name = o.name.c_str(),
+                                .has_arg = o.has_argument ? required_argument : no_argument,
+                                .flag = nullptr,
+                                .val = o.val});
+    }
+
+    long_options.push_back({.name = nullptr, .has_arg = 0, .flag = nullptr, .val = 0});
+
     while ( true ) {
-        int c = getopt_long(argc, argv, option_string.c_str(), long_driver_options, nullptr);
+        int c = getopt_long(argc, argv, option_string.c_str(), long_options.data(), nullptr);
 
         if ( c < 0 )
             break;
