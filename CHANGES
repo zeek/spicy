@@ -1,3 +1,16 @@
+1.17.0-dev.247 | 2026-09-07 09:57:21 +0200
+
+  * Enable the fiber runtime on PowerPC64 (Piotr Kubaj)
+
+    The three stack-inspection helpers (Fiber::Fiber, StackBuffer::activeRegion,
+    StackBuffer::liveRemainingSize) are already portable -- they use
+    __builtin_frame_address(0) and the fiber's saved stack pointer -- but were
+    gated behind a fixed architecture whitelist. Add __powerpc64__ so they are
+    enabled on PowerPC64, whose fiber context switching the bundled fiber library
+    supports (ELFv2, both endiannesses).
+
+    Verified on FreeBSD 15.1/powerpc64 (big-endian, POWER9).
+
 1.17.0-dev.245 | 2026-08-25 17:40:41 +0200
 
   * Add NEWS entry for 1.17 [skip ci] (Benjamin Bannier, Corelight)
