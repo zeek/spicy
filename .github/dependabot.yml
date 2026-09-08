@@ -6,6 +6,10 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+      # vcpkg introduces a lot of churn but staying close
+      # to upstream create diminishing ROI for us.
+      - dependency-name: "3rdparty/vcpkg"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
