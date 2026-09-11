@@ -255,9 +255,9 @@ hilti::Result<hilti::Nothing> isParseableType(QualifiedType* pt, type::unit::ite
     if ( f->item() ) {
         return hilti::Nothing();
     }
-    // But a vector cannot contain a type; this is enforced at parse time
+    // But a vector cannot contain a type.
     else if ( pt->type()->isA<hilti::type::Vector>() ) {
-        hilti::logger().internalError("vectors must only have sub-item, not an inner type");
+        return hilti::result::Error("vector<T> syntax is no longer supported for parsing sequences; use T[] instead.");
     }
 
     return hilti::result::Error(fmt("not a parseable type (%s)", *pt));

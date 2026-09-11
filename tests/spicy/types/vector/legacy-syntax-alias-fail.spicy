@@ -1,0 +1,12 @@
+# @TEST-DOC: Check that vector<T> type alias is rejected when used as a unit field, regression test for #2445.
+#
+# @TEST-EXEC-FAIL: spicyc -c %INPUT >output 2>&1
+# @TEST-EXEC:      btest-diff output
+
+module Test;
+
+type X = vector<uint32>;
+
+public type PubData = unit {
+    : X;
+};
