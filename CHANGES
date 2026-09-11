@@ -1,3 +1,7 @@
+1.17.0-dev.249 | 2026-09-11 14:32:42 +0200
+
+  * Bump `3rdparty/utfcpp` (Benjamin Bannier, Corelight)
+
 1.17.0-dev.247 | 2026-09-07 09:57:21 +0200
 
   * Enable the fiber runtime on PowerPC64 (Piotr Kubaj)
