@@ -36,10 +36,6 @@ public:
     ID(std::string_view s, AlreadyNormalized n) : Base(s, n) {}
 
     /** Concatenates multiple strings into a single ID, separating them with `::`. */
-    template<typename... T, typename enable = std::enable_if_t<(... && std::is_convertible_v<T, std::string_view>)>>
-    explicit ID(const T&... s) : Base(s...) {}
-
-    /** Concatenates multiple strings into a single ID, separating them with `::`. */
     ID(std::initializer_list<std::string_view> x) : Base(x) {}
 
     ID(const Base& other) : Base(other) {}

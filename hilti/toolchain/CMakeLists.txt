@@ -162,7 +162,7 @@ target_link_libraries(hilti-objects
 target_link_libraries(hilti-objects PUBLIC ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
 
 add_dependencies(hilti-objects reproc++)
-target_include_directories(hilti-objects BEFORE
+target_include_directories(hilti-objects SYSTEM BEFORE
                            PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/reproc/reproc++/include)
 
 add_library(hilti)
@@ -205,9 +205,15 @@ set_config_val(
     "!INSTALL!${CMAKE_INSTALL_FULL_INCLUDEDIR} !BUILD!${PROJECT_SOURCE_DIR}/hilti/toolchain/include !BUILD!${PROJECT_BINARY_DIR}/include"
 )
 
-# CXX flags — use dash-prefixed form (-D, -EHsc, …) so MSYS2/Git-Bash
-# does not mistake slash-prefixed flags for POSIX paths.
-string(REGEX REPLACE "(^| )/" "\\1-" _cxx_flags "${CMAKE_CXX_FLAGS}")
+# CXX flags — with MSVC use dash-prefixed form (-D, -EHsc, …) so MSYS2/Git-Bash
+# does not mistake slash-prefixed flags for POSIX paths. Do not do this
+# elsewhere: there slash-prefixed tokens are absolute paths (e.g. the argument
+# of `-isystem`), not flags.
+if (MSVC)
+    string(REGEX REPLACE "(^| )/" "\\1-" _cxx_flags "${CMAKE_CXX_FLAGS}")
+else ()
+    set(_cxx_flags "${CMAKE_CXX_FLAGS}")
+endif ()
 set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_DEBUG
                "${addl_cxx_flags} ${EXTRA_CXX_FLAGS} ${_cxx_flags}")
 set_config_val(HILTI_CONFIG_RUNTIME_CXX_FLAGS_RELEASE
@@ -241,8 +247,12 @@ endif ()
 set_config_val(HILTI_CONFIG_TOOLCHAIN_CXX_LIBRARY_DIRS
                "!BUILD!${CMAKE_LIBRARY_OUTPUT_DIRECTORY} !INSTALL!${CMAKE_INSTALL_FULL_LIBDIR}")
 
-# LD flags
-string(REGEX REPLACE "(^| )/" "\\1-" _ld_flags "${CMAKE_EXE_LINKER_FLAGS_INIT}")
+# LD flags (see the CXX flags above for why this is MSVC-only)
+if (MSVC)
+    string(REGEX REPLACE "(^| )/" "\\1-" _ld_flags "${CMAKE_EXE_LINKER_FLAGS_INIT}")
+else ()
+    set(_ld_flags "${CMAKE_EXE_LINKER_FLAGS_INIT}")
+endif ()
 set_config_val(HILTI_CONFIG_RUNTIME_LD_FLAGS_DEBUG
                "${addl_ld_flags} ${EXTRA_LD_FLAGS} ${_ld_flags}")
 set_config_val(HILTI_CONFIG_RUNTIME_LD_FLAGS_RELEASE
