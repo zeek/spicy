@@ -6,7 +6,6 @@
 #include <memory>
 #include <string>
 #include <utility>
-#include <variant>
 
 #include <hilti/rt/any.h>
 #include <hilti/rt/extension-points.h>
@@ -39,15 +38,6 @@ using Controllable = std::enable_shared_from_this<T>;
  * existing value reference, essentially creating handles to its value. They
  * then become joined managers of the value.
  *
- * @note It seems we could clean up this class and get rid of the internal
- * variant altogether. We need the variant only to potentially store a raw
- * pointer coming in through the corresponding constructor. However, we
- * require that pointer to point to a `Controllable` and hence could turn it
- * into a shared_ptr right there. On the downside, that would mean a
- * `shared_from_this()` call even if the resulting instance is never used --
- * which with the current code generator could happen frequently (at least
- * once we optimized to use `this` instead of the `self` wrapper when
- * possible). So leaving it alone for now.
  */
 template<typename T>
 class ValueReference {
@@ -56,7 +46,7 @@ public:
      * Instantiates a reference containing a new value of `T` initialized to
      * its default value.
      */
-    ValueReference() : _ptr(std::make_shared<T>()) {}
+    ValueReference() : _owned(std::make_shared<T>()), _raw(_owned.get()) {}
 
     /**
      * Instantiates a reference containing a new value of `T` initialized to
@@ -64,7 +54,7 @@ public:
      *
      * @param t value to initialize new instance with
      */
-    ValueReference(T t) : _ptr(std::make_shared<T>(std::move(t))) {}
+    ValueReference(T t) : _owned(std::make_shared<T>(std::move(t))), _raw(_owned.get()) {}
 
     /**
      * Instantiates a new reference from an existing `std::shared_ptr` to a
@@ -76,34 +66,32 @@ public:
      *
      * @param t shared pointer to link to
      */
-    explicit ValueReference(std::shared_ptr<T> t) : _ptr(std::move(t)) {}
+    explicit ValueReference(std::shared_ptr<T> t) : _owned(std::move(t)), _raw(_owned.get()) {}
 
     /**
      * Copy constructor. The new instance will refer to a copy of the
      * source's value.
      */
     ValueReference(const ValueReference& other) {
-        if ( auto ptr = other._get() )
-            _ptr = std::make_shared<T>(*ptr);
-        else
-            _ptr = std::shared_ptr<T>();
+        if ( auto* ptr = other._raw ) {
+            _owned = std::make_shared<T>(*ptr);
+            _raw = _owned.get();
+        }
     }
 
     /** Move constructor. */
-    ValueReference(ValueReference&& other) noexcept = default;
+    ValueReference(ValueReference&& other) noexcept
+        : _owned(std::move(other._owned)), _raw(std::exchange(other._raw, nullptr)) {}
 
     /** Destructor. */
-    ~ValueReference() {}
+    ~ValueReference() = default;
 
     /**
      * Returns true if the reference does not contain a value. This will
      * rarely happen, except when explicitly constructed that way through an
      * existing pointer.
      */
-    bool isNull() const {
-        assert(_ptr.index() != std::variant_npos);
-        return _get() == nullptr;
-    }
+    bool isNull() const { return _raw == nullptr; }
 
     /**
      * Simply returns the value reference itself. This exists only is to make
@@ -123,46 +111,42 @@ public:
      * Returns a pointer to the referred value. The result may be null if the
      * instance does not refer to a valid value.
      */
-    const T* get() const { return _get(); }
+    const T* get() const { return _raw; }
 
     /**
-     * Returns a shared pointer to the referred value. The result may be a
-     * null pointer if the instance does not refer to a valid value.
+     * Returns a shared pointer to the referred value. If the instance owns
+     * the value, returns the owning pointer directly. Otherwise attempts
+     * `shared_from_this()`, which requires `T` to derive from
+     * `Controllable<T>` and the instance to be heap-allocated.
      *
-     * For this to work, the value reference must have either (1) create the
-     * contained value itself through one of the standard constructor; or (2)
-     * if created through an explicit pointer constructor, the instance must
-     * be located on the heap and be the instance of a classed derived from
-     * `Controllable<T>`.
+     * The result may be a null pointer if the instance does not refer to a
+     * valid value.
      *
      * @throws IllegalReference if no shared pointer can be constructed for
      * the contained instance.
      */
     std::shared_ptr<T> asSharedPtr() const {
-        assert(_ptr.index() != std::variant_npos);
+        if ( _owned ) [[likely]]
+            return _owned;
 
-        if ( auto x = std::get_if<std::shared_ptr<T>>(&_ptr) )
-            return *x;
+        if ( ! _raw )
+            return nullptr;
 
         try {
-            if ( auto* ptr = std::get<T*>(_ptr) ) {
-                if constexpr ( std::is_base_of_v<Controllable<T>, T> )
-                    return ptr->shared_from_this();
-                else
-                    throw IllegalReference("cannot dynamically create reference for type");
-            }
+            if constexpr ( std::is_base_of_v<Controllable<T>, T> )
+                return _raw->shared_from_this();
             else
-                throw IllegalReference("unexpected state of value reference");
+                throw IllegalReference("cannot dynamically create reference for type");
         } catch ( const std::bad_weak_ptr& ) {
             throw IllegalReference("reference to non-heap instance");
         }
     }
 
-    /**
-     * Resets the contained value to a fresh copy of a `T` value initialized
-     * to its default.
-     */
-    void reset() { _ptr = std::shared_ptr<T>(); }
+    /** Resets the reference to null. */
+    void reset() {
+        _owned.reset();
+        _raw = nullptr;
+    }
 
     /**
      * Returns a reference to the contained value.
@@ -236,10 +220,12 @@ public:
      * references associated with the same value; they'll see the change.
      */
     ValueReference& operator=(T other) {
-        if ( auto* ptr = _get() )
-            *ptr = std::move(other);
-        else
-            _ptr = std::make_shared<T>(std::move(other));
+        if ( _raw )
+            *_raw = std::move(other);
+        else {
+            _owned = std::make_shared<T>(std::move(other));
+            _raw = _owned.get();
+        }
 
         return *this;
     }
@@ -252,18 +238,21 @@ public:
         if ( &other == this )
             return *this;
 
-        if ( ! other.get() ) {
-            _ptr = nullptr;
+        if ( ! other._raw ) {
+            _owned.reset();
+            _raw = nullptr;
             return *this;
         }
 
         // Not all types wrapped in a `ValueReference` might have a `noexcept`
         // assignment operator.
         try {
-            if ( auto* ptr = _get() )
-                *ptr = *other._get();
-            else
-                _ptr = std::make_shared<T>(*other._get());
+            if ( _raw )
+                *_raw = *other._raw;
+            else {
+                _owned = std::make_shared<T>(*other._raw);
+                _raw = _owned.get();
+            }
 
             return *this;
         } catch ( ... ) {
@@ -279,22 +268,26 @@ public:
         if ( &other == this )
             return *this;
 
-        if ( ! other.get() ) {
-            _ptr = nullptr;
+        if ( ! other._raw ) {
+            _owned.reset();
+            _raw = nullptr;
             return *this;
         }
 
-        // Not all types wrapped in a `ValueReference` might have a
-        // `noexcept` (move) assignment operator.
+        // Not all types wrapped in a `ValueReference` might have a `noexcept`
+        // (move) assignment operator.
         try {
-            if ( auto* ptr = _get() ) {
+            if ( _raw ) {
                 // We can't move the actual value as other references may be
                 // referring to it.
-                *ptr = *other._get();
-                other._ptr = nullptr;
+                *_raw = *other._raw;
+                other._owned.reset();
+                other._raw = nullptr;
             }
-            else
-                _ptr = std::make_shared<T>(*other._get());
+            else {
+                _owned = std::make_shared<T>(*other._raw);
+                _raw = _owned.get();
+            }
 
             return *this;
         } catch ( ... ) {
@@ -308,8 +301,10 @@ public:
      * the same value.
      */
     ValueReference& operator=(std::shared_ptr<T> other) noexcept {
-        if ( _get() != other.get() )
-            _ptr = std::move(other);
+        if ( _raw != other.get() ) {
+            _owned = std::move(other);
+            _raw = _owned.get();
+        }
 
         return *this;
     }
@@ -337,55 +332,25 @@ private:
      * not safe to delete the pointed-to instance while the value reference
      * stays around.
      */
-    explicit ValueReference(T* t) : _ptr(t) {
+    explicit ValueReference(T* t) : _raw(t) {
         static_assert(std::is_base_of_v<Controllable<T>, T>);
         assert(t);
     }
 
-    const T* _get() const noexcept {
-        if ( auto ptr = std::get_if<T*>(&_ptr) )
-            return *ptr;
-
-        assert(std::holds_alternative<std::shared_ptr<T>>(_ptr));
-        return std::get_if<std::shared_ptr<T>>(&_ptr)->get();
-    }
-
-    T* _get() noexcept {
-        if ( auto ptr = std::get_if<T*>(&_ptr) )
-            return *ptr;
-
-        assert(std::holds_alternative<std::shared_ptr<T>>(_ptr));
-        return std::get_if<std::shared_ptr<T>>(&_ptr)->get();
-    }
-
     const T* _safeGet() const {
-        assert(_ptr.index() != std::variant_npos);
-
-        if ( auto ptr = std::get_if<T*>(&_ptr); ptr && *ptr )
-            return *ptr;
-
-        if ( auto ptr = std::get_if<std::shared_ptr<T>>(&_ptr); ptr && *ptr )
-            return ptr->get();
-
+        if ( _raw )
+            return _raw;
         reference::detail::throw_null();
     }
 
     T* _safeGet() {
-        assert(_ptr.index() != std::variant_npos);
-
-        if ( auto ptr = std::get_if<T*>(&_ptr); ptr && *ptr )
-            return *ptr;
-
-        if ( auto ptr = std::get_if<std::shared_ptr<T>>(&_ptr); ptr && *ptr )
-            return ptr->get();
-
+        if ( _raw )
+            return _raw;
         reference::detail::throw_null();
     }
 
-    // In `_safeGet` above we rely on the fact that a default-constructed
-    // `ValueReference` always contains a `shared_ptr`, so it is listed as the
-    // first variant.
-    std::variant<std::shared_ptr<T>, T*> _ptr;
+    std::shared_ptr<T> _owned;
+    T* _raw = nullptr;
 };
 
 /**
