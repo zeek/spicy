@@ -92,6 +92,11 @@
     Returns the subsequence from the value's beginning to (but not
     including) *end*.
 
+.. spicy:method:: bytes::sub bytes sub False bytes (end: uint<64>)
+
+    Returns the subsequence from the value's beginning to (but not
+    including) offset *end*.
+
 .. spicy:method:: bytes::to_int bytes to_int False int<64> ([ base: uint<64> ])
 
     Interprets the data as representing an ASCII-encoded number and

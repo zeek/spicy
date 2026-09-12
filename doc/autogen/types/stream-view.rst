@@ -65,6 +65,12 @@
     Returns a new view of the subsequence from the beginning of the stream
     up to (but not including) *end*.
 
+.. spicy:method:: stream::view::sub view<stream> sub False view<stream> (end: uint<64>)
+
+    Returns a new view of the subsequence from the beginning of the view
+    to (but not including) offset *end*. The offset is relative to the
+    beginning of the view.
+
 .. rubric:: View Operators
 
 .. spicy:operator:: stream::view::Equal bool t:view<stream> <sp> op:== <sp> t:bytes $commutative$

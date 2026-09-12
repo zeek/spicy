@@ -766,6 +766,31 @@ Returns the subsequence from offset *begin* to (but not including) offset *end*.
 };
 HILTI_OPERATOR_IMPLEMENTATION(SubOffsets);
 
+class SubOffset : public BuiltInMemberCall {
+public:
+    Signature signature(Builder* builder) const final {
+        return Signature{
+            .kind = Kind::MemberCall,
+            .self = {.kind = parameter::Kind::In, .type = builder->typeBytes()},
+            .member = "sub",
+            .param0 =
+                {
+                    .name = "end",
+                    .type = {.kind = parameter::Kind::In, .type = builder->typeUnsignedInteger(64)},
+                },
+            .result = {.constness = Constness::Const, .type = builder->typeBytes()},
+            .ns = "bytes",
+            .doc = R"(
+Returns the subsequence from the value's beginning to (but not including)
+offset *end*.
+)",
+        };
+    }
+
+    HILTI_OPERATOR(hilti, bytes::SubOffset);
+};
+HILTI_OPERATOR_IMPLEMENTATION(SubOffset);
+
 class Join : public BuiltInMemberCall {
 public:
     Signature signature(Builder* builder) const final {

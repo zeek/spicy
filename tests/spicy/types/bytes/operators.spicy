@@ -25,6 +25,8 @@ assert b"".split1() == (b"", b"");
 assert b"12".split1() == (b"12", b"");
 assert b"12 34 56 78".split1() == (b"12", b"34 56 78");
 assert b"12XX34XX56XX78".split1(b"XX") == (b"12", b"34XX56XX78");
+assert b"12345".sub(3) == b"123";
+assert b"12345".sub(0) == b"";
 assert b"xyz".starts_with(b"xy");
 assert ! b"xyz".starts_with(b"XY");
 assert b"  xyz  ".strip() == b"xyz";

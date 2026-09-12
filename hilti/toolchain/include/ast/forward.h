@@ -186,6 +186,7 @@ class Strip;
 class SubIterators;
 class SubIterator;
 class SubOffsets;
+class SubOffset;
 class Join;
 class ToIntAscii;
 class ToUIntAscii;
@@ -463,6 +464,7 @@ class StartsWith;
 class SubIterators;
 class SubIterator;
 class SubOffsets;
+class SubOffset;
 } // namespace view
 
 class Ctor;
