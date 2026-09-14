@@ -51,6 +51,7 @@ set(SOURCES_COMPILER
     src/compiler/pir/ir/printer.cc
     src/compiler/pir/ir/reachability.cc
     src/compiler/pir/ir/verifier.cc
+    src/compiler/pir/passes/constant-fold.cc
     src/compiler/pir/pir.cc
     src/compiler/plugin.cc
     src/compiler/printer.cc
@@ -200,7 +201,8 @@ install(CODE "file(REMOVE \"\$ENV\{DESTDIR\}${CMAKE_INSTALL_FULL_INCLUDEDIR}/spi
 
 ## Tests
 
-add_executable(spicy-toolchain-tests EXCLUDE_FROM_ALL tests/main.cc tests/grammar.cc)
+add_executable(spicy-toolchain-tests EXCLUDE_FROM_ALL tests/main.cc tests/grammar.cc
+                                                      tests/pir/ir-core.cc)
 spicy_link_executable_in_tree(spicy-toolchain-tests PRIVATE)
 target_link_libraries(spicy-toolchain-tests PRIVATE doctest)
 if (NOT MSVC)
