@@ -48,6 +48,8 @@ set(SOURCES_COMPILER
     src/compiler/init.cc
     src/compiler/parser/driver.cc
     src/compiler/pir/ir/package.cc
+    src/compiler/pir/ir/reachability.cc
+    src/compiler/pir/ir/verifier.cc
     src/compiler/pir/pir.cc
     src/compiler/plugin.cc
     src/compiler/printer.cc
