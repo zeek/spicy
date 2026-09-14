@@ -2,8 +2,8 @@ This following summarizes the most important changes in recent Spicy releases.
 For an exhaustive list of all changes, see the :repo:`CHANGES` file coming with
 the distribution.
 
-Version 1.17 (in progress)
-==========================
+Version 1.17
+============
 
 .. rubric:: New Functionality
 
@@ -43,6 +43,8 @@ Version 1.17 (in progress)
 
 - GH-2416: Allow disabling building of benchmarks with ``--disable-benchmarks``
   configure option.
+
+- GH-2487: Enable the fiber runtime on PowerPC64, contributed by Piotr Kubaj.
 
 .. rubric:: Changed Functionality
 

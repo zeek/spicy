@@ -19,7 +19,7 @@
     <td>Build status</td>
     <td>
       <a href="https://github.com/zeek/spicy/actions/workflows/check.yml">
-        <img src="https://github.com/zeek/spicy/actions/workflows/check.yml/badge.svg?branch=release%2F1.16" alt="Status">
+        <img src="https://github.com/zeek/spicy/actions/workflows/check.yml/badge.svg?branch=release%2F1.17" alt="Status">
       </a>
     </td>
     <td>

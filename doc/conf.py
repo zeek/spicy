@@ -25,7 +25,7 @@ copyright = "by the Zeek Project"
 author = "Zeek Project"
 
 version = open("../VERSION").readline()
-release = "1.16.0"  # most recent release version
+release = "1.17.0"  # most recent release version
 
 # -- General configuration ---------------------------------------------------
 
