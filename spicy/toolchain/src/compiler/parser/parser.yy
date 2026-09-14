@@ -861,10 +861,7 @@ unit_property : PROPERTY opt_attributes ';'      { $$ = builder->typeUnitItemPro
                                                  { $$ = builder->typeUnitItemProperty(ID(std::move($1)), std::move($3), std::move($4), false, __loc__); };
               | PROPERTY '=' base_type_no_ref ';'       { $$ = builder->typeUnitItemProperty(ID(std::move($1)), builder->expressionType(builder->qualifiedType(std::move($3), hilti::Constness::Mutable)), {}, false, __loc__); };
 
-unit_field_base_type : base_type                   {   if ( $1->isA<hilti::type::Vector>() )
-                                                         error(@$, "vector<T> syntax is no longer supported for parsing sequences; use T[] instead.");
-                                                     $$ = builder->qualifiedType(std::move($1), hilti::Constness::Mutable);
-                                                 }
+unit_field_base_type : base_type                   { $$ = builder->qualifiedType(std::move($1), hilti::Constness::Mutable); }
 
 unit_field    : opt_unit_field_id ':' opt_skip unit_field_base_type opt_attributes opt_unit_field_condition opt_unit_field_sinks opt_unit_item_hooks
                                                  { $$ = builder->typeUnitItemUnresolvedField(std::move($1), std::move($4), $3, {}, std::move($7), std::move($5), std::move($6), std::move($8), __loc__); }
