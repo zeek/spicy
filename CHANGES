@@ -1,3 +1,70 @@
+1.18.0-dev.9 | 2026-09-15 09:28:04 +0200
+
+  * Fix 3rdparty warnings (Evan Typanski, Corelight)
+
+    We had a few pragmas, but this one couldn't actually be fixed by
+    pragmas since the warning technically happened in a system include.
+    Bleh.
+
+    Then, this includes fiber as a 3rdparty include.
+
+  * Remove an unused function (Evan Typanski, Corelight)
+
+    Also suppresses warnings on a couple unused template functions that we
+    would prefer be used.
+
+  * Fix `CMAKE_CXX_FLAGS` in Linux with abs path (Evan Typanski, Corelight)
+
+    The `/` fix was only proper for MSVC. It broke when using an absolute
+    path on Mac. I used `-isystem /Library/...` when testing Clang 23.1 RC.
+
+  * Fix Clang-23 RC build missing include (Evan Typanski, Corelight)
+
+    This was included transitively but should not be.
+
+  * Bump hendrikmuhs/ccache-action from 1.2.23 to 1.2.24 (dependabot[bot])
+
+    Bumps [hendrikmuhs/ccache-action](https://github.com/hendrikmuhs/ccache-action) from 1.2.23 to 1.2.24.
+    - [Release notes](https://github.com/hendrikmuhs/ccache-action/releases)
+    - [Commits](https://github.com/hendrikmuhs/ccache-action/compare/d62db5f07c26379fc4b4e0916f098a92573c3b03...f09c25b45002a07be2955cbe52e8cee55643f89d)
+
+    ---
+    updated-dependencies:
+    - dependency-name: hendrikmuhs/ccache-action
+      dependency-version: 1.2.24
+      dependency-type: direct:production
+      update-type: version-update:semver-patch
+    ...
+
+    Signed-off-by: dependabot[bot] <support@github.com>
+
+  * Bump softprops/action-gh-release from 3.0.2 to 3.0.3 (dependabot[bot])
+
+    Bumps [softprops/action-gh-release](https://github.com/softprops/action-gh-release) from 3.0.2 to 3.0.3.
+    - [Release notes](https://github.com/softprops/action-gh-release/releases)
+    - [Changelog](https://github.com/softprops/action-gh-release/blob/master/CHANGELOG.md)
+    - [Commits](https://github.com/softprops/action-gh-release/compare/3d0d9888cb7fd7b750713d6e236d1fcb99157228...efb35369e0ad2afab669f228072c1b0d510eae64)
+
+    ---
+    updated-dependencies:
+    - dependency-name: softprops/action-gh-release
+      dependency-version: 3.0.3
+      dependency-type: direct:production
+      update-type: version-update:semver-patch
+    ...
+
+    Signed-off-by: dependabot[bot] <support@github.com>
+
+  * GH-5: Switch back to upstream version of `3rdparty/fiber/` (Benjamin Bannier, Corelight)
+
+    Now that simonfxr/fiber#5 is merged we can remove use of our fork.
+    Upstream also learned more about powerpc, support for which we made
+    better recently as well.
+
+  * Exclude `3rdparty/vcpkg` from dependabot updates [skip ci] (Benjamin Bannier, Corelight)
+
+  * Start of 1.18.0 development (Benjamin Bannier, Corelight)
+
 1.17.0 | 2026-09-14 09:59:58 +0200
 
   * Release v1.17.0 (Benjamin Bannier, Corelight)

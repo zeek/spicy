@@ -34,7 +34,7 @@ foreach (lib spicy-rt spicy-rt-debug)
     target_include_directories(${lib}-objects BEFORE
                                PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
     target_include_directories(
-        ${lib}-objects BEFORE
+        ${lib}-objects SYSTEM BEFORE
         PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/libb64/include>)
 
     add_library(${lib} STATIC)

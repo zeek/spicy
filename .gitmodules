@@ -32,9 +32,7 @@
 	shallow = true
 [submodule "3rdparty/fiber"]
 	path = 3rdparty/fiber
-	# We fork this dependency since we need https://github.com/simonfxr/fiber/pull/5.
-	# TODO: Switch back to the original upstream once it is merged.
-	url = https://github.com/zeek/fiber.git
+	url = https://github.com/simonfxr/fiber.git
 	shallow = true
 [submodule "3rdparty/benchmark"]
 	path = 3rdparty/benchmark
