@@ -1,3 +1,20 @@
+1.18.0-dev.22 | 2026-09-15 11:07:24 -0400
+
+  * Route legacy vector fields through validator (dedsec-terminal)
+
+    Remove the duplicate parser-time diagnostic so direct vector fields and type aliases use the same validation path. Refresh the direct-syntax regression to exercise that validator without unrelated obsolete attributes.
+
+  * GH-2445: Diagnose vector type aliases used as unit fields (dedsec-terminal)
+
+    We would previously abort with an internal compiler error when a
+    type alias resolving to vector<T> was used as a unit parsing field.
+
+    This patch updates the validator to diagnose this as an invalid sequence
+    syntax error instead of aborting, matching the diagnostic produced for
+    direct vector<T> field syntax.
+
+    Closes #2445.
+
 1.18.0-dev.19 | 2026-09-15 16:43:20 +0200
 
   * Stop using deprecated format for setting Dockerfile env vars (Benjamin Bannier, Corelight)
