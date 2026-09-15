@@ -46,7 +46,7 @@ public:
      * Instantiates a reference containing a new value of `T` initialized to
      * its default value.
      */
-    ValueReference() : _owned(std::make_shared<T>()), _raw(_owned.get()) {}
+    ValueReference() : _ptr(std::make_shared<T>()) {}
 
     /**
      * Instantiates a reference containing a new value of `T` initialized to
@@ -54,7 +54,7 @@ public:
      *
      * @param t value to initialize new instance with
      */
-    ValueReference(T t) : _owned(std::make_shared<T>(std::move(t))), _raw(_owned.get()) {}
+    ValueReference(T t) : _ptr(std::make_shared<T>(std::move(t))) {}
 
     /**
      * Instantiates a new reference from an existing `std::shared_ptr` to a
@@ -66,22 +66,19 @@ public:
      *
      * @param t shared pointer to link to
      */
-    explicit ValueReference(std::shared_ptr<T> t) : _owned(std::move(t)), _raw(_owned.get()) {}
+    explicit ValueReference(std::shared_ptr<T> t) : _ptr(std::move(t)) {}
 
     /**
      * Copy constructor. The new instance will refer to a copy of the
      * source's value.
      */
     ValueReference(const ValueReference& other) {
-        if ( auto* ptr = other._raw ) {
-            _owned = std::make_shared<T>(*ptr);
-            _raw = _owned.get();
-        }
+        if ( auto* ptr = other._ptr.get() )
+            _ptr = std::make_shared<T>(*ptr);
     }
 
     /** Move constructor. */
-    ValueReference(ValueReference&& other) noexcept
-        : _owned(std::move(other._owned)), _raw(std::exchange(other._raw, nullptr)) {}
+    ValueReference(ValueReference&& other) noexcept = default;
 
     /** Destructor. */
     ~ValueReference() = default;
@@ -91,7 +88,7 @@ public:
      * rarely happen, except when explicitly constructed that way through an
      * existing pointer.
      */
-    bool isNull() const { return _raw == nullptr; }
+    bool isNull() const { return _ptr.get() == nullptr; }
 
     /**
      * Simply returns the value reference itself. This exists only is to make
@@ -111,7 +108,7 @@ public:
      * Returns a pointer to the referred value. The result may be null if the
      * instance does not refer to a valid value.
      */
-    const T* get() const { return _raw; }
+    const T* get() const { return _ptr.get(); }
 
     /**
      * Returns a shared pointer to the referred value. If the instance owns
@@ -126,15 +123,15 @@ public:
      * the contained instance.
      */
     std::shared_ptr<T> asSharedPtr() const {
-        if ( _owned ) [[likely]]
-            return _owned;
+        if ( _ptr.use_count() > 0 ) [[likely]]
+            return _ptr;
 
-        if ( ! _raw )
+        if ( ! _ptr )
             return nullptr;
 
         try {
             if constexpr ( std::is_base_of_v<Controllable<T>, T> )
-                return _raw->shared_from_this();
+                return _ptr->shared_from_this();
             else
                 throw IllegalReference("cannot dynamically create reference for type");
         } catch ( const std::bad_weak_ptr& ) {
@@ -143,10 +140,7 @@ public:
     }
 
     /** Resets the reference to null. */
-    void reset() {
-        _owned.reset();
-        _raw = nullptr;
-    }
+    void reset() { _ptr.reset(); }
 
     /**
      * Returns a reference to the contained value.
@@ -220,12 +214,10 @@ public:
      * references associated with the same value; they'll see the change.
      */
     ValueReference& operator=(T other) {
-        if ( _raw )
-            *_raw = std::move(other);
-        else {
-            _owned = std::make_shared<T>(std::move(other));
-            _raw = _owned.get();
-        }
+        if ( auto* ptr = _ptr.get() )
+            *ptr = std::move(other);
+        else
+            _ptr = std::make_shared<T>(std::move(other));
 
         return *this;
     }
@@ -238,21 +230,18 @@ public:
         if ( &other == this )
             return *this;
 
-        if ( ! other._raw ) {
-            _owned.reset();
-            _raw = nullptr;
+        if ( ! other._ptr ) {
+            _ptr.reset();
             return *this;
         }
 
         // Not all types wrapped in a `ValueReference` might have a `noexcept`
         // assignment operator.
         try {
-            if ( _raw )
-                *_raw = *other._raw;
-            else {
-                _owned = std::make_shared<T>(*other._raw);
-                _raw = _owned.get();
-            }
+            if ( auto* ptr = _ptr.get() )
+                *ptr = *other._ptr;
+            else
+                _ptr = std::make_shared<T>(*other._ptr);
 
             return *this;
         } catch ( ... ) {
@@ -268,26 +257,22 @@ public:
         if ( &other == this )
             return *this;
 
-        if ( ! other._raw ) {
-            _owned.reset();
-            _raw = nullptr;
+        if ( ! other._ptr ) {
+            _ptr.reset();
             return *this;
         }
 
         // Not all types wrapped in a `ValueReference` might have a `noexcept`
         // (move) assignment operator.
         try {
-            if ( _raw ) {
+            if ( auto* ptr = _ptr.get() ) {
                 // We can't move the actual value as other references may be
                 // referring to it.
-                *_raw = *other._raw;
-                other._owned.reset();
-                other._raw = nullptr;
+                *ptr = *other._ptr;
+                other._ptr.reset();
             }
-            else {
-                _owned = std::make_shared<T>(*other._raw);
-                _raw = _owned.get();
-            }
+            else
+                _ptr = std::move(other._ptr);
 
             return *this;
         } catch ( ... ) {
@@ -301,10 +286,8 @@ public:
      * the same value.
      */
     ValueReference& operator=(std::shared_ptr<T> other) noexcept {
-        if ( _raw != other.get() ) {
-            _owned = std::move(other);
-            _raw = _owned.get();
-        }
+        if ( _ptr.get() != other.get() )
+            _ptr = std::move(other);
 
         return *this;
     }
@@ -332,25 +315,29 @@ private:
      * not safe to delete the pointed-to instance while the value reference
      * stays around.
      */
-    explicit ValueReference(T* t) : _raw(t) {
+    // The aliasing constructor stores `t` in `_ptr`, while the empty first
+    // argument leaves it without a control block or ownership.
+    explicit ValueReference(T* t) : _ptr(std::shared_ptr<T>{}, t) {
         static_assert(std::is_base_of_v<Controllable<T>, T>);
         assert(t);
     }
 
     const T* _safeGet() const {
-        if ( _raw )
-            return _raw;
+        if ( auto* ptr = _ptr.get() )
+            return ptr;
         reference::detail::throw_null();
     }
 
     T* _safeGet() {
-        if ( _raw )
-            return _raw;
+        if ( auto* ptr = _ptr.get() )
+            return ptr;
         reference::detail::throw_null();
     }
 
-    std::shared_ptr<T> _owned;
-    T* _raw = nullptr;
+    // A non-owning reference uses `shared_ptr`'s aliasing constructor with an
+    // empty owner. It has a non-null stored pointer but no control block, so
+    // `use_count() == 0` distinguishes it from an owning reference.
+    std::shared_ptr<T> _ptr;
 };
 
 /**
