@@ -1,3 +1,20 @@
+1.18.0-dev.16 | 2026-09-15 16:30:40 +0200
+
+  * Use a single shared pointer for ValueReference storage (Evan Typanski, Corelight)
+
+  * Implement `ValueReference` with a tagged union instead of `std::variant` (Benjamin Bannier, Corelight)
+
+    Since it is very generic, `std::variant` has a lot of overhead over more
+    simple implementations like tagged unions. We have in fact replace most
+    uses of `std::variant` for exactly that reason, but left the use in
+    `ValueReference` in place. The use there still showed up in profiles
+    since e.g., destructors need to exercise `std::variant`'s visitation
+    machinery.
+
+    This patch removes the use there as well.
+
+  * Add benchmark for `ValueReference` operations (Benjamin Bannier, Corelight)
+
 1.18.0-dev.12 | 2026-09-15 12:09:47 +0200
 
   * Bump docker/setup-buildx-action from 4.2.0 to 4.3.0 (dependabot[bot])
