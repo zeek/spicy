@@ -1,3 +1,11 @@
+1.18.0-dev.19 | 2026-09-15 16:43:20 +0200
+
+  * Stop using deprecated format for setting Dockerfile env vars (Benjamin Bannier, Corelight)
+
+  * GH-5892: Use maintained version of msvc-dev-cmd GH action (Benjamin Bannier, Corelight)
+
+    This was inspired by zeek/zeek#5892.
+
 1.18.0-dev.16 | 2026-09-15 16:30:40 +0200
 
   * Use a single shared pointer for ValueReference storage (Evan Typanski, Corelight)

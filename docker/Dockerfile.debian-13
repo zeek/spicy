@@ -2,9 +2,9 @@
 
 FROM debian:trixie-slim
 
-ENV DEBIAN_FRONTEND noninteractive
-ENV CCACHE_DIR "/var/spool/ccache"
-ENV CCACHE_COMPRESS 1
+ENV DEBIAN_FRONTEND=noninteractive
+ENV CCACHE_DIR="/var/spool/ccache"
+ENV CCACHE_COMPRESS=1
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
