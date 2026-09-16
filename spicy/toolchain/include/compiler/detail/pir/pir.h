@@ -11,6 +11,9 @@
 #include <hilti/base/logger.h>
 #include <hilti/base/result.h>
 
+#include <spicy/compiler/detail/pir/ir/diagnostic.h>
+#include <spicy/compiler/detail/pir/ir/package.h>
+
 namespace spicy::logging::debug {
 inline const hilti::logging::DebugStream PIR("spicy-pir");
 } // namespace spicy::logging::debug
@@ -24,8 +27,10 @@ struct UnsupportedFeature {
     hilti::Location location; /**< where the construct appears in the source */
 };
 
-/** PIR construction succeeded. Will carry the resulting PIR package. */
-struct Success {};
+/** PIR construction succeeded and owns a self-contained package with no AST references. */
+struct Success {
+    ir::Package package;
+};
 
 /**
  * PIR cannot represent one or more constructs yet. This is the only outcome
@@ -36,10 +41,21 @@ struct Unsupported {
 };
 
 /**
- * Outcome of a successful PIR build: either the resulting package, or the
- * constructs that kept PIR from representing the AST.
+ * PIR construction produced a malformed package. This is a hard failure: the
+ * caller must render `diagnostics` and not proceed with code generation. The
+ * package is retained only so diagnostics can render its package-relative
+ * sites; it must not be treated as validated IR.
  */
-using BuildOutcome = std::variant<Success, Unsupported>;
+struct Error {
+    ir::Package package;
+    std::vector<ir::Diagnostic> diagnostics;
+};
+
+/**
+ * Outcome of a PIR build: the resulting package, the constructs that kept
+ * PIR from representing the AST, or a hard PIR failure.
+ */
+using BuildOutcome = std::variant<Success, Unsupported, Error>;
 
 /**
  * Result of a PIR build. An error means PIR construction itself failed, which

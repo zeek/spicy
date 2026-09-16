@@ -1,0 +1,19 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: Tests that a public unit alias is discovered in source order (ahead of the later
+# public function) and reported as its own unsupported root, distinct from a direct public unit
+# declaration; visibility is taken from the alias declaration itself, not from the non-public
+# original unit it points to.
+
+module Test;
+
+public type Alias = Original;
+
+public type Original = unit {
+    x: uint8;
+};
+
+public function unreachable(): int64 {
+    return 1;
+}
