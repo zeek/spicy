@@ -15,8 +15,8 @@ using namespace spicy::detail::pir::passes;
 
 namespace {
 
-bool hasCode(const std::vector<Diagnostic>& diags, DiagnosticCode code) {
-    return std::ranges::any_of(diags, [code](const Diagnostic& d) { return d.code == code; });
+bool hasDiagnostic(const std::vector<Diagnostic>& diags, const DiagnosticDefinition& def) {
+    return std::ranges::any_of(diags, [&def](const Diagnostic& d) { return d.definition == def; });
 }
 
 struct Sample {
@@ -101,7 +101,7 @@ TEST_CASE("constant folding safely skips a core.add with too few operands") {
     auto add = package.addInstForTesting(block, Opcode::Add, {c}, package.int64Type());
     package.addReturn(block, add);
 
-    CHECK(hasCode(verify(package), DiagnosticCode::OperandCountMismatch));
+    CHECK(hasDiagnostic(verify(package), diag::OperandCountMismatch));
     CHECK_FALSE(foldConstants(package, fn));
     CHECK_EQ(package.inst(add).opcode, Opcode::Add);
 }
@@ -116,7 +116,7 @@ TEST_CASE("verifier rejects an invalid operand ID") {
     package.addReturn(block, add);
 
     auto diags = verify(package);
-    CHECK(hasCode(diags, DiagnosticCode::InvalidOperandId));
+    CHECK(hasDiagnostic(diags, diag::InvalidOperandId));
 }
 
 TEST_CASE("verifier rejects an operand type mismatch") {
@@ -129,7 +129,7 @@ TEST_CASE("verifier rejects an operand type mismatch") {
     package.addReturn(block, add);
 
     auto diags = verify(package);
-    CHECK(hasCode(diags, DiagnosticCode::OperandTypeMismatch));
+    CHECK(hasDiagnostic(diags, diag::OperandTypeMismatch));
 }
 
 TEST_CASE("verifier rejects a return value that doesn't match the function's result type") {
@@ -140,7 +140,7 @@ TEST_CASE("verifier rejects a return value that doesn't match the function's res
     package.addReturn(block, c);
 
     auto diags = verify(package);
-    CHECK(hasCode(diags, DiagnosticCode::ReturnTypeMismatch));
+    CHECK(hasDiagnostic(diags, diag::ReturnTypeMismatch));
 }
 
 TEST_CASE("verifier rejects an unattached region and differentiates it from an empty package") {
@@ -150,7 +150,7 @@ TEST_CASE("verifier rejects an unattached region and differentiates it from an e
     auto sample = makeSample();
     sample.package.createRegion();
     auto diags = verify(sample.package);
-    CHECK(hasCode(diags, DiagnosticCode::OrphanRegions));
+    CHECK(hasDiagnostic(diags, diag::OrphanRegions));
 
     CHECK_NE(print(sample.package), print(empty.package));
 }
@@ -165,7 +165,7 @@ TEST_CASE("verifier rejects a function whose region has more than one block") {
     package.addReturn(first, c);
 
     auto diags = verify(package);
-    CHECK(hasCode(diags, DiagnosticCode::RegionBlockCountMismatch));
+    CHECK(hasDiagnostic(diags, diag::RegionBlockCountMismatch));
 }
 
 TEST_CASE("verifier rejects an unrecognized opcode") {
@@ -177,7 +177,7 @@ TEST_CASE("verifier rejects an unrecognized opcode") {
     package.addReturn(block, c);
 
     auto diags = verify(package);
-    CHECK(hasCode(diags, DiagnosticCode::UnrecognizedOpcode));
+    CHECK(hasDiagnostic(diags, diag::UnrecognizedOpcode));
 }
 
 TEST_CASE("verifier rejects an instruction after the block terminator") {
@@ -189,7 +189,7 @@ TEST_CASE("verifier rejects an instruction after the block terminator") {
     package.addConstant(block, 2);
 
     auto diags = verify(package);
-    CHECK(hasCode(diags, DiagnosticCode::TerminatorNotLast));
+    CHECK(hasDiagnostic(diags, diag::TerminatorNotLast));
 }
 
 TEST_SUITE_END();
