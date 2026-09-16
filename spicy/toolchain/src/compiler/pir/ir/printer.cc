@@ -21,18 +21,6 @@ std::string_view opcodeName(Opcode opcode) {
     return "<unknown-opcode>";
 }
 
-std::string_view printType(const Package& package, TypeId type_id) {
-    if ( ! package.isValid(type_id) )
-        return "<invalid-type>";
-
-    switch ( package.type(type_id).kind ) {
-        case TypeKind::Void: return "void";
-        case TypeKind::Int64: return "int64";
-    }
-
-    return "<unknown-type>";
-}
-
 std::string printOperand(InstId id) { return fmt("%%%u", id.index); }
 
 std::string printInst(const Package& package, InstId id) {
@@ -46,7 +34,7 @@ std::string printInst(const Package& package, InstId id) {
     for ( size_t i = 0; i < inst.args.size(); ++i )
         body += (i == 0 ? " " : ", ") + printOperand(inst.args[i]);
 
-    body += fmt(" : %s", printType(package, inst.result_type));
+    body += fmt(" : %s", typeName(package, inst.result_type));
 
     if ( inst.result_type != package.voidType() )
         return fmt("%s = %s", printOperand(id), body);
@@ -56,16 +44,28 @@ std::string printInst(const Package& package, InstId id) {
 
 } // namespace
 
+std::string_view typeName(const Package& package, TypeId type_id) {
+    if ( ! package.isValid(type_id) )
+        return "<invalid-type>";
+
+    switch ( package.type(type_id).kind ) {
+        case TypeKind::Void: return "void";
+        case TypeKind::Int64: return "int64";
+    }
+
+    return "<unknown-type>";
+}
+
 std::string print(const Package& package) {
     std::string out;
 
     for ( size_t i = 0; i < package.types().size(); ++i )
-        out += fmt("type %%%zu: %s\n", i, printType(package, TypeId{static_cast<uint32_t>(i)}));
+        out += fmt("type %%%zu: %s\n", i, typeName(package, TypeId{static_cast<uint32_t>(i)}));
 
     for ( size_t i = 0; i < package.functions().size(); ++i ) {
         auto function_id = FunctionId{static_cast<uint32_t>(i)};
         const auto& fn = package.function(function_id);
-        out += fmt("function %%%u \"%s\" -> %s:\n", function_id.index, fn.name, printType(package, fn.result_type));
+        out += fmt("function %%%u \"%s\" -> %s:\n", function_id.index, fn.name, typeName(package, fn.result_type));
 
         if ( ! package.isValid(fn.root_region) ) {
             out += "  <invalid root region>\n";

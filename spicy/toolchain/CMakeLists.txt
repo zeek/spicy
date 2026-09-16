@@ -56,6 +56,7 @@ set(SOURCES_COMPILER
     src/compiler/driver.cc
     src/compiler/init.cc
     src/compiler/parser/driver.cc
+    src/compiler/pir/ir/diagnostic.cc
     src/compiler/pir/ir/package.cc
     src/compiler/pir/ir/printer.cc
     src/compiler/pir/ir/reachability.cc
@@ -231,6 +232,7 @@ add_executable(
     EXCLUDE_FROM_ALL
     tests/main.cc
     tests/grammar.cc
+    tests/pir/diagnostic.cc
     tests/pir/ir-core.cc
     tests/pir/source.cc
 )

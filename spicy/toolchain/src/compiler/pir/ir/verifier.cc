@@ -3,12 +3,9 @@
 #include <unordered_set>
 #include <variant>
 
-#include <hilti/base/util.h>
-
+#include <spicy/compiler/detail/pir/ir/printer.h>
 #include <spicy/compiler/detail/pir/ir/reachability.h>
 #include <spicy/compiler/detail/pir/ir/verifier.h>
-
-using hilti::util::fmt;
 
 namespace spicy::detail::pir::ir {
 
@@ -16,69 +13,34 @@ namespace {
 
 class Verifier {
 public:
-    Verifier(const Package& package, std::vector<Diagnostic>& diags) : _package(package), _diags(diags) {}
+    Verifier(const Package& package, std::vector<Diagnostic>& diags) : _package(package), _emitter(package, diags) {}
 
-    void _verifySpan(SourceSpanId span) {
-        if ( ! span.isSet() )
-            return;
-
-        const auto& sources = _package.sourceManager();
-        if ( ! sources.isValid(span) ) {
-            _fail(DiagnosticCode::InvalidSourceSpanId, "reference to an invalid source span ID");
-            return;
-        }
-
-        const auto& s = sources.span(span);
-        if ( ! sources.isValid(s.file) )
-            _fail(DiagnosticCode::InvalidSourceFileId, "source span references an invalid source file ID");
-
-        if ( s.begin_line >= 0 && s.end_line >= 0 && s.begin_line == s.end_line && s.begin_column >= 0 &&
-             s.end_column >= 0 && s.end_column < s.begin_column )
-            _fail(DiagnosticCode::MalformedSourceSpanRange, "source span has a reversed column range");
-
-        if ( s.begin_line >= 0 && s.end_line >= 0 && s.end_line < s.begin_line )
-            _fail(DiagnosticCode::MalformedSourceSpanRange, "source span has a reversed line range");
-
-        if ( s.begin_byte >= 0 && s.end_byte >= 0 && s.end_byte < s.begin_byte )
-            _fail(DiagnosticCode::MalformedSourceSpanRange, "source span has a reversed byte range");
-    }
-
-    void _verifyFunction(const Function& fn) {
-        _verifySpan(fn.span);
+    void verifyFunction(FunctionId id, const Function& fn) {
+        _verifySpan(fn.span, id);
 
         if ( ! _package.isValid(fn.result_type) )
-            _fail(DiagnosticCode::InvalidFunctionResultType,
-                  fmt("function '%s': result type is not a valid type ID", fn.name));
+            _emitter.emit(diag::InvalidFunctionResultType, id);
 
         if ( ! _package.isValid(fn.root_region) ) {
-            _fail(DiagnosticCode::InvalidRootRegion,
-                  fmt("function '%s': root region is not a valid region ID", fn.name));
+            _emitter.emit(diag::InvalidRootRegion, id);
             return;
         }
 
         const auto& region = _package.region(fn.root_region);
         if ( region.blocks.size() != 1 )
-            _fail(DiagnosticCode::RegionBlockCountMismatch,
-                  fmt("function '%s': its region must contain exactly one block, has %zu",
-                      fn.name,
-                      region.blocks.size()));
+            _emitter.emit(diag::RegionBlockCountMismatch, id, region.blocks.size());
 
         for ( auto block_id : region.blocks ) {
             if ( ! _package.isValid(block_id) ) {
-                _fail(DiagnosticCode::InvalidBlockId,
-                      fmt("function '%s': region references an invalid block ID", fn.name));
+                _emitter.emit(diag::InvalidBlockId, id);
                 continue;
             }
 
-            _verifyBlock(block_id, fn.result_type);
+            _verifyBlock(id, block_id, fn.result_type);
         }
     }
 
 private:
-    void _fail(DiagnosticCode code, std::string message) {
-        _diags.push_back(Diagnostic{.code = code, .message = std::move(message)});
-    }
-
     bool _satisfies(const TypeConstraint& constraint, TypeId type_id, TypeId function_result_type) const {
         switch ( constraint.kind ) {
             case TypeConstraintKind::Any: return true;
@@ -91,11 +53,33 @@ private:
         return false;
     }
 
-    void _verifyBlock(BlockId block_id, TypeId function_result_type) {
+    template<typename Anchor>
+    void _verifySpan(SourceSpanId span, const Anchor& site) {
+        if ( ! span.isSet() )
+            return;
+
+        const auto& sources = _package.sourceManager();
+        if ( ! sources.isValid(span) ) {
+            _emitter.emit(diag::InvalidSourceSpanId, site);
+            return;
+        }
+
+        const auto& s = sources.span(span);
+        if ( ! sources.isValid(s.file) )
+            _emitter.emit(diag::InvalidSourceFileId, site);
+
+        if ( s.begin_line >= 0 && s.end_line >= 0 && s.begin_line == s.end_line && s.begin_column >= 0 &&
+             s.end_column >= 0 && s.end_column < s.begin_column )
+            _emitter.emit(diag::MalformedSourceSpanRange, site, "column");
+
+        if ( s.begin_line >= 0 && s.end_line >= 0 && s.end_line < s.begin_line )
+            _emitter.emit(diag::MalformedSourceSpanRange, site, "line");
+    }
+
+    void _verifyBlock(FunctionId function_id, BlockId block_id, TypeId function_result_type) {
         const auto& block = _package.block(block_id);
         if ( block.insts.empty() ) {
-            _fail(DiagnosticCode::EmptyBlock,
-                  fmt("block %u has no instructions and therefore no terminator", block_id.index));
+            _emitter.emit(diag::EmptyBlock, block_id);
             return;
         }
 
@@ -104,74 +88,70 @@ private:
         for ( size_t i = 0; i < block.insts.size(); ++i ) {
             auto inst_id = block.insts[i];
             if ( ! _package.isValid(inst_id) ) {
-                _fail(DiagnosticCode::InvalidInstructionId,
-                      fmt("block %u: instruction at position %zu has an invalid ID", block_id.index, i));
+                _emitter.emit(diag::InvalidInstructionId, block_id, i);
                 continue;
             }
 
-            _verifyInst(inst_id, block_id, i == block.insts.size() - 1, defined, function_result_type);
+            _verifyInst(function_id, inst_id, block_id, i == block.insts.size() - 1, defined, function_result_type);
             defined.insert(inst_id.index);
         }
     }
 
-    void _verifyInst(InstId inst_id,
+    void _verifyInst(FunctionId function_id,
+                     InstId inst_id,
                      BlockId block_id,
                      bool is_last_in_block,
                      const std::unordered_set<uint32_t>& defined,
                      TypeId function_result_type) {
         const auto& inst = _package.inst(inst_id);
 
-        _verifySpan(inst.span);
+        _verifySpan(inst.span, inst_id);
 
         if ( inst.parent != block_id )
-            _fail(DiagnosticCode::CachedParentMismatch,
-                  fmt("instruction %%%u: cached parent block does not match its containing block %u",
-                      inst_id.index,
-                      block_id.index));
+            _emitter.emit(diag::CachedParentMismatch, inst_id, inst.parent.index, block_id.index);
 
         auto schema = lookupSchema(inst.opcode);
         if ( ! schema ) {
-            _fail(DiagnosticCode::UnrecognizedOpcode, fmt("instruction %%%u: unrecognized opcode", inst_id.index));
+            _emitter.emit(diag::UnrecognizedOpcode, inst_id);
             return;
         }
 
         if ( schema->is_terminator && ! is_last_in_block )
-            _fail(DiagnosticCode::TerminatorNotLast,
-                  fmt("instruction %%%u: terminator is not the last instruction in block %u",
-                      inst_id.index,
-                      block_id.index));
+            _emitter.emit(diag::TerminatorNotLast, inst_id);
 
         if ( ! schema->is_terminator && is_last_in_block )
-            _fail(DiagnosticCode::MissingTerminator, fmt("block %u does not end in a terminator", block_id.index));
+            _emitter.emit(diag::MissingTerminator, block_id);
 
         if ( inst.args.size() != schema->operand_count )
-            _fail(DiagnosticCode::OperandCountMismatch,
-                  fmt("instruction %%%u: expected %zu operand(s), got %zu",
-                      inst_id.index,
-                      schema->operand_count,
-                      inst.args.size()));
+            _emitter.emit(diag::OperandCountMismatch, inst_id, schema->operand_count, inst.args.size());
 
         bool payload_is_int = std::holds_alternative<int64_t>(inst.payload);
         switch ( schema->payload_kind ) {
             case PayloadKind::None:
                 if ( payload_is_int )
-                    _fail(DiagnosticCode::UnexpectedPayload,
-                          fmt("instruction %%%u: unexpected integer payload", inst_id.index));
+                    _emitter.emit(diag::UnexpectedPayload, inst_id);
                 break;
             case PayloadKind::Int64Literal:
                 if ( ! payload_is_int )
-                    _fail(DiagnosticCode::MissingPayload,
-                          fmt("instruction %%%u: missing required integer payload", inst_id.index));
+                    _emitter.emit(diag::MissingPayload, inst_id);
                 break;
         }
 
         for ( size_t a = 0; a < inst.args.size(); ++a )
-            _verifyOperand(inst_id, block_id, schema->operand_type, a, inst.args[a], defined, function_result_type);
+            _verifyOperand(function_id,
+                           inst_id,
+                           block_id,
+                           schema->operand_type,
+                           a,
+                           inst.args[a],
+                           defined,
+                           function_result_type);
 
         _verifyResultType(inst_id, inst, *schema);
     }
 
-    void _verifyOperand(InstId user,
+    void _verifyOperand(FunctionId function_id,
+                        InstId user,
                         BlockId block_id,
                         const TypeConstraint& constraint,
                         size_t operand_index,
@@ -179,49 +159,35 @@ private:
                         const std::unordered_set<uint32_t>& defined,
                         TypeId function_result_type) {
         if ( ! _package.isValid(arg) ) {
-            _fail(DiagnosticCode::InvalidOperandId,
-                  fmt("instruction %%%u: operand %zu is not a valid instruction ID", user.index, operand_index));
+            _emitter.emit(diag::InvalidOperandId, user, operand_index);
             return;
         }
 
         const auto& arg_inst = _package.inst(arg);
 
         if ( arg_inst.parent != block_id ) {
-            _fail(DiagnosticCode::OperandNotSameBlock,
-                  fmt("instruction %%%u: operand %zu (%%%u) is not defined in the same block",
-                      user.index,
-                      operand_index,
-                      arg.index));
+            _emitter.emit(diag::OperandNotSameBlock, user, operand_index);
             return;
         }
 
         if ( ! defined.contains(arg.index) ) {
-            _fail(DiagnosticCode::OperandUsedBeforeDefinition,
-                  fmt("instruction %%%u: operand %zu (%%%u) is used before it is defined",
-                      user.index,
-                      operand_index,
-                      arg.index));
+            _emitter.emit(diag::OperandUsedBeforeDefinition, user, operand_index);
             return;
         }
 
         if ( arg_inst.result_type == _package.voidType() )
-            _fail(DiagnosticCode::VoidOperandUsed,
-                  fmt("instruction %%%u: operand %zu (%%%u) has void type and cannot be used",
-                      user.index,
-                      operand_index,
-                      arg.index));
+            _emitter.emit(diag::VoidOperandUsed, user, operand_index);
 
         if ( ! _satisfies(constraint, arg_inst.result_type, function_result_type) ) {
             if ( constraint.kind == TypeConstraintKind::SameAsFunctionResult )
-                _fail(DiagnosticCode::ReturnTypeMismatch,
-                      fmt("instruction %%%u: returned value does not match the function's declared result type",
-                          user.index));
+                _emitter
+                    .emit(diag::ReturnTypeMismatch,
+                          user,
+                          typeName(_package, arg_inst.result_type),
+                          typeName(_package, function_result_type))
+                    .note(diag::FunctionDeclaredHere, function_id, typeName(_package, function_result_type));
             else
-                _fail(DiagnosticCode::OperandTypeMismatch,
-                      fmt("instruction %%%u: operand %zu (%%%u) does not satisfy its required type",
-                          user.index,
-                          operand_index,
-                          arg.index));
+                _emitter.emit(diag::OperandTypeMismatch, user, operand_index).note(diag::OperandDefinedHere, arg);
         }
     }
 
@@ -231,8 +197,7 @@ private:
 
             case TypeConstraintKind::Fixed:
                 if ( ! _satisfies(schema.result_type, inst.result_type, TypeId{}) )
-                    _fail(DiagnosticCode::ResultTypeMismatch,
-                          fmt("instruction %%%u: result type does not match its required type", inst_id.index));
+                    _emitter.emit(diag::ResultTypeMismatch, inst_id);
                 return;
 
             case TypeConstraintKind::SameAsOperand: {
@@ -244,8 +209,7 @@ private:
                     return;
 
                 if ( inst.result_type != _package.inst(operand).result_type )
-                    _fail(DiagnosticCode::ResultTypeMismatch,
-                          fmt("instruction %%%u: result type must match operand 0's type", inst_id.index));
+                    _emitter.emit(diag::ResultTypeMismatch, inst_id);
                 return;
             }
 
@@ -254,51 +218,36 @@ private:
     }
 
     const Package& _package;
-    std::vector<Diagnostic>& _diags;
+    DiagnosticEmitter _emitter;
 };
-
-void addDiagnostic(std::vector<Diagnostic>& diags, DiagnosticCode code, std::string message) {
-    diags.push_back(Diagnostic{.code = code, .message = std::move(message)});
-}
 
 } // namespace
 
 std::vector<Diagnostic> verify(const Package& package) {
     std::vector<Diagnostic> diags;
     Verifier verifier(package, diags);
+    DiagnosticEmitter emitter(package, diags);
 
-    for ( const auto& fn : package.functions() )
-        verifier._verifyFunction(fn);
+    for ( size_t i = 0; i < package.functions().size(); ++i ) {
+        auto id = FunctionId{static_cast<uint32_t>(i)};
+        verifier.verifyFunction(id, package.function(id));
+    }
 
     auto reach = computeReachableIds(package);
 
     for ( auto id : reach.duplicate_regions )
-        addDiagnostic(diags,
-                      DiagnosticCode::DuplicateRegionOwnership,
-                      fmt("region %%%u is owned by more than one function", id.index));
+        emitter.emit(diag::DuplicateRegionOwnership, id);
     for ( auto id : reach.duplicate_blocks )
-        addDiagnostic(diags,
-                      DiagnosticCode::DuplicateBlockOwnership,
-                      fmt("block %%%u belongs to more than one function's region", id.index));
+        emitter.emit(diag::DuplicateBlockOwnership, id);
     for ( auto id : reach.duplicate_insts )
-        addDiagnostic(diags,
-                      DiagnosticCode::DuplicateInstructionOwnership,
-                      fmt("instruction %%%u belongs to more than one block", id.index));
+        emitter.emit(diag::DuplicateInstructionOwnership, id);
 
     if ( reach.regions.size() != package.regions().size() )
-        addDiagnostic(diags,
-                      DiagnosticCode::OrphanRegions,
-                      fmt("package contains %zu unattached region(s)",
-                          package.regions().size() - reach.regions.size()));
+        emitter.emit(diag::OrphanRegions, noSite(), package.regions().size() - reach.regions.size());
     if ( reach.blocks.size() != package.blocks().size() )
-        addDiagnostic(diags,
-                      DiagnosticCode::OrphanBlocks,
-                      fmt("package contains %zu unattached block(s)", package.blocks().size() - reach.blocks.size()));
+        emitter.emit(diag::OrphanBlocks, noSite(), package.blocks().size() - reach.blocks.size());
     if ( reach.insts.size() != package.instructions().size() )
-        addDiagnostic(diags,
-                      DiagnosticCode::OrphanInstructions,
-                      fmt("package contains %zu unattached instruction(s)",
-                          package.instructions().size() - reach.insts.size()));
+        emitter.emit(diag::OrphanInstructions, noSite(), package.instructions().size() - reach.insts.size());
 
     return diags;
 }
