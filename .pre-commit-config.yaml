@@ -83,6 +83,13 @@ repos:
   hooks:
   - id: typos
     exclude: 'tests/.*/regexp/.*|.clang-tidy'
+  - id: typos
+    alias: typos-commit-msg
+    stages: ["commit-msg"]
+    # Override `args` so we can drop automatic writing of changes via the
+    # default `--write-changes`. When checking commit messages this would
+    # otherwise silently rewrite commit messages.
+    args: ["--force-exclude"]
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
   rev: e8f7d69b957a30acb2c875078d5fd012de24b64c  # frozen: v0.16.7
