@@ -11,8 +11,8 @@ using namespace spicy::detail::pir::ir;
 
 namespace {
 
-bool hasCode(const std::vector<Diagnostic>& diags, DiagnosticCode code) {
-    return std::ranges::any_of(diags, [code](const Diagnostic& d) { return d.code == code; });
+bool hasDiagnostic(const std::vector<Diagnostic>& diags, const DiagnosticDefinition& def) {
+    return std::ranges::any_of(diags, [&def](const Diagnostic& d) { return d.definition == def; });
 }
 
 } // namespace
@@ -62,9 +62,9 @@ TEST_SUITE("pir::ir::SourceManager") {
         CHECK_FALSE(package.inst(c).span.isSet());
 
         auto diags = verify(package);
-        CHECK_FALSE(hasCode(diags, DiagnosticCode::InvalidSourceSpanId));
-        CHECK_FALSE(hasCode(diags, DiagnosticCode::InvalidSourceFileId));
-        CHECK_FALSE(hasCode(diags, DiagnosticCode::MalformedSourceSpanRange));
+        CHECK_FALSE(hasDiagnostic(diags, diag::InvalidSourceSpanId));
+        CHECK_FALSE(hasDiagnostic(diags, diag::InvalidSourceFileId));
+        CHECK_FALSE(hasDiagnostic(diags, diag::MalformedSourceSpanRange));
     }
 
     TEST_CASE("verification rejects an invalid source span ID without asserting") {
@@ -75,7 +75,7 @@ TEST_SUITE("pir::ir::SourceManager") {
         package.addReturn(block, c);
 
         auto diags = verify(package);
-        CHECK(hasCode(diags, DiagnosticCode::InvalidSourceSpanId));
+        CHECK(hasDiagnostic(diags, diag::InvalidSourceSpanId));
     }
 
     TEST_CASE("verification rejects an invalid source file ID without asserting") {
@@ -88,7 +88,7 @@ TEST_SUITE("pir::ir::SourceManager") {
         package.addReturn(block, c);
 
         auto diags = verify(package);
-        CHECK(hasCode(diags, DiagnosticCode::InvalidSourceFileId));
+        CHECK(hasDiagnostic(diags, diag::InvalidSourceFileId));
     }
 
     TEST_CASE("verification rejects a reversed known range without asserting") {
@@ -103,6 +103,6 @@ TEST_SUITE("pir::ir::SourceManager") {
         package.addReturn(block, c);
 
         auto diags = verify(package);
-        CHECK(hasCode(diags, DiagnosticCode::MalformedSourceSpanRange));
+        CHECK(hasDiagnostic(diags, diag::MalformedSourceSpanRange));
     }
 }
