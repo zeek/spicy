@@ -53,6 +53,7 @@ set(SOURCES_COMPILER
     src/compiler/pir/ir/reachability.cc
     src/compiler/pir/ir/source.cc
     src/compiler/pir/ir/verifier.cc
+    src/compiler/pir/lowerer.cc
     src/compiler/pir/passes/constant-fold.cc
     src/compiler/pir/pir.cc
     src/compiler/plugin.cc
