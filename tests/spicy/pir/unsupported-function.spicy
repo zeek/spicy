@@ -1,0 +1,11 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: Tests that a public function outside PIR's accepted subset is reported precisely and
+# that compilation still falls back to the standard code generator.
+
+module Test;
+
+public function identity(x: int64): int64 {
+    return x;
+}
