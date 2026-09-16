@@ -36,6 +36,9 @@ enum class DiagnosticCode {
     OrphanRegions,
     OrphanBlocks,
     OrphanInstructions,
+    InvalidSourceSpanId,
+    InvalidSourceFileId,
+    MalformedSourceSpanRange,
 };
 
 struct Diagnostic {

@@ -18,7 +18,34 @@ class Verifier {
 public:
     Verifier(const Package& package, std::vector<Diagnostic>& diags) : _package(package), _diags(diags) {}
 
+    void _verifySpan(SourceSpanId span) {
+        if ( ! span.isSet() )
+            return;
+
+        const auto& sources = _package.sourceManager();
+        if ( ! sources.isValid(span) ) {
+            _fail(DiagnosticCode::InvalidSourceSpanId, "reference to an invalid source span ID");
+            return;
+        }
+
+        const auto& s = sources.span(span);
+        if ( ! sources.isValid(s.file) )
+            _fail(DiagnosticCode::InvalidSourceFileId, "source span references an invalid source file ID");
+
+        if ( s.begin_line >= 0 && s.end_line >= 0 && s.begin_line == s.end_line && s.begin_column >= 0 &&
+             s.end_column >= 0 && s.end_column < s.begin_column )
+            _fail(DiagnosticCode::MalformedSourceSpanRange, "source span has a reversed column range");
+
+        if ( s.begin_line >= 0 && s.end_line >= 0 && s.end_line < s.begin_line )
+            _fail(DiagnosticCode::MalformedSourceSpanRange, "source span has a reversed line range");
+
+        if ( s.begin_byte >= 0 && s.end_byte >= 0 && s.end_byte < s.begin_byte )
+            _fail(DiagnosticCode::MalformedSourceSpanRange, "source span has a reversed byte range");
+    }
+
     void _verifyFunction(const Function& fn) {
+        _verifySpan(fn.span);
+
         if ( ! _package.isValid(fn.result_type) )
             _fail(DiagnosticCode::InvalidFunctionResultType,
                   fmt("function '%s': result type is not a valid type ID", fn.name));
@@ -93,6 +120,8 @@ private:
                      const std::unordered_set<uint32_t>& defined,
                      TypeId function_result_type) {
         const auto& inst = _package.inst(inst_id);
+
+        _verifySpan(inst.span);
 
         if ( inst.parent != block_id )
             _fail(DiagnosticCode::CachedParentMismatch,

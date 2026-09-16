@@ -11,6 +11,7 @@
 #include <spicy/compiler/detail/pir/ir/arena.h>
 #include <spicy/compiler/detail/pir/ir/id.h>
 #include <spicy/compiler/detail/pir/ir/opcode.h>
+#include <spicy/compiler/detail/pir/ir/source.h>
 
 namespace spicy::detail::pir::ir {
 
@@ -45,6 +46,8 @@ struct Inst {
     // Cached; Block::insts is canonical.
     BlockId parent;
     InstPayload payload;
+    /** Invalid means absent. */
+    SourceSpanId span;
 };
 
 struct Block {
@@ -59,6 +62,8 @@ struct Function {
     std::string name;
     TypeId result_type;
     RegionId root_region;
+    /** Invalid means absent. */
+    SourceSpanId span;
 };
 
 /** Owns the flat arenas of a PIR package. */
@@ -69,7 +74,7 @@ public:
     TypeId voidType() const noexcept { return _void_type; }
     TypeId int64Type() const noexcept { return _int64_type; }
 
-    FunctionId createFunction(std::string name, TypeId result_type);
+    FunctionId createFunction(std::string name, TypeId result_type, SourceSpanId span = {});
     RegionId createRegion();
     BlockId createBlock(RegionId region);
 
@@ -77,18 +82,23 @@ public:
                    Opcode opcode,
                    std::vector<InstId> args,
                    TypeId result_type,
-                   InstPayload payload = {});
+                   InstPayload payload = {},
+                   SourceSpanId span = {});
 
     /** Adds unchecked IR for verifier tests. */
     InstId addInstForTesting(BlockId block,
                              Opcode opcode,
                              std::vector<InstId> args,
                              TypeId result_type,
-                             InstPayload payload = {});
+                             InstPayload payload = {},
+                             SourceSpanId span = {});
 
-    InstId addConstant(BlockId block, int64_t value);
-    InstId addAdd(BlockId block, InstId lhs, InstId rhs);
-    InstId addReturn(BlockId block, InstId value);
+    InstId addConstant(BlockId block, int64_t value, SourceSpanId span = {});
+    InstId addAdd(BlockId block, InstId lhs, InstId rhs, SourceSpanId span = {});
+    InstId addReturn(BlockId block, InstId value, SourceSpanId span = {});
+
+    SourceManager& sourceManager() { return _sources; }
+    const SourceManager& sourceManager() const { return _sources; }
 
     const Type& type(TypeId id) const { return _types.get(id); }
     const Function& function(FunctionId id) const { return _functions.get(id); }
@@ -120,6 +130,8 @@ private:
 
     TypeId _void_type;
     TypeId _int64_type;
+
+    SourceManager _sources;
 };
 
 } // namespace spicy::detail::pir::ir
