@@ -1,0 +1,15 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: Tests that `--experimental-pir` lowers a simple public function to PIR, verifies it,
+# prints it before and after constant folding, and still reaches the legacy code generator.
+#
+# Positive integer literals default to `uint64` in Spicy, and an implicit `uint64` to `int64`
+# coercion is not allowed; `40 + 2` as a return expression of type `int64` therefore does not
+# type-check. Using negated literals keeps both operands `int64` from the start.
+
+module Test;
+
+public function answer(): int64 {
+    return -40 + -2;
+}

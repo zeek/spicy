@@ -1,0 +1,12 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: Tests that `--experimental-pir` lowers `return 42;`, where the positive `uint64`
+# literal is implicitly coerced to the function's `int64` result type, producing a
+# `hilti::ctor::Coerced` that the addition fixture in function.spicy never reaches.
+
+module Test;
+
+public function answer(): int64 {
+    return 42;
+}
