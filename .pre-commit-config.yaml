@@ -30,7 +30,7 @@ repos:
     stages: ["pre-commit"]
 
 - repo: https://github.com/pre-commit/mirrors-clang-format
-  rev: 07a0f7667439f60724899f6ae288e4a4f572e0e1  # frozen: v22.1.2
+  rev: e2b496dc2bd8340c2524cb9a2d2a943cde1bb6df  # frozen: v23.1.1
   hooks:
   - id: clang-format
     types_or: ["c", "c++"]
@@ -79,25 +79,32 @@ repos:
     stages: ["pre-commit"]
 
 - repo: https://github.com/crate-ci/typos
-  rev: 02ea592e44b3a53c302f697cddca7641cd051c3d  # frozen: v1.45.0
+  rev: 512fc24f32f44ab01972217aaaf3dc86ec234d53  # frozen: v1.50.2
   hooks:
   - id: typos
     exclude: 'tests/.*/regexp/.*|.clang-tidy'
+  - id: typos
+    alias: typos-commit-msg
+    stages: ["commit-msg"]
+    # Override `args` so we can drop automatic writing of changes via the
+    # default `--write-changes`. When checking commit messages this would
+    # otherwise silently rewrite commit messages.
+    args: ["--force-exclude"]
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: c60c980e561ed3e73101667fe8365c609d19a438  # frozen: v0.15.9
+  rev: e8f7d69b957a30acb2c875078d5fd012de24b64c  # frozen: v0.16.7
   hooks:
   - id: ruff-check
     args: [ --fix ]
   - id: ruff-format
 
 - repo: https://github.com/shellcheck-py/shellcheck-py
-  rev: v0.11.0.1
+  rev: a6564f5d57444e123433a5c9af733e3975c77229  # frozen: v0.11.0.1-1
   hooks:
   - id: shellcheck
 
 - repo: https://github.com/maxwinterstein/shfmt-py
-  rev: 85cc16bc0319e182d7b62b0a2de351358083ce4c  # frozen: v4.0.0
+  rev: 259c873d8ebd3f0c90052cf29b5cb829391bc1b3  # frozen: v4.2.0
   hooks:
   - id: shfmt
     args: ["-w", "-i", "4", "-ci"]

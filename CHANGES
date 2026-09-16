@@ -1,3 +1,26 @@
+1.18.0-dev.26 | 2026-09-16 17:36:36 +0200
+
+  * Add dedicated CI job to run linting (Benjamin Bannier, Corelight)
+
+    While our full linting setup requires built binaries to validate
+    generated docs and is performed as part of one CI job, this only
+    provides very late feedback on issues we typically see (inconsistent
+    formatting, code lints, typos). This patch adds a dedicated GH CI job
+    which only runs linting and which should finish fast. We don't gate
+    other jobs on this job at this point, but could do this in the future.
+
+  * Run typos hook on commit messages (Benjamin Bannier, Corelight)
+
+    We keep finding issues diagnosed by the `typos` hook in `CHANGES`. Since
+    the contents of that file is usually generated from commit messages this
+    means we let typos in commit messages through, so this patch adds a
+    dedicated hook for running `typos` on commit messages. Since
+    automatically correcting issues fixes files which for commit messages
+    would not be visible, we introduce a dedicated hook for commit messages
+    which does not autocorrect.
+
+  * Bump pre-commit hooks (Benjamin Bannier, Corelight)
+
 1.18.0-dev.22 | 2026-09-15 11:07:24 -0400
 
   * Route legacy vector fields through validator (dedsec-terminal)
@@ -12526,7 +12549,7 @@ x:
 
     We configure a `Context` owned by `GlobalState` in `hilti::rt::init`.
     Since we destruct that context in `hilti::rt::done` we also need to
-    reset the context as we would otherwise leave a dangling refernence
+    reset the context as we would otherwise leave a dangling reference
     behind. (Benjamin Bannier, Corelight)
 
   * Call out gitlint in commit message style guidelines. (Benjamin Bannier, Corelight)
