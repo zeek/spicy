@@ -111,6 +111,12 @@ hilti::Plugin spicy::detail::createSpicyPlugin() {
                     return false;
                 }
 
+                if ( const auto* error = std::get_if<pir::Error>(&*result) ) {
+                    // A malformed PIR package is a hard failure; do not run the legacy generator.
+                    hilti::logger().error(pir::ir::render(error->package, error->diagnostics));
+                    return false;
+                }
+
                 if ( const auto* unsupported = std::get_if<pir::Unsupported>(&*result) ) {
                     for ( const auto& f : unsupported->features )
                         HILTI_DEBUG(spicy::logging::debug::PIR,
