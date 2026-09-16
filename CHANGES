@@ -12526,7 +12526,7 @@ x:
 
     We configure a `Context` owned by `GlobalState` in `hilti::rt::init`.
     Since we destruct that context in `hilti::rt::done` we also need to
-    reset the context as we would otherwise leave a dangling refernence
+    reset the context as we would otherwise leave a dangling reference
     behind. (Benjamin Bannier, Corelight)
 
   * Call out gitlint in commit message style guidelines. (Benjamin Bannier, Corelight)

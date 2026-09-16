@@ -63,11 +63,11 @@ TEST_CASE("decode") {
     // To compute the expected results in Python encode with `utf_8_sig` encoding.
     //
     // LHS is an UTF16 encoding of '東京', RHS UTF8 with BOM.
-    CHECK_EQ("\xff\xfeqg\xacN"_b.decode(unicode::Charset ::UTF16LE, unicode::DecodeErrorStrategy::STRICT),
+    CHECK_EQ("\xff\xfeqg\xacN"_b.decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT),
              "\ufeff東京"_hs);
 
     // Decoding of UTF16 with BOM. The byte order in the charset is just a hint, but we still decode as UTF16.
-    CHECK_EQ("\xff\xfeqg\xacN"_b.decode(unicode::Charset ::UTF16BE, unicode::DecodeErrorStrategy::STRICT),
+    CHECK_EQ("\xff\xfeqg\xacN"_b.decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::STRICT),
              "\ufeff東京"_hs);
 
     // Decoding of too few bytes for UTF16 (expected even number, provided uneven).
