@@ -202,6 +202,7 @@ constexpr Tag ToUIntAscii = 930;
 constexpr Tag ToUIntBinary = 931;
 constexpr Tag Unequal = 932;
 constexpr Tag UpperCase = 933;
+constexpr Tag SubOffset = 934;
 
 namespace iterator {
 constexpr Tag Deref = 1000;
@@ -476,6 +477,7 @@ constexpr Tag SubIterators = 3314;
 constexpr Tag SubOffsets = 3315;
 constexpr Tag UnequalBytes = 3316;
 constexpr Tag UnequalView = 3317;
+constexpr Tag SubOffset = 3318;
 } // namespace view
 
 } // namespace stream
