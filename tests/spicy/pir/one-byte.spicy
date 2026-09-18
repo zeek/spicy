@@ -1,0 +1,14 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: Tests that `--experimental-pir` lowers the smallest useful parser root, a public unit
+# with one unsigned 8-bit integer field, to a self-contained package: explicit parser state, one
+# coarse `parser.read_integer`, explicit unit construction and field publication, and a parser
+# terminator. Verifies before and after constant folding (which reports unchanged), then still
+# reaches the legacy code generator.
+
+module Test;
+
+public type OneByte = unit {
+    value: uint8;
+};
