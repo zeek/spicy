@@ -162,23 +162,18 @@ private:
         if ( inst.args.size() != schema->operand_count )
             _emitter.emit(diag::OperandCountMismatch, inst_id, schema->operand_count, inst.args.size());
 
-        bool payload_is_int = std::holds_alternative<int64_t>(inst.payload);
-        switch ( schema->payload_kind ) {
-            case PayloadKind::None:
-                if ( payload_is_int )
-                    _emitter.emit(diag::UnexpectedPayload, inst_id);
-                break;
-            case PayloadKind::Int64Literal:
-                if ( ! payload_is_int )
-                    _emitter.emit(diag::MissingPayload, inst_id);
-                break;
+        if ( ! payloadMatchesKind(inst.payload, schema->payload_kind) ) {
+            if ( schema->payload_kind == PayloadKind::None )
+                _emitter.emit(diag::UnexpectedPayload, inst_id);
+            else
+                _emitter.emit(diag::MissingPayload, inst_id);
         }
 
-        for ( size_t a = 0; a < inst.args.size(); ++a )
+        for ( size_t a = 0; a < inst.args.size() && a < schema->operand_types.size(); ++a )
             _verifyOperand(function_id,
                            inst_id,
                            block_id,
-                           schema->operand_type,
+                           schema->operand_types[a],
                            a,
                            inst.args[a],
                            defined,

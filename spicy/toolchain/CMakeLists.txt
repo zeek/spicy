@@ -235,6 +235,7 @@ add_executable(
     tests/grammar.cc
     tests/pir/diagnostic.cc
     tests/pir/ir-core.cc
+    tests/pir/opcode.cc
     tests/pir/source.cc
 )
 spicy_link_executable_in_tree(spicy-toolchain-tests PRIVATE)

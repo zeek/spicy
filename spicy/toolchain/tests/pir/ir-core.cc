@@ -124,7 +124,8 @@ TEST_CASE("verifier rejects an operand type mismatch") {
     auto fn = package.createFunction("bad", package.int64Type());
     auto block = package.createBlock(package.function(fn).root_region);
     auto c = package.addConstant(block, 1);
-    auto bad_void = package.addInstForTesting(block, Opcode::Constant, {}, package.voidType(), InstPayload(int64_t{0}));
+    auto bad_void =
+        package.addInstForTesting(block, Opcode::Constant, {}, package.voidType(), InstPayload(Int64Literal{0}));
     auto add = package.addAdd(block, c, bad_void);
     package.addReturn(block, add);
 
@@ -136,7 +137,7 @@ TEST_CASE("verifier rejects a return value that doesn't match the function's res
     Package package;
     auto fn = package.createFunction("bad", package.int64Type());
     auto block = package.createBlock(package.function(fn).root_region);
-    auto c = package.addInstForTesting(block, Opcode::Constant, {}, package.voidType(), InstPayload(int64_t{0}));
+    auto c = package.addInstForTesting(block, Opcode::Constant, {}, package.voidType(), InstPayload(Int64Literal{0}));
     package.addReturn(block, c);
 
     auto diags = verify(package);
