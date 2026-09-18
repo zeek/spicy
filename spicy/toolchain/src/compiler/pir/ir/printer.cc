@@ -18,7 +18,7 @@ namespace spicy::detail::pir::ir {
 namespace {
 
 std::string_view opcodeName(Opcode opcode) {
-    if ( auto schema = lookupSchema(opcode) )
+    if ( auto* schema = schemaFor(opcode) )
         return schema->spelling;
 
     return "<unknown-opcode>";
@@ -59,15 +59,20 @@ std::optional<std::string> renderPayload(const Package& package, const InstPaylo
     if ( const auto* up = std::get_if<UnitPayload>(&payload) ) {
         if ( ! package.isValid(up->unit) )
             return std::string("@<invalid-unit>");
-        return fmt("@%s", package.typeDecl(up->unit).name);
+        return fmt("@%%%u \"%s\"", up->unit.index, package.typeDecl(up->unit).name);
     }
 
     if ( const auto* fp = std::get_if<FieldPayload>(&payload) ) {
         if ( ! package.isValid(fp->field) )
             return std::string("@<invalid-field>");
         const auto& field = package.declaration(fp->field);
-        std::string unit_name = package.isValid(field.owner) ? package.typeDecl(field.owner).name : "<invalid-unit>";
-        return fmt("@%s::%s", unit_name, field.name);
+        if ( ! package.isValid(field.owner) )
+            return fmt("@<invalid-unit>::%%%u \"%s\"", fp->field.index, field.name);
+        return fmt("@%%%u \"%s\"::%%%u \"%s\"",
+                   field.owner.index,
+                   package.typeDecl(field.owner).name,
+                   fp->field.index,
+                   field.name);
     }
 
     return std::nullopt;
@@ -113,7 +118,7 @@ std::string typeName(const Package& package, TypeId type_id) {
             if ( ! package.isValid(t.declaration) )
                 return "unit<<invalid-decl>>";
 
-            return fmt("unit<@%s>", package.typeDecl(t.declaration).name);
+            return fmt("unit<@%%%u \"%s\">", t.declaration.index, package.typeDecl(t.declaration).name);
         }
 
         case TypeKind::Tuple: {
@@ -160,14 +165,31 @@ std::string print(const Package& package) {
         for ( size_t p = 0; p < fn.parameters.size(); ++p )
             parameters += (p == 0 ? "" : ", ") + typeName(package, fn.parameters[p]);
 
+        // Step 2's procedural functions are always `Normal` with no parser unit; only append the
+        // kind/parser-unit suffix for a `Parser` function, so their exact canonical dump is
+        // unaffected.
+        std::string suffix;
+        if ( fn.kind == FunctionKind::Parser ) {
+            suffix = " [parser, unit=";
+            suffix += package.isValid(fn.parser_unit) ?
+                          fmt("@%%%u \"%s\"", fn.parser_unit.index, package.typeDecl(fn.parser_unit).name) :
+                          std::string("@<invalid-unit>");
+            suffix += "]";
+        }
+
         if ( fn.parameters.empty() )
-            out += fmt("function %%%u \"%s\" -> %s:\n", function_id.index, fn.name, typeName(package, fn.result_type));
+            out += fmt("function %%%u \"%s\" -> %s%s:\n",
+                       function_id.index,
+                       fn.name,
+                       typeName(package, fn.result_type),
+                       suffix);
         else
-            out += fmt("function %%%u \"%s\" (%s) -> %s:\n",
+            out += fmt("function %%%u \"%s\" (%s) -> %s%s:\n",
                        function_id.index,
                        fn.name,
                        parameters,
-                       typeName(package, fn.result_type));
+                       typeName(package, fn.result_type),
+                       suffix);
 
         if ( ! package.isValid(fn.root_region) ) {
             out += "  <invalid root region>\n";
