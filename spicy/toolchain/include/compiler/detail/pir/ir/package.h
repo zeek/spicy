@@ -42,8 +42,6 @@ struct Type {
     TypeDeclId declaration;             /**< `Unit` only; invalid otherwise */
 };
 
-using InstPayload = std::variant<std::monostate, int64_t>;
-
 struct Inst {
     Opcode opcode;
     TypeId result_type;
@@ -109,6 +107,8 @@ public:
     void addParserRoot(TypeDeclId unit, FunctionId function);
 
     FunctionId createFunction(std::string name, TypeId result_type, SourceSpanId span = {});
+    /** Creates a `FunctionKind::Parser` function whose one parameter is `state_type`. */
+    FunctionId createParserFunction(TypeDeclId unit, TypeId state_type, TypeId unit_type, SourceSpanId span = {});
     RegionId createRegion();
     BlockId createBlock(RegionId region);
 
@@ -130,6 +130,19 @@ public:
     InstId addConstant(BlockId block, int64_t value, SourceSpanId span = {});
     InstId addAdd(BlockId block, InstId lhs, InstId rhs, SourceSpanId span = {});
     InstId addReturn(BlockId block, InstId value, SourceSpanId span = {});
+
+    /** Adds `core.argument` for parameter `index`; must be added in increasing order, block-leading. */
+    InstId addArgument(BlockId block, uint32_t index, SourceSpanId span = {});
+    /** Adds `unit.create` for `unit`. */
+    InstId addUnitCreate(BlockId block, TypeDeclId unit, SourceSpanId span = {});
+    /** Adds `parser.read_integer` over `state`. */
+    InstId addReadInteger(BlockId block, InstId state, ReadIntegerPayload payload, SourceSpanId span = {});
+    /** Adds `core.tuple_get` selecting element `index` of `tuple_value`. */
+    InstId addTupleGet(BlockId block, InstId tuple_value, uint32_t index, SourceSpanId span = {});
+    /** Adds `unit.publish_field` writing `value` into `field` of `unit_value`. */
+    InstId addPublishField(BlockId block, InstId unit_value, InstId value, DeclId field, SourceSpanId span = {});
+    /** Adds the terminating `parser.finish` over `state` and `unit_value`. */
+    InstId addParserFinish(BlockId block, InstId state, InstId unit_value, SourceSpanId span = {});
 
     SourceManager& sourceManager() { return _sources; }
     const SourceManager& sourceManager() const { return _sources; }
