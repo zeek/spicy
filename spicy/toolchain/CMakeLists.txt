@@ -205,8 +205,9 @@ install(CODE "file(REMOVE \"\$ENV\{DESTDIR\}${CMAKE_INSTALL_FULL_INCLUDEDIR}/spi
 ## Tests
 
 add_executable(
-    spicy-toolchain-tests EXCLUDE_FROM_ALL tests/main.cc tests/grammar.cc tests/pir/diagnostic.cc
-                                           tests/pir/ir-core.cc tests/pir/source.cc)
+    spicy-toolchain-tests EXCLUDE_FROM_ALL
+    tests/main.cc tests/grammar.cc tests/pir/diagnostic.cc tests/pir/ir-core.cc tests/pir/opcode.cc
+    tests/pir/source.cc)
 spicy_link_executable_in_tree(spicy-toolchain-tests PRIVATE)
 target_link_libraries(spicy-toolchain-tests PRIVATE doctest)
 if (NOT MSVC)

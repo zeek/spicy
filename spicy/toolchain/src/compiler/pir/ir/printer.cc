@@ -1,7 +1,10 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <optional>
+#include <string>
 #include <string_view>
 #include <variant>
+#include <vector>
 
 #include <hilti/base/util.h>
 
@@ -23,16 +26,67 @@ std::string_view opcodeName(Opcode opcode) {
 
 std::string printOperand(InstId id) { return fmt("%%%u", id.index); }
 
+std::string_view byteOrderName(ByteOrder order) {
+    switch ( order ) {
+        case ByteOrder::Little: return "little";
+        case ByteOrder::Big: return "big";
+        case ByteOrder::Network: return "network";
+        case ByteOrder::Host: return "host";
+    }
+
+    return "<unknown-byte-order>";
+}
+
+// Absent for `std::monostate` (no payload); otherwise the payload's canonical printed form, to be
+// joined alongside operands. A multi-field payload (e.g. `ReadIntegerPayload`) is already
+// comma-joined internally so it reads as one further element in that outer join.
+std::optional<std::string> renderPayload(const Package& package, const InstPayload& payload) {
+    if ( const auto* lit = std::get_if<Int64Literal>(&payload) )
+        return fmt("%d", lit->value);
+
+    if ( const auto* arg = std::get_if<ArgumentPayload>(&payload) )
+        return fmt("%u", arg->index);
+
+    if ( const auto* tg = std::get_if<TupleGetPayload>(&payload) )
+        return fmt("%u", tg->index);
+
+    if ( const auto* ri = std::get_if<ReadIntegerPayload>(&payload) )
+        return fmt("width=%u, signed=%s, byte_order=%s",
+                   ri->width,
+                   ri->signedness == Signedness::Signed ? "true" : "false",
+                   byteOrderName(ri->byte_order));
+
+    if ( const auto* up = std::get_if<UnitPayload>(&payload) ) {
+        if ( ! package.isValid(up->unit) )
+            return std::string("@<invalid-unit>");
+        return fmt("@%s", package.typeDecl(up->unit).name);
+    }
+
+    if ( const auto* fp = std::get_if<FieldPayload>(&payload) ) {
+        if ( ! package.isValid(fp->field) )
+            return std::string("@<invalid-field>");
+        const auto& field = package.declaration(fp->field);
+        std::string unit_name = package.isValid(field.owner) ? package.typeDecl(field.owner).name : "<invalid-unit>";
+        return fmt("@%s::%s", unit_name, field.name);
+    }
+
+    return std::nullopt;
+}
+
 std::string printInst(const Package& package, InstId id) {
     const auto& inst = package.inst(id);
 
     std::string body{opcodeName(inst.opcode)};
 
-    if ( const auto* value = std::get_if<int64_t>(&inst.payload) )
-        body += fmt(" %d", *value);
+    std::vector<std::string> tokens;
+    for ( auto arg : inst.args )
+        tokens.push_back(printOperand(arg));
 
-    for ( size_t i = 0; i < inst.args.size(); ++i )
-        body += (i == 0 ? " " : ", ") + printOperand(inst.args[i]);
+    if ( auto payload_text = renderPayload(package, inst.payload) )
+        tokens.push_back(std::move(*payload_text));
+
+    for ( size_t i = 0; i < tokens.size(); ++i )
+        body += (i == 0 ? " " : ", ") + tokens[i];
 
     body += fmt(" : %s", typeName(package, inst.result_type));
 
@@ -59,7 +113,7 @@ std::string typeName(const Package& package, TypeId type_id) {
             if ( ! package.isValid(t.declaration) )
                 return "unit<<invalid-decl>>";
 
-            return fmt("unit<%s>", package.typeDecl(t.declaration).name);
+            return fmt("unit<@%s>", package.typeDecl(t.declaration).name);
         }
 
         case TypeKind::Tuple: {
@@ -99,7 +153,21 @@ std::string print(const Package& package) {
     for ( size_t i = 0; i < package.functions().size(); ++i ) {
         auto function_id = FunctionId{static_cast<uint32_t>(i)};
         const auto& fn = package.function(function_id);
-        out += fmt("function %%%u \"%s\" -> %s:\n", function_id.index, fn.name, typeName(package, fn.result_type));
+
+        // Step 2's procedural functions always have zero parameters; only print a parameter list
+        // when there's one to show, so their exact canonical dump is unaffected.
+        std::string parameters;
+        for ( size_t p = 0; p < fn.parameters.size(); ++p )
+            parameters += (p == 0 ? "" : ", ") + typeName(package, fn.parameters[p]);
+
+        if ( fn.parameters.empty() )
+            out += fmt("function %%%u \"%s\" -> %s:\n", function_id.index, fn.name, typeName(package, fn.result_type));
+        else
+            out += fmt("function %%%u \"%s\" (%s) -> %s:\n",
+                       function_id.index,
+                       fn.name,
+                       parameters,
+                       typeName(package, fn.result_type));
 
         if ( ! package.isValid(fn.root_region) ) {
             out += "  <invalid root region>\n";

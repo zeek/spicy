@@ -1,5 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <algorithm>
 #include <cassert>
 #include <utility>
 
@@ -76,6 +77,18 @@ FunctionId Package::createFunction(std::string name, TypeId result_type, SourceS
     });
 }
 
+FunctionId Package::createParserFunction(TypeDeclId unit, TypeId state_type, TypeId unit_type, SourceSpanId span) {
+    auto root_region = createRegion();
+    return _functions.add(Function{
+        .result_type = unit_type,
+        .root_region = root_region,
+        .kind = FunctionKind::Parser,
+        .parameters = {state_type},
+        .parser_unit = unit,
+        .span = span,
+    });
+}
+
 RegionId Package::createRegion() { return _regions.add(Region{}); }
 
 BlockId Package::createBlock(RegionId region) {
@@ -93,7 +106,7 @@ InstId Package::addInst(BlockId block,
     [[maybe_unused]] auto schema = lookupSchema(opcode);
     assert(schema && "addInst() requires a recognized opcode; use addInstForTesting() for deliberately malformed IR");
     assert(args.size() == schema->operand_count);
-    assert(std::holds_alternative<std::monostate>(payload) == (schema->payload_kind == PayloadKind::None));
+    assert(payloadMatchesKind(payload, schema->payload_kind));
 
     return addInstForTesting(block, opcode, std::move(args), result_type, payload, span);
 }
@@ -117,7 +130,7 @@ InstId Package::addInstForTesting(BlockId block,
 }
 
 InstId Package::addConstant(BlockId block, int64_t value, SourceSpanId span) {
-    return addInst(block, Opcode::Constant, {}, _int64_type, InstPayload(value), span);
+    return addInst(block, Opcode::Constant, {}, _int64_type, InstPayload(Int64Literal{value}), span);
 }
 
 InstId Package::addAdd(BlockId block, InstId lhs, InstId rhs, SourceSpanId span) {
@@ -126,6 +139,65 @@ InstId Package::addAdd(BlockId block, InstId lhs, InstId rhs, SourceSpanId span)
 
 InstId Package::addReturn(BlockId block, InstId value, SourceSpanId span) {
     return addInst(block, Opcode::Return, {value}, _void_type, {}, span);
+}
+
+InstId Package::addArgument(BlockId block, uint32_t index, SourceSpanId span) {
+    // `core.argument`'s result is the owning function's indexed parameter type. Find that
+    // function by which one's root region contains `block`; the verifier is responsible for
+    // diagnosing a block that (malformed-IR-test-only) belongs to no function or an out-of-range
+    // index, so a missing match here just falls through to an invalid `TypeId`.
+    TypeId result_type;
+    for ( size_t i = 0; i < _functions.size() && ! result_type.isSet(); ++i ) {
+        const auto& fn = _functions.get(FunctionId{static_cast<uint32_t>(i)});
+        if ( ! isValid(fn.root_region) )
+            continue;
+
+        const auto& blocks = region(fn.root_region).blocks;
+        if ( std::find(blocks.begin(), blocks.end(), block) == blocks.end() )
+            continue;
+
+        if ( index < fn.parameters.size() )
+            result_type = fn.parameters[index];
+    }
+
+    return addInst(block, Opcode::Argument, {}, result_type, InstPayload(ArgumentPayload{index}), span);
+}
+
+InstId Package::addUnitCreate(BlockId block, TypeDeclId unit, SourceSpanId span) {
+    return addInst(block, Opcode::UnitCreate, {}, unitType(unit), InstPayload(UnitPayload{unit}), span);
+}
+
+InstId Package::addReadInteger(BlockId block, InstId state, ReadIntegerPayload payload, SourceSpanId span) {
+    auto result_type = tupleType({parserStateType(), uint8Type()});
+    return addInst(block, Opcode::ReadInteger, {state}, result_type, InstPayload(payload), span);
+}
+
+InstId Package::addTupleGet(BlockId block, InstId tuple_value, uint32_t index, SourceSpanId span) {
+    TypeId result_type;
+    if ( isValid(tuple_value) ) {
+        const auto& tuple_type = type(inst(tuple_value).result_type);
+        if ( index < tuple_type.type_arguments.size() )
+            result_type = tuple_type.type_arguments[index];
+    }
+
+    return addInst(block, Opcode::TupleGet, {tuple_value}, result_type, InstPayload(TupleGetPayload{index}), span);
+}
+
+InstId Package::addPublishField(BlockId block, InstId unit_value, InstId value, DeclId field, SourceSpanId span) {
+    TypeId result_type;
+    if ( isValid(unit_value) )
+        result_type = inst(unit_value).result_type;
+
+    return addInst(block,
+                   Opcode::PublishField,
+                   {unit_value, value},
+                   result_type,
+                   InstPayload(FieldPayload{field}),
+                   span);
+}
+
+InstId Package::addParserFinish(BlockId block, InstId state, InstId unit_value, SourceSpanId span) {
+    return addInst(block, Opcode::Finish, {state, unit_value}, _void_type, {}, span);
 }
 
 void Package::replaceInst(InstId id, Opcode opcode, std::vector<InstId> args, InstPayload payload) {

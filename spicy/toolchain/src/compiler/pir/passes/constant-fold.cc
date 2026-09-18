@@ -20,8 +20,8 @@ std::optional<int64_t> constantValue(const Package& package, InstId id) {
     if ( inst.opcode != Opcode::Constant )
         return {};
 
-    if ( const auto* value = std::get_if<int64_t>(&inst.payload) )
-        return *value;
+    if ( const auto* value = std::get_if<Int64Literal>(&inst.payload) )
+        return value->value;
 
     return {};
 }
@@ -74,7 +74,7 @@ bool foldConstants(Package& package, FunctionId function) {
             if ( ! sum )
                 continue;
 
-            package.replaceInst(inst_id, Opcode::Constant, {}, InstPayload(*sum));
+            package.replaceInst(inst_id, Opcode::Constant, {}, InstPayload(Int64Literal{*sum}));
             changed = true;
         }
     }
