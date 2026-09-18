@@ -69,7 +69,7 @@ std::string renderEntity(const Package& package, const DiagnosticEntity& entity)
     if ( const auto* id = std::get_if<InstId>(&entity) ) {
         if ( package.isValid(*id) ) {
             const auto& inst = package.inst(*id);
-            if ( auto schema = lookupSchema(inst.opcode) )
+            if ( auto* schema = schemaFor(inst.opcode) )
                 return fmt("instruction %%%u (%s)", id->index, schema->spelling);
         }
         return fmt("instruction %%%u", id->index);

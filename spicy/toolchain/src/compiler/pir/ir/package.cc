@@ -1,6 +1,5 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-#include <algorithm>
 #include <cassert>
 #include <utility>
 
@@ -63,6 +62,18 @@ DeclId Package::createFieldDecl(TypeDeclId unit, std::string name, TypeId type, 
     return id;
 }
 
+DeclId Package::createFieldDeclForTesting(TypeDeclId owner, std::string name, TypeId type, SourceSpanId span) {
+    return _declarations.add(Declaration{
+        .kind = DeclKind::Field,
+        .owner = owner,
+        .name = std::move(name),
+        .type = type,
+        .span = span,
+    });
+}
+
+void Package::appendFieldForTesting(TypeDeclId owner, DeclId field) { _type_decls.get(owner).fields.push_back(field); }
+
 void Package::addParserRoot(TypeDeclId unit, FunctionId function) {
     _parser_roots.push_back(ParserRoot{.unit = unit, .function = function});
 }
@@ -103,9 +114,9 @@ InstId Package::addInst(BlockId block,
                         TypeId result_type,
                         InstPayload payload,
                         SourceSpanId span) {
-    [[maybe_unused]] auto schema = lookupSchema(opcode);
+    [[maybe_unused]] auto* schema = schemaFor(opcode);
     assert(schema && "addInst() requires a recognized opcode; use addInstForTesting() for deliberately malformed IR");
-    assert(args.size() == schema->operand_count);
+    assert(args.size() == schema->operandCount());
     assert(payloadMatchesKind(payload, schema->payload_kind));
 
     return addInstForTesting(block, opcode, std::move(args), result_type, payload, span);
@@ -141,21 +152,16 @@ InstId Package::addReturn(BlockId block, InstId value, SourceSpanId span) {
     return addInst(block, Opcode::Return, {value}, _void_type, {}, span);
 }
 
-InstId Package::addArgument(BlockId block, uint32_t index, SourceSpanId span) {
-    // `core.argument`'s result is the owning function's indexed parameter type. Find that
-    // function by which one's root region contains `block`; the verifier is responsible for
-    // diagnosing a block that (malformed-IR-test-only) belongs to no function or an out-of-range
-    // index, so a missing match here just falls through to an invalid `TypeId`.
+InstId Package::addArgument(FunctionId function, BlockId block, uint32_t index, SourceSpanId span) {
+    // `core.argument`'s result is `function`'s indexed parameter type. The verifier is responsible
+    // for diagnosing an out-of-range index (malformed-IR tests only), so an invalid `function` or
+    // index just falls through to an invalid `TypeId` here rather than asserting. There is no
+    // stored `function` <-> `block` association for the verifier to check `function` against, so
+    // a caller passing a `function` that doesn't actually own `block` is a caller bug this
+    // construction API does not, and cannot, detect.
     TypeId result_type;
-    for ( size_t i = 0; i < _functions.size() && ! result_type.isSet(); ++i ) {
-        const auto& fn = _functions.get(FunctionId{static_cast<uint32_t>(i)});
-        if ( ! isValid(fn.root_region) )
-            continue;
-
-        const auto& blocks = region(fn.root_region).blocks;
-        if ( std::find(blocks.begin(), blocks.end(), block) == blocks.end() )
-            continue;
-
+    if ( isValid(function) ) {
+        const auto& fn = _functions.get(function);
         if ( index < fn.parameters.size() )
             result_type = fn.parameters[index];
     }

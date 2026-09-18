@@ -306,6 +306,256 @@ inline constexpr DiagnosticDefinition InvalidFieldType{
     .message = "field does not reference a valid type ID",
 };
 
+// --- Declaration membership --------------------------------------------------------------------
+
+inline constexpr DiagnosticDefinition DeclarationInvalidOwner{
+    .id = "PIR_DECLARATION_INVALID_OWNER",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "declaration's owner is not a valid type declaration ID",
+};
+
+inline constexpr DiagnosticDefinition DeclarationNotInOwnerMembership{
+    .id = "PIR_DECLARATION_NOT_IN_OWNER_MEMBERSHIP",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "declaration does not appear in its owner's membership vector",
+};
+
+inline constexpr DiagnosticDefinition DeclarationDuplicateOwnerMembership{
+    .id = "PIR_DECLARATION_DUPLICATE_OWNER_MEMBERSHIP",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "declaration appears more than once in its owner's membership vector",
+};
+
+// --- Parser roots -----------------------------------------------------------------------------
+
+inline constexpr DiagnosticDefinition DuplicateParserRootUnit{
+    .id = "PIR_DUPLICATE_PARSER_ROOT_UNIT",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "unit declaration is the target of more than one parser root",
+};
+
+inline constexpr DiagnosticDefinition InvalidParserRootUnit{
+    .id = "PIR_INVALID_PARSER_ROOT_UNIT",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "parser root references an invalid unit declaration",
+};
+
+inline constexpr DiagnosticDefinition InvalidParserRootFunction{
+    .id = "PIR_INVALID_PARSER_ROOT_FUNCTION",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "parser root references an invalid function",
+};
+
+inline constexpr DiagnosticDefinition ParserRootFunctionKindMismatch{
+    .id = "PIR_PARSER_ROOT_FUNCTION_KIND_MISMATCH",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "parser root's function is not a parser function",
+};
+
+inline constexpr DiagnosticDefinition ParserRootUnitMismatch{
+    .id = "PIR_PARSER_ROOT_UNIT_MISMATCH",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "parser root's unit does not match its function's parser unit",
+};
+
+// --- Function kind/signature/parser-unit consistency -------------------------------------------
+
+inline constexpr DiagnosticDefinition NormalFunctionWithParserUnit{
+    .id = "PIR_NORMAL_FUNCTION_WITH_PARSER_UNIT",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "an ordinary function must not reference a parser unit",
+};
+
+inline constexpr DiagnosticDefinition ParserFunctionMissingParserUnit{
+    .id = "PIR_PARSER_FUNCTION_MISSING_PARSER_UNIT",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "a parser function must reference a valid parser unit",
+};
+
+inline constexpr DiagnosticDefinition ParserFunctionParameterCountMismatch{
+    .id = "PIR_PARSER_FUNCTION_PARAMETER_COUNT_MISMATCH",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "a parser function must have exactly one parameter, has %zu",
+};
+
+inline constexpr DiagnosticDefinition ParserFunctionParameterTypeMismatch{
+    .id = "PIR_PARSER_FUNCTION_PARAMETER_TYPE_MISMATCH",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "a parser function's parameter must be parser.state",
+};
+
+inline constexpr DiagnosticDefinition ParserFunctionResultTypeMismatch{
+    .id = "PIR_PARSER_FUNCTION_RESULT_TYPE_MISMATCH",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "a parser function's result type must be its parser unit's nominal type",
+};
+
+// --- core.argument -----------------------------------------------------------------------------
+
+inline constexpr DiagnosticDefinition ArgumentNotLeading{
+    .id = "PIR_ARGUMENT_NOT_LEADING",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "core.argument must appear before any non-argument instruction in the entry block",
+};
+
+inline constexpr DiagnosticDefinition ArgumentIndexOutOfRange{
+    .id = "PIR_ARGUMENT_INDEX_OUT_OF_RANGE",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "core.argument index %u is out of range for %zu parameter(s)",
+};
+
+inline constexpr DiagnosticDefinition ArgumentIndexDuplicate{
+    .id = "PIR_ARGUMENT_INDEX_DUPLICATE",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "core.argument index %u is bound more than once",
+};
+
+inline constexpr DiagnosticDefinition ArgumentIndexMissing{
+    .id = "PIR_ARGUMENT_INDEX_MISSING",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "function parameter %zu has no core.argument binding it",
+};
+
+inline constexpr DiagnosticDefinition ArgumentResultTypeMismatch{
+    .id = "PIR_ARGUMENT_RESULT_TYPE_MISMATCH",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "core.argument's result type does not match its function's parameter type",
+};
+
+// --- Opcode-specific dynamic result/operand construction ---------------------------------------
+
+inline constexpr DiagnosticDefinition TupleGetOperandNotTuple{
+    .id = "PIR_TUPLE_GET_OPERAND_NOT_TUPLE",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "core.tuple_get's operand is not a tuple type",
+};
+
+inline constexpr DiagnosticDefinition TupleGetIndexOutOfRange{
+    .id = "PIR_TUPLE_GET_INDEX_OUT_OF_RANGE",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "core.tuple_get index %u is out of range for a %zu-element tuple",
+};
+
+inline constexpr DiagnosticDefinition TupleGetResultTypeMismatch{
+    .id = "PIR_TUPLE_GET_RESULT_TYPE_MISMATCH",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "core.tuple_get's result type does not match the selected tuple element",
+};
+
+inline constexpr DiagnosticDefinition UnitCreateInvalidPayload{
+    .id = "PIR_UNIT_CREATE_INVALID_PAYLOAD",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "unit.create's payload does not reference a valid unit declaration",
+};
+
+inline constexpr DiagnosticDefinition UnitCreateResultTypeMismatch{
+    .id = "PIR_UNIT_CREATE_RESULT_TYPE_MISMATCH",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "unit.create's result type does not match its payload's unit declaration",
+};
+
+inline constexpr DiagnosticDefinition ReadIntegerUnsupportedPayload{
+    .id = "PIR_READ_INTEGER_UNSUPPORTED_PAYLOAD",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "parser.read_integer only supports unsigned width-8 network-order reads in this slice",
+};
+
+inline constexpr DiagnosticDefinition ReadIntegerResultTypeMismatch{
+    .id = "PIR_READ_INTEGER_RESULT_TYPE_MISMATCH",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "parser.read_integer's result type must be tuple<parser.state, uint8>",
+};
+
+inline constexpr DiagnosticDefinition PublishFieldInvalidPayload{
+    .id = "PIR_PUBLISH_FIELD_INVALID_PAYLOAD",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "unit.publish_field's payload does not reference a valid field declaration",
+};
+
+inline constexpr DiagnosticDefinition PublishFieldOperandNotUnit{
+    .id = "PIR_PUBLISH_FIELD_OPERAND_NOT_UNIT",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "unit.publish_field's first operand is not a unit type",
+};
+
+inline constexpr DiagnosticDefinition PublishFieldOwnerMismatch{
+    .id = "PIR_PUBLISH_FIELD_OWNER_MISMATCH",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "unit.publish_field's field is not owned by its unit operand's declaration",
+};
+
+inline constexpr DiagnosticDefinition FinishInNormalFunction{
+    .id = "PIR_FINISH_IN_NORMAL_FUNCTION",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "parser.finish may only terminate a parser function",
+};
+
+inline constexpr DiagnosticDefinition PublishFieldValueTypeMismatch{
+    .id = "PIR_PUBLISH_FIELD_VALUE_TYPE_MISMATCH",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "unit.publish_field's value operand does not match the field's declared type",
+};
+
+// --- Parser- and unit-state affinity -------------------------------------------------------------
+
+inline constexpr DiagnosticDefinition ParserStateReused{
+    .id = "PIR_PARSER_STATE_REUSED",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "parser state value is consumed by more than one state-transforming operation",
+};
+
+inline constexpr DiagnosticDefinition UnitStateStaleOrUnknownOperand{
+    .id = "PIR_UNIT_STATE_STALE_OR_UNKNOWN_OPERAND",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "operand does not reference a live unit-state value created earlier in this function",
+};
+
+inline constexpr DiagnosticDefinition DuplicateFieldPublication{
+    .id = "PIR_DUPLICATE_FIELD_PUBLICATION",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "field is published more than once",
+};
+
+inline constexpr DiagnosticDefinition MissingFieldPublication{
+    .id = "PIR_MISSING_FIELD_PUBLICATION",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "parser.finish completes a unit that has not published all of its fields",
+};
+
 } // namespace diag
 
 /** A typed anchor for a diagnostic; `std::monostate` means no typed entity is available. */

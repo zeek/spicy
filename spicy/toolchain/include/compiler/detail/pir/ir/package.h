@@ -103,6 +103,11 @@ public:
     /** Declares a field owned by `unit`, appended in call order. */
     DeclId createFieldDecl(TypeDeclId unit, std::string name, TypeId type, SourceSpanId span = {});
 
+    /** Adds unchecked declaration content for verifier tests: does not append to `owner`'s fields. */
+    DeclId createFieldDeclForTesting(TypeDeclId owner, std::string name, TypeId type, SourceSpanId span = {});
+    /** Appends `field` to `owner`'s fields list again, for verifier tests of duplicate membership. */
+    void appendFieldForTesting(TypeDeclId owner, DeclId field);
+
     /** Appends a selected parser implementation; call only once the function is complete. */
     void addParserRoot(TypeDeclId unit, FunctionId function);
 
@@ -131,8 +136,12 @@ public:
     InstId addAdd(BlockId block, InstId lhs, InstId rhs, SourceSpanId span = {});
     InstId addReturn(BlockId block, InstId value, SourceSpanId span = {});
 
-    /** Adds `core.argument` for parameter `index`; must be added in increasing order, block-leading. */
-    InstId addArgument(BlockId block, uint32_t index, SourceSpanId span = {});
+    /**
+     * Adds `core.argument` for parameter `index` of `function`; must be added in increasing
+     * order, block-leading. The caller supplies `function` directly rather than this construction
+     * helper rediscovering it by scanning every function for one whose region contains `block`.
+     */
+    InstId addArgument(FunctionId function, BlockId block, uint32_t index, SourceSpanId span = {});
     /** Adds `unit.create` for `unit`. */
     InstId addUnitCreate(BlockId block, TypeDeclId unit, SourceSpanId span = {});
     /** Adds `parser.read_integer` over `state`. */
