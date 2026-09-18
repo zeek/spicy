@@ -44,13 +44,31 @@ std::string printInst(const Package& package, InstId id) {
 
 } // namespace
 
-std::string_view typeName(const Package& package, TypeId type_id) {
+std::string typeName(const Package& package, TypeId type_id) {
     if ( ! package.isValid(type_id) )
         return "<invalid-type>";
 
-    switch ( package.type(type_id).kind ) {
+    const auto& t = package.type(type_id);
+    switch ( t.kind ) {
         case TypeKind::Void: return "void";
         case TypeKind::Int64: return "int64";
+        case TypeKind::UInt8: return "uint8";
+        case TypeKind::ParserState: return "parser.state";
+
+        case TypeKind::Unit: {
+            if ( ! package.isValid(t.declaration) )
+                return "unit<<invalid-decl>>";
+
+            return fmt("unit<%s>", package.typeDecl(t.declaration).name);
+        }
+
+        case TypeKind::Tuple: {
+            std::string out = "tuple<";
+            for ( size_t i = 0; i < t.type_arguments.size(); ++i )
+                out += (i == 0 ? "" : ", ") + typeName(package, t.type_arguments[i]);
+            out += '>';
+            return out;
+        }
     }
 
     return "<unknown-type>";
@@ -61,6 +79,22 @@ std::string print(const Package& package) {
 
     for ( size_t i = 0; i < package.types().size(); ++i )
         out += fmt("type %%%zu: %s\n", i, typeName(package, TypeId{static_cast<uint32_t>(i)}));
+
+    for ( size_t i = 0; i < package.typeDecls().size(); ++i ) {
+        auto decl_id = TypeDeclId{static_cast<uint32_t>(i)};
+        const auto& decl = package.typeDecl(decl_id);
+        out += fmt("unit %%%zu \"%s\":\n", i, decl.name);
+
+        for ( auto field_id : decl.fields ) {
+            if ( ! package.isValid(field_id) ) {
+                out += "  <invalid field>\n";
+                continue;
+            }
+
+            const auto& field = package.declaration(field_id);
+            out += fmt("  field %%%u \"%s\" : %s\n", field_id.index, field.name, typeName(package, field.type));
+        }
+    }
 
     for ( size_t i = 0; i < package.functions().size(); ++i ) {
         auto function_id = FunctionId{static_cast<uint32_t>(i)};
@@ -86,6 +120,9 @@ std::string print(const Package& package) {
                 out += "      " + printInst(package, inst_id) + "\n";
         }
     }
+
+    for ( const auto& root : package.parserRoots() )
+        out += fmt("parser root: unit %%%u -> function %%%u\n", root.unit.index, root.function.index);
 
     auto reach = computeReachableIds(package);
 

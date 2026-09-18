@@ -18,4 +18,10 @@ struct ID {
     friend constexpr bool operator==(ID, ID) = default;
 };
 
+// `TypeId` is shared by `declaration.h` (field types) and `package.h`/`opcode.h` (the type
+// arena and its structural payload); defining it alongside the generic `ID` template avoids a
+// header cycle between those two.
+struct TypeTag {};
+using TypeId = ID<TypeTag>;
+
 } // namespace spicy::detail::pir::ir

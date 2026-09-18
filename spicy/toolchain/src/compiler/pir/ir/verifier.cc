@@ -15,6 +15,43 @@ class Verifier {
 public:
     Verifier(const Package& package, std::vector<Diagnostic>& diags) : _package(package), _emitter(package, diags) {}
 
+    void verifyType(TypeId id, const Type& type) {
+        if ( type.kind == TypeKind::Unit ) {
+            if ( ! _package.isValid(type.declaration) )
+                _emitter.emit(diag::TypeMissingDeclaration, id);
+        }
+        else if ( type.declaration.isSet() )
+            _emitter.emit(diag::TypeUnexpectedDeclaration, id);
+
+        if ( type.kind == TypeKind::Tuple ) {
+            for ( size_t a = 0; a < type.type_arguments.size(); ++a )
+                if ( ! _package.isValid(type.type_arguments[a]) )
+                    _emitter.emit(diag::TypeInvalidTypeArgument, id, a);
+        }
+        else if ( ! type.type_arguments.empty() )
+            _emitter.emit(diag::TypeUnexpectedTypeArguments, id);
+    }
+
+    void verifyTypeDecl(TypeDeclId id, const TypeDecl& decl) {
+        _verifySpan(decl.span, id);
+
+        for ( auto field_id : decl.fields ) {
+            if ( ! _package.isValid(field_id) ) {
+                _emitter.emit(diag::InvalidFieldDeclarationId, id);
+                continue;
+            }
+
+            const auto& field = _package.declaration(field_id);
+            if ( field.owner != id )
+                _emitter.emit(diag::FieldOwnerMismatch, field_id);
+
+            _verifySpan(field.span, field_id);
+
+            if ( ! _package.isValid(field.type) )
+                _emitter.emit(diag::InvalidFieldType, field_id);
+        }
+    }
+
     void verifyFunction(FunctionId id, const Function& fn) {
         _verifySpan(fn.span, id);
 
@@ -227,6 +264,16 @@ std::vector<Diagnostic> verify(const Package& package) {
     std::vector<Diagnostic> diags;
     Verifier verifier(package, diags);
     DiagnosticEmitter emitter(package, diags);
+
+    for ( size_t i = 0; i < package.types().size(); ++i ) {
+        auto id = TypeId{static_cast<uint32_t>(i)};
+        verifier.verifyType(id, package.type(id));
+    }
+
+    for ( size_t i = 0; i < package.typeDecls().size(); ++i ) {
+        auto id = TypeDeclId{static_cast<uint32_t>(i)};
+        verifier.verifyTypeDecl(id, package.typeDecl(id));
+    }
 
     for ( size_t i = 0; i < package.functions().size(); ++i ) {
         auto id = FunctionId{static_cast<uint32_t>(i)};

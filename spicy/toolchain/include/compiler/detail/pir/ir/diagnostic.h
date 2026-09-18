@@ -257,10 +257,60 @@ inline constexpr DiagnosticDefinition OperandDefinedHere{
     .message = "operand defined here",
 };
 
+inline constexpr DiagnosticDefinition TypeMissingDeclaration{
+    .id = "PIR_TYPE_MISSING_DECLARATION",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "unit type does not reference a valid type declaration",
+};
+
+inline constexpr DiagnosticDefinition TypeUnexpectedDeclaration{
+    .id = "PIR_TYPE_UNEXPECTED_DECLARATION",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "only a unit type may carry a type declaration",
+};
+
+inline constexpr DiagnosticDefinition TypeInvalidTypeArgument{
+    .id = "PIR_TYPE_INVALID_TYPE_ARGUMENT",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "tuple type argument %zu is not a valid type ID",
+};
+
+inline constexpr DiagnosticDefinition TypeUnexpectedTypeArguments{
+    .id = "PIR_TYPE_UNEXPECTED_TYPE_ARGUMENTS",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "only a tuple type may carry type arguments",
+};
+
+inline constexpr DiagnosticDefinition InvalidFieldDeclarationId{
+    .id = "PIR_INVALID_FIELD_DECLARATION_ID",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "unit declaration references an invalid field ID",
+};
+
+inline constexpr DiagnosticDefinition FieldOwnerMismatch{
+    .id = "PIR_FIELD_OWNER_MISMATCH",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "field's cached owner does not match the unit declaring it",
+};
+
+inline constexpr DiagnosticDefinition InvalidFieldType{
+    .id = "PIR_INVALID_FIELD_TYPE",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "field does not reference a valid type ID",
+};
+
 } // namespace diag
 
 /** A typed anchor for a diagnostic; `std::monostate` means no typed entity is available. */
-using DiagnosticEntity = std::variant<std::monostate, FunctionId, RegionId, BlockId, InstId>;
+using DiagnosticEntity =
+    std::variant<std::monostate, FunctionId, RegionId, BlockId, InstId, TypeId, TypeDeclId, DeclId>;
 
 /** Where a diagnostic (or note) points: an optional source span plus an optional typed IR anchor. */
 struct DiagnosticSite {
@@ -307,6 +357,22 @@ inline DiagnosticSite siteFor(const Package& package, InstId id) {
 inline DiagnosticSite siteFor(const Package& /* package */, RegionId id) { return DiagnosticSite{.entity = id}; }
 
 inline DiagnosticSite siteFor(const Package& /* package */, BlockId id) { return DiagnosticSite{.entity = id}; }
+
+inline DiagnosticSite siteFor(const Package& /* package */, TypeId id) { return DiagnosticSite{.entity = id}; }
+
+inline DiagnosticSite siteFor(const Package& package, TypeDeclId id) {
+    SourceSpanId span;
+    if ( package.isValid(id) )
+        span = package.typeDecl(id).span;
+    return DiagnosticSite{.source = span, .entity = id};
+}
+
+inline DiagnosticSite siteFor(const Package& package, DeclId id) {
+    SourceSpanId span;
+    if ( package.isValid(id) )
+        span = package.declaration(id).span;
+    return DiagnosticSite{.source = span, .entity = id};
+}
 
 inline DiagnosticSite siteFor(const Package& /* package */, SourceSpanId span) {
     return DiagnosticSite{.source = span};
