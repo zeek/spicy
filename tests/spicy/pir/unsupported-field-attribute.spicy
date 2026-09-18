@@ -1,0 +1,14 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: Tests that a public one-field unit whose field carries an attribute outside PIR's
+# accepted subset is reported precisely and that compilation still falls back to the standard
+# code generator.
+
+module Test;
+
+import spicy;
+
+public type OneByte = unit {
+    value: uint8 &byte-order=spicy::ByteOrder::Little;
+};
