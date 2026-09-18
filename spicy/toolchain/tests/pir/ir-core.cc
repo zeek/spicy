@@ -192,4 +192,99 @@ TEST_CASE("verifier rejects an instruction after the block terminator") {
     CHECK(hasDiagnostic(diags, diag::TerminatorNotLast));
 }
 
+TEST_CASE("uint8 and parser.state intern deterministically and are stable across repeated requests") {
+    Package package;
+    auto uint8_1 = package.uint8Type();
+    auto uint8_2 = package.uint8Type();
+    CHECK_EQ(uint8_1, uint8_2);
+    CHECK_EQ(package.type(uint8_1).kind, TypeKind::UInt8);
+
+    auto state_1 = package.parserStateType();
+    auto state_2 = package.parserStateType();
+    CHECK_EQ(state_1, state_2);
+    CHECK_EQ(package.type(state_1).kind, TypeKind::ParserState);
+
+    CHECK_NE(uint8_1, state_1);
+}
+
+TEST_CASE("unit and tuple types intern structurally and repeated requests return the same TypeId") {
+    Package package;
+    auto unit_decl = package.createUnitDecl("OneByte");
+
+    auto unit_1 = package.unitType(unit_decl);
+    auto unit_2 = package.unitType(unit_decl);
+    CHECK_EQ(unit_1, unit_2);
+    CHECK_EQ(package.type(unit_1).kind, TypeKind::Unit);
+    CHECK_EQ(package.type(unit_1).declaration, unit_decl);
+
+    auto uint8 = package.uint8Type();
+    auto state = package.parserStateType();
+    auto tuple_1 = package.tupleType({state, uint8});
+    auto tuple_2 = package.tupleType({state, uint8});
+    CHECK_EQ(tuple_1, tuple_2);
+    CHECK_EQ(package.type(tuple_1).kind, TypeKind::Tuple);
+    CHECK_EQ(package.type(tuple_1).type_arguments, std::vector<TypeId>{state, uint8});
+
+    // Different element order is a different structural type.
+    auto tuple_3 = package.tupleType({uint8, state});
+    CHECK_NE(tuple_1, tuple_3);
+}
+
+TEST_CASE("two unit declarations with the same name remain distinct nominal types") {
+    Package package;
+    auto decl_a = package.createUnitDecl("Same");
+    auto decl_b = package.createUnitDecl("Same");
+    CHECK_NE(decl_a, decl_b);
+
+    auto type_a = package.unitType(decl_a);
+    auto type_b = package.unitType(decl_b);
+    CHECK_NE(type_a, type_b);
+}
+
+TEST_CASE("procedural-only packages retain Step 2's exact canonical type numbering") {
+    auto sample = makeSample();
+    CHECK_EQ(sample.package.types().size(), 2);
+    CHECK_EQ(sample.package.voidType(), TypeId{0});
+    CHECK_EQ(sample.package.int64Type(), TypeId{1});
+}
+
+TEST_CASE("field declarations are appended to their owning unit in call order") {
+    Package package;
+    auto unit_decl = package.createUnitDecl("OneByte");
+    auto uint8 = package.uint8Type();
+    auto field_a = package.createFieldDecl(unit_decl, "a", uint8);
+    auto field_b = package.createFieldDecl(unit_decl, "b", uint8);
+
+    CHECK_EQ(package.typeDecl(unit_decl).fields, std::vector<DeclId>{field_a, field_b});
+    CHECK_EQ(package.declaration(field_a).owner, unit_decl);
+    CHECK_EQ(package.declaration(field_b).owner, unit_decl);
+}
+
+TEST_CASE("verifier rejects an invalid type declaration on a unit type without asserting") {
+    Package package;
+    // Deliberately malformed: no declared unit backs this type ID's declaration.
+    auto unit_decl_placeholder = TypeDeclId{999};
+    package.unitType(unit_decl_placeholder);
+
+    auto diags = verify(package);
+    CHECK(hasDiagnostic(diags, diag::TypeMissingDeclaration));
+}
+
+TEST_CASE("verifier rejects an invalid tuple element type without asserting") {
+    Package package;
+    package.tupleType({TypeId{999}});
+
+    auto diags = verify(package);
+    CHECK(hasDiagnostic(diags, diag::TypeInvalidTypeArgument));
+}
+
+TEST_CASE("verifier rejects a field with an invalid owner or type without asserting") {
+    Package package;
+    auto unit_decl = package.createUnitDecl("OneByte");
+    package.createFieldDecl(unit_decl, "value", TypeId{999});
+
+    auto diags = verify(package);
+    CHECK(hasDiagnostic(diags, diag::InvalidFieldType));
+}
+
 TEST_SUITE_END();

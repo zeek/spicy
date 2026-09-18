@@ -75,6 +75,29 @@ std::string renderEntity(const Package& package, const DiagnosticEntity& entity)
         return fmt("instruction %%%u", id->index);
     }
 
+    if ( const auto* id = std::get_if<TypeId>(&entity) )
+        return fmt("type %%%u \"%s\"", id->index, typeName(package, *id));
+
+    if ( const auto* id = std::get_if<TypeDeclId>(&entity) ) {
+        if ( package.isValid(*id) ) {
+            const auto& decl = package.typeDecl(*id);
+            if ( ! decl.name.empty() )
+                return fmt("unit %%%u \"%s\"", id->index, decl.name);
+            return fmt("unit %%%u", id->index);
+        }
+        return fmt("unit %%%u (invalid)", id->index);
+    }
+
+    if ( const auto* id = std::get_if<DeclId>(&entity) ) {
+        if ( package.isValid(*id) ) {
+            const auto& field = package.declaration(*id);
+            if ( ! field.name.empty() )
+                return fmt("field %%%u \"%s\"", id->index, field.name);
+            return fmt("field %%%u", id->index);
+        }
+        return fmt("field %%%u (invalid)", id->index);
+    }
+
     return "";
 }
 

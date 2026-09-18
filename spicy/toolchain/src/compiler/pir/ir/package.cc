@@ -12,6 +12,60 @@ Package::Package() {
     _int64_type = _types.add(Type{.kind = TypeKind::Int64});
 }
 
+TypeId Package::uint8Type() {
+    if ( ! _uint8_type.isSet() )
+        _uint8_type = _types.add(Type{.kind = TypeKind::UInt8});
+    return _uint8_type;
+}
+
+TypeId Package::parserStateType() {
+    if ( ! _parser_state_type.isSet() )
+        _parser_state_type = _types.add(Type{.kind = TypeKind::ParserState});
+    return _parser_state_type;
+}
+
+TypeId Package::unitType(TypeDeclId decl) {
+    for ( size_t i = 0; i < _types.size(); ++i ) {
+        auto id = TypeId{static_cast<uint32_t>(i)};
+        const auto& t = _types.get(id);
+        if ( t.kind == TypeKind::Unit && t.declaration == decl )
+            return id;
+    }
+
+    return _types.add(Type{.kind = TypeKind::Unit, .declaration = decl});
+}
+
+TypeId Package::tupleType(std::vector<TypeId> elements) {
+    for ( size_t i = 0; i < _types.size(); ++i ) {
+        auto id = TypeId{static_cast<uint32_t>(i)};
+        const auto& t = _types.get(id);
+        if ( t.kind == TypeKind::Tuple && t.type_arguments == elements )
+            return id;
+    }
+
+    return _types.add(Type{.kind = TypeKind::Tuple, .type_arguments = std::move(elements)});
+}
+
+TypeDeclId Package::createUnitDecl(std::string name, SourceSpanId span) {
+    return _type_decls.add(TypeDecl{.kind = TypeDeclKind::Unit, .name = std::move(name), .span = span});
+}
+
+DeclId Package::createFieldDecl(TypeDeclId unit, std::string name, TypeId type, SourceSpanId span) {
+    auto id = _declarations.add(Declaration{
+        .kind = DeclKind::Field,
+        .owner = unit,
+        .name = std::move(name),
+        .type = type,
+        .span = span,
+    });
+    _type_decls.get(unit).fields.push_back(id);
+    return id;
+}
+
+void Package::addParserRoot(TypeDeclId unit, FunctionId function) {
+    _parser_roots.push_back(ParserRoot{.unit = unit, .function = function});
+}
+
 FunctionId Package::createFunction(std::string name, TypeId result_type, SourceSpanId span) {
     auto root_region = createRegion();
     return _functions.add(Function{
