@@ -61,8 +61,8 @@ bool foldConstants(Package& package, FunctionId function) {
             if ( inst.opcode != Opcode::Add )
                 continue;
 
-            auto schema = lookupSchema(inst.opcode);
-            if ( ! schema || inst.args.size() != schema->operand_count )
+            auto* schema = schemaFor(inst.opcode);
+            if ( ! schema || inst.args.size() != schema->operandCount() )
                 continue;
 
             auto lhs = constantValue(package, inst.args[0]);
