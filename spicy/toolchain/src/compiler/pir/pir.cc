@@ -17,13 +17,13 @@ using hilti::util::fmt;
 pir::BuildResult pir::build(const hilti::ASTContext& ctx) {
     hilti::util::timing::Collector _("spicy/compiler/pir/build");
 
-    auto roots = discoverRoots(ctx);
-    HILTI_DEBUG(logging::debug::PIR, fmt("found %d root(s)", roots.size()));
+    auto discovery = discoverRoots(ctx);
+    HILTI_DEBUG(logging::debug::PIR, fmt("found %d root(s)", discovery.roots.size()));
 
     ir::Package package;
     {
         hilti::util::timing::Collector _("spicy/compiler/pir/build/lower");
-        if ( auto feature = lowerRoots(roots, package) )
+        if ( auto feature = lowerRoots(discovery, package) )
             return BuildOutcome(Unsupported{{*feature}});
     }
 

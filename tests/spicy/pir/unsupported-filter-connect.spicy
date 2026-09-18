@@ -1,0 +1,21 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: Tests that a public unit is reported precisely once anything in the module connects a
+# filter to it, even when the connecting code is a private function rather than a hook on the
+# unit itself, since `mayHaveFilter()` is set by the resolver from the whole AST rather than from
+# the unit's own item list.
+
+module Test;
+
+public type OneByte = unit {
+    value: uint8;
+};
+
+type MyFilter = unit {
+    %filter;
+};
+
+function connect(inout u: OneByte) {
+    u.connect_filter(new MyFilter);
+}

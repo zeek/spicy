@@ -1,0 +1,16 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: Tests that a unit targeted by an external (module-level) hook is reported precisely,
+# even though the hook is not a child of the unit's own items and so is invisible to a lowerer
+# that only inspects `unit->items()`.
+
+module Test;
+
+public type OneByte = unit {
+    value: uint8;
+};
+
+on OneByte::%init {
+    print "hi";
+}
