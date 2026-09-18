@@ -14,7 +14,7 @@ enum class Opcode {
     Return,
 };
 
-enum class TypeKind { Void, Int64 };
+enum class TypeKind { Void, Int64, UInt8, ParserState, Unit, Tuple };
 
 enum class TypeConstraintKind {
     Any,
