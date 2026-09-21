@@ -13,7 +13,6 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
-import subprocess
 import sys
 
 sys.path.insert(0, os.path.abspath("scripts"))
@@ -79,9 +78,3 @@ linkcheck_ignore = [
     # Certificate potentially cannot be validated.
     r"https://www.icir.org/hilti",
 ]
-
-read_the_docs_build = os.environ.get("READTHEDOCS", None) == "True"
-if read_the_docs_build:
-    # Generate Doxygen output if we are building in readthedocs. Outside of
-    # readthedocs this is done by `docs/Makefile`.
-    subprocess.run(["doxygen"], shell=True)

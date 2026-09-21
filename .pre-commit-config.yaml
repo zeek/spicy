@@ -13,13 +13,6 @@ repos:
     types: [text]
     exclude: '^tests|NOTES|README|autogen|^(CHANGES|VERSION|scripts/ninja-build-stats|\.gitmodules|\.paths|.*\.(decl|json|rst|t2d|txt))$'
 
-  - id: autogen-docs
-    name: Check that generated documentation is up-to-date
-    entry: ./doc/scripts/autogen-docs
-    language: script
-    pass_filenames: false
-    stages: ["pre-commit"]
-
   - id: stray-baselines
     name: Check for stray BTest baselines
     entry: ./tests/Scripts/stray_baselines.py
@@ -42,7 +35,7 @@ repos:
   - id: trailing-whitespace
     exclude: '^tests/Baseline'
   - id: end-of-file-fixer
-    exclude: '^tests/Baseline|^doc/autogen|^doc/_static'
+    exclude: '^tests/Baseline|^doc/_static'
   - id: check-yaml
     stages: ["pre-commit"]
   - id: check-added-large-files
@@ -109,4 +102,4 @@ repos:
   - id: shfmt
     args: ["-w", "-i", "4", "-ci"]
 
-exclude: 3rdparty/|doc/(autogen|.*examples)/|/Baseline/|(\.svg$)|(\.dat$)
+exclude: 3rdparty/|doc/.*examples/|/Baseline/|(\.svg$)|(\.dat$)

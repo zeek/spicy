@@ -57,6 +57,7 @@ jobs:
           run: |
             ./ci/run-ci -b build -j "$NPROCS" configure debug --cxx-compiler clang++
             ./ci/run-ci -b build -j "$NPROCS" build
+            ./doc/scripts/autogen-docs
             ./ci/run-ci -b build -j "$NPROCS" test-build
             ./ci/run-ci -b build -j "$NPROCS" install
             ninja -C build package
@@ -296,6 +297,7 @@ jobs:
           ./spicy*.rpm
           build/spicy*.tar.gz
           build/ci
+          doc/autogen
           test/artifacts
         if-no-files-found: ignore
 
@@ -391,3 +393,37 @@ jobs:
         with:
           persist-credentials: false
       - uses: j178/prek-action@4e14d07f9231acabce116ccfca13b13dd9755ece # v3.0.0
+
+  docs:
+    needs: linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.2
+        with:
+          name: clang-ubuntu-debug-artifacts
+          path: .
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends doxygen
+          pipx install uv
+          cd doc && uv sync
+
+      - name: Build documentation
+        run: |
+          cd doc
+          make doxygen
+          uv run make BUILDDIR="$PWD/../build" DESTDIR="$PWD/../build/doc-output" sphinx
+
+      - name: Upload to ReadTheDocs
+        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: readthedocs/upload-action@f1f5bac5fc97073927100367d8a5bb22587e1e16 # main
+        with:
+          token: ${{ secrets.READTHEDOCS_TOKEN }}
+          project-slug: 'spicy'
+          html: 'build/doc-output/html'
