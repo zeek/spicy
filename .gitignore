@@ -5,6 +5,7 @@ tmp
 *.pyc
 .##*
 compile_commands.json
+doc/autogen/
 .clangd
 .cache
 *.swp

@@ -165,9 +165,6 @@ function run_build {
     # in `.cirrus.yml` so that (1) we align with number of CPUs, and (2) we
     # do not trigger OOM kills in the Docker environments.
     (cd "${build}" && ninja -j "${jobs}" all) || exit 1
-
-    log_stage "Building docs ..."
-    (cd "${root}"/doc && make BUILDDIR="${build}" DESTDIR="${artifacts}"/doc doxygen html) || exit 1
 }
 
 function run_install {
