@@ -195,6 +195,19 @@ public:
     declaration::Module* newModule(Builder* builder, ID id, const hilti::rt::filesystem::path& process_extension);
 
     /**
+     * Adds an already fully-built, standalone module to the AST. Unlike `newModule()`, this
+     * accepts a module that a caller constructed independently (e.g., programmatically through a
+     * `Builder`, not by parsing or importing source code) with all of its declarations already in
+     * place. `module` must not yet have a parent; internal identity of its nodes (such as a
+     * struct-valued type shared by more than one of its top-level declarations) is preserved, not
+     * copied.
+     *
+     * @param module the standalone module to add; must not already be part of any AST
+     * @return the module's UID, as also returned by `module->uid()`
+     */
+    declaration::module::UID addModule(declaration::Module* module) { return _addModuleToAST(module); }
+
+    /**
      * Retrieves a module node from the AST given its UID. Returns null if no
      * such module exists.
      *

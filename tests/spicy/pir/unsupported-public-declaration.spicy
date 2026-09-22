@@ -1,0 +1,14 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: Tests that public declarations not represented by PIR keep the compilation on the
+# legacy route even when the module also has a supported parser root.
+
+module Test;
+
+public type Kind = enum { One };
+public const answer = 42;
+
+public type OneByte = unit {
+    value: uint8;
+};

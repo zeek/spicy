@@ -100,7 +100,7 @@ TEST_CASE("a package with no parser root is unsupported") {
     CHECK_FALSE(checkCoverage(package).empty());
 }
 
-TEST_CASE("a package with a Step 2 procedural function alongside a parser root is unsupported as a whole") {
+TEST_CASE("a package with a procedural function alongside a parser root is unsupported as a whole") {
     auto sample = makeOneByte();
     sample.package.createFunction("procedural", sample.package.voidType());
 

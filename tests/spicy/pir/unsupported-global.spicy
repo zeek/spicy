@@ -1,0 +1,13 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: Tests that a global initializer prevents selection of the PIR-only route, so the
+# legacy generator retains the module initialization alongside the supported parser root.
+
+module Test;
+
+global initialized = 42;
+
+public type OneByte = unit {
+    value: uint8;
+};

@@ -44,4 +44,4 @@ function %0 "" (parser.state) -> unit<@%0 "OneByte"> [parser, unit=@%0 "OneByte"
       %6: parser.finish %3, %5 : void
 parser root: unit %0 -> function %0
 
-[debug/spicy-pir] PIR built
+[debug/spicy-pir] attached PIR-produced HILTI module
