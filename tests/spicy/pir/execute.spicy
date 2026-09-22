@@ -1,0 +1,84 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -P "" -o Foo.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: Compiles the smallest useful parser root through the actual experimental PIR path
+# (construct PIR, verify, fold constants, verify again, lower to a synthetic HILTI module, run the
+# normal HILTI resolver/validator/optimizer/code generator) and calls the generated external
+# HILTI function through its C++ resumable ABI, exercising all four outcomes of
+# `parser.read_integer`: suspend-and-resume on an open empty input, successful publication once a
+# byte arrives, `UnexpectedEod` on a frozen empty input, and `Gap` on a declared one-byte gap.
+
+module Test;
+
+public type OneByte = unit {
+    value: uint8;
+};
+
+@TEST-START-FILE driver.cc
+
+#include <iostream>
+
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+#include "Foo.h"
+
+using ParseResult_0 = hlt_internal::_r__spicy_pir_backend::ParseResult_0;
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    // An open empty input suspends without consuming input or publishing a field; appending one
+    // byte and resuming succeeds, publishes that byte, and advances the logical cursor by one.
+    {
+        hilti::rt::ValueReference<hilti::rt::Stream> data;
+        auto r = hlt::_r__spicy_pir_backend::parse_root_0(data, {});
+        std::cout << "open input: " << (r ? "done" : "suspended") << std::endl;
+
+        data->append("*"_b); // 0x2a == 42
+        r.resume();
+
+        auto result = r.get<ParseResult_0>();
+        std::cout << "success: kind=" << (result.kind == hlt::_r__spicy_pir_backend::OutcomeKind::Success ? "success" : "other")
+                   << " unit=" << (result.unit ? "present" : "absent")
+                   << " value=" << (result.unit ? static_cast<int>((*result.unit)->field_0) : -1)
+                   << " cursor=" << result.cursor.offset() << std::endl;
+    }
+
+    // Freezing an empty input completes with `UnexpectedEod`.
+    {
+        hilti::rt::ValueReference<hilti::rt::Stream> data;
+        data->freeze();
+        auto r = hlt::_r__spicy_pir_backend::parse_root_0(data, {});
+        auto result = r.get<ParseResult_0>();
+        std::cout << "frozen empty: "
+                   << (result.kind == hlt::_r__spicy_pir_backend::OutcomeKind::UnexpectedEod ? "unexpected-eod"
+                                                                                             : "other")
+                   << " unit=" << (result.unit ? "present" : "absent")
+                   << " cursor=" << result.cursor.offset() << std::endl;
+    }
+
+    // A gap at the cursor completes with `Gap` carrying the gap's logical offset and length.
+    {
+        hilti::rt::ValueReference<hilti::rt::Stream> data;
+        data->append(nullptr, 1);
+        data->freeze();
+        auto r = hlt::_r__spicy_pir_backend::parse_root_0(data, {});
+        auto result = r.get<ParseResult_0>();
+        std::cout << "gap: kind=" << (result.kind == hlt::_r__spicy_pir_backend::OutcomeKind::Gap ? "gap" : "other")
+                   << " unit=" << (result.unit ? "present" : "absent")
+                   << " offset=" << result.gap_offset << " length=" << result.gap_length
+                   << " cursor=" << result.cursor.offset() << std::endl;
+    }
+
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    hilti::rt::init();
+    spicy::rt::init();
+    hilti_main();
+    hilti::rt::done();
+    return 0;
+}
+
+@TEST-END-FILE

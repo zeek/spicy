@@ -1,0 +1,13 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: Tests that a public constant not represented by PIR keeps the compilation on the
+# legacy route even when the module also has a supported parser root.
+
+module Test;
+
+public const answer = 42;
+
+public type OneByte = unit {
+    value: uint8;
+};

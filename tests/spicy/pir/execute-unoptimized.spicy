@@ -1,0 +1,76 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -P "" -o Foo.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-DOC: The same fixture as `execute.spicy`, but with HILTI-side optimizations disabled
+# (`-g`), to confirm the generated parser's observable behavior does not depend on them.
+
+module Test;
+
+public type OneByte = unit {
+    value: uint8;
+};
+
+@TEST-START-FILE driver.cc
+
+#include <iostream>
+
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+#include "Foo.h"
+
+using ParseResult_0 = hlt_internal::_r__spicy_pir_backend::ParseResult_0;
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    {
+        hilti::rt::ValueReference<hilti::rt::Stream> data;
+        auto r = hlt::_r__spicy_pir_backend::parse_root_0(data, {});
+        std::cout << "open input: " << (r ? "done" : "suspended") << std::endl;
+
+        data->append("*"_b); // 0x2a == 42
+        r.resume();
+
+        auto result = r.get<ParseResult_0>();
+        std::cout << "success: kind=" << (result.kind == hlt::_r__spicy_pir_backend::OutcomeKind::Success ? "success" : "other")
+                   << " unit=" << (result.unit ? "present" : "absent")
+                   << " value=" << (result.unit ? static_cast<int>((*result.unit)->field_0) : -1)
+                   << " cursor=" << result.cursor.offset() << std::endl;
+    }
+
+    {
+        hilti::rt::ValueReference<hilti::rt::Stream> data;
+        data->freeze();
+        auto r = hlt::_r__spicy_pir_backend::parse_root_0(data, {});
+        auto result = r.get<ParseResult_0>();
+        std::cout << "frozen empty: "
+                   << (result.kind == hlt::_r__spicy_pir_backend::OutcomeKind::UnexpectedEod ? "unexpected-eod"
+                                                                                             : "other")
+                   << " unit=" << (result.unit ? "present" : "absent")
+                   << " cursor=" << result.cursor.offset() << std::endl;
+    }
+
+    {
+        hilti::rt::ValueReference<hilti::rt::Stream> data;
+        data->append(nullptr, 1);
+        data->freeze();
+        auto r = hlt::_r__spicy_pir_backend::parse_root_0(data, {});
+        auto result = r.get<ParseResult_0>();
+        std::cout << "gap: kind=" << (result.kind == hlt::_r__spicy_pir_backend::OutcomeKind::Gap ? "gap" : "other")
+                   << " unit=" << (result.unit ? "present" : "absent")
+                   << " offset=" << result.gap_offset << " length=" << result.gap_length
+                   << " cursor=" << result.cursor.offset() << std::endl;
+    }
+
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    hilti::rt::init();
+    spicy::rt::init();
+    hilti_main();
+    hilti::rt::done();
+    return 0;
+}
+
+@TEST-END-FILE

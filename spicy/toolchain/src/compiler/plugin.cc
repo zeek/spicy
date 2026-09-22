@@ -3,12 +3,14 @@
 #include <variant>
 
 #include <hilti/ast/builder/builder.h>
+#include <hilti/compiler/driver.h>
 
 #include <spicy/ast/builder/builder.h>
 #include <spicy/autogen/config.h>
 #include <spicy/compiler/detail/codegen/codegen.h>
 #include <spicy/compiler/detail/coercer.h>
 #include <spicy/compiler/detail/parser/driver.h>
+#include <spicy/compiler/detail/pir/backends/hilti/backend.h>
 #include <spicy/compiler/detail/pir/pir.h>
 #include <spicy/compiler/detail/plugin.h>
 #include <spicy/compiler/detail/printer.h>
@@ -102,7 +104,7 @@ hilti::Plugin spicy::detail::createSpicyPlugin() {
             assert(dynamic_cast<spicy::Builder*>(builder));
             auto* spicy_builder = static_cast<spicy::Builder*>(builder);
 
-            // Read-only side path; the code generator below remains authoritative.
+            // The experimental route either replaces the complete source compilation or falls back intact.
             if ( builder->options().getAuxOption<bool>("spicy.experimental_pir", false) ) {
                 auto result = pir::build(*spicy_builder->context());
                 if ( ! result ) {
@@ -124,8 +126,69 @@ hilti::Plugin spicy::detail::createSpicyPlugin() {
 
                     HILTI_DEBUG(spicy::logging::debug::PIR, "falling back to the standard code generator");
                 }
-                else
-                    HILTI_DEBUG(spicy::logging::debug::PIR, "PIR built");
+                else {
+                    // A successful PIR build; try the HILTI backend before deciding whether the
+                    // legacy generator runs at all for this compilation.
+                    const auto& package = std::get<pir::Success>(*result).package;
+                    auto lowering = pir::backend::hilti::lower(*spicy_builder, package);
+
+                    if ( auto* pir_module = std::get_if<hilti::declaration::Module*>(&lowering) ) {
+                        // Attach atomically: `lower()` already built the complete module,
+                        // including internal identity shared across its declarations (such as
+                        // enum labels referenced from more than one function), before returning.
+                        // `addModule()` registers that same module object by reference, so
+                        // nothing gets copied or split apart on attachment. The synthetic module
+                        // uses HILTI's own `.hlt` extensions, so it bypasses this Spicy plugin's
+                        // code generator and is instead compiled by the ordinary HILTI
+                        // resolver/validator/optimizer/code generator that always runs over the
+                        // whole AST after this hook returns.
+                        auto pir_uid = spicy_builder->context()->addModule(*pir_module);
+
+                        // `addModule()` only registers the module with the AST; the driver keeps
+                        // its own separate record of which modules require compilation (normally
+                        // populated by parsing/importing a source file, neither of which ran for
+                        // this programmatically-built module) and otherwise never generates C++
+                        // for it. `driver()` is valid here because this hook runs while
+                        // `processAST()` is executing. Failing to register is a hard failure
+                        // rather than a reason to continue with a module attached to the AST but
+                        // silently never compiled.
+                        auto* driver = spicy_builder->context()->driver();
+                        if ( ! driver ) {
+                            hilti::logger().error("PIR: no driver available to register the HILTI backend module");
+                            return false;
+                        }
+
+                        if ( auto rc = driver->addInput(pir_uid); ! rc ) {
+                            hilti::logger().error(
+                                hilti::util::fmt("PIR: failed to register HILTI backend module: %s", rc.error()));
+                            return false;
+                        }
+
+                        // The original Spicy modules intentionally get no compiled
+                        // implementation on this route: the PIR-produced module already
+                        // reimplements their one parser root standalone. Marking them
+                        // `%skip-implementation` tells the driver's later output/link/JIT stages
+                        // not to expect C++ code for them, matching a source module that
+                        // legitimately has none.
+                        for ( auto* decl : m->children() )
+                            if ( auto* module = decl->tryAs<hilti::declaration::Module>();
+                                 module && module->uid().process_extension == ".spicy" )
+                                module->setSkipImplementation(true);
+
+                        HILTI_DEBUG(spicy::logging::debug::PIR, "attached PIR-produced HILTI module");
+
+                        // The complete compilation uses only the PIR-produced module; the legacy
+                        // generator must not also run over the original Spicy modules.
+                        return true;
+                    }
+
+                    const auto& backend_unsupported = std::get<pir::Unsupported>(lowering);
+                    for ( const auto& f : backend_unsupported.features )
+                        HILTI_DEBUG(spicy::logging::debug::PIR,
+                                    hilti::util::fmt("HILTI backend unsupported: %s (%s)", f.feature, f.reason));
+
+                    HILTI_DEBUG(spicy::logging::debug::PIR, "falling back to the standard code generator");
+                }
             }
 
             return CodeGen(spicy_builder).compileAST(m);

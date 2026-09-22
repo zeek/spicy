@@ -24,4 +24,5 @@ function %0 "answer" -> int64:
       %2 = core.constant -42 : int64
       %3: core.return %2 : void
 
-[debug/spicy-pir] PIR built
+[debug/spicy-pir] HILTI backend unsupported: package (no parser root)
+[debug/spicy-pir] falling back to the standard code generator

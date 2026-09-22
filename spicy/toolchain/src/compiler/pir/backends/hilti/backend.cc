@@ -12,6 +12,18 @@ namespace spicy::detail::pir::backend::hilti {
 
 namespace {
 
+::hilti::Meta metaFor(const ir::Package& package, ir::SourceSpanId id) {
+    if ( ! package.sourceManager().isValid(id) )
+        return {};
+
+    const auto& span = package.sourceManager().span(id);
+    std::string file;
+    if ( package.sourceManager().isValid(span.file) )
+        file = package.sourceManager().file(span.file).diagnostic_path;
+
+    return ::hilti::Meta(::hilti::Location(file, span.begin_line, span.end_line, span.begin_column, span.end_column));
+}
+
 // Adds `stmt` to the block `b` is currently building. `hilti::Builder::addXxx()` helpers all do
 // exactly this through `block()->_add(...)`; this is the same call for statement kinds those
 // helpers don't cover (`if`, `try`).
@@ -41,14 +53,18 @@ RootNames namesFor(const ir::Package& package, const ir::ParserRoot& root, size_
 }
 
 /** Builds one root's `type Unit_<N> = struct { ... };` declaration. */
-::hilti::Declaration* lowerUnitType(::hilti::Builder& b, const RootNames& names) {
+::hilti::Declaration* lowerUnitType(::hilti::Builder& b,
+                                    const RootNames& names,
+                                    const ::hilti::Meta& unit_meta,
+                                    const ::hilti::Meta& field_meta) {
     auto* field_type = b.qualifiedType(b.typeUnsignedInteger(8), ::hilti::Constness::Mutable);
     auto* field =
-        b.declarationField(::hilti::ID(names.field), field_type, static_cast<::hilti::AttributeSet*>(nullptr));
+        b.declarationField(::hilti::ID(names.field), field_type, static_cast<::hilti::AttributeSet*>(nullptr), field_meta);
     auto* struct_type = b.typeStruct(::hilti::Declarations{field});
     return b.declarationType(::hilti::ID(names.unit_type),
                              b.qualifiedType(struct_type, ::hilti::Constness::Const),
-                             ::hilti::declaration::Linkage::Public);
+                             ::hilti::declaration::Linkage::Public,
+                             unit_meta);
 }
 
 /** Builds one root's `type ParseResult_<i> = struct { ... };` declaration. */
@@ -88,7 +104,8 @@ RootNames namesFor(const ir::Package& package, const ir::ParserRoot& root, size_
                                 ::hilti::Expression* unit, // nullptr => absent (`Null`)
                                 ::hilti::Expression* cursor,
                                 ::hilti::Expression* gap_offset,
-                                ::hilti::Expression* gap_length) {
+                                ::hilti::Expression* gap_length,
+                                const ::hilti::Meta& meta) {
     ::hilti::ctor::struct_::Fields fields = {
         b.ctorStructField(::hilti::ID("kind"), b.expression(b.ctorEnum(kind))),
         b.ctorStructField(::hilti::ID("unit"), unit ? unit : b.null()),
@@ -96,7 +113,9 @@ RootNames namesFor(const ir::Package& package, const ir::ParserRoot& root, size_
         b.ctorStructField(::hilti::ID("gap_offset"), gap_offset),
         b.ctorStructField(::hilti::ID("gap_length"), gap_length),
     };
-    return b.struct_(fields, b.qualifiedType(b.typeName(::hilti::ID(names.result_type)), ::hilti::Constness::Mutable));
+    return b.struct_(fields,
+                     b.qualifiedType(b.typeName(::hilti::ID(names.result_type)), ::hilti::Constness::Mutable),
+                     meta);
 }
 
 /**
@@ -105,21 +124,31 @@ RootNames namesFor(const ir::Package& package, const ir::ParserRoot& root, size_
  * shape, so this walks it directly rather than dispatching generically per opcode.
  */
 ::hilti::Declaration* lowerFunction(::hilti::Builder& b,
+                                    const ir::Package& package,
+                                    const ir::ParserRoot& root,
                                     const RootNames& names,
                                     ::hilti::type::enum_::Label* success,
                                     ::hilti::type::enum_::Label* unexpected_eod,
                                     ::hilti::type::enum_::Label* gap) {
+    const auto& unit = package.typeDecl(root.unit);
+    const auto& block = package.block(package.region(package.function(root.function).root_region).blocks[0]);
+    const auto unit_meta = metaFor(package, unit.span);
+    const auto read_meta = metaFor(package, package.inst(block.insts[2]).span);
+    const auto publish_meta = metaFor(package, package.inst(block.insts[5]).span);
+    const auto finish_meta = metaFor(package, package.inst(block.insts[6]).span);
     auto* view_type = b.qualifiedType(b.typeStreamView(), ::hilti::Constness::Mutable);
 
     auto* data_param = b.parameter(::hilti::ID("data"),
                                    b.typeValueReference(b.qualifiedType(b.typeStream(), ::hilti::Constness::Mutable)),
-                                   ::hilti::parameter::Kind::InOut);
+                                   ::hilti::parameter::Kind::InOut,
+                                   unit_meta);
     auto* cursor_param = b.parameter(::hilti::ID("initial_cursor"),
                                      b.typeOptional(view_type),
                                      b.optional(view_type),
-                                     ::hilti::parameter::Kind::In);
+                                     ::hilti::parameter::Kind::In,
+                                     unit_meta);
 
-    auto* body = b.statementBlock();
+    auto* body = b.statementBlock(unit_meta);
     ::hilti::Builder fb(b.context(), body);
 
     // `local view<stream> cursor = initial_cursor ? *initial_cursor : cast<view<stream>>(*data);`
@@ -127,15 +156,28 @@ RootNames namesFor(const ir::Package& package, const ir::ParserRoot& root, size_
                 view_type,
                 fb.ternary(fb.id(::hilti::ID("initial_cursor")),
                            fb.deref(fb.id(::hilti::ID("initial_cursor"))),
-                           fb.cast(fb.deref(fb.id(::hilti::ID("data"))), view_type)));
+                           fb.cast(fb.deref(fb.id(::hilti::ID("data"))), view_type),
+                           read_meta),
+                read_meta);
 
     // `local value_ref<Unit_i> unit_ = new Unit_i();`
-    fb.addLocal(::hilti::ID("unit_"), fb.new_(fb.typeName(::hilti::ID(names.unit_type))));
+    fb.addLocal(::hilti::ID("unit_"), fb.new_(fb.typeName(::hilti::ID(names.unit_type)), unit_meta), unit_meta);
 
-    // `if ( ! spicy_rt::waitForInputOrEod(data, cursor, 1, Null) ) return <UnexpectedEod>;`
+    // `local strong_ref<Filters> filters_;` -- a null filter set; the `inout` parameters below
+    // require an addressable local, not a literal `Null`.
+    fb.addLocal(::hilti::ID("filters_"),
+                fb.strongReference(
+                    fb.qualifiedType(fb.typeName(::hilti::ID("spicy_rt::Filters")), ::hilti::Constness::Mutable)),
+                read_meta);
+
+    // `if ( ! spicy_rt::waitForInputOrEod(data, cursor, 1, filters_) ) return <UnexpectedEod>;`
     auto* wait_call = fb.call(::hilti::ID("spicy_rt::waitForInputOrEod"),
-                              {fb.id(::hilti::ID("data")), fb.id(::hilti::ID("cursor")), fb.integer(1U), fb.null()});
-    auto* eod_block = b.statementBlock();
+                              {fb.id(::hilti::ID("data")),
+                               fb.id(::hilti::ID("cursor")),
+                               fb.integer(1U),
+                               fb.id(::hilti::ID("filters_"))},
+                              read_meta);
+    auto* eod_block = b.statementBlock(read_meta);
     ::hilti::Builder eod_builder(b.context(), eod_block);
     eod_builder.addReturn(makeResult(eod_builder,
                                      names,
@@ -143,45 +185,57 @@ RootNames namesFor(const ir::Package& package, const ir::ParserRoot& root, size_
                                      nullptr,
                                      fb.id(::hilti::ID("cursor")),
                                      eod_builder.integer(0U),
-                                     eod_builder.integer(0U)));
-    addStatement(fb, b.statementIf(fb.not_(wait_call), eod_block, nullptr));
+                                     eod_builder.integer(0U),
+                                     read_meta),
+                          read_meta);
+    addStatement(fb, b.statementIf(fb.not_(wait_call), eod_block, nullptr, read_meta));
 
-    fb.addLocal(::hilti::ID("value"), b.qualifiedType(b.typeUnsignedInteger(8), ::hilti::Constness::Mutable));
-    fb.addLocal(::hilti::ID("next_cursor"), view_type);
+    fb.addLocal(::hilti::ID("value"), b.qualifiedType(b.typeUnsignedInteger(8), ::hilti::Constness::Mutable), read_meta);
+    fb.addLocal(::hilti::ID("next_cursor"), view_type, read_meta);
 
     // `try { value = *begin(cursor); next_cursor = cursor.advance(1); } catch ( MissingData ) { ... }`
-    auto* try_body = b.statementBlock();
+    auto* try_body = b.statementBlock(read_meta);
     ::hilti::Builder try_builder(b.context(), try_body);
+    auto* byte_type = b.qualifiedType(b.typeUnsignedInteger(8), ::hilti::Constness::Mutable);
     try_builder.addAssign(try_builder.id(::hilti::ID("value")),
-                          try_builder.deref(try_builder.begin(try_builder.id(::hilti::ID("cursor")))));
+                          try_builder.cast(try_builder.deref(try_builder.begin(try_builder.id(::hilti::ID("cursor")))),
+                                           byte_type),
+                          read_meta);
     try_builder.addAssign(try_builder.id(::hilti::ID("next_cursor")),
                           try_builder.memberCall(try_builder.id(::hilti::ID("cursor")),
                                                  "advance",
-                                                 {try_builder.integer(1U)}));
+                                                 {try_builder.integer(1U)}),
+                          read_meta);
 
-    auto* catch_body = b.statementBlock();
+    auto* catch_body = b.statementBlock(read_meta);
     ::hilti::Builder catch_builder(b.context(), catch_body);
     catch_builder.addLocal(::hilti::ID("after_gap"),
                            catch_builder.memberCall(catch_builder.id(::hilti::ID("cursor")),
                                                     "advance_to_next_data",
-                                                    {}));
-    auto* gap_offset_expr = catch_builder.memberCall(catch_builder.id(::hilti::ID("cursor")), "offset", {});
-    auto* gap_end_expr = catch_builder.memberCall(catch_builder.id(::hilti::ID("after_gap")), "offset", {});
+                                                    ::hilti::Expressions{},
+                                                    read_meta),
+                           read_meta);
+    auto* gap_offset_expr =
+        catch_builder.memberCall(catch_builder.id(::hilti::ID("cursor")), "offset", ::hilti::Expressions{}, read_meta);
+    auto* gap_end_expr =
+        catch_builder.memberCall(catch_builder.id(::hilti::ID("after_gap")), "offset", ::hilti::Expressions{}, read_meta);
     catch_builder.addReturn(makeResult(catch_builder,
                                        names,
                                        gap,
                                        nullptr,
                                        catch_builder.id(::hilti::ID("cursor")),
                                        gap_offset_expr,
-                                       catch_builder.difference(gap_end_expr, gap_offset_expr)));
+                                       catch_builder.difference(gap_end_expr, gap_offset_expr),
+                                       read_meta),
+                            read_meta);
 
     auto* catch_param =
-        b.parameter(::hilti::ID("e"), b.typeName(::hilti::ID("MissingData")), ::hilti::parameter::Kind::In);
-    auto* catch_clause = b.statementTryCatch(catch_param, catch_body);
-    addStatement(fb, b.statementTry(try_body, ::hilti::statement::try_::Catches{catch_clause}));
+        b.parameter(::hilti::ID("e"), b.typeName(::hilti::ID("hilti::MissingData")), ::hilti::parameter::Kind::In);
+    auto* catch_clause = b.statementTryCatch(catch_param, catch_body, read_meta);
+    addStatement(fb, b.statementTry(try_body, ::hilti::statement::try_::Catches{catch_clause}, read_meta));
 
     // `unit_.field_<N> = value;`
-    fb.addAssign(fb.member(fb.id(::hilti::ID("unit_")), names.field), fb.id(::hilti::ID("value")));
+    fb.addAssign(fb.member(fb.id(::hilti::ID("unit_")), names.field), fb.id(::hilti::ID("value")), publish_meta);
 
     // `return <Success>;`
     fb.addReturn(makeResult(fb,
@@ -190,7 +244,9 @@ RootNames namesFor(const ir::Package& package, const ir::ParserRoot& root, size_
                             fb.id(::hilti::ID("unit_")),
                             fb.id(::hilti::ID("next_cursor")),
                             fb.integer(0U),
-                            fb.integer(0U)));
+                            fb.integer(0U),
+                            finish_meta),
+                 finish_meta);
 
     auto* result_type = b.qualifiedType(b.typeName(::hilti::ID(names.result_type)), ::hilti::Constness::Mutable);
     return b.function(::hilti::ID(names.function),
@@ -199,7 +255,9 @@ RootNames namesFor(const ir::Package& package, const ir::ParserRoot& root, size_
                       body,
                       ::hilti::type::function::Flavor::Function,
                       ::hilti::declaration::Linkage::Public,
-                      ::hilti::type::function::CallingConvention::Extern);
+                      ::hilti::type::function::CallingConvention::Extern,
+                      {},
+                      unit_meta);
 }
 
 } // namespace
@@ -227,9 +285,13 @@ LoweringResult lower(::hilti::Builder& builder, const ir::Package& package) {
 
     for ( size_t i = 0; i < package.parserRoots().size(); ++i ) {
         auto names = namesFor(package, package.parserRoots()[i], i);
-        decls.push_back(lowerUnitType(builder, names));
+        const auto& root = package.parserRoots()[i];
+        decls.push_back(lowerUnitType(builder,
+                                      names,
+                                      metaFor(package, package.typeDecl(root.unit).span),
+                                      metaFor(package, package.declaration(package.typeDecl(root.unit).fields[0]).span)));
         decls.push_back(lowerResultType(builder, names));
-        decls.push_back(lowerFunction(builder, names, success_label, unexpected_eod_label, gap_label));
+        decls.push_back(lowerFunction(builder, package, root, names, success_label, unexpected_eod_label, gap_label));
     }
 
     auto uid = ::hilti::declaration::module::UID(::hilti::ID("__spicy_pir_backend"), ".hlt", ".hlt");

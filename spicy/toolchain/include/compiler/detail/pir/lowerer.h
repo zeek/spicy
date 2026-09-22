@@ -24,6 +24,7 @@ namespace spicy::detail::pir {
 struct RootDiscovery {
     std::vector<hilti::Declaration*> roots;
     std::vector<hilti::ast::TypeIndex> units_with_external_hooks;
+    std::optional<UnsupportedFeature> unrepresented_content;
 };
 
 RootDiscovery discoverRoots(const hilti::ASTContext& ctx);

@@ -7,7 +7,9 @@
 #include <hilti/ast/ast-context.h>
 #include <hilti/ast/ctors/coerced.h>
 #include <hilti/ast/ctors/integer.h>
+#include <hilti/ast/declarations/constant.h>
 #include <hilti/ast/declarations/function.h>
+#include <hilti/ast/declarations/global-variable.h>
 #include <hilti/ast/declarations/module.h>
 #include <hilti/ast/declarations/type.h>
 #include <hilti/ast/expressions/ctor.h>
@@ -37,6 +39,7 @@ namespace {
 struct VisitorRoots : public visitor::PreOrder {
     std::vector<hilti::Declaration*> roots;
     std::vector<hilti::ast::TypeIndex> units_with_external_hooks;
+    std::optional<UnsupportedFeature> unrepresented_content;
 
     static bool skipsImplementation(hilti::Declaration* n) {
         auto* m = n->parent<hilti::declaration::Module>();
@@ -50,8 +53,15 @@ struct VisitorRoots : public visitor::PreOrder {
 
     void operator()(hilti::declaration::Type* n) final {
         auto* unit = n->type()->type()->tryAs<type::Unit>();
-        if ( ! unit )
+        if ( ! unit ) {
+            if ( n->isPublic() && ! skipsImplementation(n) && ! unrepresented_content )
+                unrepresented_content = UnsupportedFeature{
+                    .feature = fmt("public type '%s'", std::string(n->id())),
+                    .reason = "only parser unit types are supported yet",
+                    .location = n->meta().location(),
+                };
             return;
+        }
 
         // An alias declaration (`public type Alias = Original;`) has its own linkage, separate
         // from the original unit's. `unit->isPublic()` reflects the *original* declaration, so
@@ -68,6 +78,24 @@ struct VisitorRoots : public visitor::PreOrder {
     void operator()(spicy::declaration::UnitHook* n) final {
         if ( auto index = n->hook()->unitTypeIndex() )
             units_with_external_hooks.push_back(index);
+    }
+
+    void operator()(hilti::declaration::GlobalVariable* n) final {
+        if ( ! skipsImplementation(n) && ! unrepresented_content )
+            unrepresented_content = UnsupportedFeature{
+                .feature = "global variable",
+                .reason = "global variables and their initialization are not supported yet",
+                .location = n->meta().location(),
+            };
+    }
+
+    void operator()(hilti::declaration::Constant* n) final {
+        if ( n->isPublic() && ! skipsImplementation(n) && ! unrepresented_content )
+            unrepresented_content = UnsupportedFeature{
+                .feature = fmt("public constant '%s'", std::string(n->id())),
+                .reason = "constants are not supported yet",
+                .location = n->meta().location(),
+            };
     }
 };
 
@@ -194,9 +222,9 @@ std::optional<UnsupportedFeature> lowerFunction(hilti::declaration::Function* de
     return std::nullopt;
 }
 
-// Validates and lowers a non-alias public unit against Step 3's exact accepted subset: a single
-// plain, unsigned 8-bit integer field with no parameters, attributes, context type, or other unit
-// items. Any field/unit shape outside that subset is reported precisely and lowers nothing.
+// Validates and lowers a non-alias public unit with one plain unsigned 8-bit integer field
+// and no parameters, attributes, context type, or other unit items. Any field/unit shape
+// outside that subset is reported precisely and lowers nothing.
 std::optional<UnsupportedFeature> lowerUnit(hilti::declaration::Type* decl,
                                             const std::vector<hilti::ast::TypeIndex>& units_with_external_hooks,
                                             ir::Package& package) {
@@ -272,7 +300,7 @@ std::optional<UnsupportedFeature> lowerUnit(hilti::declaration::Type* decl,
     if ( ! parse_uint || parse_uint->width() != 8 || ! item_uint || item_uint->width() != 8 )
         return unsupported_here("only an unsigned 8-bit integer field is supported yet", field_loc);
 
-    // The accepted subset above rules out every way this slice's source language could override
+    // The accepted subset above rules out every way this source language could override
     // byte order (a field or unit `&byte-order` attribute, or a unit `%byte-order` property), so
     // the resolved default is always the ordinary network byte order.
     auto unit_span = internSpan(package, unit_loc);
@@ -312,10 +340,16 @@ RootDiscovery discoverRoots(const hilti::ASTContext& ctx) {
     auto v = VisitorRoots();
     visitor::visit(v, ctx.root(), ".spicy");
     return RootDiscovery{.roots = std::move(v.roots),
-                         .units_with_external_hooks = std::move(v.units_with_external_hooks)};
+                         .units_with_external_hooks = std::move(v.units_with_external_hooks),
+                         .unrepresented_content = std::move(v.unrepresented_content)};
 }
 
 std::optional<UnsupportedFeature> lowerRoots(const RootDiscovery& discovery, ir::Package& package) {
+    // Choosing the PIR-only route drops all original Spicy modules. Refuse that route unless
+    // discovery accounted for every declaration with compilation-time behavior.
+    if ( discovery.unrepresented_content )
+        return discovery.unrepresented_content;
+
     for ( auto* decl : discovery.roots ) {
         if ( auto* fn_decl = decl->tryAs<hilti::declaration::Function>() ) {
             if ( auto feature = lowerFunction(fn_decl, package) )

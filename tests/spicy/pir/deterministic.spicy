@@ -1,0 +1,13 @@
+# @TEST-EXEC: mkdir -p a b
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -x a/gen
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -x b/gen
+# @TEST-EXEC: diff a/gen__r__spicy_pir_backend.cc b/gen__r__spicy_pir_backend.cc
+#
+# @TEST-DOC: Two separate compilations of the same source through the experimental PIR path
+# produce byte-identical generated HILTI-backend C++ code.
+
+module Test;
+
+public type OneByte = unit {
+    value: uint8;
+};
