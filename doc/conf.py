@@ -24,7 +24,7 @@ project = "Spicy"
 copyright = "by the Zeek Project"
 author = "Zeek Project"
 
-version = open("../VERSION").readline()
+version = open("../build/VERSION").readline()
 release = "1.17.0"  # most recent release version
 
 # -- General configuration ---------------------------------------------------

@@ -297,28 +297,36 @@ set(HILTI_COMPILER_LAUNCHER "" CACHE STRING "C++ compiler launcher to use by def
 # Set up testing infrastructure.
 enable_testing()
 
-# Get project version.
-file(STRINGS ${CMAKE_CURRENT_SOURCE_DIR}/VERSION SPICY_VERSION LIMIT_COUNT 1)
+# Get project version. Prefer `git describe` output; fall back to a VERSION
+# file for release tarballs where .git is absent.
+execute_process(
+    COMMAND git -C ${CMAKE_CURRENT_SOURCE_DIR} describe --tags
+    OUTPUT_VARIABLE SPICY_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_VARIABLE ignored
+    RESULT_VARIABLE git_describe_rc)
+
+if (NOT git_describe_rc EQUAL 0)
+    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/VERSION)
+        file(STRINGS ${CMAKE_CURRENT_SOURCE_DIR}/VERSION SPICY_VERSION LIMIT_COUNT 1)
+    else ()
+        set(SPICY_VERSION "0.0.0")
+    endif ()
+endif ()
+
 set(CMAKE_PROJECT_VERSION ${SPICY_VERSION})
 
-# Get Spicy commit. If we cannot get the current commit (e.g., no .git
-# directory present for release tarballs), this will leave SPICY_COMMIT unset.
-execute_process(
-    COMMAND ${CMAKE_COMMAND} -E env GIT_DIR=${CMAKE_CURRENT_SOURCE_DIR}/.git git rev-parse --short
-            HEAD
-    OUTPUT_VARIABLE SPICY_COMMIT
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    ERROR_VARIABLE ignored)
-
-string(REGEX MATCH "([0-9]*)\.([0-9]*)\.([0-9]*).*" _ ${CMAKE_PROJECT_VERSION})
-math(EXPR SPICY_VERSION_NUMBER
-     "${CMAKE_MATCH_1} * 10000 + ${CMAKE_MATCH_2} * 100 + ${CMAKE_MATCH_3}")
-
-if (NOT "${SPICY_COMMIT}" STREQUAL "")
-    set(SPICY_VERSION_LONG "${SPICY_VERSION} (${SPICY_COMMIT})")
+string(REGEX MATCH "([0-9]+)\\.([0-9]+)\\.([0-9]+)" SPICY_VERSION_SHORT ${CMAKE_PROJECT_VERSION})
+if (SPICY_VERSION_SHORT)
+    math(EXPR SPICY_VERSION_NUMBER
+         "${CMAKE_MATCH_1} * 10000 + ${CMAKE_MATCH_2} * 100 + ${CMAKE_MATCH_3}")
 else ()
-    set(SPICY_VERSION_LONG ${SPICY_VERSION})
+    set(SPICY_VERSION_NUMBER 0)
 endif ()
+
+set(SPICY_VERSION_LONG ${SPICY_VERSION})
+
+file(WRITE "${PROJECT_BINARY_DIR}/VERSION" "${SPICY_VERSION}\n")
 
 # Add subdirectories.
 add_subdirectory(hilti)
@@ -397,21 +405,10 @@ if (SPICY_ENABLE_TESTS)
 endif ()
 
 # Packaging.
-# Check tags the HEAD commit corresponds to. If we cannot get the current
-# commit (e.g., no .git directory present for release tarballs), this will
-# leave SPICY_TAGS unset which is fine for users working from tarballs.
-execute_process(COMMAND git tag --points-at HEAD v* OUTPUT_VARIABLE SPICY_TAGS
-                ERROR_VARIABLE ignored)
-
-if ("${SPICY_TAGS}" STREQUAL "")
-    # If the HEAD commit does not correspond to a tag it is not a release. Hide
-    # the version number in packaging artifacts so we can e.g., provide stable
-    # links to the latest version.
-    set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-dev")
-else ()
-    # If the HEAD commit corresponds to a tag it is a release and we expect a
-    # version number in packaging artifacts.
+if (SPICY_VERSION MATCHES "^v?[0-9]+\\.[0-9]+\\.[0-9]+$")
     set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${CMAKE_PROJECT_VERSION}")
+else ()
+    set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-dev")
 endif ()
 
 set(CPACK_PACKAGE_CONTACT "info@zeek.org")

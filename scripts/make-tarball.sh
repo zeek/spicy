@@ -18,11 +18,12 @@ git submodule foreach --quiet 'cd $toplevel && tar rf '"${TARBALL}"' $sm_path'
 
 # Introduce a top-level `spicy` directory and compress the tarball.
 SCRATCH=$(mktemp -d)
-VERSION=$(cat VERSION)
+VERSION=$(git describe --tags --always)
 mkdir "${SCRATCH}/spicy-${VERSION}"
 (
     cd "${SCRATCH}/spicy-${VERSION}" &&
         tar xf "${TARBALL}" &&
+        echo "${VERSION}" >VERSION &&
         rm -f "${TARBALL}" &&
         cd .. &&
         tar czf "${TARBALL}.gz" "spicy-${VERSION}"

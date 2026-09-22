@@ -9,12 +9,12 @@
 
 module Foo;
 
-@if SPICY_VERSION
+@if SPICY_VERSION >= 0
 print "have spicy version";
 @endif
 
-@if SPICY_VERSION    >=    400
-print "have spicy version >= 0.4";
+@if SPICY_VERSION    >=    0
+print "have spicy version >= 0";
 @endif
 
 @if SPICY_VERSION >= 40000
