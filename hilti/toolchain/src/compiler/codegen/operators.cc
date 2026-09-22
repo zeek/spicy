@@ -231,6 +231,11 @@ struct Visitor : hilti::visitor::PreOrder {
         result = fmt("%s.sub(%s, %s)", self, args[0], args[1]);
     }
 
+    void operator()(operator_::bytes::SubOffset* n) final {
+        auto [self, args] = methodArguments(n);
+        result = fmt("%s.sub(%s)", self, args[0]);
+    }
+
     void operator()(operator_::bytes::Join* n) final {
         auto [self, args] = methodArguments(n);
         result = fmt("%s.join(%s)", self, args[0]);
@@ -763,6 +768,11 @@ struct Visitor : hilti::visitor::PreOrder {
     void operator()(operator_::stream::view::SubOffsets* n) final {
         auto [self, args] = methodArguments(n);
         result = fmt("%s.sub(%s, %s)", self, args[0], args[1]);
+    }
+
+    void operator()(operator_::stream::view::SubOffset* n) final {
+        auto [self, args] = methodArguments(n);
+        result = fmt("%s.sub(%s)", self, args[0]);
     }
 
     // Stream

@@ -189,19 +189,20 @@ constexpr Tag Strip = 917;
 constexpr Tag SubIterator = 918;
 constexpr Tag SubIterators = 919;
 constexpr Tag SubOffsets = 920;
-constexpr Tag Sum = 921;
-constexpr Tag SumAssignBytes = 922;
-constexpr Tag SumAssignStreamView = 923;
-constexpr Tag SumAssignUInt8 = 924;
-constexpr Tag ToIntAscii = 925;
-constexpr Tag ToIntBinary = 926;
-constexpr Tag ToRealAscii = 927;
-constexpr Tag ToTimeAscii = 928;
-constexpr Tag ToTimeBinary = 929;
-constexpr Tag ToUIntAscii = 930;
-constexpr Tag ToUIntBinary = 931;
-constexpr Tag Unequal = 932;
-constexpr Tag UpperCase = 933;
+constexpr Tag SubOffset = 921;
+constexpr Tag Sum = 922;
+constexpr Tag SumAssignBytes = 923;
+constexpr Tag SumAssignStreamView = 924;
+constexpr Tag SumAssignUInt8 = 925;
+constexpr Tag ToIntAscii = 926;
+constexpr Tag ToIntBinary = 927;
+constexpr Tag ToRealAscii = 928;
+constexpr Tag ToTimeAscii = 929;
+constexpr Tag ToTimeBinary = 930;
+constexpr Tag ToUIntAscii = 931;
+constexpr Tag ToUIntBinary = 932;
+constexpr Tag Unequal = 933;
+constexpr Tag UpperCase = 934;
 
 namespace iterator {
 constexpr Tag Deref = 1000;
@@ -474,8 +475,9 @@ constexpr Tag StartsWith = 3312;
 constexpr Tag SubIterator = 3313;
 constexpr Tag SubIterators = 3314;
 constexpr Tag SubOffsets = 3315;
-constexpr Tag UnequalBytes = 3316;
-constexpr Tag UnequalView = 3317;
+constexpr Tag SubOffset = 3316;
+constexpr Tag UnequalBytes = 3317;
+constexpr Tag UnequalView = 3318;
 } // namespace view
 
 } // namespace stream

@@ -162,6 +162,7 @@ public:
     virtual void operator()(hilti::operator_::bytes::SubIterators*) {}
     virtual void operator()(hilti::operator_::bytes::SubIterator*) {}
     virtual void operator()(hilti::operator_::bytes::SubOffsets*) {}
+    virtual void operator()(hilti::operator_::bytes::SubOffset*) {}
     virtual void operator()(hilti::operator_::bytes::Join*) {}
     virtual void operator()(hilti::operator_::bytes::ToIntAscii*) {}
     virtual void operator()(hilti::operator_::bytes::ToUIntAscii*) {}
@@ -359,6 +360,7 @@ public:
     virtual void operator()(hilti::operator_::stream::view::SubIterators*) {}
     virtual void operator()(hilti::operator_::stream::view::SubIterator*) {}
     virtual void operator()(hilti::operator_::stream::view::SubOffsets*) {}
+    virtual void operator()(hilti::operator_::stream::view::SubOffset*) {}
     virtual void operator()(hilti::operator_::stream::Ctor*) {}
     virtual void operator()(hilti::operator_::stream::Size*) {}
     virtual void operator()(hilti::operator_::stream::Unequal*) {}
