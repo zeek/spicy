@@ -62,6 +62,7 @@ set(SOURCES_COMPILER
     src/compiler/pir/ir/reachability.cc
     src/compiler/pir/ir/source.cc
     src/compiler/pir/ir/verifier.cc
+    src/compiler/pir/backends/hilti/backend.cc
     src/compiler/pir/backends/hilti/coverage.cc
     src/compiler/pir/lowerer.cc
     src/compiler/pir/passes/constant-fold.cc
@@ -239,6 +240,7 @@ add_executable(
     tests/pir/opcode.cc
     tests/pir/source.cc
     tests/pir/backends/hilti/coverage.cc
+    tests/pir/backends/hilti/backend.cc
 )
 spicy_link_executable_in_tree(spicy-toolchain-tests PRIVATE)
 target_link_libraries(spicy-toolchain-tests PRIVATE doctest::doctest)
