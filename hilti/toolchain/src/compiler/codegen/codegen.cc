@@ -843,13 +843,13 @@ void GlobalsVisitor::addCxxDeclarationsFor(Declaration* d,
 
     for ( auto* dep : cg->context()->astContext()->dependentDeclarations(d) ) {
         if ( dep != d )
-            addCxxDeclarationsFor(dep, dep->fullyQualifiedID().sub(0), include_implementation_, cd);
+            addCxxDeclarationsFor(dep, dep->canonicalID().sub(0), include_implementation_, cd);
     }
 
     current_module = std::move(module_name);
 
     if ( include_implementation_ )
-        include_implementation = (d->fullyQualifiedID().sub(0) == unit->module()->id());
+        include_implementation = (d->canonicalID().sub(0) == unit->module()->id());
     else
         include_implementation = false;
 
