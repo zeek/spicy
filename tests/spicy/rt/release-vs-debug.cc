@@ -5,7 +5,7 @@
 // @TEST-EXEC: ${SPICY_BUILD} -S %INPUT && ./a.out >>output.tmp
 // @TEST-EXEC: echo == spicy-build -d >>output.tmp
 // @TEST-EXEC: ${SPICY_BUILD} -S -d %INPUT && ./a.out >>output.tmp
-// @TEST-EXEC: cat output.tmp | sed 's/ [0-9]\{1,\}\.[0-9]\{1,\}[^[]*/ X.X.X /g' >output
+// @TEST-EXEC: cat output.tmp | sed -e 's/ v\{0,1\}[0-9]\{1,\}\.[0-9]\{1,\}[^[]*/ X.X.X /g' -e 's/ [0-9a-f]\{7,\} / X.X.X /g' >output
 // @TEST-EXEC: btest-diff output
 //
 // With JIT in hiltic, the library versions will match the distribution's

@@ -93,6 +93,7 @@ jobs:
         - id: validate-release-tarball
           file: ci/Dockerfile
           run: |
+            git fetch --unshallow
             scripts/make-tarball.sh
 
             mkdir /tmp/spicy-tarball

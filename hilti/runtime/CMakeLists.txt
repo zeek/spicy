@@ -7,8 +7,11 @@ file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/bin" "${PROJECT_BINARY_DIR}/lib")
 
 # Create a version string that's a valid C identifier. We use only the actual
 # version number, no development postfix, to make ccache a bit happier.
-string(REGEX REPLACE "([0-9]+\.[0-9]+\.[0-9]+).*" "\\1" SPICY_VERSION_C_IDENT
-                     "${CMAKE_PROJECT_VERSION}")
+if (SPICY_VERSION_SHORT)
+    set(SPICY_VERSION_C_IDENT "${SPICY_VERSION_SHORT}")
+else ()
+    set(SPICY_VERSION_C_IDENT "${CMAKE_PROJECT_VERSION}")
+endif ()
 string(REPLACE "." "_" SPICY_VERSION_C_IDENT "${SPICY_VERSION_C_IDENT}")
 
 if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
