@@ -91,13 +91,13 @@ struct Collector : public optimizer::visitor::Collector {
     }
 
     void operator()(declaration::Field* n) final {
-        if ( const auto& id = n->type()->type()->canonicalID() )
-            used[id] = true;
+        if ( const auto& type_id = n->type()->type()->typeID() )
+            used[type_id] = true;
 
         const auto& parent_type = n->linkedType(context());
         assert(parent_type);
 
-        auto member_id = ID(parent_type->canonicalID(), n->id());
+        auto member_id = ID(parent_type->typeID(), n->id());
         used.insert({member_id, false});
 
         if ( const auto* ftype = n->type()->type()->tryAs<type::Function>() ) {
@@ -129,7 +129,7 @@ struct Collector : public optimizer::visitor::Collector {
                     // also always emit a matching feature constant, so
                     // eventually at this point we will see at least one
                     // feature constant.
-                    auto it = features.find(parent_decl->type()->type()->canonicalID());
+                    auto it = features.find(parent_decl->type()->type()->typeID());
                     if ( it == features.end() || ! it->second.contains(feature) )
                         // This feature requirement has not yet been collected.
                         continue;
@@ -166,7 +166,7 @@ struct Collector : public optimizer::visitor::Collector {
             usage.referenced |= (! optimizer()->mayModifyOrRemove(decl));
 
             // As this type is referenced by a function declaration it is used.
-            used[decl->canonicalID()] = true;
+            used[decl->fullyQualifiedID()] = true;
 
             // For implementation of methods check whether the method
             // should only be emitted when certain features are active.
@@ -178,7 +178,7 @@ struct Collector : public optimizer::visitor::Collector {
                 //
                 // NOTE: If we emit a `&needed-by-feature` attribute we also always emit a matching feature
                 // constant, so eventually at this point we will see at least one feature constant.
-                auto it = features.find(decl->canonicalID());
+                auto it = features.find(decl->fullyQualifiedID());
                 if ( it == features.end() || ! it->second.contains(feature) )
                     // This feature requirement has not yet been collected.
                     continue;
@@ -206,13 +206,13 @@ struct Collector : public optimizer::visitor::Collector {
         if ( const auto& type = n->type(); ! (type->type()->isA<type::Struct>() || type->type()->isA<type::Enum>()) )
             return;
 
-        const auto& id = n->canonicalID();
-        if ( ! id )
+        const auto type_id = n->typeID();
+        if ( ! type_id )
             return;
 
         // Record the type if not already known. If the type is not modifiable,
         // record it as used.
-        used.insert({id, (! optimizer()->mayModifyOrRemove(n))});
+        used.insert({type_id, (! optimizer()->mayModifyOrRemove(n))});
     }
 
     void operator()(expression::Member* n) final {
@@ -224,20 +224,20 @@ struct Collector : public optimizer::visitor::Collector {
         if ( ! struct_ )
             return;
 
-        const auto& id = struct_->canonicalID();
-        assert(id);
+        auto type_id = struct_->typeID();
+        assert(type_id);
 
-        auto member_id = ID(id, n->id());
+        auto member_id = ID(type_id, n->id());
         used[member_id] = true;
     }
 
     void operator()(expression::Name* n) final {
-        if ( const auto& id = n->type()->type()->canonicalID() )
-            used[id] = true;
+        if ( const auto& type_id = n->type()->type()->typeID() )
+            used[type_id] = true;
 
         if ( const auto* field = n->resolvedDeclaration()->tryAs<declaration::Field>() ) {
-            const auto& id = field->linkedType(context())->canonicalID();
-            auto member_id = ID(id, field->id());
+            auto type_id = field->linkedType(context())->typeID();
+            auto member_id = ID(type_id, field->id());
             used[member_id] = true;
 
             if ( field->type()->type()->tryAs<type::Function>() ) {
@@ -255,8 +255,8 @@ struct Collector : public optimizer::visitor::Collector {
     }
 
     void operator()(expression::Type_* n) final {
-        if ( const auto& id = n->typeValue()->type()->canonicalID() )
-            used[id] = true;
+        if ( const auto type_id = n->typeValue()->type()->typeID() )
+            used[type_id] = true;
     }
 
     void operator()(operator_::struct_::MemberCall* n) final {
@@ -290,17 +290,17 @@ struct Collector : public optimizer::visitor::Collector {
     }
 
     void operator()(type::Name* n) final {
-        const auto& id = n->resolvedType()->canonicalID();
-        assert(id);
-        used[id] = true;
+        const auto& type_id = n->resolvedType()->typeID();
+        assert(type_id);
+        used[type_id] = true;
     }
 
     void operator()(UnqualifiedType* n) final {
         if ( n->parent(2)->isA<declaration::Type>() )
             return;
 
-        if ( const auto& id = n->canonicalID() )
-            used[id] = true;
+        if ( const auto& type_id = n->typeID() )
+            used[type_id] = true;
     }
 };
 
@@ -328,12 +328,12 @@ struct Mutator : public optimizer::visitor::Mutator {
         const auto& parent_type = n->linkedType(context());
         assert(parent_type);
 
-        auto member_id = ID(parent_type->canonicalID(), n->id());
+        auto member_id = ID(parent_type->typeID(), n->id());
         bool remove = (! collector->used.at(member_id));
 
         // Check whether the field depends on an active feature in which case
         // we do not remove the field.
-        if ( auto parent_id = parent_type->canonicalID(); collector->features.contains(parent_id) ) {
+        if ( auto parent_id = parent_type->typeID(); collector->features.contains(parent_id) ) {
             const auto& features_ = collector->features.at(parent_id);
 
             for ( const auto& dependent_feature_ : n->attributes()->findAll(hilti::attribute::kind::NeededByFeature) ) {
@@ -420,11 +420,11 @@ struct Mutator : public optimizer::visitor::Mutator {
         if ( const auto& type = n->type(); ! (type->type()->isA<type::Struct>() || type->type()->isA<type::Enum>()) )
             return;
 
-        const auto& id = n->canonicalID();
-        if ( ! id )
+        const auto& type_id = n->typeID();
+        if ( ! type_id )
             return;
 
-        if ( ! collector->used.at(id) )
+        if ( ! collector->used.at(type_id) )
             removeNode(n, "removing unused type");
     }
 

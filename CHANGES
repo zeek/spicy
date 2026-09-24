@@ -1,3 +1,27 @@
+1.18.0-dev.37 | 2026-09-24 18:33:53 +0200
+
+  * Revert "Use canonical IDs as map keys in optimizer passes" (Benjamin Bannier, Corelight)
+
+    This reverts commit f4800433e96bf1e7ae7881a366a0f1bd32b43ab5.
+
+  * Revert "Renamed bindings holding a canonical ID" (Benjamin Bannier, Corelight)
+
+    This reverts commit 1ea17e393c319b107bc3ad3a3a0f5e323c615115.
+
+  * Bump docker/build-push-action from 7.3.0 to 7.4.0 (dependabot[bot])
+
+  * Bump docker/setup-buildx-action from 4.3.0 to 4.4.1 (dependabot[bot])
+
+  * Renamed bindings holding a canonical ID (Benjamin Bannier, Corelight)
+
+    In a previous patch we changed optimizer passes to be based on canonical
+    IDs, not ambiguous type IDs, but to reduce noise did not rename the
+    variables holding the IDs so they are still called `type_id`. This patch
+    cleans that up so we now use the less confusing, but pretty open-ended
+    name `id`.
+
+  * add the sub-offset operator (Kaleb Franken)
+
 1.18.0-dev.28 | 2026-09-22 16:57:17 -0400
 
   * Add the sub-offset operator (Kaleb Franken)

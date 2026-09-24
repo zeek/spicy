@@ -97,7 +97,7 @@ struct Collector : public optimizer::visitor::Collector {
             return nullptr; // might have been removed already elsewhere
 
         if ( considerField(sfield) )
-            return &fields[sfield->canonicalID()];
+            return &fields[sfield->fullyQualifiedID()];
         else
             return nullptr;
     }
@@ -111,7 +111,7 @@ struct Collector : public optimizer::visitor::Collector {
         if ( ! considerField(sfield) )
             return;
 
-        auto& field = fields[sfield->canonicalID()];
+        auto& field = fields[sfield->fullyQualifiedID()];
         field.writes.push_back(n);
     }
 
@@ -120,7 +120,7 @@ struct Collector : public optimizer::visitor::Collector {
             return;
 
         if ( auto* struct_ = n->parent()->tryAs<type::Struct>() ) {
-            auto& field = fields[n->canonicalID()];
+            auto& field = fields[n->fullyQualifiedID()];
             field.decl = n;
             field.struct_ = struct_;
 
