@@ -133,7 +133,7 @@ struct Collector : public optimizer::visitor::Collector {
             const auto* type = arg->type()->innermostType();
 
             // Ignore arguments types without type ID (e.g., builtin types).
-            const auto& type_id = type->type()->canonicalID();
+            const auto& type_id = type->type()->typeID();
             if ( ! type_id ) {
                 ++i;
                 continue;
@@ -167,7 +167,7 @@ struct Collector : public optimizer::visitor::Collector {
         const auto ignored_features = conditionalFeatures(n);
 
         // Check if access to the field has type requirements.
-        if ( const auto& type_id = type->type()->canonicalID() )
+        if ( auto type_id = type->type()->typeID() )
             for ( const auto& requirement : field->attributes()->findAll(hilti::attribute::kind::NeededByFeature) ) {
                 const auto feature = *requirement->valueAsString();
                 if ( ! ignored_features.contains(type_id) || ! ignored_features.at(type_id).contains(feature) )
@@ -198,7 +198,7 @@ struct Collector : public optimizer::visitor::Collector {
             const auto* const type = args[i]->type()->innermostType();
             const auto& param = parameters[i];
 
-            if ( const auto& type_id = type->type()->canonicalID() )
+            if ( auto type_id = type->type()->typeID() )
                 for ( const auto& requirement :
                       param->attributes()->findAll(hilti::attribute::kind::RequiresTypeFeature) ) {
                     const auto feature = *requirement->valueAsString();
@@ -215,7 +215,7 @@ struct Collector : public optimizer::visitor::Collector {
         while ( type_->type()->isReferenceType() )
             type_ = type_->type()->dereferencedType();
 
-        const auto& type_id = type_->type()->canonicalID();
+        auto type_id = type_->type()->typeID();
         if ( ! type_id )
             return;
 
@@ -223,7 +223,7 @@ struct Collector : public optimizer::visitor::Collector {
         if ( ! member )
             return;
 
-        auto lookup = scope::lookupID<declaration::Type>(type_->type()->typeID(), x, "type");
+        auto lookup = scope::lookupID<declaration::Type>(type_id, x, "type");
         if ( ! lookup )
             return;
 
@@ -253,7 +253,7 @@ struct Collector : public optimizer::visitor::Collector {
     void operator()(declaration::Type* n) final {
         // Collect feature requirements associated with type.
         for ( const auto& requirement : n->attributes()->findAll(hilti::attribute::kind::RequiresTypeFeature) )
-            features[n->canonicalID()][*requirement->valueAsString()] = true;
+            features[n->typeID()][*requirement->valueAsString()] = true;
     }
 };
 
@@ -280,14 +280,14 @@ struct Mutator : public optimizer::visitor::Mutator {
     }
 
     void operator()(declaration::Type* n) final {
-        if ( ! collector->features.contains(n->canonicalID()) )
+        if ( ! collector->features.contains(n->fullyQualifiedID()) )
             return;
 
         // Add type comment documenting enabled features.
         auto meta = n->meta();
         auto comments = meta.comments();
 
-        if ( auto enabled_features = collector->features.at(n->canonicalID()) |
+        if ( auto enabled_features = collector->features.at(n->fullyQualifiedID()) |
                                      std::views::filter([](const auto& feature) { return feature.second; });
              ! enabled_features.empty() ) {
             comments.push_back(util::fmt("Type %s supports the following features:", n->id()));
