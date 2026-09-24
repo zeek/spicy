@@ -223,7 +223,14 @@ struct Visitor : hilti::visitor::PreOrder {
             return;
         }
 
-        result = {cxx::ID(n->id()), Side::LHS};
+        if ( decl->isA<declaration::Function>() && n->id().namespace_() ) {
+            if ( auto* mod = decl->parent<declaration::Module>() )
+                result = {cxx::ID(ID(mod->id(), n->id().sub(-1))), Side::LHS};
+            else
+                result = {cxx::ID(n->id()), Side::LHS};
+        }
+        else
+            result = {cxx::ID(n->id()), Side::LHS};
     }
 
     void operator()(expression::ConditionTest* n) final {

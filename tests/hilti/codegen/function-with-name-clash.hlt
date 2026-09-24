@@ -1,0 +1,51 @@
+# @TEST-DOC: Functions in modules with clashing names resolve correctly. Regression test for #2324.
+# @TEST-EXEC: mkdir -p a b
+# @TEST-EXEC: mv a.a.hlt a/a.hlt && mv a.foo.hlt a/foo.hlt
+# @TEST-EXEC: mv b.b.hlt b/b.hlt && mv b.foo.hlt b/foo.hlt
+# @TEST-EXEC: hiltic -C -j %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module x {
+import a from ./a;
+import b from ./b;
+}
+
+@TEST-START-FILE a.a.hlt
+module a {
+import foo from ./a;
+foo::f("a", True);
+}
+@TEST-END-FILE
+
+@TEST-START-FILE b.b.hlt
+module b {
+
+import foo from ./b;
+foo::f("b", True);
+}
+@TEST-END-FILE
+
+@TEST-START-FILE a.foo.hlt
+module foo {
+
+import hilti;
+
+public function void f(string x, bool b) {
+	hilti::print("a/foo(): %s" % x);
+}
+
+}
+@TEST-END-FILE
+
+@TEST-START-FILE b.foo.hlt
+module foo {
+
+import hilti;
+
+public function void f(string x, bool b) {
+	assert b;
+	hilti::print("b/foo(): %s" % x);
+}
+
+}
+@TEST-END-FILE
