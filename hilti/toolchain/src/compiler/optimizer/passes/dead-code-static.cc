@@ -91,8 +91,8 @@ struct Collector : public optimizer::visitor::Collector {
     }
 
     void operator()(declaration::Field* n) final {
-        if ( const auto& id = n->type()->type()->canonicalID() )
-            used[id] = true;
+        if ( const auto& type_id = n->type()->type()->canonicalID() )
+            used[type_id] = true;
 
         const auto& parent_type = n->linkedType(context());
         assert(parent_type);
@@ -206,13 +206,13 @@ struct Collector : public optimizer::visitor::Collector {
         if ( const auto& type = n->type(); ! (type->type()->isA<type::Struct>() || type->type()->isA<type::Enum>()) )
             return;
 
-        const auto& id = n->canonicalID();
-        if ( ! id )
+        const auto& type_id = n->canonicalID();
+        if ( ! type_id )
             return;
 
         // Record the type if not already known. If the type is not modifiable,
         // record it as used.
-        used.insert({id, (! optimizer()->mayModifyOrRemove(n))});
+        used.insert({type_id, (! optimizer()->mayModifyOrRemove(n))});
     }
 
     void operator()(expression::Member* n) final {
@@ -224,20 +224,20 @@ struct Collector : public optimizer::visitor::Collector {
         if ( ! struct_ )
             return;
 
-        const auto& id = struct_->canonicalID();
-        assert(id);
+        const auto& type_id = struct_->canonicalID();
+        assert(type_id);
 
-        auto member_id = ID(id, n->id());
+        auto member_id = ID(type_id, n->id());
         used[member_id] = true;
     }
 
     void operator()(expression::Name* n) final {
-        if ( const auto& id = n->type()->type()->canonicalID() )
-            used[id] = true;
+        if ( const auto& type_id = n->type()->type()->canonicalID() )
+            used[type_id] = true;
 
         if ( const auto* field = n->resolvedDeclaration()->tryAs<declaration::Field>() ) {
-            const auto& id = field->linkedType(context())->canonicalID();
-            auto member_id = ID(id, field->id());
+            const auto& type_id = field->linkedType(context())->canonicalID();
+            auto member_id = ID(type_id, field->id());
             used[member_id] = true;
 
             if ( field->type()->type()->tryAs<type::Function>() ) {
@@ -255,8 +255,8 @@ struct Collector : public optimizer::visitor::Collector {
     }
 
     void operator()(expression::Type_* n) final {
-        if ( const auto& id = n->typeValue()->type()->canonicalID() )
-            used[id] = true;
+        if ( const auto& type_id = n->typeValue()->type()->canonicalID() )
+            used[type_id] = true;
     }
 
     void operator()(operator_::struct_::MemberCall* n) final {
@@ -290,17 +290,17 @@ struct Collector : public optimizer::visitor::Collector {
     }
 
     void operator()(type::Name* n) final {
-        const auto& id = n->resolvedType()->canonicalID();
-        assert(id);
-        used[id] = true;
+        const auto& type_id = n->resolvedType()->canonicalID();
+        assert(type_id);
+        used[type_id] = true;
     }
 
     void operator()(UnqualifiedType* n) final {
         if ( n->parent(2)->isA<declaration::Type>() )
             return;
 
-        if ( const auto& id = n->canonicalID() )
-            used[id] = true;
+        if ( const auto& type_id = n->canonicalID() )
+            used[type_id] = true;
     }
 };
 
@@ -420,11 +420,11 @@ struct Mutator : public optimizer::visitor::Mutator {
         if ( const auto& type = n->type(); ! (type->type()->isA<type::Struct>() || type->type()->isA<type::Enum>()) )
             return;
 
-        const auto& id = n->canonicalID();
-        if ( ! id )
+        const auto& type_id = n->canonicalID();
+        if ( ! type_id )
             return;
 
-        if ( ! collector->used.at(id) )
+        if ( ! collector->used.at(type_id) )
             removeNode(n, "removing unused type");
     }
 
