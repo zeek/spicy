@@ -133,16 +133,16 @@ struct Collector : public optimizer::visitor::Collector {
             const auto* type = arg->type()->innermostType();
 
             // Ignore arguments types without type ID (e.g., builtin types).
-            const auto& type_id = type->type()->canonicalID();
-            if ( ! type_id ) {
+            const auto& id = type->type()->canonicalID();
+            if ( ! id ) {
                 ++i;
                 continue;
             }
 
             for ( const auto& requirement : requirements[i] ) {
-                if ( ! ignored_features.contains(type_id) || ! ignored_features.at(type_id).contains(requirement) )
+                if ( ! ignored_features.contains(id) || ! ignored_features.at(id).contains(requirement) )
                     // Enable the required feature.
-                    features[type_id][requirement] = true;
+                    features[id][requirement] = true;
             }
 
             ++i;
@@ -167,12 +167,12 @@ struct Collector : public optimizer::visitor::Collector {
         const auto ignored_features = conditionalFeatures(n);
 
         // Check if access to the field has type requirements.
-        if ( const auto& type_id = type->type()->canonicalID() )
+        if ( const auto& id = type->type()->canonicalID() )
             for ( const auto& requirement : field->attributes()->findAll(hilti::attribute::kind::NeededByFeature) ) {
                 const auto feature = *requirement->valueAsString();
-                if ( ! ignored_features.contains(type_id) || ! ignored_features.at(type_id).contains(feature) )
+                if ( ! ignored_features.contains(id) || ! ignored_features.at(id).contains(feature) )
                     // Enable the required feature.
-                    features[type_id][*requirement->valueAsString()] = true;
+                    features[id][*requirement->valueAsString()] = true;
             }
 
         // Check if call imposes requirements on any of the types of the arguments.
@@ -198,13 +198,13 @@ struct Collector : public optimizer::visitor::Collector {
             const auto* const type = args[i]->type()->innermostType();
             const auto& param = parameters[i];
 
-            if ( const auto& type_id = type->type()->canonicalID() )
+            if ( const auto& id = type->type()->canonicalID() )
                 for ( const auto& requirement :
                       param->attributes()->findAll(hilti::attribute::kind::RequiresTypeFeature) ) {
                     const auto feature = *requirement->valueAsString();
-                    if ( ! ignored_features.contains(type_id) || ! ignored_features.at(type_id).contains(feature) )
+                    if ( ! ignored_features.contains(id) || ! ignored_features.at(id).contains(feature) )
                         // Enable the required feature.
-                        features[type_id][feature] = true;
+                        features[id][feature] = true;
                 }
         }
     }
@@ -215,8 +215,8 @@ struct Collector : public optimizer::visitor::Collector {
         while ( type_->type()->isReferenceType() )
             type_ = type_->type()->dereferencedType();
 
-        const auto& type_id = type_->type()->canonicalID();
-        if ( ! type_id )
+        const auto& id = type_->type()->canonicalID();
+        if ( ! id )
             return;
 
         const auto* member = x->op1()->tryAs<expression::Member>();
@@ -242,8 +242,8 @@ struct Collector : public optimizer::visitor::Collector {
             const auto feature = *requirement->valueAsString();
 
             // Enable the required feature if it is not ignored here.
-            if ( ! ignored_features.contains(type_id) || ! ignored_features.at(type_id).contains(feature) )
-                features[type_id][feature] = true;
+            if ( ! ignored_features.contains(id) || ! ignored_features.at(id).contains(feature) )
+                features[id][feature] = true;
         }
     }
 
