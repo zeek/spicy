@@ -13,14 +13,7 @@
 
 namespace spicy::detail::pir {
 
-/**
- * Read-only discovery of candidate public roots (ordinary functions and parser units) across
- * resolved `.spicy` modules whose `skipImplementation()` is false, in source order, plus the set
- * of unit types that have at least one external (module-level `on Unit::...`) hook anywhere in the
- * AST. External hooks are not children of `type::Unit::items()`, so a lowerer that only inspects a
- * candidate unit's own items cannot see them; discovery walks the whole AST once, up front, so
- * that information is available before any unit is judged representable.
- */
+/** Discovery output of public roots (functions/units). */
 struct RootDiscovery {
     std::vector<hilti::Declaration*> roots;
     std::vector<hilti::ast::TypeIndex> units_with_external_hooks;
@@ -31,9 +24,9 @@ RootDiscovery discoverRoots(const hilti::ASTContext& ctx);
 
 /**
  * Attempts to lower every discovered root into `package`, in order. Stops
- * and returns the first unsupported feature encountered, if any; the caller
- * must discard `package` in that case rather than treat it as a complete
- * representation.
+ * and returns the first unsupported feature encountered, if any.
+ *
+ * If there are any unsupported features, the resulting `package` is invalid.
  */
 std::optional<UnsupportedFeature> lowerRoots(const RootDiscovery& discovery, ir::Package& package);
 

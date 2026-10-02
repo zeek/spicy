@@ -3,7 +3,6 @@
 #pragma once
 
 #include <string>
-#include <string_view>
 #include <variant>
 #include <vector>
 
@@ -16,13 +15,6 @@
 #include <spicy/compiler/detail/pir/ir/diagnostics/source.h>
 #include <spicy/compiler/detail/pir/ir/package.h>
 #include <spicy/compiler/detail/pir/ir/source.h>
-
-// This header is the umbrella for PIR's diagnostic catalog: `DiagnosticSeverity`,
-// `DiagnosticClassification`, and `DiagnosticDefinition` live in `diagnostic-definition.h`; the
-// catalog entries themselves are split by verifier domain into `diagnostics/{core,declarations,
-// parser,source}.h`, each reachable here as `diag::*` exactly as before. This file keeps only the
-// domain-independent runtime machinery: diagnostic sites/entities, the emitter/builder, and the
-// renderer declaration.
 
 namespace spicy::detail::pir::ir {
 
@@ -106,6 +98,7 @@ public:
     DiagnosticBuilder(const Package& package, std::vector<Diagnostic>& sink, size_t index)
         : _package(package), _sink(sink), _index(index) {}
 
+    /** Adds a "note" in order to add extra information to the diagnostic. */
     template<typename Anchor, typename... Args>
     DiagnosticBuilder& note(const DiagnosticDefinition& def, const Anchor& anchor, const Args&... args) {
         _sink[_index].notes.push_back(DiagnosticNote{
@@ -122,16 +115,17 @@ private:
     size_t _index;
 };
 
-/**
- * Formats and appends diagnostics through catalog definitions. The emitter is package-aware so
- * callers pass a typed anchor (`FunctionId`, `InstId`, `RegionId`, `BlockId`, `SourceSpanId`, or
- * `noSite()`) directly rather than constructing a `DiagnosticSite`; `FunctionId` and `InstId`
- * anchors automatically pick up that entity's stored source span.
- */
+/** Emits diagnostics. Holds a pre-created list of diagnostics as its sink. */
 class DiagnosticEmitter {
 public:
     DiagnosticEmitter(const Package& package, std::vector<Diagnostic>& sink) : _package(package), _sink(sink) {}
 
+    /**
+     * Emits the diagnostic. Potential anchors are the various siteFor
+     * definitions. Use the Arena ID rather than the span directly.
+     *
+     * The returned value is a builder so that notes can be added.
+     */
     template<typename Anchor, typename... Args>
     DiagnosticBuilder emit(const DiagnosticDefinition& def, const Anchor& anchor, const Args&... args) {
         _sink.push_back(Diagnostic{

@@ -30,10 +30,6 @@ ValueDiscipline typeDiscipline(const Package& package, TypeId id) {
     return ValueDiscipline::Copyable;
 }
 
-// This class's size (type/declaration verification alongside function, argument, opcode, and
-// affinity verification) is architectural pressure, not a present correctness problem: nothing
-// here is wrong, but a later slice may want type verification split into its own component.
-// Deferred to the Step 5 cleanup rather than done speculatively now (see PLAN-parser-ir-3.md).
 class Verifier {
 public:
     Verifier(const Package& package, std::vector<Diagnostic>& diags) : _package(package), _emitter(package, diags) {}
@@ -102,11 +98,7 @@ public:
         }
     }
 
-    // Independent of `verifyTypeDecl()`'s per-declaration walk from each `TypeDecl`'s own `fields`
-    // list: this iterates the `Declaration` arena directly and checks the *other* direction, so a
-    // declaration that is orphaned (owner never lists it) or double-listed (appears more than once
-    // in its owner's membership vector) is caught even if every individual field's cached `owner`
-    // still looks consistent.
+    // Catches orphaned or double-listed decls, in case verifyTypeDecl() misses it
     void verifyDeclarationMembership() {
         std::unordered_map<uint32_t, uint32_t> membership_count;
         for ( size_t i = 0; i < _package.typeDecls().size(); ++i ) {
@@ -157,7 +149,7 @@ public:
     }
 
 private:
-    // Layer 3: function kind/signature/parser-unit consistency.
+    // Function kind/signature/parser-unit consistency.
     void _verifyFunctionKind(FunctionId id, const Function& fn) {
         if ( fn.kind == FunctionKind::Normal ) {
             if ( fn.parser_unit.isSet() )
@@ -242,7 +234,7 @@ private:
         _verifyUnitStateAffinity(function_id, block_id, fn);
     }
 
-    // Layer 4: every `core.argument` in the entry block appears before any non-argument
+    // Every `core.argument` in the entry block appears before any non-argument
     // instruction, indices are 0..N-1 with no gaps or duplicates, and N matches the function's
     // parameter count.
     void _verifyArgumentPrefix(FunctionId function_id, BlockId block_id, const Function& fn) {
@@ -284,25 +276,18 @@ private:
                 _emitter.emit(diag::ArgumentIndexMissing, function_id, i);
     }
 
-    // Layer 6: parser-state affinity, not a general affine-value framework. This still
-    // special-cases `Opcode::TupleGet` directly (rather than treating it through a generic
-    // `OperandRole::Forward` rule), and only enforces `OperandRole::Consume` for operands whose
-    // immediate type is `ParserState`; unit affinity is a separate, richer scan in
-    // `_verifyUnitStateAffinity()`. A use-count keyed only by the consumed `InstId` cannot see two
-    // `core.tuple_get(read, 0)` projections of the same read as a fork of one logical state, since
-    // each projection is itself a distinct, once-consumed `InstId`. This closes that hole in two
-    // parts: (1) each `(tuple-producing instruction, element index)` pair whose selected element is
-    // affine may be projected by `core.tuple_get` at most once; and (2) each resulting affine
-    // `parser.state` value, wherever produced, may reach at most one `OperandRole::Consume`
-    // operand. Generalizing this to every affine type and forwarding opcode is deferred until a
-    // second affine type or forwarding opcode actually needs it (see PLAN-parser-ir-3.md).
+    // Parser-state affinity. This only applies to the parser state, or tuples
+    // which use said parser state. Primarily ensures each `parser.state` value only reaches one `OperandRole::Consume`.
     void _verifyParserStateAffinity(FunctionId /* function_id */, BlockId block_id) {
         const auto& block = _package.block(block_id);
 
         std::unordered_map<uint32_t, InstId> consumed_by;
         std::unordered_map<uint64_t, InstId> projected_by;
 
-        auto slotKey = [](InstId tuple_inst, uint32_t index) -> uint64_t {
+        // Kinda weird, just makes a unique key for tuple instruction + its index
+        // so we can check if this tuple instruction gets consumed multiple
+        // times from just a "key.""
+        auto slot_key = [](InstId tuple_inst, uint32_t index) -> uint64_t {
             return (static_cast<uint64_t>(tuple_inst.index) << 32) | index;
         };
 
@@ -312,6 +297,8 @@ private:
 
             const auto& inst = _package.inst(inst_id);
 
+            // Ensure affine elements only projected by core.tuple_get at
+            // most once.
             if ( inst.opcode == Opcode::TupleGet ) {
                 const auto* payload = std::get_if<TupleGetPayload>(&inst.payload);
                 if ( ! payload || inst.args.empty() || ! _package.isValid(inst.args[0]) )
@@ -320,13 +307,13 @@ private:
                 if ( typeDiscipline(_package, inst.result_type) != ValueDiscipline::Affine )
                     continue;
 
-                auto [it, inserted] = projected_by.try_emplace(slotKey(inst.args[0], payload->index), inst_id);
+                auto [it, inserted] = projected_by.try_emplace(slot_key(inst.args[0], payload->index), inst_id);
                 if ( ! inserted )
                     _emitter.emit(diag::ParserStateReused, inst_id);
                 continue;
             }
 
-            auto* schema = schemaFor(inst.opcode);
+            const auto* schema = schemaFor(inst.opcode);
             if ( ! schema )
                 continue;
 
@@ -349,11 +336,9 @@ private:
         }
     }
 
-    // Layer 7: tracks each unit value's publication chain from `unit.create` through
+    // Tracks each unit value's publication chain from `unit.create` through
     // `unit.publish_field` to `parser.finish`, as a direct per-function scan. Straight-line
-    // affinity checking is sufficient here; a general dataflow framework is deferred until PIR
-    // actually has CFG joins or loops to reason about, not introduced speculatively for this
-    // slice's single straight-line block.
+    // affinity checking is sufficient here; a general dataflow framework is deferred.
     void _verifyUnitStateAffinity(FunctionId /* function_id */, BlockId block_id, const Function& fn) {
         const auto& block = _package.block(block_id);
 
@@ -365,7 +350,7 @@ private:
         };
         std::vector<Chain> chains;
 
-        auto findChain = [&](InstId value) -> Chain* {
+        auto find_chain = [&](InstId value) -> Chain* {
             for ( auto& chain : chains )
                 if ( chain.head == value )
                     return &chain;
@@ -387,7 +372,7 @@ private:
                 if ( inst.args.empty() || ! _package.isValid(inst.args[0]) )
                     continue;
 
-                auto* chain = findChain(inst.args[0]);
+                auto* chain = find_chain(inst.args[0]);
                 if ( ! chain ) {
                     _emitter.emit(diag::UnitStateStaleOrUnknownOperand, inst_id);
                     continue;
@@ -407,7 +392,7 @@ private:
                 if ( inst.args.size() < 2 || ! _package.isValid(inst.args[1]) )
                     continue;
 
-                auto* chain = findChain(inst.args[1]);
+                auto* chain = find_chain(inst.args[1]);
                 if ( ! chain ) {
                     _emitter.emit(diag::UnitStateStaleOrUnknownOperand, inst_id);
                     continue;
@@ -435,7 +420,7 @@ private:
         if ( inst.parent != block_id )
             _emitter.emit(diag::CachedParentMismatch, inst_id, inst.parent.index, block_id.index);
 
-        auto* schema = schemaFor(inst.opcode);
+        const auto* schema = schemaFor(inst.opcode);
         if ( ! schema ) {
             _emitter.emit(diag::UnrecognizedOpcode, inst_id);
             return;
@@ -471,7 +456,7 @@ private:
         _verifyOpcodeSpecific(function_id, inst_id, inst);
     }
 
-    // Layer 5 (dynamic part): result/operand construction that depends on payload content or on
+    // Result/operand construction that depends on payload content or on
     // the operand's actual structural type, which a static `TypeConstraint` cannot express.
     void _verifyOpcodeSpecific(FunctionId function_id, InstId inst_id, const Inst& inst) {
         switch ( inst.opcode ) {

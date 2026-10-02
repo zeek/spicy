@@ -79,9 +79,9 @@ constexpr ValueDiscipline typeKindDiscipline(TypeKind kind) {
  * `Copyable`-discipline operand.
  */
 enum class OperandRole {
-    /** The operand's affine value, if any, is read without being consumed. Unused in this slice. */
+    /** The operand's affine value, if any, is read without being consumed. */
     Borrow,
-    /** The operand's affine value, if any, is fully consumed; it must not be used again anywhere. */
+    /** The operand's affine value, if any, is fully consumed. It must not be used again anywhere. */
     Consume,
     /**
      * The operand's affine discipline, if any, comes from its structure (e.g. a tuple carrying an
@@ -91,11 +91,8 @@ enum class OperandRole {
     Forward,
 };
 
-/**
- * A closed instruction payload. Every opcode's payload shape is a dedicated struct even where two
- * opcodes happen to share an integer representation (`ArgumentPayload` vs. `TupleGetPayload`), so
- * verifier and printer code never infers payload meaning from an opcode plus a raw integer.
- */
+// Every opcode gets its own payload (if necessary) so that the verifier
+// and printer never infers the payload meaning.
 struct Int64Literal {
     int64_t value = 0;
 
@@ -122,11 +119,7 @@ struct TupleGetPayload {
 
 enum class Signedness { Signed, Unsigned };
 
-/**
- * A portable byte-order value. This is PIR's own vocabulary, independent of HILTI's runtime
- * `ByteOrder` type, matching the architectural invariant that PIR does not depend on runtime
- * representations.
- */
+// PIR's own byte order so that it doesn't depend on hilti
 enum class ByteOrder { Little, Big, Network, Host };
 
 struct ReadIntegerPayload {
@@ -174,21 +167,13 @@ enum class SuspendBehavior { SuspendAndRetry };
 enum class FailureOutcome { UnexpectedEod, Gap };
 
 /**
- * The closed outcome contract for a parser-input operation: what happens on success, on
- * insufficient input, at premature EOD, and at a gap. This is schema-level semantics, not
- * per-instruction CFG: the same contract applies to every instance of the opcode.
- *
- * This holds only the fields the verifier, printer, or a consumer actually reads today
- * (`success_consumption_bytes` documents the read's byte width; `eod`/`gap` distinguish the two
- * failure kinds the semantic table requires to stay distinguishable). The resume condition and a
- * gap's runtime payload are real semantics (see the Semantic Contract in
- * `PLAN-parser-ir-3.md`) but are not modeled as typed fields here, since nothing in this slice
- * varies or reads them per contract; recoverable-rejection and other-fatal outcomes are omitted
- * outright rather than represented as an always-`Impossible` placeholder, since unsigned width-8
- * decoding cannot produce either.
+ * Each opcode has a contract for how it behaves on success, insufficient
+ * input, etc. This is high-level in the parser rather than modelled as procedural
+ * code. The same contract applies to ALL opcodes of the same type. Any new
+ * contract expectations may be added as the need arises.
  */
 struct ParserOperationContract {
-    /** Bytes consumed and the cursor advanced by on success; -1 means "not exactly-N-bytes" (unused in Step 3). */
+    /** Bytes consumed and the cursor advanced by on success; -1 means "not exactly-N-bytes." */
     int64_t success_consumption_bytes = 0;
     SuspendBehavior insufficient_input = SuspendBehavior::SuspendAndRetry;
     FailureOutcome eod = FailureOutcome::UnexpectedEod;
@@ -229,28 +214,28 @@ constexpr bool payloadMatchesKind(const InstPayload& payload, PayloadKind kind) 
 
 namespace detail {
 
-inline constexpr std::span<const TypeConstraint> kNoOperandTypes{};
-inline constexpr std::span<const OperandRole> kNoOperandRoles{};
+inline constexpr std::span<const TypeConstraint> KNoOperandTypes{};
+inline constexpr std::span<const OperandRole> KNoOperandRoles{};
 
-inline constexpr TypeConstraint kAddOperandTypes[] = {fixedType(TypeKind::Int64), fixedType(TypeKind::Int64)};
-inline constexpr OperandRole kAddOperandRoles[] = {OperandRole::Borrow, OperandRole::Borrow};
+inline constexpr TypeConstraint KAddOperandTypes[] = {fixedType(TypeKind::Int64), fixedType(TypeKind::Int64)};
+inline constexpr OperandRole KAddOperandRoles[] = {OperandRole::Borrow, OperandRole::Borrow};
 
-inline constexpr TypeConstraint kReturnOperandTypes[] = {sameAsFunctionResult()};
-inline constexpr OperandRole kReturnOperandRoles[] = {OperandRole::Borrow};
+inline constexpr TypeConstraint KReturnOperandTypes[] = {sameAsFunctionResult()};
+inline constexpr OperandRole KReturnOperandRoles[] = {OperandRole::Borrow};
 
-inline constexpr TypeConstraint kTupleGetOperandTypes[] = {anyType()};
-inline constexpr OperandRole kTupleGetOperandRoles[] = {OperandRole::Forward};
+inline constexpr TypeConstraint KTupleGetOperandTypes[] = {anyType()};
+inline constexpr OperandRole KTupleGetOperandRoles[] = {OperandRole::Forward};
 
-inline constexpr TypeConstraint kReadIntegerOperandTypes[] = {fixedType(TypeKind::ParserState)};
-inline constexpr OperandRole kReadIntegerOperandRoles[] = {OperandRole::Consume};
+inline constexpr TypeConstraint KReadIntegerOperandTypes[] = {fixedType(TypeKind::ParserState)};
+inline constexpr OperandRole KReadIntegerOperandRoles[] = {OperandRole::Consume};
 
-inline constexpr TypeConstraint kFinishOperandTypes[] = {fixedType(TypeKind::ParserState), sameAsFunctionResult()};
-inline constexpr OperandRole kFinishOperandRoles[] = {OperandRole::Consume, OperandRole::Consume};
+inline constexpr TypeConstraint KFinishOperandTypes[] = {fixedType(TypeKind::ParserState), sameAsFunctionResult()};
+inline constexpr OperandRole KFinishOperandRoles[] = {OperandRole::Consume, OperandRole::Consume};
 
-inline constexpr TypeConstraint kPublishFieldOperandTypes[] = {anyType(), anyType()};
-inline constexpr OperandRole kPublishFieldOperandRoles[] = {OperandRole::Consume, OperandRole::Borrow};
+inline constexpr TypeConstraint KPublishFieldOperandTypes[] = {anyType(), anyType()};
+inline constexpr OperandRole KPublishFieldOperandRoles[] = {OperandRole::Consume, OperandRole::Borrow};
 
-inline constexpr ParserOperationContract kReadIntegerContract{
+inline constexpr ParserOperationContract KReadIntegerContract{
     .success_consumption_bytes = 1,
     .insufficient_input = SuspendBehavior::SuspendAndRetry,
     .eod = FailureOutcome::UnexpectedEod,
@@ -259,12 +244,12 @@ inline constexpr ParserOperationContract kReadIntegerContract{
 
 // One entry per `Opcode` value, in declaration order, so `schemaFor()` can index directly without
 // per-call allocation.
-inline constexpr std::array<OpcodeSchema, 9> kSchemas{{
+inline constexpr std::array<OpcodeSchema, 9> KSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Constant,
         .spelling = "core.constant",
-        .operand_types = kNoOperandTypes,
-        .operand_roles = kNoOperandRoles,
+        .operand_types = KNoOperandTypes,
+        .operand_roles = KNoOperandRoles,
         .result_type = fixedType(TypeKind::Int64),
         .payload_kind = PayloadKind::Int64Literal,
         .is_terminator = false,
@@ -274,8 +259,8 @@ inline constexpr std::array<OpcodeSchema, 9> kSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Add,
         .spelling = "core.add",
-        .operand_types = kAddOperandTypes,
-        .operand_roles = kAddOperandRoles,
+        .operand_types = KAddOperandTypes,
+        .operand_roles = KAddOperandRoles,
         .result_type = sameAsOperand(),
         .payload_kind = PayloadKind::None,
         .is_terminator = false,
@@ -285,8 +270,8 @@ inline constexpr std::array<OpcodeSchema, 9> kSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Return,
         .spelling = "core.return",
-        .operand_types = kReturnOperandTypes,
-        .operand_roles = kReturnOperandRoles,
+        .operand_types = KReturnOperandTypes,
+        .operand_roles = KReturnOperandRoles,
         .result_type = fixedType(TypeKind::Void),
         .payload_kind = PayloadKind::None,
         .is_terminator = true,
@@ -296,10 +281,8 @@ inline constexpr std::array<OpcodeSchema, 9> kSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Argument,
         .spelling = "core.argument",
-        .operand_types = kNoOperandTypes,
-        .operand_roles = kNoOperandRoles,
-        // Its result is the indexed function parameter, not a fixed/structural constraint; the
-        // verifier checks that dynamically against `Function::parameters`.
+        .operand_types = KNoOperandTypes,
+        .operand_roles = KNoOperandRoles,
         .result_type = anyType(),
         .payload_kind = PayloadKind::Argument,
         .is_terminator = false,
@@ -309,10 +292,8 @@ inline constexpr std::array<OpcodeSchema, 9> kSchemas{{
     OpcodeSchema{
         .opcode = Opcode::TupleGet,
         .spelling = "core.tuple_get",
-        // Must be some tuple type; the verifier checks the payload index and selected element
-        // type dynamically.
-        .operand_types = kTupleGetOperandTypes,
-        .operand_roles = kTupleGetOperandRoles,
+        .operand_types = KTupleGetOperandTypes,
+        .operand_roles = KTupleGetOperandRoles,
         .result_type = anyType(),
         .payload_kind = PayloadKind::TupleGet,
         .is_terminator = false,
@@ -322,23 +303,21 @@ inline constexpr std::array<OpcodeSchema, 9> kSchemas{{
     OpcodeSchema{
         .opcode = Opcode::ReadInteger,
         .spelling = "parser.read_integer",
-        .operand_types = kReadIntegerOperandTypes,
-        .operand_roles = kReadIntegerOperandRoles,
-        // `tuple<parser.state, uint8>`; the verifier checks the exact structural shape, since it
-        // depends on this slice's fixed width-8 payload contract.
+        .operand_types = KReadIntegerOperandTypes,
+        .operand_roles = KReadIntegerOperandRoles,
         .result_type = anyType(),
         .payload_kind = PayloadKind::ReadInteger,
         .is_terminator = false,
         .is_pure = false,
-        .parser_contract = kReadIntegerContract,
+        .parser_contract = KReadIntegerContract,
     },
     OpcodeSchema{
         .opcode = Opcode::Finish,
         .spelling = "parser.finish",
         // Operand 0 is the parser state; operand 1 is the unit value, which must match the
         // owning parser function's result type, exactly like `core.return`'s value operand.
-        .operand_types = kFinishOperandTypes,
-        .operand_roles = kFinishOperandRoles,
+        .operand_types = KFinishOperandTypes,
+        .operand_roles = KFinishOperandRoles,
         .result_type = fixedType(TypeKind::Void),
         .payload_kind = PayloadKind::None,
         .is_terminator = true,
@@ -348,10 +327,8 @@ inline constexpr std::array<OpcodeSchema, 9> kSchemas{{
     OpcodeSchema{
         .opcode = Opcode::UnitCreate,
         .spelling = "unit.create",
-        .operand_types = kNoOperandTypes,
-        .operand_roles = kNoOperandRoles,
-        // Its result is the nominal `unit<...>` type named by the payload; the verifier checks
-        // that dynamically.
+        .operand_types = KNoOperandTypes,
+        .operand_roles = KNoOperandRoles,
         .result_type = anyType(),
         .payload_kind = PayloadKind::Unit,
         .is_terminator = false,
@@ -364,8 +341,8 @@ inline constexpr std::array<OpcodeSchema, 9> kSchemas{{
         // Operand 0 is the unit value being published into; operand 1 is the field value, whose
         // exact required type depends on the payload's field declaration, so the verifier checks
         // it dynamically.
-        .operand_types = kPublishFieldOperandTypes,
-        .operand_roles = kPublishFieldOperandRoles,
+        .operand_types = KPublishFieldOperandTypes,
+        .operand_roles = KPublishFieldOperandRoles,
         .result_type = sameAsOperand(),
         .payload_kind = PayloadKind::Field,
         .is_terminator = false,
@@ -376,13 +353,13 @@ inline constexpr std::array<OpcodeSchema, 9> kSchemas{{
 
 } // namespace detail
 
-/** Returns no schema for an unrecognized opcode; never allocates. */
+/** Returns no schema for an unrecognized opcode. */
 constexpr const OpcodeSchema* schemaFor(Opcode opcode) {
     auto index = static_cast<size_t>(opcode);
-    if ( index >= detail::kSchemas.size() )
+    if ( index >= detail::KSchemas.size() )
         return nullptr;
 
-    return &detail::kSchemas[index];
+    return &detail::KSchemas[index];
 }
 
 } // namespace spicy::detail::pir::ir

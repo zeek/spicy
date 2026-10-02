@@ -38,7 +38,7 @@ constexpr std::array<Opcode, 7> AcceptedBlockShape = {
     Opcode::Finish,
 };
 
-/** Checks one parser root's unit, function, and single block against the accepted narrow shape. */
+/** Checks one parser root's unit, function, and single block. */
 class RootChecker {
 public:
     RootChecker(const ir::Package& package, const ir::ParserRoot& root, std::vector<UnsupportedFeature>& out)
@@ -194,9 +194,7 @@ std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package) {
         return result;
     }
 
-    // A verified package with any function outside a parser root contains procedural code; this
-    // backend does not lower procedural functions. Reject the whole package rather than lowering
-    // only its parser roots.
+    // No procedural code allowed yet.
     if ( package.functions().size() != package.parserRoots().size() ) {
         result.push_back(UnsupportedFeature{
             .feature = "package",

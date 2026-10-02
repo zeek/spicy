@@ -34,8 +34,12 @@ namespace spicy::detail::pir {
 
 namespace {
 
-// Read-only visitor collecting candidate public roots, plus every unit type targeted by an
-// external (module-level) hook declaration, in one AST walk.
+UnsupportedFeature unsupported(const std::string& feature, std::string reason, const hilti::Location& loc) {
+    return UnsupportedFeature{.feature = feature, .reason = std::move(reason), .location = loc};
+}
+
+// Collects candidate roots for lowering PIR, as well as marking known
+// unsupported constructs.
 struct VisitorRoots : public visitor::PreOrder {
     std::vector<hilti::Declaration*> roots;
     std::vector<hilti::ast::TypeIndex> units_with_external_hooks;
@@ -55,26 +59,20 @@ struct VisitorRoots : public visitor::PreOrder {
         auto* unit = n->type()->type()->tryAs<type::Unit>();
         if ( ! unit ) {
             if ( n->isPublic() && ! skipsImplementation(n) && ! unrepresented_content )
-                unrepresented_content = UnsupportedFeature{
-                    .feature = fmt("public type '%s'", std::string(n->id())),
-                    .reason = "only parser unit types are supported yet",
-                    .location = n->meta().location(),
-                };
+                unrepresented_content = unsupported(fmt("public type '%s'", std::string(n->id())),
+                                                    "only parser unit types are supported yet",
+                                                    n->meta().location());
             return;
         }
 
-        // An alias declaration (`public type Alias = Original;`) has its own linkage, separate
-        // from the original unit's. `unit->isPublic()` reflects the *original* declaration, so
-        // it must not be used to decide the alias's own visibility.
+        // Aliases may have different linkage than what they alias.
         bool is_public = n->type()->alias() ? n->isPublic() : unit->isPublic();
 
         if ( is_public && ! skipsImplementation(n) )
             roots.push_back(n);
     }
 
-    // `on Unit::field { ... }` or `on Unit::%init { ... }` written at module level, outside the
-    // unit's own body. `Hook::unitTypeIndex()` is resolved by the compiler's resolver pass ahead
-    // of PIR, so it is already valid by the time discovery runs.
+    // External hooks from the unit itself
     void operator()(spicy::declaration::UnitHook* n) final {
         if ( auto index = n->hook()->unitTypeIndex() )
             units_with_external_hooks.push_back(index);
@@ -82,20 +80,16 @@ struct VisitorRoots : public visitor::PreOrder {
 
     void operator()(hilti::declaration::GlobalVariable* n) final {
         if ( ! skipsImplementation(n) && ! unrepresented_content )
-            unrepresented_content = UnsupportedFeature{
-                .feature = "global variable",
-                .reason = "global variables and their initialization are not supported yet",
-                .location = n->meta().location(),
-            };
+            unrepresented_content = unsupported("global variable",
+                                                "global variables and their initialization are not supported yet",
+                                                n->meta().location());
     }
 
     void operator()(hilti::declaration::Constant* n) final {
         if ( n->isPublic() && ! skipsImplementation(n) && ! unrepresented_content )
-            unrepresented_content = UnsupportedFeature{
-                .feature = fmt("public constant '%s'", std::string(n->id())),
-                .reason = "constants are not supported yet",
-                .location = n->meta().location(),
-            };
+            unrepresented_content = unsupported(fmt("public constant '%s'", std::string(n->id())),
+                                                "constants are not supported yet",
+                                                n->meta().location());
     }
 };
 
@@ -113,12 +107,6 @@ ir::SourceSpanId internSpan(ir::Package& package, const hilti::Location& loc) {
     });
 }
 
-UnsupportedFeature unsupported(const std::string& feature, std::string reason, const hilti::Location& loc) {
-    return UnsupportedFeature{.feature = feature, .reason = std::move(reason), .location = loc};
-}
-
-// Lowers a resolved expression, restricted to int64 literals and signed-integer addition. Returns
-// the produced instruction, or the unsupported feature that kept it from being represented.
 class ExpressionLowerer {
 public:
     ExpressionLowerer(ir::Package& package, ir::BlockId block, std::string function_feature)
@@ -222,24 +210,61 @@ std::optional<UnsupportedFeature> lowerFunction(hilti::declaration::Function* de
     return std::nullopt;
 }
 
-// Validates and lowers a non-alias public unit with one plain unsigned 8-bit integer field
-// and no parameters, attributes, context type, or other unit items. Any field/unit shape
-// outside that subset is reported precisely and lowers nothing.
+// Adds the exact one-byte shape that we expect. This will be changed when
+// more functionality is added.
+void addOneByteUnit(ir::Package& package,
+                    const Location& unit_loc,
+                    const Location& field_loc,
+                    std::string unit_id,
+                    std::string field_id) {
+    // The accepted subset before rules out every way this source language could override
+    // byte order (a field or unit `&byte-order` attribute, or a unit `%byte-order` property), so
+    // the resolved default is always the ordinary network byte order.
+    auto unit_span = internSpan(package, unit_loc);
+    auto field_span = internSpan(package, field_loc);
+
+    auto unit_decl = package.createUnitDecl(std::move(unit_id));
+    auto field_decl = package.createFieldDecl(unit_decl, std::move(field_id), package.uint8Type(), field_span);
+
+    auto state_type = package.parserStateType();
+    auto unit_type = package.unitType(unit_decl);
+    auto fn = package.createParserFunction(unit_decl, state_type, unit_type, unit_span);
+    auto block = package.createBlock(package.function(fn).root_region);
+
+    auto state0 = package.addArgument(fn, block, 0, unit_span);
+    auto unit0 = package.addUnitCreate(block, unit_decl, unit_span);
+    auto read = package.addReadInteger(block,
+                                       state0,
+                                       ir::ReadIntegerPayload{
+                                           .width = 8,
+                                           .signedness = ir::Signedness::Unsigned,
+                                           .byte_order = ir::ByteOrder::Network,
+                                       },
+                                       field_span);
+    auto state1 = package.addTupleGet(block, read, 0, field_span);
+    auto value = package.addTupleGet(block, read, 1, field_span);
+    auto unit1 = package.addPublishField(block, unit0, value, field_decl, field_span);
+    package.addParserFinish(block, state1, unit1, unit_span);
+
+    package.addParserRoot(unit_decl, fn);
+}
+
+// Validates that the unit is lowerable with current limitations. If so, adds
+// a lowered unit to the package.
 std::optional<UnsupportedFeature> lowerUnit(hilti::declaration::Type* decl,
                                             const std::vector<hilti::ast::TypeIndex>& units_with_external_hooks,
                                             ir::Package& package) {
     auto* unit = decl->type()->type()->as<type::Unit>();
-    auto feature = fmt("parser unit '%s'", std::string(decl->id()));
+    const auto& unit_id = decl->id();
+    auto feature = fmt("parser unit '%s'", std::string(unit_id));
     auto unit_loc = decl->meta().location();
 
     auto unsupported_here = [&](std::string reason, const hilti::Location& loc) {
         return unsupported(feature, std::move(reason), loc);
     };
 
-    // A filter-capable unit or one with a hook attached anywhere (embedded hooks inside the unit
-    // body are already excluded below by the single-item check; a hook declared external to the
-    // unit is not a child of `unit->items()` at all, so it must be checked against the whole-AST
-    // discovery pass instead) may run procedural logic PIR does not yet represent.
+    // Check a bunch of currently unsupported features. This list will
+    // decrease as support improves.
     if ( unit->mayHaveFilter() )
         return unsupported_here("units that may have a filter attached are not supported yet", unit_loc);
 
@@ -300,37 +325,7 @@ std::optional<UnsupportedFeature> lowerUnit(hilti::declaration::Type* decl,
     if ( ! parse_uint || parse_uint->width() != 8 || ! item_uint || item_uint->width() != 8 )
         return unsupported_here("only an unsigned 8-bit integer field is supported yet", field_loc);
 
-    // The accepted subset above rules out every way this source language could override
-    // byte order (a field or unit `&byte-order` attribute, or a unit `%byte-order` property), so
-    // the resolved default is always the ordinary network byte order.
-    auto unit_span = internSpan(package, unit_loc);
-    auto field_span = internSpan(package, field_loc);
-
-    auto unit_decl = package.createUnitDecl(std::string(decl->id().local()), unit_span);
-    auto field_decl =
-        package.createFieldDecl(unit_decl, std::string(field->id().local()), package.uint8Type(), field_span);
-
-    auto state_type = package.parserStateType();
-    auto unit_type = package.unitType(unit_decl);
-    auto fn = package.createParserFunction(unit_decl, state_type, unit_type, unit_span);
-    auto block = package.createBlock(package.function(fn).root_region);
-
-    auto state0 = package.addArgument(fn, block, 0, unit_span);
-    auto unit0 = package.addUnitCreate(block, unit_decl, unit_span);
-    auto read = package.addReadInteger(block,
-                                       state0,
-                                       ir::ReadIntegerPayload{
-                                           .width = 8,
-                                           .signedness = ir::Signedness::Unsigned,
-                                           .byte_order = ir::ByteOrder::Network,
-                                       },
-                                       field_span);
-    auto state1 = package.addTupleGet(block, read, 0, field_span);
-    auto value = package.addTupleGet(block, read, 1, field_span);
-    auto unit1 = package.addPublishField(block, unit0, value, field_decl, field_span);
-    package.addParserFinish(block, state1, unit1, unit_span);
-
-    package.addParserRoot(unit_decl, fn);
+    addOneByteUnit(package, unit_loc, field_loc, unit_id.local(), field->id().local());
     return std::nullopt;
 }
 
@@ -345,8 +340,7 @@ RootDiscovery discoverRoots(const hilti::ASTContext& ctx) {
 }
 
 std::optional<UnsupportedFeature> lowerRoots(const RootDiscovery& discovery, ir::Package& package) {
-    // Choosing the PIR-only route drops all original Spicy modules. Refuse that route unless
-    // discovery accounted for every declaration with compilation-time behavior.
+    // If discovery doesn't support something, lowering also won't.
     if ( discovery.unrepresented_content )
         return discovery.unrepresented_content;
 
