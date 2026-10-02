@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <string>
 #include <type_traits>
-#include <variant>
 #include <vector>
 
 #include <spicy/compiler/detail/pir/ir/arena.h>
@@ -80,7 +79,8 @@ struct ParserRoot {
     FunctionId function;
 };
 
-/** Owns the flat arenas of a PIR package. */
+/** The central place that stores the PIR arenas and outputs. */
+// TODO: Move IR-providing methods to a builder.
 class Package {
 public:
     Package();

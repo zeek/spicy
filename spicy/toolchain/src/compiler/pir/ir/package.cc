@@ -114,7 +114,7 @@ InstId Package::addInst(BlockId block,
                         TypeId result_type,
                         InstPayload payload,
                         SourceSpanId span) {
-    [[maybe_unused]] auto* schema = schemaFor(opcode);
+    [[maybe_unused]] const auto* schema = schemaFor(opcode);
     assert(schema && "addInst() requires a recognized opcode; use addInstForTesting() for deliberately malformed IR");
     assert(args.size() == schema->operandCount());
     assert(payloadMatchesKind(payload, schema->payload_kind));
@@ -153,12 +153,8 @@ InstId Package::addReturn(BlockId block, InstId value, SourceSpanId span) {
 }
 
 InstId Package::addArgument(FunctionId function, BlockId block, uint32_t index, SourceSpanId span) {
-    // `core.argument`'s result is `function`'s indexed parameter type. The verifier is responsible
-    // for diagnosing an out-of-range index (malformed-IR tests only), so an invalid `function` or
-    // index just falls through to an invalid `TypeId` here rather than asserting. There is no
-    // stored `function` <-> `block` association for the verifier to check `function` against, so
-    // a caller passing a `function` that doesn't actually own `block` is a caller bug this
-    // construction API does not, and cannot, detect.
+    // result_type is invalid by default, remains if out-of-range. Validator
+    // should report the error.
     TypeId result_type;
     if ( isValid(function) ) {
         const auto& fn = _functions.get(function);
@@ -206,6 +202,7 @@ InstId Package::addParserFinish(BlockId block, InstId state, InstId unit_value, 
     return addInst(block, Opcode::Finish, {state, unit_value}, _void_type, {}, span);
 }
 
+// Useful for optimization
 void Package::replaceInst(InstId id, Opcode opcode, std::vector<InstId> args, InstPayload payload) {
     auto& inst = _instructions.get(id);
     inst.opcode = opcode;

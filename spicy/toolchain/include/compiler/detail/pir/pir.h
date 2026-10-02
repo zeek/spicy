@@ -52,8 +52,8 @@ struct Error {
 };
 
 /**
- * Outcome of a PIR build: the resulting package, the constructs that kept
- * PIR from representing the AST, or a hard PIR failure.
+ * Used to determine the status of PIR build, for diagnostics or to see if
+ * we should keep going with the build versus fallback.
  */
 using BuildOutcome = std::variant<Success, Unsupported, Error>;
 
