@@ -18,7 +18,7 @@ namespace spicy::detail::pir::ir {
 namespace {
 
 std::string_view opcodeName(Opcode opcode) {
-    if ( auto* schema = schemaFor(opcode) )
+    if ( const auto* schema = schemaFor(opcode) )
         return schema->spelling;
 
     return "<unknown-opcode>";
@@ -68,7 +68,7 @@ std::optional<std::string> renderPayload(const Package& package, const InstPaylo
         const auto& field = package.declaration(fp->field);
         if ( ! package.isValid(field.owner) )
             return fmt("@<invalid-unit>::%%%u \"%s\"", fp->field.index, field.name);
-        return fmt("@%%%u \"%s\"::%%%u \"%s\"",
+        return fmt(R"(@%%%u "%s"::%%%u "%s")",
                    field.owner.index,
                    package.typeDecl(field.owner).name,
                    fp->field.index,
@@ -84,6 +84,7 @@ std::string printInst(const Package& package, InstId id) {
     std::string body{opcodeName(inst.opcode)};
 
     std::vector<std::string> tokens;
+    tokens.reserve(inst.args.size());
     for ( auto arg : inst.args )
         tokens.push_back(printOperand(arg));
 
@@ -159,15 +160,14 @@ std::string print(const Package& package) {
         auto function_id = FunctionId{static_cast<uint32_t>(i)};
         const auto& fn = package.function(function_id);
 
-        // Step 2's procedural functions always have zero parameters; only print a parameter list
-        // when there's one to show, so their exact canonical dump is unaffected.
+        // Only print a parameter list when there's one to show, so their exact
+        // canonical dump is unaffected.
         std::string parameters;
         for ( size_t p = 0; p < fn.parameters.size(); ++p )
             parameters += (p == 0 ? "" : ", ") + typeName(package, fn.parameters[p]);
 
-        // Step 2's procedural functions are always `Normal` with no parser unit; only append the
-        // kind/parser-unit suffix for a `Parser` function, so their exact canonical dump is
-        // unaffected.
+        // Only append the kind/parser-unit suffix for a `Parser` function, so
+        // their exact canonical dump is unaffected.
         std::string suffix;
         if ( fn.kind == FunctionKind::Parser ) {
             suffix = " [parser, unit=";
