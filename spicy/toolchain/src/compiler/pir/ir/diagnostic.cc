@@ -69,7 +69,7 @@ std::string renderEntity(const Package& package, const DiagnosticEntity& entity)
     if ( const auto* id = std::get_if<InstId>(&entity) ) {
         if ( package.isValid(*id) ) {
             const auto& inst = package.inst(*id);
-            if ( auto* schema = schemaFor(inst.opcode) )
+            if ( const auto* schema = schemaFor(inst.opcode) )
                 return fmt("instruction %%%u (%s)", id->index, schema->spelling);
         }
         return fmt("instruction %%%u", id->index);
@@ -101,9 +101,6 @@ std::string renderEntity(const Package& package, const DiagnosticEntity& entity)
     return "";
 }
 
-// Entity first, source location as secondary provenance: PIR diagnostics report a violated IR
-// invariant anchored at a typed entity; a source span is corroborating context; when present, it
-// is never the primary identity of the report.
 void renderOne(std::string& out,
                const Package& package,
                const DiagnosticDefinition& def,

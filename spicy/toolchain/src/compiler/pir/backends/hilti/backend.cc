@@ -99,7 +99,6 @@ RootNames namesFor(const ir::Package& package, const ir::ParserRoot& root, size_
 
 /** Builds a `ParseResult_<i>` struct-literal expression for one of the four closed outcomes. */
 ::hilti::Expression* makeResult(::hilti::Builder& b,
-                                const RootNames& names,
                                 ::hilti::type::enum_::Label* kind,
                                 ::hilti::Expression* unit, // nullptr => absent (`Null`)
                                 ::hilti::Expression* cursor,
@@ -113,9 +112,7 @@ RootNames namesFor(const ir::Package& package, const ir::ParserRoot& root, size_
         b.ctorStructField(::hilti::ID("gap_offset"), gap_offset),
         b.ctorStructField(::hilti::ID("gap_length"), gap_length),
     };
-    return b.struct_(fields,
-                     b.qualifiedType(b.typeName(::hilti::ID(names.result_type)), ::hilti::Constness::Mutable),
-                     meta);
+    return b.struct_(fields, meta);
 }
 
 /**
@@ -180,7 +177,6 @@ RootNames namesFor(const ir::Package& package, const ir::ParserRoot& root, size_
     auto* eod_block = b.statementBlock(read_meta);
     ::hilti::Builder eod_builder(b.context(), eod_block);
     eod_builder.addReturn(makeResult(eod_builder,
-                                     names,
                                      unexpected_eod,
                                      nullptr,
                                      fb.id(::hilti::ID("cursor")),
@@ -220,7 +216,6 @@ RootNames namesFor(const ir::Package& package, const ir::ParserRoot& root, size_
     auto* gap_end_expr =
         catch_builder.memberCall(catch_builder.id(::hilti::ID("after_gap")), "offset", ::hilti::Expressions{}, read_meta);
     catch_builder.addReturn(makeResult(catch_builder,
-                                       names,
                                        gap,
                                        nullptr,
                                        catch_builder.id(::hilti::ID("cursor")),
@@ -239,7 +234,6 @@ RootNames namesFor(const ir::Package& package, const ir::ParserRoot& root, size_
 
     // `return <Success>;`
     fb.addReturn(makeResult(fb,
-                            names,
                             success,
                             fb.id(::hilti::ID("unit_")),
                             fb.id(::hilti::ID("next_cursor")),
