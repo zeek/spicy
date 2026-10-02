@@ -53,6 +53,7 @@ pir::BuildResult pir::build(const hilti::ASTContext& ctx) {
 
     HILTI_DEBUG(logging::debug::PIR, fmt("constant folding changed the package: %s", changed ? "yes" : "no"));
 
+    // TODO: Should this verification be only debug or something?
     {
         hilti::util::timing::Collector _("spicy/compiler/pir/build/verify");
         diags = ir::verify(package);

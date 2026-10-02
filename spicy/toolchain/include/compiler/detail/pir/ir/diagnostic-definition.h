@@ -9,10 +9,8 @@ namespace spicy::detail::pir::ir {
 enum class DiagnosticSeverity { Error, Warning, Note };
 
 /**
- * Whether a diagnostic reports a violated PIR invariant (an internal compiler error, never
- * suppressible and not the user's fault) or a source-level condition a user could address.
- * Every diagnostic PIR's verifier currently produces is `Internal`: they all report malformed
- * PIR, which is a compiler bug, not something a well-formed Spicy program can trigger.
+ * Internal is an internal compiler error (ie some compiler invariant).
+ * User can reasonably occur within user code.
  */
 enum class DiagnosticClassification { Internal, User };
 
