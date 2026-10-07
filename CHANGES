@@ -1,3 +1,11 @@
+1.18.0-dev.41 | 2026-10-07 12:07:10 +0200
+
+  * Bump CodSpeedHQ/action from 5.2.1 to 5.4.0 (dependabot[bot])
+
+  * Bump 3rdparty/utf8proc from `e5e7992` to `79cdd5a` (dependabot[bot])
+
+  * Bump 3rdparty/utfcpp from `2d8e20b` to `3d1ff6d` (dependabot[bot])
+
 1.18.0-dev.37 | 2026-09-24 18:33:53 +0200
 
   * Revert "Use canonical IDs as map keys in optimizer passes" (Benjamin Bannier, Corelight)
