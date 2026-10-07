@@ -179,6 +179,9 @@ struct ParserState {
      * Expression* holding the last parse error if any. This field is set only in sync or trial mode.
      */
     Expression* error = nullptr;
+
+    /** Number of nested unit parsers entered by the current parse. */
+    Expression* parse_depth = nullptr;
 };
 
 /** Generates the parsing logic for a unit type. */

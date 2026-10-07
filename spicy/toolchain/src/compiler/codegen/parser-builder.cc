@@ -56,7 +56,23 @@ ParserState::ParserState(Builder* builder,
       data(data),
       begin(builder->begin(cur)),
       cur(cur),
-      lahead(builder->integer(look_ahead::None)) {}
+      lahead(builder->integer(look_ahead::None)),
+      parse_depth(builder->integer(1U)) {}
+
+namespace {
+
+void emitParseRecursionDepthCheck(Builder* builder, const type::Unit* unit, Expression* parse_depth) {
+    const auto* limit = unit->propertyItem("%parse-recursion-depth");
+    if ( limit && limit->expression() )
+        builder->addCall("spicy_rt::checkParseRecursionDepth",
+                          {parse_depth,
+                           builder->cast(limit->expression(),
+                                         builder->qualifiedType(builder->typeUnsignedInteger(64),
+                                                                hilti::Constness::Const)),
+                           builder->stringLiteral(unit->typeID())});
+}
+
+} // namespace
 
 void ParserState::printDebug(Builder* builder) const {
     builder->addCall("spicy_rt::printParserState",
@@ -322,6 +338,7 @@ struct ProductionVisitor : public production::Visitor {
                         auto pstate = state();
                         pstate.begin = builder()->addTmp("begin", builder()->begin(state().cur));
                         pushState(std::move(pstate));
+                        emitParseRecursionDepthCheck(builder(), unit, state().parse_depth);
                         pb->initializeUnit(p.location());
                     }
                 };
@@ -341,6 +358,7 @@ struct ProductionVisitor : public production::Visitor {
                     pstate.lahead = builder()->id(HILTI_INTERNAL_ID("lah"));
                     pstate.lahead_end = builder()->id(HILTI_INTERNAL_ID("lahe"));
                     pstate.error = builder()->id(HILTI_INTERNAL_ID("error"));
+                    pstate.parse_depth = builder()->id(HILTI_INTERNAL_ID("parse_depth"));
 
                     std::optional<PathTracker> path_tracker;
                     Expression* profiler = nullptr;
@@ -384,7 +402,8 @@ struct ProductionVisitor : public production::Visitor {
                                         state().trim,
                                         state().lahead,
                                         state().lahead_end,
-                                        state().error};
+                                        state().error,
+                                        state().parse_depth};
 
                     if ( addl_param )
                         args.push_back(builder()->id(addl_param->id()));
@@ -500,6 +519,7 @@ struct ProductionVisitor : public production::Visitor {
                     pstate.lahead = builder()->id(HILTI_INTERNAL_ID("lah"));
                     pstate.lahead_end = builder()->id(HILTI_INTERNAL_ID("lahe"));
                     pstate.error = builder()->id(HILTI_INTERNAL_ID("error"));
+                    pstate.parse_depth = builder()->id(HILTI_INTERNAL_ID("parse_depth"));
 
                     std::optional<PathTracker> path_tracker;
 
@@ -570,8 +590,14 @@ struct ProductionVisitor : public production::Visitor {
                 return id_stage1;
             });
 
-        Expressions args =
-            {state().data, state().begin, state().cur, state().trim, state().lahead, state().lahead_end, state().error};
+        Expressions args = {state().data,
+                            state().begin,
+                            state().cur,
+                            state().trim,
+                            state().lahead,
+                            state().lahead_end,
+                            state().error,
+                            state().parse_depth};
 
         if ( ! unit && p.meta().field() )
             args.push_back(destination());
@@ -713,7 +739,9 @@ struct ProductionVisitor : public production::Visitor {
                                     pb->state().trim,
                                     pb->state().lahead,
                                     pb->state().lahead_end,
-                                    pb->state().error};
+                                    pb->state().error,
+                                    builder()->call("spicy_rt::nextParseRecursionDepth",
+                                                    {pb->state().parse_depth})};
 
                 Location location;
                 Expressions type_args;
@@ -2211,6 +2239,9 @@ hilti::type::Function* ParserBuilder::parseMethodFunctionType(hilti::type::funct
                                  builder()->qualifiedType(builder()->typeName("hilti::RecoverableFailure"),
                                                           hilti::Constness::Const)),
                              hilti::parameter::Kind::Copy),
+        builder()->parameter(HILTI_INTERNAL_ID("parse_depth"),
+                             builder()->typeUnsignedInteger(64),
+                             hilti::parameter::Kind::Copy),
     };
 
     if ( addl_param )
@@ -2429,6 +2460,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
                                                              hilti::Constness::Const)));
 
             init_context();
+            emitParseRecursionDepthCheck(builder(), t, builder()->integer(1U));
 
             auto pstate = ParserState(builder(),
                                       t,
@@ -2492,6 +2524,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
                                                              hilti::Constness::Const)));
 
             init_context();
+            emitParseRecursionDepthCheck(builder(), t, builder()->integer(1U));
 
             pstate = ParserState(builder(),
                                  t,
@@ -2545,6 +2578,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
                                                          hilti::Constness::Const)));
 
         init_context();
+        emitParseRecursionDepthCheck(builder(), t, builder()->integer(1U));
 
         auto pstate = ParserState(builder(),
                                   t,

@@ -3,6 +3,8 @@
 #pragma once
 
 #include <algorithm>
+#include <cstdint>
+#include <limits>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -410,6 +412,22 @@ public:
 
     ~ParseError() override; /* required to create vtable, see hilti::rt::Exception */
 };
+
+/** Throws if a generated parser enters a unit deeper than its configured limit. */
+inline void checkParseRecursionDepth(uint64_t depth, uint64_t limit, std::string_view unit_id) {
+    if ( depth > limit )
+        throw ParseError(hilti::rt::fmt("parse recursion depth %s exceeds configured limit %s in unit %s",
+                                        depth,
+                                        limit,
+                                        unit_id));
+}
+
+inline uint64_t nextParseRecursionDepth(uint64_t depth) {
+    if ( depth == std::numeric_limits<uint64_t>::max() )
+        throw ParseError("parse recursion depth counter overflow");
+
+    return depth + 1;
+}
 
 /**
  * Exception triggering backtracking to the most recent ``&try``. Derived from

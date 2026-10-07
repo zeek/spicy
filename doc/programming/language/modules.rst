@@ -82,6 +82,12 @@ A module may define the following global properties:
         `<expr>`, where ``ORDER`` must be of type is type
         :ref:`spicy_ByteOrder`.
 
+    ``%parse-recursion-depth = LIMIT;``
+        Limits how many unit parsers may be nested while parsing input.
+        ``LIMIT`` must be a positive unsigned integer constant. The outermost
+        unit counts as depth 1. A unit may set the property directly to
+        override the module-level value.
+
     ``%spicy-version = "VERSION";``
         Specifies that the module requires a given minimum version of
         Spicy, where ``VERSION`` must be a string of the form ``X.Y``

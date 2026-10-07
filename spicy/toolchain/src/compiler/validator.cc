@@ -7,10 +7,13 @@
 
 #include <hilti/ast/ast-context.h>
 #include <hilti/ast/attribute.h>
+#include <hilti/ast/ctors/integer.h>
+#include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/keyword.h>
 #include <hilti/ast/node.h>
 #include <hilti/ast/scope-lookup.h>
 #include <hilti/ast/type.h>
+#include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/regexp.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
@@ -446,6 +449,19 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         else if ( n->id().str() == "%skip-implementation" )
             ; // Nothing; just passed on to HILTI
 
+        else if ( n->id().str() == "%parse-recursion-depth" ) {
+            auto* e = n->expression();
+            if ( ! e )
+                error("%parse-recursion-depth requires an argument", n);
+            else if ( ! e->type()->type()->isA<hilti::type::UnsignedInteger>() )
+                error("%parse-recursion-depth requires an unsigned integer", n);
+            else if ( auto* c = e->tryAs<hilti::expression::Ctor>();
+                      ! c || ! c->ctor()->isA<hilti::ctor::UnsignedInteger>() )
+                error("%parse-recursion-depth requires a constant unsigned integer", n);
+            else if ( c->ctor()->as<hilti::ctor::UnsignedInteger>()->value() == 0 )
+                error("%parse-recursion-depth must be greater than zero", n);
+        }
+
         else if ( n->id().str() == "%byte-order" ) {
             if ( auto* e = n->expression(); ! e ) {
                 error("%byte-order requires an argument", n);
@@ -578,6 +594,19 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
             auto* decl = n->parent<hilti::declaration::Type>();
             if ( decl && ! decl->isPublic() )
                 error("only public units can have %context", n);
+        }
+
+        else if ( n->id().str() == "%parse-recursion-depth" ) {
+            auto* e = n->expression();
+            if ( ! e )
+                error("%parse-recursion-depth requires an argument", n);
+            else if ( ! e->type()->type()->isA<hilti::type::UnsignedInteger>() )
+                error("%parse-recursion-depth requires an unsigned integer", n);
+            else if ( auto* c = e->tryAs<hilti::expression::Ctor>();
+                      ! c || ! c->ctor()->isA<hilti::ctor::UnsignedInteger>() )
+                error("%parse-recursion-depth requires a constant unsigned integer", n);
+            else if ( c->ctor()->as<hilti::ctor::UnsignedInteger>()->value() == 0 )
+                error("%parse-recursion-depth must be greater than zero", n);
         }
 
         else if ( const auto& prop = n->id().str(); prop == "%skip" || prop == "%skip-post" || prop == "%skip-pre" ) {
