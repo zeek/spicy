@@ -5,6 +5,6 @@
 namespace hilti::driver {
 
 /** Stages of the compilation pipeline. */
-enum class Stage { UNINITIALIZED, INITIALIZED, COMPILED, CODEGENED, LINKED, JITTED };
+enum class Stage { UNINITIALIZED, INITIALIZED, RESOLVED, COMPILED, CODEGENED, LINKED, JITTED };
 
 } // namespace hilti::driver

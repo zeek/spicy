@@ -771,15 +771,18 @@ Result<Nothing> Driver::_codegenUnits() {
     return Nothing();
 }
 
-Result<Nothing> Driver::compileUnits() {
+Result<Nothing> Driver::compileUnits(Stage target) {
     assert(_builder.get());
 
-    if ( auto rc = context()->astContext()->processAST(_builder.get(), this); ! rc ) {
+    if ( auto rc = context()->astContext()->processAST(_builder.get(), this, target); ! rc ) {
         // hilti::detail::printer::print(std::cerr, context()->astContext()->root());
         return error(result::Error("aborting after errors"));
     }
 
-    _stage = Stage::COMPILED;
+    _stage = target;
+
+    if ( target == Stage::RESOLVED )
+        return Nothing();
 
     for ( const auto& [uid, unit] : _units ) {
         if ( _driver_options.dump_code )

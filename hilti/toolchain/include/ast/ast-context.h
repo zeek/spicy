@@ -17,6 +17,7 @@
 #include <hilti/ast/node.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/uniquer.h>
+#include <hilti/compiler/driver-stage.h>
 
 namespace hilti {
 
@@ -209,14 +210,15 @@ public:
 
     /**
      * Processes the whole AST with all of the compiler's visitor passes. This
-     * is the top-level entry point for all resolving/validating/optimizing. If
-     * successful, the will be fully resolved and validated; and ready for code
-     * generation.
+     * is the top-level entry point for all resolving/validating/optimizing.
      *
      * @param builder current compiler builder, which AST processing may access
      * @param driver current compiler driver, which AST processing may access
+     * @param target pipeline stage to reach; `RESOLVED` stops after
+     *     resolving and validating, `COMPILED` (the default) runs the full
+     *     pipeline including dependency tracking, transforms, and optimization
      */
-    Result<Nothing> processAST(Builder* builder, Driver* driver);
+    Result<Nothing> processAST(Builder* builder, Driver* driver, driver::Stage target = driver::Stage::COMPILED);
 
     /**
      * During AST processing, returns the current compiler driver. If called

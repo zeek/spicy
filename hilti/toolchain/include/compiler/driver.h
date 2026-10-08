@@ -296,11 +296,13 @@ protected:
     void usage();
 
     /**
-     * Compiles all registered input files to HILTI code.
+     * Processes all registered input files through the compilation pipeline
+     * up to the given target stage.
      *
-     * @return set if successful; otherwise the result provides an error  message
+     * @param target pipeline stage to reach; defaults to full compilation
+     * @return set if successful; otherwise the result provides an error message
      */
-    Result<Nothing> compileUnits();
+    Result<Nothing> compileUnits(Stage target = Stage::COMPILED);
 
     /**
      * Compiles all registered input files to C++ code.
