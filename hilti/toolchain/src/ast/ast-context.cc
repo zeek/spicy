@@ -823,13 +823,19 @@ Result<Nothing> ASTContext::_resolve(Builder* builder, const Plugin& plugin) {
             logger().internalError("hilti::Unit::compile() didn't terminate, AST keeps changing");
     }
 
-    if ( auto rc = _computeDependencies(); ! rc )
-        return rc;
+    // Dependency tracking can be skipped by drivers that exit before
+    // _transform / the optimizer run. As the tracking can take non-trivial
+    // compute, this reduces execution time for those drivers.
+    if ( ! _context->options().skip_dependency_tracking ) {
+        if ( auto rc = _computeDependencies(); ! rc )
+            return rc;
+    }
 
     _dumpAST(logging::debug::AstResolved, plugin, "AST after resolving", _total_rounds);
     _dumpStats(logging::debug::AstStats, plugin.component);
     _dumpDeclarations(logging::debug::AstDeclarations, plugin);
-    _dependency_tracker->dumpDependencies(logging::debug::AstDeclarations);
+    if ( _dependency_tracker )
+        _dependency_tracker->dumpDependencies(logging::debug::AstDeclarations);
 
 #ifndef NDEBUG
     checkAST(false);

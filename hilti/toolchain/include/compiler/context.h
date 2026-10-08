@@ -39,6 +39,9 @@ struct Options {
     bool track_location = true;   /**< if true, generate code to record current source code location during execution */
     bool skip_validation = false; /**< if true, skip AST validation; for debugging only, things may go downhill
                                      quickly if an AST is not well-formed  */
+    bool skip_dependency_tracking = false; /**< if true, skip the post-resolve dependency-tracking pass. Only
+                                     safe when the driver also skips ast_transform and global optimizations,
+                                     which consume the tracker's output. */
     bool enable_profiling = false; /**< if true, generate code to profile execution times of individual code sections */
     std::vector<hilti::rt::filesystem::path> library_paths; /**< additional directories to search for imported files */
     std::string cxx_namespace_extern =
