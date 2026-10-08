@@ -482,7 +482,7 @@ Result<Nothing> Driver::initialize() {
     if ( _stage != Stage::UNINITIALIZED )
         logger().internalError("unexpected driver stage in initialize()");
 
-    _stage = INITIALIZED;
+    _stage = Stage::INITIALIZED;
 
 #ifdef _WIN32
     // On Windows, JIT-compiled DLLs need to link against the host
@@ -779,7 +779,7 @@ Result<Nothing> Driver::compileUnits() {
         return error(result::Error("aborting after errors"));
     }
 
-    _stage = COMPILED;
+    _stage = Stage::COMPILED;
 
     for ( const auto& [uid, unit] : _units ) {
         if ( _driver_options.dump_code )
