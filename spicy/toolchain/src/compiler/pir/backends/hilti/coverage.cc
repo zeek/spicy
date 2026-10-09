@@ -1,6 +1,5 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
-#include <array>
 #include <unordered_set>
 
 #include <hilti/base/util.h>
@@ -13,173 +12,89 @@ namespace spicy::detail::pir::backend::hilti {
 
 namespace {
 
-using ir::Opcode;
-
 ::hilti::Location toLocation(const ir::Package& package, ir::SourceSpanId id) {
     if ( ! package.sourceManager().isValid(id) )
         return {};
-
     const auto& span = package.sourceManager().span(id);
-    std::string file;
-    if ( package.sourceManager().isValid(span.file) )
-        file = package.sourceManager().file(span.file).diagnostic_path;
-
-    return ::hilti::Location(file, span.begin_line, span.end_line, span.begin_column, span.end_column);
+    const auto& file = package.sourceManager().file(span.file);
+    return ::hilti::Location(file.diagnostic_path, span.begin_line, span.end_line, span.begin_column, span.end_column);
 }
 
-/** The exact single-block instruction sequence this backend accepts, in order. */
-constexpr std::array<Opcode, 7> AcceptedBlockShape = {
-    Opcode::Argument,
-    Opcode::UnitCreate,
-    Opcode::ReadInteger,
-    Opcode::TupleGet,
-    Opcode::TupleGet,
-    Opcode::PublishField,
-    Opcode::Finish,
-};
+void report(std::vector<UnsupportedFeature>& out, std::string feature, std::string reason, ::hilti::Location loc = {}) {
+    out.push_back({.feature = std::move(feature), .reason = std::move(reason), .location = std::move(loc)});
+}
 
-/** Checks one parser root's unit, function, and single block. */
-class RootChecker {
-public:
-    RootChecker(const ir::Package& package, const ir::ParserRoot& root, std::vector<UnsupportedFeature>& out)
-        : _package(package), _root(root), _out(out) {}
-
-    void run() {
-        _checkUnit();
-        _checkFunction();
+// Whether the HILTI backend can materialize a value of this type as a unit field or vector element.
+bool isStorageType(const ir::Package& package, ir::TypeId id) {
+    const auto& type = package.type(id);
+    switch ( type.kind ) {
+        case ir::TypeKind::UInt8:
+        case ir::TypeKind::UInt64:
+        case ir::TypeKind::Bytes:
+        case ir::TypeKind::Unit: return true;
+        case ir::TypeKind::Vector: return isStorageType(package, type.type_arguments[0]);
+        case ir::TypeKind::Void:
+        case ir::TypeKind::Int64:
+        case ir::TypeKind::ParserState:
+        case ir::TypeKind::Tuple: return false;
     }
+    return false;
+}
 
-private:
-    void _report(std::string_view feature, std::string reason, ::hilti::Location loc = {}) {
-        _out.push_back(UnsupportedFeature{
-            .feature = std::string(feature),
-            .reason = std::move(reason),
-            .location = std::move(loc),
-        });
-    }
-
-    void _checkUnit() {
-        const auto& unit = _package.typeDecl(_root.unit);
-        if ( unit.fields.size() != 1 ) {
-            _report("unit",
-                    fmt("unit '%s' must have exactly one field for this backend, has %d",
-                        unit.name,
-                        unit.fields.size()),
-                    toLocation(_package, unit.span));
-            return;
-        }
-
-        const auto& field = _package.declaration(unit.fields[0]);
-        if ( _package.type(field.type).kind != ir::TypeKind::UInt8 )
-            _report("unit field",
-                    fmt("field '%s' must be uint8 for this backend", field.name),
-                    toLocation(_package, field.span));
-    }
-
-    void _checkFunction() {
-        const auto& fn = _package.function(_root.function);
-        if ( fn.kind != ir::FunctionKind::Parser ) {
-            _report("function", fmt("function '%s' is not a parser function", fn.name), toLocation(_package, fn.span));
-            return;
-        }
-
-        const auto& region = _package.region(fn.root_region);
-        if ( region.blocks.size() != 1 ) {
-            _report("function",
-                    fmt("function '%s' must have exactly one block for this backend, has %d",
-                        fn.name,
-                        region.blocks.size()),
-                    toLocation(_package, fn.span));
-            return;
-        }
-
-        const auto& block = _package.block(region.blocks[0]);
-        if ( block.insts.size() != AcceptedBlockShape.size() ) {
-            _report("function",
-                    fmt("function '%s' must have exactly the accepted one-byte-parser instruction "
-                        "sequence, found %d instruction(s)",
-                        fn.name,
-                        block.insts.size()),
-                    toLocation(_package, fn.span));
-            return;
-        }
-
-        for ( size_t i = 0; i < AcceptedBlockShape.size(); ++i ) {
-            const auto& inst = _package.inst(block.insts[i]);
-            if ( inst.opcode != AcceptedBlockShape[i] ) {
-                const auto* schema = ir::schemaFor(inst.opcode);
-                _report("instruction",
-                        fmt("instruction %d of function '%s' must be '%s' for this backend, found '%s'",
-                            i,
-                            fn.name,
-                            ir::schemaFor(AcceptedBlockShape[i])->spelling,
-                            schema ? schema->spelling : "<unknown>"),
-                        toLocation(_package, inst.span));
-                return;
+void checkRegion(const ir::Package& package,
+                 ir::RegionId region,
+                 std::vector<UnsupportedFeature>& out,
+                 unsigned bound_depth) {
+    for ( auto block_id : package.region(region).blocks ) {
+        for ( auto id : package.block(block_id).insts ) {
+            const auto& inst = package.inst(id);
+            const auto* schema = ir::schemaFor(inst.opcode);
+            auto unsupported = [&](std::string reason) {
+                report(out,
+                       schema ? std::string(schema->spelling) : "instruction",
+                       std::move(reason),
+                       toLocation(package, inst.span));
+            };
+            if ( inst.opcode == ir::Opcode::EnterBound ) {
+                if ( bound_depth != 0 )
+                    unsupported("nested byte bounds are not supported by the HILTI consumer");
+                ++bound_depth;
             }
-        }
-
-        _checkReadInteger(block.insts[2]);
-    }
-
-    void _checkReadInteger(ir::InstId id) {
-        const auto& inst = _package.inst(id);
-        const auto* payload = std::get_if<ir::ReadIntegerPayload>(&inst.payload);
-        if ( ! payload ) {
-            _report("parser.read_integer", "malformed read-integer payload", toLocation(_package, inst.span));
-            return;
-        }
-
-        if ( payload->width != 8 || payload->signedness != ir::Signedness::Unsigned ||
-             payload->byte_order != ir::ByteOrder::Network )
-            _report("parser.read_integer",
-                    fmt("only unsigned width-8 network-byte-order reads are supported, found width=%d signed=%s "
-                        "byte_order=%d",
-                        payload->width,
-                        payload->signedness == ir::Signedness::Signed ? "true" : "false",
-                        static_cast<int>(payload->byte_order)),
-                    toLocation(_package, inst.span));
-    }
-
-    const ir::Package& _package;
-    const ir::ParserRoot& _root;
-    std::vector<UnsupportedFeature>& _out;
-};
-
-/** Whether every package type is among the closed set this backend can represent. */
-void checkTypes(const ir::Package& package, std::vector<UnsupportedFeature>& out) {
-    std::unordered_set<uint32_t> root_units;
-    for ( const auto& root : package.parserRoots() )
-        root_units.insert(root.unit.index);
-
-    for ( size_t i = 0; i < package.types().size(); ++i ) {
-        ir::TypeId id{static_cast<uint32_t>(i)};
-        const auto& type = package.type(id);
-
-        switch ( type.kind ) {
-            case ir::TypeKind::Void:
-            case ir::TypeKind::Int64:
-            case ir::TypeKind::UInt8:
-            case ir::TypeKind::ParserState: continue;
-
-            case ir::TypeKind::Unit:
-                if ( root_units.contains(type.declaration.index) )
-                    continue;
-                out.push_back(UnsupportedFeature{
-                    .feature = "type",
-                    .reason =
-                        fmt("unit type '%s' is not a parser root's unit", package.typeDecl(type.declaration).name),
-                });
-                continue;
-
-            case ir::TypeKind::Tuple:
-                if ( type.type_arguments.size() == 2 &&
-                     package.type(type.type_arguments[0]).kind == ir::TypeKind::ParserState &&
-                     package.type(type.type_arguments[1]).kind == ir::TypeKind::UInt8 )
-                    continue;
-                out.push_back(
-                    UnsupportedFeature{.feature = "type", .reason = "only tuple<parser.state, uint8> is supported"});
-                continue;
+            else if ( inst.opcode == ir::Opcode::LeaveBound && bound_depth != 0 )
+                --bound_depth;
+            switch ( inst.opcode ) {
+                case ir::Opcode::Argument:
+                case ir::Opcode::RegionArgument:
+                case ir::Opcode::TupleGet:
+                case ir::Opcode::UnitCreate:
+                case ir::Opcode::PublishField:
+                case ir::Opcode::Finish:
+                case ir::Opcode::Yield:
+                case ir::Opcode::VectorEmpty:
+                case ir::Opcode::VectorAppend:
+                case ir::Opcode::EnterBound:
+                case ir::Opcode::LeaveBound:
+                case ir::Opcode::RepeatToBound:
+                    for ( size_t i = 1; i < inst.args.size(); ++i ) {
+                        if ( ! isStorageType(package, package.inst(inst.args[i]).result_type) )
+                            unsupported("carried values must be storage types the HILTI backend can represent");
+                    }
+                    break;
+                case ir::Opcode::ParseSubunit:
+                case ir::Opcode::ReadBytes: break;
+                case ir::Opcode::ReadInteger: {
+                    const auto* p = std::get_if<ir::ReadIntegerPayload>(&inst.payload);
+                    if ( ! p || (p->width != 8 && p->width != 64) || p->signedness != ir::Signedness::Unsigned ||
+                         p->byte_order != ir::ByteOrder::Network )
+                        unsupported("only unsigned width-8 and width-64 network-order reads are supported");
+                    break;
+                }
+                case ir::Opcode::Constant:
+                case ir::Opcode::Add:
+                case ir::Opcode::Return: unsupported("procedural lowering is not supported"); break;
+            }
+            for ( auto child : inst.regions )
+                checkRegion(package, child, out, bound_depth);
         }
     }
 }
@@ -187,29 +102,81 @@ void checkTypes(const ir::Package& package, std::vector<UnsupportedFeature>& out
 } // namespace
 
 std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package) {
-    std::vector<UnsupportedFeature> result;
+    std::vector<UnsupportedFeature> out;
+    if ( package.parserRoots().empty() )
+        report(out, "package", "no parser root");
 
-    if ( package.parserRoots().empty() ) {
-        result.push_back(UnsupportedFeature{.feature = "package", .reason = "no parser root"});
-        return result;
+    for ( size_t i = 0; i < package.types().size(); ++i ) {
+        const auto& type = package.type(ir::TypeId{static_cast<uint32_t>(i)});
+        switch ( type.kind ) {
+            case ir::TypeKind::Void:
+            case ir::TypeKind::Int64:
+            case ir::TypeKind::UInt8:
+            case ir::TypeKind::UInt64:
+            case ir::TypeKind::Bytes:
+            case ir::TypeKind::ParserState:
+            case ir::TypeKind::Unit:
+            case ir::TypeKind::Tuple: break;
+            case ir::TypeKind::Vector:
+                if ( ! isStorageType(package, type.type_arguments[0]) )
+                    report(out, "vector", "vector element type cannot be stored by the HILTI backend");
+                break;
+        }
     }
 
-    // No procedural code allowed yet.
-    if ( package.functions().size() != package.parserRoots().size() ) {
-        result.push_back(UnsupportedFeature{
-            .feature = "package",
-            .reason = "contains a function outside a parser root; procedural PIR-to-HILTI "
-                      "lowering is not supported by this backend",
-        });
-        return result;
+    for ( size_t i = 0; i < package.declarations().size(); ++i ) {
+        const auto& field = package.declaration(ir::DeclId{static_cast<uint32_t>(i)});
+        if ( ! isStorageType(package, field.type) )
+            report(out,
+                   "field",
+                   fmt("field '%s' cannot be stored by the HILTI backend", field.name),
+                   toLocation(package, field.span));
     }
 
+    std::unordered_set<uint32_t> reached;
+    std::unordered_set<uint32_t> active;
+    std::unordered_set<uint32_t> root_functions;
     for ( const auto& root : package.parserRoots() )
-        RootChecker(package, root, result).run();
-
-    checkTypes(package, result);
-
-    return result;
+        root_functions.insert(root.function.index);
+    auto walk = [&](auto&& self, ir::FunctionId id) -> void {
+        if ( active.contains(id.index) ) {
+            report(out, "function", "recursive parser call is not supported");
+            return;
+        }
+        if ( ! reached.insert(id.index).second )
+            return;
+        active.insert(id.index);
+        const auto& function = package.function(id);
+        if ( function.kind != ir::FunctionKind::Parser ) {
+            report(out,
+                   "function",
+                   fmt("function '%s' is not a parser function", function.name),
+                   toLocation(package, function.span));
+            active.erase(id.index);
+            return;
+        }
+        checkRegion(package, function.root_region, out, root_functions.contains(id.index) ? 0 : 1);
+        auto walk_calls = [&](auto&& region_walk, ir::RegionId region) -> void {
+            for ( auto block : package.region(region).blocks )
+                for ( auto inst_id : package.block(block).insts ) {
+                    const auto& inst = package.inst(inst_id);
+                    if ( const auto* p = std::get_if<ir::FunctionPayload>(&inst.payload) ) {
+                        if ( root_functions.contains(p->function.index) )
+                            report(out, "parser.parse_subunit", "child call targets a public parser root");
+                        self(self, p->function);
+                    }
+                    for ( auto child : inst.regions )
+                        region_walk(region_walk, child);
+                }
+        };
+        walk_calls(walk_calls, function.root_region);
+        active.erase(id.index);
+    };
+    for ( const auto& root : package.parserRoots() )
+        walk(walk, root.function);
+    if ( ! package.parserRoots().empty() && reached.size() != package.functions().size() )
+        report(out, "package", "contains a function unreachable from parser roots");
+    return out;
 }
 
 } // namespace spicy::detail::pir::backend::hilti

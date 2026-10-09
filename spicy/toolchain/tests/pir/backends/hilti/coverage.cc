@@ -108,7 +108,7 @@ TEST_CASE("a package with a procedural function alongside a parser root is unsup
     REQUIRE_FALSE(features.empty());
 }
 
-TEST_CASE("a two-field unit is unsupported even once both fields publish") {
+TEST_CASE("a two-field unit is covered once both fields publish") {
     Package package;
     auto unit = package.createUnitDecl("TwoFields");
     auto field_a = package.createFieldDecl(unit, "a", package.uint8Type());
@@ -144,7 +144,7 @@ TEST_CASE("a two-field unit is unsupported even once both fields publish") {
     package.addParserRoot(unit, fn);
 
     REQUIRE(verify(package).empty());
-    CHECK_FALSE(checkCoverage(package).empty());
+    CHECK(checkCoverage(package).empty());
 }
 
 TEST_CASE("an unsupported read-integer width produces a coverage gap") {
@@ -162,6 +162,24 @@ TEST_CASE("an unsupported read-integer width produces a coverage gap") {
     (void)block;
 
     CHECK_FALSE(checkCoverage(sample.package).empty());
+}
+
+TEST_CASE("a published vector of tuples is unsupported as storage") {
+    Package package;
+    auto unit = package.createUnitDecl("Tuples");
+    auto element = package.tupleType({package.uint8Type(), package.uint8Type()});
+    auto field = package.createFieldDecl(unit, "items", package.vectorType(element));
+    auto fn = package.createParserFunction(unit, package.parserStateType(), package.unitType(unit));
+    auto block = package.createBlock(package.function(fn).root_region);
+    auto state = package.addArgument(fn, block, 0);
+    auto root = package.addUnitCreate(block, unit);
+    auto items = package.addVectorEmpty(block, element);
+    auto completed = package.addPublishField(block, root, items, field);
+    package.addParserFinish(block, state, completed);
+    package.addParserRoot(unit, fn);
+
+    REQUIRE(verify(package).empty());
+    CHECK_FALSE(checkCoverage(package).empty());
 }
 
 TEST_CASE("repeated coverage checks of equivalent packages agree") {
