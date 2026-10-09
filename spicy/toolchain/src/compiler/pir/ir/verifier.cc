@@ -1,5 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <algorithm>
 #include <unordered_map>
 #include <unordered_set>
 #include <variant>
@@ -14,8 +15,11 @@ namespace {
 
 // The affine discipline of an actual instantiated type: a `Tuple` inherits affine discipline from
 // any element that itself has it (e.g. `tuple<parser.state, uint8>`), recursively.
-ValueDiscipline typeDiscipline(const Package& package, TypeId id) {
+ValueDiscipline typeDiscipline(const Package& package, TypeId id, std::unordered_set<uint32_t>& visiting) {
     if ( ! package.isValid(id) )
+        return ValueDiscipline::Copyable;
+
+    if ( ! visiting.insert(id.index).second )
         return ValueDiscipline::Copyable;
 
     const auto& type = package.type(id);
@@ -24,10 +28,16 @@ ValueDiscipline typeDiscipline(const Package& package, TypeId id) {
 
     if ( type.kind == TypeKind::Tuple )
         for ( auto element : type.type_arguments )
-            if ( typeDiscipline(package, element) == ValueDiscipline::Affine )
+            if ( typeDiscipline(package, element, visiting) == ValueDiscipline::Affine )
                 return ValueDiscipline::Affine;
 
+    visiting.erase(id.index);
     return ValueDiscipline::Copyable;
+}
+
+ValueDiscipline typeDiscipline(const Package& package, TypeId id) {
+    std::unordered_set<uint32_t> visiting;
+    return typeDiscipline(package, id, visiting);
 }
 
 class Verifier {
@@ -42,7 +52,9 @@ public:
         else if ( type.declaration.isSet() )
             _emitter.emit(diag::TypeUnexpectedDeclaration, id);
 
-        if ( type.kind == TypeKind::Tuple ) {
+        if ( type.kind == TypeKind::Tuple || type.kind == TypeKind::Vector ) {
+            if ( type.kind == TypeKind::Vector && type.type_arguments.size() != 1 )
+                _emitter.emit(diag::TypeUnexpectedTypeArguments, id);
             for ( size_t a = 0; a < type.type_arguments.size(); ++a )
                 if ( ! _package.isValid(type.type_arguments[a]) )
                     _emitter.emit(diag::TypeInvalidTypeArgument, id, a);
@@ -84,7 +96,17 @@ public:
             return;
         }
 
-        const auto& region = _package.region(fn.root_region);
+        _verifyRegion(id, fn.root_region, fn, {});
+    }
+
+    void _verifyRegion(FunctionId id, RegionId region_id, const Function& fn, InstId owner) {
+        if ( ! _active_regions.insert(region_id.index).second ) {
+            _emitter.emit(diag::InvalidStructuredRegion, owner.isSet() ? owner : InstId{});
+            return;
+        }
+        if ( ! _owned_regions.insert(region_id.index).second )
+            _emitter.emit(diag::InvalidStructuredRegion, owner.isSet() ? owner : InstId{});
+        const auto& region = _package.region(region_id);
         if ( region.blocks.size() != 1 )
             _emitter.emit(diag::RegionBlockCountMismatch, id, region.blocks.size());
 
@@ -94,8 +116,9 @@ public:
                 continue;
             }
 
-            _verifyBlock(id, block_id, fn);
+            _verifyBlock(id, block_id, fn, owner);
         }
+        _active_regions.erase(region_id.index);
     }
 
     // Catches orphaned or double-listed decls, in case verifyTypeDecl() misses it
@@ -209,7 +232,7 @@ private:
             _emitter.emit(diag::MalformedSourceSpanRange, site, "line");
     }
 
-    void _verifyBlock(FunctionId function_id, BlockId block_id, const Function& fn) {
+    void _verifyBlock(FunctionId function_id, BlockId block_id, const Function& fn, InstId owner) {
         const auto& block = _package.block(block_id);
         if ( block.insts.empty() ) {
             _emitter.emit(diag::EmptyBlock, block_id);
@@ -217,6 +240,8 @@ private:
         }
 
         std::unordered_set<uint32_t> defined;
+        std::unordered_set<uint32_t> bounded_states;
+        std::unordered_set<uint32_t> bounded_tuples;
 
         for ( size_t i = 0; i < block.insts.size(); ++i ) {
             auto inst_id = block.insts[i];
@@ -227,11 +252,101 @@ private:
 
             _verifyInst(function_id, inst_id, block_id, i == block.insts.size() - 1, defined, fn.result_type);
             defined.insert(inst_id.index);
+
+            const auto& inst = _package.inst(inst_id);
+            if ( inst.opcode == Opcode::RegionArgument && owner.isSet() &&
+                 std::get_if<ArgumentPayload>(&inst.payload) && std::get<ArgumentPayload>(inst.payload).index == 0 )
+                bounded_states.insert(inst_id.index);
+            else if ( inst.opcode == Opcode::EnterBound )
+                bounded_states.insert(inst_id.index);
+            else if ( inst.opcode == Opcode::ReadInteger || inst.opcode == Opcode::ReadBytes ||
+                      inst.opcode == Opcode::ParseSubunit ) {
+                if ( ! inst.args.empty() && bounded_states.contains(inst.args[0].index) )
+                    bounded_tuples.insert(inst_id.index);
+            }
+            else if ( inst.opcode == Opcode::TupleGet && ! inst.args.empty() &&
+                      std::get_if<TupleGetPayload>(&inst.payload) &&
+                      std::get<TupleGetPayload>(inst.payload).index == 0 &&
+                      bounded_tuples.contains(inst.args[0].index) )
+                bounded_states.insert(inst_id.index);
+            if ( inst.opcode == Opcode::LeaveBound &&
+                 (inst.args.empty() || ! bounded_states.contains(inst.args[0].index)) )
+                _emitter.emit(diag::InvalidParserOperation, inst_id);
+            if ( inst.opcode == Opcode::RepeatToBound ) {
+                if ( inst.args.empty() || ! bounded_states.contains(inst.args[0].index) )
+                    _emitter.emit(diag::RepeatRequiresBound, inst_id);
+                else
+                    bounded_tuples.insert(inst_id.index);
+                if ( inst.regions.size() != 1 || ! _package.isValid(inst.regions[0]) )
+                    _emitter.emit(diag::InvalidStructuredRegion, inst_id);
+                else
+                    _verifyRegion(function_id, inst.regions[0], fn, inst_id);
+            }
+            else if ( ! inst.regions.empty() )
+                _emitter.emit(diag::InvalidStructuredRegion, inst_id);
         }
 
-        _verifyArgumentPrefix(function_id, block_id, fn);
+        if ( owner.isSet() )
+            _verifyRegionSignature(block_id, owner, bounded_states);
+        else {
+            _verifyArgumentPrefix(function_id, block_id, fn);
+            for ( auto inst_id : block.insts ) {
+                if ( ! _package.isValid(inst_id) )
+                    continue;
+                const auto& inst = _package.inst(inst_id);
+                if ( inst.opcode == Opcode::RegionArgument )
+                    _emitter.emit(diag::InvalidRegionArgument, inst_id);
+                else if ( inst.opcode == Opcode::Yield )
+                    _emitter.emit(diag::InvalidYield, inst_id);
+            }
+        }
         _verifyParserStateAffinity(function_id, block_id);
-        _verifyUnitStateAffinity(function_id, block_id, fn);
+        if ( ! owner.isSet() )
+            _verifyUnitStateAffinity(function_id, block_id, fn);
+    }
+
+    void _verifyRegionSignature(BlockId block_id, InstId owner_id, const std::unordered_set<uint32_t>& bounded_states) {
+        const auto& owner = _package.inst(owner_id);
+        const auto& block = _package.block(block_id);
+        if ( block.insts.size() < owner.args.size() + 1 ) {
+            _emitter.emit(diag::InvalidStructuredRegion, owner_id);
+            return;
+        }
+
+        for ( size_t i = 0; i < owner.args.size(); ++i ) {
+            auto id = block.insts[i];
+            if ( ! _package.isValid(id) || ! _package.isValid(owner.args[i]) )
+                continue;
+            const auto& arg = _package.inst(id);
+            const auto* payload = std::get_if<ArgumentPayload>(&arg.payload);
+            if ( arg.opcode != Opcode::RegionArgument || ! payload || payload->index != i ||
+                 arg.result_type != _package.inst(owner.args[i]).result_type )
+                _emitter.emit(diag::InvalidRegionArgument, id);
+        }
+
+        for ( size_t i = owner.args.size(); i < block.insts.size(); ++i ) {
+            auto id = block.insts[i];
+            if ( _package.isValid(id) && _package.inst(id).opcode == Opcode::RegionArgument )
+                _emitter.emit(diag::InvalidRegionArgument, id);
+        }
+
+        auto terminator = block.insts.back();
+        if ( ! _package.isValid(terminator) )
+            return;
+        const auto& yielded = _package.inst(terminator);
+        if ( yielded.opcode != Opcode::Yield || yielded.args.size() != owner.args.size() ) {
+            _emitter.emit(diag::InvalidYield, terminator);
+            return;
+        }
+        for ( size_t i = 0; i < yielded.args.size(); ++i )
+            if ( _package.isValid(yielded.args[i]) && _package.isValid(owner.args[i]) &&
+                 _package.inst(yielded.args[i]).result_type != _package.inst(owner.args[i]).result_type )
+                _emitter.emit(diag::InvalidYield, terminator);
+
+        // The owner's result is treated as bounded, so the body must yield a state that still carries the bound.
+        if ( ! yielded.args.empty() && _package.isValid(yielded.args[0]) &&
+             ! bounded_states.contains(yielded.args[0].index) )
+            _emitter.emit(diag::InvalidYield, terminator);
     }
 
     // Every `core.argument` in the entry block appears before any non-argument
@@ -317,8 +432,8 @@ private:
             if ( ! schema )
                 continue;
 
-            for ( size_t a = 0; a < inst.args.size() && a < schema->operand_roles.size(); ++a ) {
-                if ( schema->operand_roles[a] != OperandRole::Consume )
+            for ( size_t a = 0; a < inst.args.size() && ! schema->operand_roles.empty(); ++a ) {
+                if ( schema->operand_roles[std::min(a, schema->operand_roles.size() - 1)] != OperandRole::Consume )
                     continue;
 
                 auto arg = inst.args[a];
@@ -326,8 +441,8 @@ private:
                     continue;
 
                 auto result_type = _package.inst(arg).result_type;
-                if ( ! _package.isValid(result_type) || _package.type(result_type).kind != TypeKind::ParserState )
-                    continue; // unit affinity has its own richer check in _verifyUnitStateAffinity
+                if ( typeDiscipline(_package, result_type) != ValueDiscipline::Affine )
+                    continue;
 
                 auto [it, inserted] = consumed_by.try_emplace(arg.index, inst_id);
                 if ( ! inserted )
@@ -432,7 +547,7 @@ private:
         if ( ! schema->is_terminator && is_last_in_block )
             _emitter.emit(diag::MissingTerminator, block_id);
 
-        if ( inst.args.size() != schema->operandCount() )
+        if ( schema->variadic ? inst.args.size() < schema->operandCount() : inst.args.size() != schema->operandCount() )
             _emitter.emit(diag::OperandCountMismatch, inst_id, schema->operandCount(), inst.args.size());
 
         if ( ! payloadMatchesKind(inst.payload, schema->payload_kind) ) {
@@ -442,15 +557,18 @@ private:
                 _emitter.emit(diag::MissingPayload, inst_id);
         }
 
-        for ( size_t a = 0; a < inst.args.size() && a < schema->operand_types.size(); ++a )
+        for ( size_t a = 0; a < inst.args.size(); ++a ) {
+            if ( schema->operand_types.empty() )
+                break;
             _verifyOperand(function_id,
                            inst_id,
                            block_id,
-                           schema->operand_types[a],
+                           schema->operand_types[std::min(a, schema->operand_types.size() - 1)],
                            a,
                            inst.args[a],
                            defined,
                            function_result_type);
+        }
 
         _verifyResultType(inst_id, inst, *schema);
         _verifyOpcodeSpecific(function_id, inst_id, inst);
@@ -526,7 +644,7 @@ private:
                 if ( ! payload )
                     return;
 
-                if ( payload->width != 8 || payload->signedness != Signedness::Unsigned ||
+                if ( (payload->width != 8 && payload->width != 64) || payload->signedness != Signedness::Unsigned ||
                      payload->byte_order != ByteOrder::Network )
                     _emitter.emit(diag::ReadIntegerUnsupportedPayload, inst_id);
 
@@ -537,7 +655,8 @@ private:
                                 _package.isValid(result.type_arguments[0]) &&
                                 _package.type(result.type_arguments[0]).kind == TypeKind::ParserState &&
                                 _package.isValid(result.type_arguments[1]) &&
-                                _package.type(result.type_arguments[1]).kind == TypeKind::UInt8;
+                                _package.type(result.type_arguments[1]).kind ==
+                                    (payload->width == 64 ? TypeKind::UInt64 : TypeKind::UInt8);
                 }
 
                 if ( ! result_ok )
@@ -574,6 +693,73 @@ private:
                     _emitter.emit(diag::PublishFieldValueTypeMismatch, inst_id);
                 return;
             }
+
+            case Opcode::VectorEmpty:
+                if ( ! _package.isValid(inst.result_type) || _package.type(inst.result_type).kind != TypeKind::Vector )
+                    _emitter.emit(diag::InvalidParserOperation, inst_id);
+                return;
+
+            case Opcode::VectorAppend:
+                if ( inst.args.size() == 2 && _package.isValid(inst.args[0]) && _package.isValid(inst.args[1]) ) {
+                    auto vector_type = _package.inst(inst.args[0]).result_type;
+                    if ( ! _package.isValid(vector_type) || _package.type(vector_type).kind != TypeKind::Vector ||
+                         _package.type(vector_type).type_arguments.size() != 1 ||
+                         _package.type(vector_type).type_arguments[0] != _package.inst(inst.args[1]).result_type )
+                        _emitter.emit(diag::InvalidParserOperation, inst_id);
+                }
+                return;
+
+            case Opcode::EnterBound:
+                if ( inst.args.size() == 2 && _package.isValid(inst.args[1]) ) {
+                    auto length_type = _package.inst(inst.args[1]).result_type;
+                    if ( ! _package.isValid(length_type) || (_package.type(length_type).kind != TypeKind::UInt8 &&
+                                                             _package.type(length_type).kind != TypeKind::UInt64) )
+                        _emitter.emit(diag::InvalidParserOperation, inst_id);
+                }
+                return;
+
+            case Opcode::RepeatToBound: {
+                if ( inst.args.empty() || ! _package.isValid(inst.args[0]) ||
+                     ! _package.isValid(_package.inst(inst.args[0]).result_type) ||
+                     _package.type(_package.inst(inst.args[0]).result_type).kind != TypeKind::ParserState ||
+                     ! _package.isValid(inst.result_type) || _package.type(inst.result_type).kind != TypeKind::Tuple ||
+                     _package.type(inst.result_type).type_arguments.size() != inst.args.size() ) {
+                    _emitter.emit(diag::InvalidParserOperation, inst_id);
+                    return;
+                }
+                for ( size_t i = 0; i < inst.args.size(); ++i )
+                    if ( _package.isValid(inst.args[i]) &&
+                         _package.type(inst.result_type).type_arguments[i] != _package.inst(inst.args[i]).result_type )
+                        _emitter.emit(diag::InvalidParserOperation, inst_id);
+                return;
+            }
+
+            case Opcode::ParseSubunit: {
+                const auto* payload = std::get_if<FunctionPayload>(&inst.payload);
+                if ( ! payload || ! _package.isValid(payload->function) ||
+                     _package.function(payload->function).kind != FunctionKind::Parser ||
+                     ! _package.isValid(inst.result_type) ) {
+                    _emitter.emit(diag::InvalidParserOperation, inst_id);
+                    return;
+                }
+                const auto& result = _package.type(inst.result_type);
+                if ( result.kind != TypeKind::Tuple || result.type_arguments.size() != 2 ||
+                     ! _package.isValid(result.type_arguments[0]) ||
+                     _package.type(result.type_arguments[0]).kind != TypeKind::ParserState ||
+                     result.type_arguments[1] != _package.function(payload->function).result_type )
+                    _emitter.emit(diag::InvalidParserOperation, inst_id);
+                return;
+            }
+
+            case Opcode::ReadBytes:
+                if ( ! _package.isValid(inst.result_type) || _package.type(inst.result_type).kind != TypeKind::Tuple ||
+                     _package.type(inst.result_type).type_arguments.size() != 2 ||
+                     ! _package.isValid(_package.type(inst.result_type).type_arguments[0]) ||
+                     ! _package.isValid(_package.type(inst.result_type).type_arguments[1]) ||
+                     _package.type(_package.type(inst.result_type).type_arguments[0]).kind != TypeKind::ParserState ||
+                     _package.type(_package.type(inst.result_type).type_arguments[1]).kind != TypeKind::Bytes )
+                    _emitter.emit(diag::InvalidParserOperation, inst_id);
+                return;
 
             default: return;
         }
@@ -648,6 +834,8 @@ private:
 
     const Package& _package;
     DiagnosticEmitter _emitter;
+    std::unordered_set<uint32_t> _active_regions;
+    std::unordered_set<uint32_t> _owned_regions;
 };
 
 } // namespace

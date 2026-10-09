@@ -31,10 +31,10 @@ struct OneBytePackage {
 OneBytePackage makeOneByte(const std::string& name = "OneByte") {
     OneBytePackage s;
     auto file = s.package.sourceManager().internFile("one-byte.spicy");
-    auto unit_span = s.package.sourceManager().addSpan({.file = file, .begin_line = 3, .begin_column = 13,
-                                                        .end_line = 5, .end_column = 1});
-    auto field_span = s.package.sourceManager().addSpan({.file = file, .begin_line = 4, .begin_column = 5,
-                                                         .end_line = 4, .end_column = 17});
+    auto unit_span = s.package.sourceManager().addSpan(
+        {.file = file, .begin_line = 3, .begin_column = 13, .end_line = 5, .end_column = 1});
+    auto field_span = s.package.sourceManager().addSpan(
+        {.file = file, .begin_line = 4, .begin_column = 5, .end_line = 4, .end_column = 17});
     s.unit = s.package.createUnitDecl(name, unit_span);
     s.field = s.package.createFieldDecl(s.unit, "value", s.package.uint8Type(), field_span);
 

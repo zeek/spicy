@@ -193,6 +193,99 @@ TEST_CASE("verifier rejects an instruction after the block terminator") {
     CHECK(hasDiagnostic(diags, diag::TerminatorNotLast));
 }
 
+TEST_CASE("parser repetition requires a byte-bounded state") {
+    Package package;
+    auto unit = package.createUnitDecl("Root");
+    auto field = package.createFieldDecl(unit, "items", package.vectorType(package.uint8Type()));
+    auto fn = package.createParserFunction(unit, package.parserStateType(), package.unitType(unit));
+    auto block = package.createBlock(package.function(fn).root_region);
+    auto state = package.addArgument(fn, block, 0);
+    auto root = package.addUnitCreate(block, unit);
+    auto vector = package.addVectorEmpty(block, package.uint8Type());
+    auto body = package.createRegion();
+    auto body_block = package.createBlock(body);
+    auto body_state = package.addRegionArgument(body_block, 0, package.parserStateType());
+    auto body_vector = package.addRegionArgument(body_block, 1, package.inst(vector).result_type);
+    auto yield = package.addYield(body_block, {body_state, body_vector});
+    auto repeated = package.addRepeatToBound(block, {state, vector}, body);
+    auto next_state = package.addTupleGet(block, repeated, 0);
+    auto items = package.addTupleGet(block, repeated, 1);
+    auto completed = package.addPublishField(block, root, items, field);
+    package.addParserFinish(block, next_state, completed);
+    package.addParserRoot(unit, fn);
+
+    CHECK(hasDiagnostic(verify(package), diag::RepeatRequiresBound));
+
+    package.replaceInst(yield, Opcode::Yield, {body_state, body_state});
+    CHECK(hasDiagnostic(verify(package), diag::InvalidYield));
+}
+
+TEST_CASE("parser repetition rejects a body that yields a state after leaving its bound") {
+    Package package;
+    auto unit = package.createUnitDecl("Root");
+    auto field = package.createFieldDecl(unit, "items", package.vectorType(package.uint8Type()));
+    auto fn = package.createParserFunction(unit, package.parserStateType(), package.unitType(unit));
+    auto block = package.createBlock(package.function(fn).root_region);
+    auto state = package.addArgument(fn, block, 0);
+    auto root = package.addUnitCreate(block, unit);
+    auto length = package.addReadInteger(block,
+                                         state,
+                                         ReadIntegerPayload{
+                                             .width = 64,
+                                             .signedness = Signedness::Unsigned,
+                                             .byte_order = ByteOrder::Network,
+                                         });
+    auto bounded =
+        package.addEnterBound(block, package.addTupleGet(block, length, 0), package.addTupleGet(block, length, 1));
+    auto vector = package.addVectorEmpty(block, package.uint8Type());
+    auto body = package.createRegion();
+    auto body_block = package.createBlock(body);
+    auto body_state = package.addRegionArgument(body_block, 0, package.parserStateType());
+    auto body_vector = package.addRegionArgument(body_block, 1, package.inst(vector).result_type);
+    auto item = package.addReadInteger(body_block,
+                                       body_state,
+                                       ReadIntegerPayload{
+                                           .width = 8,
+                                           .signedness = Signedness::Unsigned,
+                                           .byte_order = ByteOrder::Network,
+                                       });
+    auto unbounded = package.addLeaveBound(body_block, package.addTupleGet(body_block, item, 0));
+    package.addYield(body_block, {unbounded, body_vector});
+    auto repeated = package.addRepeatToBound(block, {bounded, vector}, body);
+    auto next_state = package.addTupleGet(block, repeated, 0);
+    auto items = package.addTupleGet(block, repeated, 1);
+    auto completed = package.addPublishField(block, root, items, field);
+    package.addParserFinish(block, next_state, completed);
+    package.addParserRoot(unit, fn);
+
+    CHECK(hasDiagnostic(verify(package), diag::InvalidYield));
+}
+
+TEST_CASE("parser repetition rejects region arguments beyond its carried values") {
+    Package package;
+    auto unit = package.createUnitDecl("Root");
+    auto field = package.createFieldDecl(unit, "items", package.vectorType(package.uint8Type()));
+    auto fn = package.createParserFunction(unit, package.parserStateType(), package.unitType(unit));
+    auto block = package.createBlock(package.function(fn).root_region);
+    auto state = package.addArgument(fn, block, 0);
+    auto root = package.addUnitCreate(block, unit);
+    auto vector = package.addVectorEmpty(block, package.uint8Type());
+    auto body = package.createRegion();
+    auto body_block = package.createBlock(body);
+    auto body_state = package.addRegionArgument(body_block, 0, package.parserStateType());
+    auto body_vector = package.addRegionArgument(body_block, 1, package.inst(vector).result_type);
+    package.addRegionArgument(body_block, 123, package.parserStateType());
+    package.addYield(body_block, {body_state, body_vector});
+    auto repeated = package.addRepeatToBound(block, {state, vector}, body);
+    auto next_state = package.addTupleGet(block, repeated, 0);
+    auto items = package.addTupleGet(block, repeated, 1);
+    auto completed = package.addPublishField(block, root, items, field);
+    package.addParserFinish(block, next_state, completed);
+    package.addParserRoot(unit, fn);
+
+    CHECK(hasDiagnostic(verify(package), diag::InvalidRegionArgument));
+}
+
 TEST_CASE("uint8 and parser.state intern deterministically and are stable across repeated requests") {
     Package package;
     auto uint8_1 = package.uint8Type();
@@ -242,7 +335,7 @@ TEST_CASE("two unit declarations with the same name remain distinct nominal type
     CHECK_NE(type_a, type_b);
 }
 
-TEST_CASE("procedural-only packages retain Step 2's exact canonical type numbering") {
+TEST_CASE("procedural-only packages retain canonical type numbering") {
     auto sample = makeSample();
     CHECK_EQ(sample.package.types().size(), 2);
     CHECK_EQ(sample.package.voidType(), TypeId{0});

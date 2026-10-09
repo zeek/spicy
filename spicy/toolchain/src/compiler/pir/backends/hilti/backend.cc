@@ -58,8 +58,10 @@ RootNames namesFor(const ir::Package& package, const ir::ParserRoot& root, size_
                                     const ::hilti::Meta& unit_meta,
                                     const ::hilti::Meta& field_meta) {
     auto* field_type = b.qualifiedType(b.typeUnsignedInteger(8), ::hilti::Constness::Mutable);
-    auto* field =
-        b.declarationField(::hilti::ID(names.field), field_type, static_cast<::hilti::AttributeSet*>(nullptr), field_meta);
+    auto* field = b.declarationField(::hilti::ID(names.field),
+                                     field_type,
+                                     static_cast<::hilti::AttributeSet*>(nullptr),
+                                     field_meta);
     auto* struct_type = b.typeStruct(::hilti::Declarations{field});
     return b.declarationType(::hilti::ID(names.unit_type),
                              b.qualifiedType(struct_type, ::hilti::Constness::Const),
@@ -186,7 +188,9 @@ RootNames namesFor(const ir::Package& package, const ir::ParserRoot& root, size_
                           read_meta);
     addStatement(fb, b.statementIf(fb.not_(wait_call), eod_block, nullptr, read_meta));
 
-    fb.addLocal(::hilti::ID("value"), b.qualifiedType(b.typeUnsignedInteger(8), ::hilti::Constness::Mutable), read_meta);
+    fb.addLocal(::hilti::ID("value"),
+                b.qualifiedType(b.typeUnsignedInteger(8), ::hilti::Constness::Mutable),
+                read_meta);
     fb.addLocal(::hilti::ID("next_cursor"), view_type, read_meta);
 
     // `try { value = *begin(cursor); next_cursor = cursor.advance(1); } catch ( MissingData ) { ... }`
@@ -213,8 +217,10 @@ RootNames namesFor(const ir::Package& package, const ir::ParserRoot& root, size_
                            read_meta);
     auto* gap_offset_expr =
         catch_builder.memberCall(catch_builder.id(::hilti::ID("cursor")), "offset", ::hilti::Expressions{}, read_meta);
-    auto* gap_end_expr =
-        catch_builder.memberCall(catch_builder.id(::hilti::ID("after_gap")), "offset", ::hilti::Expressions{}, read_meta);
+    auto* gap_end_expr = catch_builder.memberCall(catch_builder.id(::hilti::ID("after_gap")),
+                                                  "offset",
+                                                  ::hilti::Expressions{},
+                                                  read_meta);
     catch_builder.addReturn(makeResult(catch_builder,
                                        gap,
                                        nullptr,
@@ -280,10 +286,11 @@ LoweringResult lower(::hilti::Builder& builder, const ir::Package& package) {
     for ( size_t i = 0; i < package.parserRoots().size(); ++i ) {
         auto names = namesFor(package, package.parserRoots()[i], i);
         const auto& root = package.parserRoots()[i];
-        decls.push_back(lowerUnitType(builder,
-                                      names,
-                                      metaFor(package, package.typeDecl(root.unit).span),
-                                      metaFor(package, package.declaration(package.typeDecl(root.unit).fields[0]).span)));
+        decls.push_back(
+            lowerUnitType(builder,
+                          names,
+                          metaFor(package, package.typeDecl(root.unit).span),
+                          metaFor(package, package.declaration(package.typeDecl(root.unit).fields[0]).span)));
         decls.push_back(lowerResultType(builder, names));
         decls.push_back(lowerFunction(builder, package, root, names, success_label, unexpected_eod_label, gap_label));
     }

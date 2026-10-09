@@ -18,6 +18,18 @@ TypeId Package::uint8Type() {
     return _uint8_type;
 }
 
+TypeId Package::uint64Type() {
+    if ( ! _uint64_type.isSet() )
+        _uint64_type = _types.add(Type{.kind = TypeKind::UInt64});
+    return _uint64_type;
+}
+
+TypeId Package::bytesType() {
+    if ( ! _bytes_type.isSet() )
+        _bytes_type = _types.add(Type{.kind = TypeKind::Bytes});
+    return _bytes_type;
+}
+
 TypeId Package::parserStateType() {
     if ( ! _parser_state_type.isSet() )
         _parser_state_type = _types.add(Type{.kind = TypeKind::ParserState});
@@ -44,6 +56,17 @@ TypeId Package::tupleType(std::vector<TypeId> elements) {
     }
 
     return _types.add(Type{.kind = TypeKind::Tuple, .type_arguments = std::move(elements)});
+}
+
+TypeId Package::vectorType(TypeId element) {
+    for ( size_t i = 0; i < _types.size(); ++i ) {
+        auto id = TypeId{static_cast<uint32_t>(i)};
+        const auto& t = _types.get(id);
+        if ( t.kind == TypeKind::Vector && t.type_arguments == std::vector<TypeId>{element} )
+            return id;
+    }
+
+    return _types.add(Type{.kind = TypeKind::Vector, .type_arguments = {element}});
 }
 
 TypeDeclId Package::createUnitDecl(std::string name, SourceSpanId span) {
@@ -116,7 +139,7 @@ InstId Package::addInst(BlockId block,
                         SourceSpanId span) {
     [[maybe_unused]] const auto* schema = schemaFor(opcode);
     assert(schema && "addInst() requires a recognized opcode; use addInstForTesting() for deliberately malformed IR");
-    assert(args.size() == schema->operandCount());
+    assert(schema->variadic ? args.size() >= schema->operandCount() : args.size() == schema->operandCount());
     assert(payloadMatchesKind(payload, schema->payload_kind));
 
     return addInstForTesting(block, opcode, std::move(args), result_type, payload, span);
@@ -134,6 +157,7 @@ InstId Package::addInstForTesting(BlockId block,
         .args = std::move(args),
         .parent = block,
         .payload = payload,
+        .regions = {},
         .span = span,
     });
     _blocks.get(block).insts.push_back(id);
@@ -170,7 +194,7 @@ InstId Package::addUnitCreate(BlockId block, TypeDeclId unit, SourceSpanId span)
 }
 
 InstId Package::addReadInteger(BlockId block, InstId state, ReadIntegerPayload payload, SourceSpanId span) {
-    auto result_type = tupleType({parserStateType(), uint8Type()});
+    auto result_type = tupleType({parserStateType(), payload.width == 64 ? uint64Type() : uint8Type()});
     return addInst(block, Opcode::ReadInteger, {state}, result_type, InstPayload(payload), span);
 }
 
@@ -200,6 +224,59 @@ InstId Package::addPublishField(BlockId block, InstId unit_value, InstId value, 
 
 InstId Package::addParserFinish(BlockId block, InstId state, InstId unit_value, SourceSpanId span) {
     return addInst(block, Opcode::Finish, {state, unit_value}, _void_type, {}, span);
+}
+
+InstId Package::addRegionArgument(BlockId block, uint32_t index, TypeId type, SourceSpanId span) {
+    return addInst(block, Opcode::RegionArgument, {}, type, InstPayload(ArgumentPayload{index}), span);
+}
+
+InstId Package::addYield(BlockId block, std::vector<InstId> values, SourceSpanId span) {
+    return addInst(block, Opcode::Yield, std::move(values), _void_type, {}, span);
+}
+
+InstId Package::addVectorEmpty(BlockId block, TypeId element, SourceSpanId span) {
+    return addInst(block, Opcode::VectorEmpty, {}, vectorType(element), {}, span);
+}
+
+InstId Package::addVectorAppend(BlockId block, InstId vector, InstId value, SourceSpanId span) {
+    return addInst(block, Opcode::VectorAppend, {vector, value}, inst(vector).result_type, {}, span);
+}
+
+InstId Package::addEnterBound(BlockId block, InstId state, InstId length, SourceSpanId span) {
+    return addInst(block, Opcode::EnterBound, {state, length}, parserStateType(), {}, span);
+}
+
+InstId Package::addLeaveBound(BlockId block, InstId state, SourceSpanId span) {
+    return addInst(block, Opcode::LeaveBound, {state}, parserStateType(), {}, span);
+}
+
+InstId Package::addRepeatToBound(BlockId block, std::vector<InstId> carried, RegionId body, SourceSpanId span) {
+    std::vector<TypeId> result_types;
+    result_types.reserve(carried.size());
+    for ( auto value : carried )
+        result_types.push_back(inst(value).result_type);
+
+    auto id = addInst(block, Opcode::RepeatToBound, std::move(carried), tupleType(std::move(result_types)), {}, span);
+    _instructions.get(id).regions.push_back(body);
+    return id;
+}
+
+InstId Package::addParseSubunit(BlockId block, InstId state, FunctionId child, SourceSpanId span) {
+    return addInst(block,
+                   Opcode::ParseSubunit,
+                   {state},
+                   tupleType({parserStateType(), function(child).result_type}),
+                   InstPayload(FunctionPayload{child}),
+                   span);
+}
+
+InstId Package::addReadBytes(BlockId block, InstId state, uint64_t length, SourceSpanId span) {
+    return addInst(block,
+                   Opcode::ReadBytes,
+                   {state},
+                   tupleType({parserStateType(), bytesType()}),
+                   InstPayload(ReadBytesPayload{length}),
+                   span);
 }
 
 // Useful for optimization

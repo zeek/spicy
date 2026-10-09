@@ -24,4 +24,7 @@ struct ID {
 struct TypeTag {};
 using TypeId = ID<TypeTag>;
 
+struct FunctionTag {};
+using FunctionId = ID<FunctionTag>;
+
 } // namespace spicy::detail::pir::ir

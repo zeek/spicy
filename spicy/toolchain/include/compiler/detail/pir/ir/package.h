@@ -15,12 +15,10 @@
 
 namespace spicy::detail::pir::ir {
 
-struct FunctionTag {};
 struct RegionTag {};
 struct BlockTag {};
 struct InstTag {};
 
-using FunctionId = ID<FunctionTag>;
 using RegionId = ID<RegionTag>;
 using BlockId = ID<BlockTag>;
 using InstId = ID<InstTag>;
@@ -32,12 +30,12 @@ static_assert(std::is_trivially_copyable_v<BlockId> && sizeof(BlockId) == 4);
 static_assert(std::is_trivially_copyable_v<InstId> && sizeof(InstId) == 4);
 
 /**
- * A structurally interned type. `type_arguments` is populated only for `Tuple`; `declaration`
+ * A structurally interned type. `type_arguments` is populated for `Tuple` and `Vector`; `declaration`
  * only for `Unit`. Compare by `TypeId`, not by rendered name.
  */
 struct Type {
     TypeKind kind;
-    std::vector<TypeId> type_arguments; /**< `Tuple` only */
+    std::vector<TypeId> type_arguments; /**< `Tuple` or `Vector` */
     TypeDeclId declaration;             /**< `Unit` only; invalid otherwise */
 };
 
@@ -48,6 +46,7 @@ struct Inst {
     // Cached; Block::insts is canonical.
     BlockId parent;
     InstPayload payload;
+    std::vector<RegionId> regions; /**< regions owned by a structured operation */
     /** Invalid means absent. */
     SourceSpanId span;
 };
@@ -80,7 +79,6 @@ struct ParserRoot {
 };
 
 /** The central place that stores the PIR arenas and outputs. */
-// TODO: Move IR-providing methods to a builder.
 class Package {
 public:
     Package();
@@ -88,15 +86,18 @@ public:
     TypeId voidType() const noexcept { return _void_type; }
     TypeId int64Type() const noexcept { return _int64_type; }
 
-    /** Interns `uint8` lazily so procedural-only packages keep Step 2's exact type numbering. */
+    /** Interns `uint8` lazily so procedural-only packages keep stable type numbering. */
     TypeId uint8Type();
-    /** Interns `parser.state` lazily so procedural-only packages keep Step 2's exact type numbering. */
+    TypeId uint64Type();
+    TypeId bytesType();
+    /** Interns `parser.state` lazily so procedural-only packages keep stable type numbering. */
     TypeId parserStateType();
 
     /** Interns a nominal unit type structurally by `TypeDeclId`. */
     TypeId unitType(TypeDeclId decl);
     /** Interns a tuple type structurally by its element types. */
     TypeId tupleType(std::vector<TypeId> elements);
+    TypeId vectorType(TypeId element);
 
     /** Declares a nominal unit type; returns its identity. */
     TypeDeclId createUnitDecl(std::string name, SourceSpanId span = {});
@@ -152,6 +153,15 @@ public:
     InstId addPublishField(BlockId block, InstId unit_value, InstId value, DeclId field, SourceSpanId span = {});
     /** Adds the terminating `parser.finish` over `state` and `unit_value`. */
     InstId addParserFinish(BlockId block, InstId state, InstId unit_value, SourceSpanId span = {});
+    InstId addRegionArgument(BlockId block, uint32_t index, TypeId type, SourceSpanId span = {});
+    InstId addYield(BlockId block, std::vector<InstId> values, SourceSpanId span = {});
+    InstId addVectorEmpty(BlockId block, TypeId element, SourceSpanId span = {});
+    InstId addVectorAppend(BlockId block, InstId vector, InstId value, SourceSpanId span = {});
+    InstId addEnterBound(BlockId block, InstId state, InstId length, SourceSpanId span = {});
+    InstId addLeaveBound(BlockId block, InstId state, SourceSpanId span = {});
+    InstId addRepeatToBound(BlockId block, std::vector<InstId> carried, RegionId body, SourceSpanId span = {});
+    InstId addParseSubunit(BlockId block, InstId state, FunctionId child, SourceSpanId span = {});
+    InstId addReadBytes(BlockId block, InstId state, uint64_t length, SourceSpanId span = {});
 
     SourceManager& sourceManager() { return _sources; }
     const SourceManager& sourceManager() const { return _sources; }
@@ -198,6 +208,8 @@ private:
     TypeId _void_type;
     TypeId _int64_type;
     TypeId _uint8_type;        /**< invalid until first requested */
+    TypeId _uint64_type;       /**< invalid until first requested */
+    TypeId _bytes_type;        /**< invalid until first requested */
     TypeId _parser_state_type; /**< invalid until first requested */
 
     SourceManager _sources;
