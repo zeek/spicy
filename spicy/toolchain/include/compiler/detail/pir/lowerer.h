@@ -16,6 +16,7 @@ namespace spicy::detail::pir {
 /** Discovery output of public roots (functions/units). */
 struct RootDiscovery {
     std::vector<hilti::Declaration*> roots;
+    std::vector<hilti::declaration::Type*> unit_declarations;
     std::vector<hilti::ast::TypeIndex> units_with_external_hooks;
     std::optional<UnsupportedFeature> unrepresented_content;
 };
