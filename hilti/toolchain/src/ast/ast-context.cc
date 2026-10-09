@@ -628,7 +628,7 @@ static Result<Nothing> runHook(bool* modified,
     return Nothing();
 }
 
-Result<Nothing> ASTContext::processAST(Builder* builder, Driver* driver) {
+Result<Nothing> ASTContext::processAST(Builder* builder, Driver* driver, driver::Stage target) {
     auto _guard = scope_exit([&]() {
         const auto& hilti_plugin = plugin::registry().hiltiPlugin();
         _dumpAST(logging::debug::AstFinal, hilti_plugin, "Final AST", {});
@@ -668,14 +668,23 @@ Result<Nothing> ASTContext::processAST(Builder* builder, Driver* driver) {
         checkAST(true);
 #endif
 
-        if ( plugin.ast_transform ) {
-            // Make dependencies available for transformations.
+        if ( target != driver::Stage::RESOLVED ) {
             if ( auto rc = _computeDependencies(); ! rc )
                 return rc;
 
-            if ( auto rc = _transform(builder, plugin); ! rc )
-                return rc;
+            _dependency_tracker->dumpDependencies(logging::debug::AstDeclarations);
+
+            if ( plugin.ast_transform ) {
+                if ( auto rc = _transform(builder, plugin); ! rc )
+                    return rc;
+            }
         }
+    }
+
+    if ( target == driver::Stage::RESOLVED ) {
+        _resolved = true;
+        _driver = nullptr;
+        return Nothing();
     }
 
     if ( auto rc = driver->hookCompilationFinished(_root); ! rc )
@@ -823,13 +832,9 @@ Result<Nothing> ASTContext::_resolve(Builder* builder, const Plugin& plugin) {
             logger().internalError("hilti::Unit::compile() didn't terminate, AST keeps changing");
     }
 
-    if ( auto rc = _computeDependencies(); ! rc )
-        return rc;
-
     _dumpAST(logging::debug::AstResolved, plugin, "AST after resolving", _total_rounds);
     _dumpStats(logging::debug::AstStats, plugin.component);
     _dumpDeclarations(logging::debug::AstDeclarations, plugin);
-    _dependency_tracker->dumpDependencies(logging::debug::AstDeclarations);
 
 #ifndef NDEBUG
     checkAST(false);
