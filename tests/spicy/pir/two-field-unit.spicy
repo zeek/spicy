@@ -1,8 +1,7 @@
 # @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
 # @TEST-EXEC: btest-diff on.log
 
-# @TEST-DOC: Tests that a public unit with more than one field is reported precisely and that
-# compilation still falls back to the standard code generator.
+# @TEST-DOC: Two ordered scalar fields compile through PIR without a shape-specific backend path.
 
 module Test;
 

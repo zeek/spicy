@@ -1,0 +1,15 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: An unsupported private child forces whole-compilation fallback.
+
+module Test;
+
+type Child = unit {
+    value: uint16;
+};
+
+public type Root = unit {
+    length: uint64;
+    children: Child[] &size=self.length;
+};
