@@ -62,7 +62,8 @@ NameMap makeNames(const ir::Package& package) {
         case ir::TypeKind::UInt8: return b.qualifiedType(b.typeUnsignedInteger(8), ::hilti::Constness::Mutable);
         case ir::TypeKind::UInt64: return b.qualifiedType(b.typeUnsignedInteger(64), ::hilti::Constness::Mutable);
         case ir::TypeKind::Bytes: return b.qualifiedType(b.typeBytes(), ::hilti::Constness::Mutable);
-        case ir::TypeKind::Unit: return unitReferenceType(b, type.declaration);
+        case ir::TypeKind::Unit:
+            return b.qualifiedType(b.typeName(::hilti::ID(unitName(type.declaration))), ::hilti::Constness::Mutable);
         case ir::TypeKind::Vector:
             return b.qualifiedType(b.typeVector(targetType(b, package, type.type_arguments[0])),
                                    ::hilti::Constness::Mutable);
@@ -90,13 +91,15 @@ NameMap makeNames(const ir::Package& package) {
                                       const ir::Package& package,
                                       ir::FunctionId id,
                                       const FunctionNames& names) {
-    auto* unit_ref = unitReferenceType(b, package.function(id).parser_unit);
+    auto* unit_type = names.root ? unitReferenceType(b, package.function(id).parser_unit) :
+                                   b.qualifiedType(b.typeName(::hilti::ID(unitName(package.function(id).parser_unit))),
+                                                   ::hilti::Constness::Mutable);
     ::hilti::Declarations fields = {
         b.declarationField(::hilti::ID("kind"),
                            b.qualifiedType(b.typeName(::hilti::ID("OutcomeKind")), ::hilti::Constness::Mutable),
                            static_cast<::hilti::AttributeSet*>(nullptr)),
         b.declarationField(::hilti::ID("unit"),
-                           b.qualifiedType(b.typeOptional(unit_ref), ::hilti::Constness::Mutable),
+                           b.qualifiedType(b.typeOptional(unit_type), ::hilti::Constness::Mutable),
                            static_cast<::hilti::AttributeSet*>(nullptr)),
         b.declarationField(::hilti::ID("cursor"),
                            b.qualifiedType(b.typeStreamView(), ::hilti::Constness::Mutable),
@@ -363,7 +366,12 @@ private:
             case ir::Opcode::UnitCreate: {
                 auto name = fmt("v_%u", id.index);
                 auto unit = std::get<ir::UnitPayload>(inst.payload).unit;
-                b.addLocal(::hilti::ID(name), b.new_(b.typeName(::hilti::ID(unitName(unit))), meta), meta);
+                if ( _names.at(_id.index).root )
+                    b.addLocal(::hilti::ID(name), b.new_(b.typeName(::hilti::ID(unitName(unit))), meta), meta);
+                else
+                    b.addLocal(::hilti::ID(name),
+                               b.qualifiedType(b.typeName(::hilti::ID(unitName(unit))), ::hilti::Constness::Mutable),
+                               meta);
                 _values[id.index] = std::move(name);
                 return;
             }

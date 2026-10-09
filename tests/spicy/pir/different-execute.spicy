@@ -46,8 +46,8 @@ extern "C" int HILTI_EXPORT hilti_main() {
             std::cout << " prefix=" << static_cast<int>((*x.unit)->field_2)
                       << " count=" << pairs.size();
             for ( const auto& pair : pairs )
-                std::cout << " pair=" << static_cast<int>(pair->field_0)
-                          << "," << static_cast<int>(pair->field_1);
+                std::cout << " pair=" << static_cast<int>(pair.field_0)
+                          << "," << static_cast<int>(pair.field_1);
         }
         std::cout << std::endl;
     }
