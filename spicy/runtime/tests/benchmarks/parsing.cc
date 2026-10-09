@@ -19,19 +19,9 @@
 #include <spicy/rt/parsed-unit.h>
 #include <spicy/rt/parser.h>
 
+#include "parsing-input.h"
+
 using namespace hilti::rt::string::literals;
-
-static std::string bigEndian(std::uint64_t number) {
-    char buffer[8];
-    for ( int i = 0; i < 8; ++i ) {
-        buffer[i] = static_cast<char>((number >> (56 - (8 * i))) & 0xFF);
-    }
-    return std::string(buffer, sizeof(buffer));
-}
-
-static std::string makeInput(std::uint64_t input_size) {
-    return hilti::rt::fmt("%s%sEND", bigEndian(input_size), std::string(input_size, 'A'));
-}
 
 static std::string makeSwitchInput(std::uint64_t entry_count) {
     // Each entry: 1-byte tag + variable payload (tag cycles 1-4).
@@ -82,6 +72,17 @@ static void benchmarkParser(benchmark::State& state, Args&&... args) {
     if ( ! parser )
         hilti::rt::fatalError(hilti::rt::fmt("parser %s not found", parser_name));
 
+    if ( parser->name == "Benchmark::UnitVectorSize"_hs ) {
+        auto stream = hilti::rt::reference::make_value<hilti::rt::Stream>(make_input(state.range(0)));
+        stream->freeze();
+        auto cursor = parser->parse1(stream, {}, {}).template get<hilti::rt::stream::View>();
+        if ( cursor.offset() != static_cast<std::uint64_t>(state.range(0)) + 11 ) {
+            state.SkipWithError("legacy result did not consume the expected input");
+            hilti::rt::done();
+            return;
+        }
+    }
+
     for ( auto _ : state ) {
         (void)_;
         state.PauseTiming();
@@ -89,7 +90,8 @@ static void benchmarkParser(benchmark::State& state, Args&&... args) {
         auto stream = hilti::rt::reference::make_value<hilti::rt::Stream>(in);
         stream->freeze();
         state.ResumeTiming();
-        parser->parse1(stream, {}, {});
+        auto cursor = parser->parse1(stream, {}, {}).template get<hilti::rt::stream::View>();
+        benchmark::DoNotOptimize(cursor);
     }
 
     hilti::rt::done();
@@ -103,23 +105,23 @@ BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitVectorSize, "Benchmark::UnitVe
     ->RangeMultiplier(mult)
     ->Range(min_input, max_input);
 
-BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitVectorLookahead, "Benchmark::UnitVectorLookahead"_hs, makeInput)
+BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitVectorLookahead, "BenchmarkOther::UnitVectorLookahead"_hs, makeInput)
     ->RangeMultiplier(mult)
     ->Range(min_input, max_input);
 
-BENCHMARK_CAPTURE(benchmarkParser, Benchmark::Regex, "Benchmark::Regex"_hs, makeInput)
+BENCHMARK_CAPTURE(benchmarkParser, Benchmark::Regex, "BenchmarkOther::Regex"_hs, makeInput)
     ->RangeMultiplier(mult)
     ->Range(min_input, max_input);
 
-BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitSwitch, "Benchmark::UnitSwitch"_hs, makeSwitchInput)
+BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitSwitch, "BenchmarkOther::UnitSwitch"_hs, makeSwitchInput)
     ->RangeMultiplier(mult)
     ->Range(min_input, max_input);
 
-BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitNested, "Benchmark::UnitNested"_hs, makeNestedInput)
+BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitNested, "BenchmarkOther::UnitNested"_hs, makeNestedInput)
     ->RangeMultiplier(mult)
     ->Range(min_input, max_input);
 
-BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitBytes, "Benchmark::UnitBytes"_hs, makeBytesInput)
+BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitBytes, "BenchmarkOther::UnitBytes"_hs, makeBytesInput)
     ->RangeMultiplier(mult)
     ->Range(min_input, max_input);
 
