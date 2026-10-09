@@ -1,0 +1,13 @@
+# Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
+
+module Benchmark;
+
+type InnerSize = unit {
+    b: uint8;
+};
+
+public type UnitVectorSize = unit {
+    length: uint64;
+    inner: InnerSize[] &size=self.length;
+    end_: bytes &size=3;
+};
