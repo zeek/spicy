@@ -51,7 +51,7 @@ static void show(const char* name, Result x) {
                   << " end=" << (*x.unit)->field_3;
         bool all_a = true;
         for ( const auto& child : (*x.unit)->field_2 )
-            all_a &= child->field_0 == 65;
+            all_a &= child.field_0 == 65;
         std::cout << " all-A=" << all_a;
     }
     std::cout << std::endl;
