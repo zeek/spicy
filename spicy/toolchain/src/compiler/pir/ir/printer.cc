@@ -75,6 +75,12 @@ std::optional<std::string> renderPayload(const Package& package, const InstPaylo
                    field.name);
     }
 
+    if ( const auto* child = std::get_if<FunctionPayload>(&payload) )
+        return fmt("@function %u", child->function.index);
+
+    if ( const auto* bytes = std::get_if<ReadBytesPayload>(&payload) )
+        return fmt("length=%u", bytes->length);
+
     return std::nullopt;
 }
 
@@ -113,7 +119,13 @@ std::string typeName(const Package& package, TypeId type_id) {
         case TypeKind::Void: return "void";
         case TypeKind::Int64: return "int64";
         case TypeKind::UInt8: return "uint8";
+        case TypeKind::UInt64: return "uint64";
+        case TypeKind::Bytes: return "bytes";
         case TypeKind::ParserState: return "parser.state";
+
+        case TypeKind::Vector:
+            return t.type_arguments.size() == 1 ? fmt("vector<%s>", typeName(package, t.type_arguments[0])) :
+                                                  "vector<<invalid-type>>";
 
         case TypeKind::Unit: {
             if ( ! package.isValid(t.declaration) )
@@ -136,6 +148,30 @@ std::string typeName(const Package& package, TypeId type_id) {
 
 std::string print(const Package& package) {
     std::string out;
+
+    auto print_region = [&](auto&& self, RegionId region_id, const std::string& indent) -> void {
+        out += fmt("%sregion %%%u:\n", indent, region_id.index);
+        if ( ! package.isValid(region_id) ) {
+            out += indent + "  <invalid region>\n";
+            return;
+        }
+        for ( auto block_id : package.region(region_id).blocks ) {
+            out += fmt("%s  block %%%u:\n", indent, block_id.index);
+            if ( ! package.isValid(block_id) ) {
+                out += indent + "    <invalid block>\n";
+                continue;
+            }
+            for ( auto inst_id : package.block(block_id).insts ) {
+                if ( ! package.isValid(inst_id) ) {
+                    out += indent + "    <invalid instruction>\n";
+                    continue;
+                }
+                out += indent + "    " + printInst(package, inst_id) + "\n";
+                for ( auto child : package.inst(inst_id).regions )
+                    self(self, child, indent + "      ");
+            }
+        }
+    };
 
     for ( size_t i = 0; i < package.types().size(); ++i )
         out += fmt("type %%%zu: %s\n", i, typeName(package, TypeId{static_cast<uint32_t>(i)}));
@@ -196,19 +232,7 @@ std::string print(const Package& package) {
             continue;
         }
 
-        out += fmt("  region %%%u:\n", fn.root_region.index);
-
-        for ( auto block_id : package.region(fn.root_region).blocks ) {
-            out += fmt("    block %%%u:\n", block_id.index);
-
-            if ( ! package.isValid(block_id) ) {
-                out += "      <invalid block>\n";
-                continue;
-            }
-
-            for ( auto inst_id : package.block(block_id).insts )
-                out += "      " + printInst(package, inst_id) + "\n";
-        }
+        print_region(print_region, fn.root_region, "  ");
     }
 
     for ( const auto& root : package.parserRoots() )

@@ -23,23 +23,37 @@ namespace {
 struct ExpectedSchema {
     Opcode opcode;
     std::string_view spelling;
-    size_t operand_count;
-    PayloadKind payload_kind;
-    bool is_terminator;
-    bool is_pure;
-    bool has_parser_contract;
+    size_t operand_count = 0;
+    PayloadKind payload_kind = PayloadKind::None;
+    bool is_terminator = false;
+    bool is_pure = false;
+    bool has_parser_contract = false;
 };
 
-constexpr ExpectedSchema kExpected[] = {
-    {Opcode::Constant, "core.constant", 0, PayloadKind::Int64Literal, false, true, false},
-    {Opcode::Add, "core.add", 2, PayloadKind::None, false, false, false},
-    {Opcode::Return, "core.return", 1, PayloadKind::None, true, false, false},
-    {Opcode::Argument, "core.argument", 0, PayloadKind::Argument, false, true, false},
-    {Opcode::TupleGet, "core.tuple_get", 1, PayloadKind::TupleGet, false, true, false},
-    {Opcode::ReadInteger, "parser.read_integer", 1, PayloadKind::ReadInteger, false, false, true},
-    {Opcode::Finish, "parser.finish", 2, PayloadKind::None, true, false, false},
-    {Opcode::UnitCreate, "unit.create", 0, PayloadKind::Unit, false, false, false},
-    {Opcode::PublishField, "unit.publish_field", 2, PayloadKind::Field, false, false, false},
+constexpr ExpectedSchema ExpectedSchemas[] = {
+    {.opcode = Opcode::Constant,
+     .spelling = "core.constant",
+     .payload_kind = PayloadKind::Int64Literal,
+     .is_pure = true},
+    {.opcode = Opcode::Add, .spelling = "core.add", .operand_count = 2},
+    {.opcode = Opcode::Return, .spelling = "core.return", .operand_count = 1, .is_terminator = true},
+    {.opcode = Opcode::Argument, .spelling = "core.argument", .payload_kind = PayloadKind::Argument, .is_pure = true},
+    {.opcode = Opcode::TupleGet,
+     .spelling = "core.tuple_get",
+     .operand_count = 1,
+     .payload_kind = PayloadKind::TupleGet,
+     .is_pure = true},
+    {.opcode = Opcode::ReadInteger,
+     .spelling = "parser.read_integer",
+     .operand_count = 1,
+     .payload_kind = PayloadKind::ReadInteger,
+     .has_parser_contract = true},
+    {.opcode = Opcode::Finish, .spelling = "parser.finish", .operand_count = 2, .is_terminator = true},
+    {.opcode = Opcode::UnitCreate, .spelling = "unit.create", .payload_kind = PayloadKind::Unit},
+    {.opcode = Opcode::PublishField,
+     .spelling = "unit.publish_field",
+     .operand_count = 2,
+     .payload_kind = PayloadKind::Field},
 };
 
 } // namespace
@@ -47,8 +61,8 @@ constexpr ExpectedSchema kExpected[] = {
 TEST_CASE(
     "every opcode's schema matches its expected spelling, arity, payload kind, terminator "
     "flag, purity, and parser-contract presence") {
-    for ( const auto& expected : kExpected ) {
-        auto* schema = schemaFor(expected.opcode);
+    for ( const auto& expected : ExpectedSchemas ) {
+        const auto* schema = schemaFor(expected.opcode);
         REQUIRE(schema);
         CHECK_EQ(schema->spelling, expected.spelling);
         CHECK_EQ(schema->operandCount(), expected.operand_count);
@@ -62,12 +76,12 @@ TEST_CASE(
 }
 
 TEST_CASE("parser.read_integer's outcome contract exactly covers success, suspension, EOD, and gap") {
-    auto* schema = schemaFor(Opcode::ReadInteger);
+    const auto* schema = schemaFor(Opcode::ReadInteger);
     REQUIRE(schema);
     REQUIRE(schema->parser_contract.has_value());
     const auto& contract = *schema->parser_contract;
 
-    CHECK_EQ(contract.success_consumption_bytes, 1);
+    CHECK_EQ(contract.success_consumption_bytes, -1);
     CHECK_EQ(contract.insufficient_input, SuspendBehavior::SuspendAndRetry);
     CHECK_EQ(contract.eod, FailureOutcome::UnexpectedEod);
     CHECK_EQ(contract.gap, FailureOutcome::Gap);

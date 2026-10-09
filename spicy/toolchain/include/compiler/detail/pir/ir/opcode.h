@@ -24,9 +24,18 @@ enum class Opcode {
     Finish,
     UnitCreate,
     PublishField,
+    RegionArgument,
+    Yield,
+    VectorEmpty,
+    VectorAppend,
+    EnterBound,
+    LeaveBound,
+    RepeatToBound,
+    ParseSubunit,
+    ReadBytes,
 };
 
-enum class TypeKind { Void, Int64, UInt8, ParserState, Unit, Tuple };
+enum class TypeKind { Void, Int64, UInt8, UInt64, Bytes, ParserState, Unit, Tuple, Vector };
 
 enum class TypeConstraintKind {
     Any,
@@ -64,10 +73,13 @@ enum class ValueDiscipline { Copyable, Affine };
 constexpr ValueDiscipline typeKindDiscipline(TypeKind kind) {
     switch ( kind ) {
         case TypeKind::ParserState:
-        case TypeKind::Unit: return ValueDiscipline::Affine;
+        case TypeKind::Unit:
+        case TypeKind::Vector: return ValueDiscipline::Affine;
         case TypeKind::Void:
         case TypeKind::Int64:
         case TypeKind::UInt8:
+        case TypeKind::UInt64:
+        case TypeKind::Bytes:
         case TypeKind::Tuple: return ValueDiscipline::Copyable;
     }
 
@@ -142,13 +154,27 @@ struct FieldPayload {
     friend constexpr bool operator==(FieldPayload, FieldPayload) = default;
 };
 
+struct FunctionPayload {
+    FunctionId function;
+
+    friend constexpr bool operator==(FunctionPayload, FunctionPayload) = default;
+};
+
+struct ReadBytesPayload {
+    uint64_t length = 0;
+
+    friend constexpr bool operator==(ReadBytesPayload, ReadBytesPayload) = default;
+};
+
 using InstPayload = std::variant<std::monostate,
                                  Int64Literal,
                                  ArgumentPayload,
                                  TupleGetPayload,
                                  ReadIntegerPayload,
                                  UnitPayload,
-                                 FieldPayload>;
+                                 FieldPayload,
+                                 FunctionPayload,
+                                 ReadBytesPayload>;
 
 enum class PayloadKind {
     None,
@@ -158,13 +184,16 @@ enum class PayloadKind {
     ReadInteger,
     Unit,
     Field,
+    Function,
+    ReadBytes,
 };
 
 /** Whether a suspending parser read consumes bytes and how it resumes. */
 enum class SuspendBehavior { SuspendAndRetry };
 
 /** How a parser operation completes when its outcome is a failure rather than a value. */
-enum class FailureOutcome { UnexpectedEod, Gap };
+enum class FailureOutcome { UnexpectedEod, Gap, BoundExceeded, InvalidBound };
+enum class FailureCursor { OperationStart, Current };
 
 /**
  * Each opcode has a contract for how it behaves on success, insufficient
@@ -178,6 +207,8 @@ struct ParserOperationContract {
     SuspendBehavior insufficient_input = SuspendBehavior::SuspendAndRetry;
     FailureOutcome eod = FailureOutcome::UnexpectedEod;
     FailureOutcome gap = FailureOutcome::Gap;
+    FailureOutcome bound = FailureOutcome::BoundExceeded;
+    FailureCursor failure_cursor = FailureCursor::OperationStart;
 
     friend constexpr bool operator==(const ParserOperationContract&, const ParserOperationContract&) = default;
 };
@@ -191,6 +222,7 @@ struct OpcodeSchema {
     PayloadKind payload_kind;
     bool is_terminator;
     bool is_pure;
+    bool variadic = false;
     /** Absent means the opcode has no parser-input outcome contract at all. */
     std::optional<ParserOperationContract> parser_contract;
 
@@ -207,6 +239,8 @@ constexpr bool payloadMatchesKind(const InstPayload& payload, PayloadKind kind) 
         case PayloadKind::ReadInteger: return std::holds_alternative<ReadIntegerPayload>(payload);
         case PayloadKind::Unit: return std::holds_alternative<UnitPayload>(payload);
         case PayloadKind::Field: return std::holds_alternative<FieldPayload>(payload);
+        case PayloadKind::Function: return std::holds_alternative<FunctionPayload>(payload);
+        case PayloadKind::ReadBytes: return std::holds_alternative<ReadBytesPayload>(payload);
     }
 
     return false;
@@ -233,18 +267,48 @@ inline constexpr TypeConstraint KFinishOperandTypes[] = {fixedType(TypeKind::Par
 inline constexpr OperandRole KFinishOperandRoles[] = {OperandRole::Consume, OperandRole::Consume};
 
 inline constexpr TypeConstraint KPublishFieldOperandTypes[] = {anyType(), anyType()};
-inline constexpr OperandRole KPublishFieldOperandRoles[] = {OperandRole::Consume, OperandRole::Borrow};
+inline constexpr OperandRole KPublishFieldOperandRoles[] = {OperandRole::Consume, OperandRole::Consume};
+
+inline constexpr TypeConstraint KVectorAppendOperandTypes[] = {fixedType(TypeKind::Vector), anyType()};
+inline constexpr OperandRole KVectorAppendOperandRoles[] = {OperandRole::Consume, OperandRole::Consume};
+
+inline constexpr TypeConstraint KEnterBoundOperandTypes[] = {fixedType(TypeKind::ParserState), anyType()};
+inline constexpr OperandRole KEnterBoundOperandRoles[] = {OperandRole::Consume, OperandRole::Borrow};
+
+inline constexpr TypeConstraint KParseStateOperandTypes[] = {fixedType(TypeKind::ParserState)};
+inline constexpr OperandRole KParseStateOperandRoles[] = {OperandRole::Consume};
+
+inline constexpr TypeConstraint KVariadicOperandTypes[] = {anyType()};
+inline constexpr OperandRole KVariadicOperandRoles[] = {OperandRole::Consume};
 
 inline constexpr ParserOperationContract KReadIntegerContract{
-    .success_consumption_bytes = 1,
+    .success_consumption_bytes = -1,
     .insufficient_input = SuspendBehavior::SuspendAndRetry,
     .eod = FailureOutcome::UnexpectedEod,
     .gap = FailureOutcome::Gap,
 };
 
+inline constexpr ParserOperationContract KReadBytesContract{
+    .success_consumption_bytes = -1,
+    .insufficient_input = SuspendBehavior::SuspendAndRetry,
+    .eod = FailureOutcome::UnexpectedEod,
+    .gap = FailureOutcome::Gap,
+    .bound = FailureOutcome::BoundExceeded,
+    .failure_cursor = FailureCursor::OperationStart,
+};
+
+inline constexpr ParserOperationContract KSubunitContract{
+    .success_consumption_bytes = -1,
+    .insufficient_input = SuspendBehavior::SuspendAndRetry,
+    .eod = FailureOutcome::UnexpectedEod,
+    .gap = FailureOutcome::Gap,
+    .bound = FailureOutcome::BoundExceeded,
+    .failure_cursor = FailureCursor::Current,
+};
+
 // One entry per `Opcode` value, in declaration order, so `schemaFor()` can index directly without
 // per-call allocation.
-inline constexpr std::array<OpcodeSchema, 9> KSchemas{{
+inline constexpr std::array<OpcodeSchema, 18> KSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Constant,
         .spelling = "core.constant",
@@ -349,6 +413,83 @@ inline constexpr std::array<OpcodeSchema, 9> KSchemas{{
         .is_pure = false,
         .parser_contract = std::nullopt,
     },
+    OpcodeSchema{.opcode = Opcode::RegionArgument,
+                 .spelling = "core.region_argument",
+                 .operand_types = KNoOperandTypes,
+                 .operand_roles = KNoOperandRoles,
+                 .result_type = anyType(),
+                 .payload_kind = PayloadKind::Argument,
+                 .is_terminator = false,
+                 .is_pure = true},
+    OpcodeSchema{.opcode = Opcode::Yield,
+                 .spelling = "core.yield",
+                 .operand_types = KVariadicOperandTypes,
+                 .operand_roles = KVariadicOperandRoles,
+                 .result_type = fixedType(TypeKind::Void),
+                 .payload_kind = PayloadKind::None,
+                 .is_terminator = true,
+                 .is_pure = false,
+                 .variadic = true},
+    OpcodeSchema{.opcode = Opcode::VectorEmpty,
+                 .spelling = "core.vector_empty",
+                 .operand_types = KNoOperandTypes,
+                 .operand_roles = KNoOperandRoles,
+                 .result_type = fixedType(TypeKind::Vector),
+                 .payload_kind = PayloadKind::None,
+                 .is_terminator = false,
+                 .is_pure = false},
+    OpcodeSchema{.opcode = Opcode::VectorAppend,
+                 .spelling = "core.vector_append",
+                 .operand_types = KVectorAppendOperandTypes,
+                 .operand_roles = KVectorAppendOperandRoles,
+                 .result_type = sameAsOperand(),
+                 .payload_kind = PayloadKind::None,
+                 .is_terminator = false,
+                 .is_pure = false},
+    OpcodeSchema{.opcode = Opcode::EnterBound,
+                 .spelling = "parser.enter_bound",
+                 .operand_types = KEnterBoundOperandTypes,
+                 .operand_roles = KEnterBoundOperandRoles,
+                 .result_type = fixedType(TypeKind::ParserState),
+                 .payload_kind = PayloadKind::None,
+                 .is_terminator = false,
+                 .is_pure = false},
+    OpcodeSchema{.opcode = Opcode::LeaveBound,
+                 .spelling = "parser.leave_bound",
+                 .operand_types = KParseStateOperandTypes,
+                 .operand_roles = KParseStateOperandRoles,
+                 .result_type = fixedType(TypeKind::ParserState),
+                 .payload_kind = PayloadKind::None,
+                 .is_terminator = false,
+                 .is_pure = false},
+    OpcodeSchema{.opcode = Opcode::RepeatToBound,
+                 .spelling = "parser.repeat_to_bound",
+                 .operand_types = KVariadicOperandTypes,
+                 .operand_roles = KVariadicOperandRoles,
+                 .result_type = fixedType(TypeKind::Tuple),
+                 .payload_kind = PayloadKind::None,
+                 .is_terminator = false,
+                 .is_pure = false,
+                 .variadic = true,
+                 .parser_contract = KSubunitContract},
+    OpcodeSchema{.opcode = Opcode::ParseSubunit,
+                 .spelling = "parser.parse_subunit",
+                 .operand_types = KParseStateOperandTypes,
+                 .operand_roles = KParseStateOperandRoles,
+                 .result_type = fixedType(TypeKind::Tuple),
+                 .payload_kind = PayloadKind::Function,
+                 .is_terminator = false,
+                 .is_pure = false,
+                 .parser_contract = KSubunitContract},
+    OpcodeSchema{.opcode = Opcode::ReadBytes,
+                 .spelling = "parser.read_bytes",
+                 .operand_types = KParseStateOperandTypes,
+                 .operand_roles = KParseStateOperandRoles,
+                 .result_type = fixedType(TypeKind::Tuple),
+                 .payload_kind = PayloadKind::ReadBytes,
+                 .is_terminator = false,
+                 .is_pure = false,
+                 .parser_contract = KReadBytesContract},
 }};
 
 } // namespace detail
@@ -360,6 +501,68 @@ constexpr const OpcodeSchema* schemaFor(Opcode opcode) {
         return nullptr;
 
     return &detail::KSchemas[index];
+}
+
+/** The effects used by passes that must preserve parser outcomes and publication order. */
+struct OperationEffects {
+    bool reads_input = false;
+    bool changes_parser_state = false;
+    bool allocates = false;
+    bool publishes = false;
+    bool may_suspend = false;
+    bool may_fail = false;
+};
+
+constexpr OperationEffects effectsFor(Opcode opcode) {
+    switch ( opcode ) {
+        case Opcode::ReadInteger:
+        case Opcode::ReadBytes:
+        case Opcode::ParseSubunit:
+            return {.reads_input = true, .changes_parser_state = true, .may_suspend = true, .may_fail = true};
+        case Opcode::RepeatToBound:
+            return {.reads_input = true,
+                    .changes_parser_state = true,
+                    .allocates = true,
+                    .may_suspend = true,
+                    .may_fail = true};
+        case Opcode::EnterBound:
+        case Opcode::LeaveBound: return {.changes_parser_state = true, .may_fail = true};
+        case Opcode::VectorEmpty:
+        case Opcode::VectorAppend:
+        case Opcode::UnitCreate: return {.allocates = true};
+        case Opcode::PublishField: return {.publishes = true};
+        case Opcode::Finish:
+        case Opcode::Yield:
+        case Opcode::Return:
+        case Opcode::Add:
+        case Opcode::Constant:
+        case Opcode::Argument:
+        case Opcode::RegionArgument:
+        case Opcode::TupleGet: return {};
+    }
+    return {.reads_input = true,
+            .changes_parser_state = true,
+            .allocates = true,
+            .publishes = true,
+            .may_suspend = true,
+            .may_fail = true};
+}
+
+/** Returns the per-instance input contract for operations with immediate byte counts. */
+constexpr std::optional<ParserOperationContract> parserContractFor(Opcode opcode, const InstPayload& payload) {
+    const auto* schema = schemaFor(opcode);
+    if ( ! schema || ! schema->parser_contract )
+        return std::nullopt;
+    auto contract = *schema->parser_contract;
+    if ( opcode == Opcode::ReadInteger ) {
+        if ( const auto* read = std::get_if<ReadIntegerPayload>(&payload) )
+            contract.success_consumption_bytes = read->width / 8;
+    }
+    else if ( opcode == Opcode::ReadBytes ) {
+        if ( const auto* read = std::get_if<ReadBytesPayload>(&payload) )
+            contract.success_consumption_bytes = read->length <= INT64_MAX ? static_cast<int64_t>(read->length) : -1;
+    }
+    return contract;
 }
 
 } // namespace spicy::detail::pir::ir

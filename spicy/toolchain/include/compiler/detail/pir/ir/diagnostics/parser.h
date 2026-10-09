@@ -28,14 +28,49 @@ inline constexpr DiagnosticDefinition ReadIntegerUnsupportedPayload{
     .id = "PIR_READ_INTEGER_UNSUPPORTED_PAYLOAD",
     .classification = DiagnosticClassification::Internal,
     .severity = DiagnosticSeverity::Error,
-    .message = "parser.read_integer only supports unsigned width-8 network-order reads in this slice",
+    .message = "parser.read_integer only supports unsigned width-8 or width-64 network-order reads",
 };
 
 inline constexpr DiagnosticDefinition ReadIntegerResultTypeMismatch{
     .id = "PIR_READ_INTEGER_RESULT_TYPE_MISMATCH",
     .classification = DiagnosticClassification::Internal,
     .severity = DiagnosticSeverity::Error,
-    .message = "parser.read_integer's result type must be tuple<parser.state, uint8>",
+    .message = "parser.read_integer's result type must be tuple<parser.state, uint8 or uint64> matching its width",
+};
+
+inline constexpr DiagnosticDefinition InvalidParserOperation{
+    .id = "PIR_INVALID_PARSER_OPERATION",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "parser operation has inconsistent types, payload, or region signature",
+};
+
+inline constexpr DiagnosticDefinition InvalidRegionArgument{
+    .id = "PIR_INVALID_REGION_ARGUMENT",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "region argument is not a leading argument with the expected type and index",
+};
+
+inline constexpr DiagnosticDefinition InvalidYield{
+    .id = "PIR_INVALID_YIELD",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "region yield does not match its owner's carried values",
+};
+
+inline constexpr DiagnosticDefinition InvalidStructuredRegion{
+    .id = "PIR_INVALID_STRUCTURED_REGION",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "structured parser operation must own exactly one valid body region",
+};
+
+inline constexpr DiagnosticDefinition RepeatRequiresBound{
+    .id = "PIR_REPEAT_REQUIRES_BOUND",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "parser.repeat_to_bound requires an active byte bound on its input state",
 };
 
 // --- unit.publish_field --------------------------------------------------------------------------
