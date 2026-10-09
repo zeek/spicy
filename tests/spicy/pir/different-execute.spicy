@@ -1,0 +1,84 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -p -D spicy-pir >pir.txt 2>pir.log
+# @TEST-EXEC: rg "constructed 2 function|parser.repeat_to_bound|parser.parse_subunit|core.vector_append" pir.log >route
+# @TEST-EXEC: btest-diff route
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -P "" -o Foo.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT -j legacy-driver.cc >legacy
+# @TEST-EXEC: btest-diff legacy
+# @TEST-DOC: A two-byte child crosses a three-byte local bound without consuming the outer sentinel.
+
+module Test;
+
+type Pair = unit {
+    first: uint8;
+    second: uint8;
+};
+
+public type Different = unit {
+    prefix: uint8;
+    bytes_in_pairs: uint64;
+    pairs: Pair[] &size=self.bytes_in_pairs;
+};
+
+@TEST-START-FILE driver.cc
+#include <iostream>
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+#include "Foo.h"
+using namespace hilti::rt::string::literals;
+using Result = hlt_internal::_r__spicy_pir_backend::ParseResult_0;
+
+static std::string header(unsigned n) {
+    std::string x(8, '\0'); x[7] = static_cast<char>(n); return x;
+}
+extern "C" int HILTI_EXPORT hilti_main() {
+    for ( unsigned n: {4, 3} ) {
+        auto data = hilti::rt::reference::make_value<hilti::rt::Stream>(
+            "P" + header(n) + "ABCDZ");
+        data->freeze();
+        auto r = hlt::_r__spicy_pir_backend::parse_root_0(data, {});
+        auto x = r.get<Result>();
+        std::cout << "window=" << n << " kind=" << x.kind << " cursor=" << x.cursor.offset()
+                  << " unit=" << (x.unit ? "present" : "absent");
+        if ( x.unit ) {
+            const auto& pairs = (*x.unit)->field_4;
+            std::cout << " prefix=" << static_cast<int>((*x.unit)->field_2)
+                      << " count=" << pairs.size();
+            for ( const auto& pair : pairs )
+                std::cout << " pair=" << static_cast<int>(pair->field_0)
+                          << "," << static_cast<int>(pair->field_1);
+        }
+        std::cout << std::endl;
+    }
+    return 0;
+}
+int main() { hilti::rt::init(); spicy::rt::init(); hilti_main(); hilti::rt::done(); return 0; }
+
+@TEST-END-FILE
+
+@TEST-START-FILE legacy-driver.cc
+#include <iostream>
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+using namespace hilti::rt::string::literals;
+extern "C" int HILTI_EXPORT hilti_main() {
+    const spicy::rt::Parser* parser = nullptr;
+    for ( const auto* p : spicy::rt::parsers() )
+        if ( p->name == "Test::Different"_hs ) parser = p;
+    if ( ! parser ) return 1;
+    for ( unsigned n : {4U, 3U} ) {
+        std::string header(8, '\0'); header[7] = static_cast<char>(n);
+        auto stream = hilti::rt::reference::make_value<hilti::rt::Stream>("P" + header + "ABCDZ");
+        stream->freeze();
+        try {
+            auto cursor = parser->parse1(stream, {}, {}).get<hilti::rt::stream::View>();
+            std::cout << n << " success cursor=" << cursor.offset() << '\n';
+        }
+        catch ( const std::exception& e ) { std::cout << n << " exception=" << "failure" << '\n'; }
+    }
+    return 0;
+}
+int main() { hilti::rt::init(); spicy::rt::init(); auto result = hilti_main(); hilti::rt::done(); return result; }
+
+@TEST-END-FILE

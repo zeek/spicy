@@ -1,0 +1,143 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -p -D spicy-pir >pir.txt 2>pir.log
+# @TEST-EXEC: rg "constructed 2 function|parser.repeat_to_bound|parser.parse_subunit|core.vector_append" pir.log >route
+# @TEST-EXEC: btest-diff route
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -P "" -o Foo.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT -j legacy-driver.cc >legacy
+# @TEST-EXEC: btest-diff legacy
+# @TEST-DOC: Executes byte-bounded subunit repetition, suspension, EOD, gaps, and overflow.
+
+# Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
+
+module Benchmark;
+
+type InnerSize = unit {
+    b: uint8;
+};
+
+public type UnitVectorSize = unit {
+    length: uint64;
+    inner: InnerSize[] &size=self.length;
+    end_: bytes &size=3;
+};
+
+
+@TEST-START-FILE driver.cc
+#include <iostream>
+#include <string>
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+#include "Foo.h"
+
+using Bytes = hilti::rt::Bytes;
+using Stream = hilti::rt::Stream;
+using Result = hlt_internal::_r__spicy_pir_backend::ParseResult_0;
+
+static std::string be(uint64_t n) {
+    std::string x(8, '\0');
+    for ( int i = 7; i >= 0; --i ) { x[i] = static_cast<char>(n & 255); n >>= 8; }
+    return x;
+}
+static void show(const char* name, Result x) {
+    std::cout << name << " " << x.kind << " cursor=" << x.cursor.offset()
+              << " unit=" << (x.unit ? "yes" : "no")
+              << " gap=" << x.gap_offset << "," << x.gap_length;
+    if ( x.unit ) {
+        std::cout << " length=" << (*x.unit)->field_1
+                  << " count=" << (*x.unit)->field_2.size()
+                  << " end=" << (*x.unit)->field_3;
+        bool all_a = true;
+        for ( const auto& child : (*x.unit)->field_2 )
+            all_a &= child->field_0 == 65;
+        std::cout << " all-A=" << all_a;
+    }
+    std::cout << std::endl;
+}
+static void frozen(const char* name, std::string input) {
+    auto data = hilti::rt::reference::make_value<Stream>(Bytes(input));
+    data->freeze();
+    show(name, hlt::_r__spicy_pir_backend::parse_root_0(data, {}).get<Result>());
+}
+extern "C" int HILTI_EXPORT hilti_main() {
+    frozen("zero", be(0) + "END");
+    frozen("four", be(4) + "AAAAEND");
+    frozen("header-eod", be(4).substr(0,3));
+    frozen("vector-eod", be(4) + "AA");
+    frozen("trailing-eod", be(0) + "EN");
+    frozen("overflow", be(UINT64_MAX));
+
+    for ( int phase = 0; phase < 3; ++phase ) {
+        auto data = hilti::rt::reference::make_value<Stream>();
+        std::string remaining;
+        if ( phase == 0 ) { data->append(Bytes(be(4).substr(0,4))); remaining = be(4).substr(4) + "AAAAEND"; }
+        if ( phase == 1 ) { data->append(Bytes(be(4) + "AA")); remaining = "AAEND"; }
+        if ( phase == 2 ) { data->append(Bytes(be(1) + "AEN")); remaining = "D"; }
+        auto r = hlt::_r__spicy_pir_backend::parse_root_0(data, {});
+        std::cout << "suspend-" << phase << " " << (r ? "done" : "waiting") << std::endl;
+        data->append(Bytes(remaining));
+        r.resume();
+        show((std::string("resume-") + std::to_string(phase)).c_str(), r.get<Result>());
+    }
+    {
+        auto d = hilti::rt::reference::make_value<Stream>();
+        d->append(Bytes(be(4).substr(0,2))); d->append(nullptr, 2);
+        d->append(Bytes(be(4).substr(4) + "AAAAEND")); d->freeze();
+        show("header-gap", hlt::_r__spicy_pir_backend::parse_root_0(d, {}).get<Result>());
+    }
+    {
+        auto d = hilti::rt::reference::make_value<Stream>();
+        d->append(Bytes(be(4))); d->append(nullptr, 1); d->append(Bytes("AAAEND")); d->freeze();
+        show("vector-gap", hlt::_r__spicy_pir_backend::parse_root_0(d, {}).get<Result>());
+    }
+    {
+        auto d = hilti::rt::reference::make_value<Stream>();
+        d->append(Bytes(be(0) + "E")); d->append(nullptr, 1); d->append(Bytes("D")); d->freeze();
+        show("trailing-gap", hlt::_r__spicy_pir_backend::parse_root_0(d, {}).get<Result>());
+    }
+    return 0;
+}
+int main() { hilti::rt::init(); spicy::rt::init(); hilti_main(); hilti::rt::done(); return 0; }
+
+@TEST-END-FILE
+
+@TEST-START-FILE legacy-driver.cc
+#include <iostream>
+#include <string>
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+using namespace hilti::rt::string::literals;
+
+static std::string be(uint64_t n) {
+    std::string s(8, '\0');
+    for ( int i = 7; i >= 0; --i ) { s[i] = static_cast<char>(n & 255); n >>= 8; }
+    return s;
+}
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    const spicy::rt::Parser* parser = nullptr;
+    for ( const auto* candidate : spicy::rt::parsers() )
+        if ( candidate->name == "Benchmark::UnitVectorSize"_hs ) parser = candidate;
+    if ( ! parser ) return 1;
+    for ( auto [name, bytes] : {std::pair{"zero", be(0) + "END"},
+                                std::pair{"four", be(4) + "AAAAEND"},
+                                std::pair{"trailing-eod", be(0) + "EN"},
+                                std::pair{"overflow", be(UINT64_MAX)} } ) {
+        auto stream = hilti::rt::reference::make_value<hilti::rt::Stream>(bytes);
+        stream->freeze();
+        try {
+            auto result = parser->parse1(stream, {}, {});
+            auto cursor = result.get<hilti::rt::stream::View>();
+            std::cout << name << " success cursor=" << cursor.offset() << '\n';
+        }
+        catch ( const std::exception& e ) { std::cout << name << " exception=" << "failure" << '\n'; }
+    }
+    return 0;
+}
+
+int main() { hilti::rt::init(); spicy::rt::init(); auto result = hilti_main(); hilti::rt::done(); return result; }
+
+@TEST-END-FILE

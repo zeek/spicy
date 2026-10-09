@@ -1,0 +1,15 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: A subunit call cannot target a public root's incompatible entry ABI.
+
+module Test;
+
+public type Child = unit {
+    value: uint8;
+};
+
+public type Root = unit {
+    length: uint64;
+    children: Child[] &size=self.length;
+};
