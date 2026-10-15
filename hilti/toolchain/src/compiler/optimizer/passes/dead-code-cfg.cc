@@ -118,11 +118,27 @@ struct Mutator : public optimizer::visitor::Mutator {
         }
 
         NodePtrSet result;
-        for ( const auto& [n, uses] : uses ) {
-            if ( uses > 0 )
+        for ( const auto& [n, use_count] : uses ) {
+            if ( use_count > 0 )
                 continue;
 
             if ( dataflow.at(n).keep )
+                continue;
+
+            // Check whether removing this node would destroy a sub-CFG-node
+            // whose gen is still used downstream.
+            bool has_used_sub_node = false;
+            for ( const auto& [n2, use_count2] : uses ) {
+                if ( n2 == n || use_count2 == 0 )
+                    continue;
+
+                if ( cfg::contains(*n.get(), *n2.get()) ) {
+                    has_used_sub_node = true;
+                    break;
+                }
+            }
+
+            if ( has_used_sub_node )
                 continue;
 
             result.insert(n.get());

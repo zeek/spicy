@@ -190,6 +190,15 @@ bool cfg::contains(const Node& outer, const Node& inner) {
     return false;
 }
 
+bool cfg::isInsideSubCFGNode(const Node* inner, const Node* root, const CFG::Graph& graph) {
+    for ( const Node* n = inner; n && n != root; n = n->parent() ) {
+        if ( graph.getNode(n->identity()) )
+            return true;
+    }
+
+    return false;
+}
+
 CFG::CFG(ASTContext* context, const Node* root)
     : _context(context),
       _begin(_getOrAddNode(_createMetaNode<Start>())),
@@ -246,9 +255,13 @@ GraphNode CFG::_addGlobals(GraphNode predecessor, const Node& root) {
         if ( ! global )
             continue;
 
-        auto stmt = _getOrAddNode(global);
-        _addEdge(predecessor, stmt);
-        predecessor = stmt;
+        if ( auto* init = global->init() )
+            predecessor = _addNodeForExpression(predecessor, global, init);
+        else {
+            auto stmt = _getOrAddNode(global);
+            _addEdge(predecessor, stmt);
+            predecessor = stmt;
+        }
     }
 
     return predecessor;
@@ -366,24 +379,27 @@ GraphNode CFG::_addBlock(GraphNode predecessor, const Nodes& stmts, const Node* 
         else if ( auto* block = c->tryAs<statement::Block>() )
             predecessor = _addBlock(predecessor, block->statements(), block);
 
-        else if ( auto* expr = c->tryAs<statement::Expression>() ) {
-            auto n = _getOrAddNode(expr);
-            _addEdge(predecessor, n);
-            predecessor = n;
-        }
+        else if ( auto* expr = c->tryAs<statement::Expression>() )
+            predecessor = _addNodeForExpression(predecessor, expr, expr->expression());
 
         else if ( auto* stmt = c->tryAs_<Statement>() ) {
             GraphNode cc;
 
-            if ( auto* decl = stmt->tryAs<statement::Declaration>() )
+            if ( auto* decl = stmt->tryAs<statement::Declaration>() ) {
                 // Store the declaration instead of the full statement so we
                 // can refer to it from parts working with declarations.
-                cc = _getOrAddNode(decl->declaration());
+                if ( auto* local = decl->declaration()->tryAs<declaration::LocalVariable>(); local && local->init() )
+                    cc = _addNodeForExpression(predecessor, decl->declaration(), local->init());
+                else {
+                    cc = _getOrAddNode(decl->declaration());
+                    _addEdge(predecessor, cc);
+                }
+            }
 
-            else
+            else {
                 cc = _getOrAddNode(stmt);
-
-            _addEdge(predecessor, cc);
+                _addEdge(predecessor, cc);
+            }
 
             auto x = _addBlock(predecessor, stmt->children(), stmt);
 
@@ -413,8 +429,7 @@ GraphNode CFG::_addBlock(GraphNode predecessor, const Nodes& stmts, const Node* 
 }
 
 GraphNode CFG::_addFor(GraphNode predecessor, const statement::For& for_) {
-    const auto& sequence = _getOrAddNode(for_.sequence());
-    _addEdge(predecessor, sequence);
+    const auto& sequence = _addNodeForExpression(predecessor, for_.sequence(), for_.sequence());
 
     const auto& local = _getOrAddNode(for_.local());
     _addEdge(sequence, local);
@@ -429,21 +444,18 @@ GraphNode CFG::_addFor(GraphNode predecessor, const statement::For& for_) {
 }
 
 GraphNode CFG::_addWhile(GraphNode predecessor, const statement::While& while_, GraphNode /*scope_end*/) {
-    if ( auto* init = while_.init() ) {
-        auto init_ = _getOrAddNode(init);
-        _addEdge(predecessor, init_);
+    if ( auto* init = while_.init() )
+        predecessor = _addNodeForExpression(predecessor, init, init->init());
 
-        predecessor = init_;
-    }
+    auto loop_head = _getOrAddNode(_createMetaNode<Flow>());
+    _addEdge(predecessor, loop_head);
+    predecessor = loop_head;
 
-    if ( auto* c = while_.condition() ) {
-        const auto& condition = _getOrAddNode(c);
-        _addEdge(predecessor, condition);
-        predecessor = condition;
-    }
+    if ( auto* c = while_.condition() )
+        predecessor = _addNodeForExpression(predecessor, c, c);
 
     auto body_end = _addBlock(predecessor, while_.body()->children(), while_.body());
-    _addEdge(body_end, predecessor);
+    _addEdge(body_end, loop_head);
 
     auto mix = _getOrAddNode(_createMetaNode<Flow>());
     _addEdge(predecessor, mix);
@@ -456,15 +468,58 @@ GraphNode CFG::_addWhile(GraphNode predecessor, const statement::While& while_, 
     return mix;
 }
 
-GraphNode CFG::_addIf(GraphNode predecessor, const statement::If& if_) {
-    if ( auto* init = if_.init() ) {
-        auto init_ = _getOrAddNode(init);
-        _addEdge(predecessor, init_);
-        predecessor = init_;
+GraphNode CFG::_walkExpression(GraphNode predecessor, Expression* expr, bool add_node) {
+    if ( auto* lor = expr->tryAs<expression::LogicalOr>() ) {
+        auto lhs = _walkExpression(predecessor, lor->op0());
+        auto merge = _getOrAddNode(_createMetaNode<Flow>());
+        _addEdge(lhs, merge);
+        auto rhs = _walkExpression(lhs, lor->op1());
+        _addEdge(rhs, merge);
+        return merge;
     }
 
-    const auto& condition = _getOrAddNode(if_.condition());
-    _addEdge(predecessor, condition);
+    if ( auto* land = expr->tryAs<expression::LogicalAnd>() ) {
+        auto lhs = _walkExpression(predecessor, land->op0());
+        auto merge = _getOrAddNode(_createMetaNode<Flow>());
+        _addEdge(lhs, merge);
+        auto rhs = _walkExpression(lhs, land->op1());
+        _addEdge(rhs, merge);
+        return merge;
+    }
+
+    for ( auto* child : expr->children() ) {
+        if ( auto* child_expr = child ? child->tryAs<Expression>() : nullptr )
+            predecessor = _walkExpression(predecessor, child_expr, false);
+    }
+
+    if ( add_node ) {
+        auto n = _getOrAddNode(expr);
+        _addEdge(predecessor, n);
+        return n;
+    }
+
+    return predecessor;
+}
+
+GraphNode CFG::_addNodeForExpression(GraphNode predecessor, GraphNode node, Expression* expr) {
+    // When the node is the expression itself (e.g., if/while conditions),
+    // delegate fully so `||`/`&&` at the top level produce branch nodes
+    // instead of a single flat node.
+    if ( node.get() == expr )
+        return _walkExpression(predecessor, expr);
+
+    if ( expr )
+        predecessor = _walkExpression(predecessor, expr, false);
+    auto n = _getOrAddNode(node);
+    _addEdge(predecessor, n);
+    return n;
+}
+
+GraphNode CFG::_addIf(GraphNode predecessor, const statement::If& if_) {
+    if ( auto* init = if_.init() )
+        predecessor = _addNodeForExpression(predecessor, init, init->init());
+
+    auto condition = _addNodeForExpression(predecessor, if_.condition(), if_.condition());
 
     auto mix = _getOrAddNode(_createMetaNode<Flow>());
     auto true_end = _addBlock(condition, if_.true_()->children(), if_.true_());
@@ -503,8 +558,7 @@ GraphNode CFG::_addTryCatch(GraphNode predecessor, const statement::Try& try_cat
 }
 
 GraphNode CFG::_addSwitch(GraphNode predecessor, const statement::Switch& switch_) {
-    const auto& condition = _getOrAddNode(switch_.condition());
-    _addEdge(predecessor, condition);
+    const auto& condition = _addNodeForExpression(predecessor, switch_.condition(), switch_.condition()->init());
 
     auto mix = _getOrAddNode(_createMetaNode<Flow>());
 
@@ -757,10 +811,13 @@ std::string CFG::dot(bool omit_dataflow) const {
 }
 
 namespace {
+
 struct DataflowVisitor : visitor::PreOrder {
-    DataflowVisitor(GraphNode root_) : root(root_) {}
+    DataflowVisitor(GraphNode root_, const CFG::Graph& graph_) : root(root_), graph(graph_) {}
 
     GraphNode root;
+    const CFG::Graph& graph;
+
     Transfer transfer;
 
     void operator()(statement::Assert*) override { transfer.keep = true; }
@@ -855,8 +912,8 @@ struct DataflowVisitor : visitor::PreOrder {
                     if ( contains(*assign_->target(), *name) ) {
                         transfer.write.insert(decl);
 
-                        // A LHS use generates a new value.
-                        transfer.gen[decl] = root;
+                        if ( ! cfg::isInsideSubCFGNode(assign_, root.get(), graph) )
+                            transfer.gen[decl] = root;
 
                         // If the assignment is to a member, mark the whole
                         // struct as read to encode that we still depend on the
@@ -1027,11 +1084,11 @@ struct DataflowVisitor : visitor::PreOrder {
 } // namespace
 
 void CFG::_populateDataflow() {
-    auto visit_node = [](const GraphNode& n) -> Transfer {
+    auto visit_node = [&](const GraphNode& n) -> Transfer {
         if ( n->isA<MetaNode>() )
             return {};
 
-        auto v = DataflowVisitor(n);
+        auto v = DataflowVisitor(n, _graph);
         visitor::visit(v, n.get());
 
         return std::move(v.transfer);
