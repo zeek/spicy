@@ -1,0 +1,14 @@
+# @TEST-EXEC: spicyc %INPUT -p -o /dev/null -D optimizer 2>&1 | sort >log
+# @TEST-EXEC: btest-diff log
+
+# @TEST-DOC: Tests that unaccessed named unit fields are marked as `skip`.
+
+module foo;
+
+public type P = unit {
+    accessed:   uint8;
+    unaccessed: uint8;
+    also_used:  uint8;
+
+    on %done { print self.accessed + self.also_used; }
+};

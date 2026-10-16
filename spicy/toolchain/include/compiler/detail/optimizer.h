@@ -2,7 +2,13 @@
 
 #pragma once
 
+#include <hilti/base/logger.h>
+
 #include <spicy/ast/forward.h>
+
+namespace spicy::logging::debug {
+inline const hilti::logging::DebugStream Optimizer("optimizer");
+} // namespace spicy::logging::debug
 
 namespace spicy::detail::optimizer {
 

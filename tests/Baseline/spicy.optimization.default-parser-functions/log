@@ -893,6 +893,7 @@
 [debug/optimizer]   re-resolving AST assuming guarantees <none>
 [debug/optimizer]   re-resolving AST assuming guarantees <none>
 [debug/optimizer]   re-resolving AST assuming guarantees <resolved>
+[debug/optimizer] marking field 'foo::P2::x' as skip
 [debug/optimizer] pass: dead-code-cfg (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 3, pass iteration 1)
