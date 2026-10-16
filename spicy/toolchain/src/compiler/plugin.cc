@@ -6,6 +6,7 @@
 #include <spicy/autogen/config.h>
 #include <spicy/compiler/detail/codegen/codegen.h>
 #include <spicy/compiler/detail/coercer.h>
+#include <spicy/compiler/detail/optimizer.h>
 #include <spicy/compiler/detail/parser/driver.h>
 #include <spicy/compiler/detail/plugin.h>
 #include <spicy/compiler/detail/printer.h>
@@ -98,6 +99,7 @@ hilti::Plugin spicy::detail::createSpicyPlugin() {
         .ast_transform = [](hilti::Builder* builder, hilti::ASTRoot* m) -> bool {
             assert(dynamic_cast<spicy::Builder*>(builder));
             auto* spicy_builder = static_cast<spicy::Builder*>(builder);
+            optimizer::optimize(spicy_builder, m);
             return CodeGen(spicy_builder).compileAST(m);
         },
     };
