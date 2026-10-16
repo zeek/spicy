@@ -1,0 +1,44 @@
+# @TEST-DOC: Check that data partially overlapping already trimmed input does not advance the sink past its end.
+#
+# @TEST-EXEC: spicy-driver -p Mini::Main %INPUT >output </dev/null
+# @TEST-EXEC: btest-diff output
+
+module Mini;
+
+public type Main = unit {
+
+    sink data;
+
+    on %init {
+        self.data.connect(new Sub);
+        self.data.write(b"1234", 0);
+        self.data.write(b"3456", 2); # First two bytes have already been delivered.
+        print self.data.sequence_number();
+        self.data.write(b"78", 6);
+        print self.data.sequence_number();
+        self.data.close();
+
+        print "";
+
+        self.data.connect(new Sub);
+        self.data.write(b"34", 2);
+        self.data.write(b"12", 0);
+        self.data.write(b"3456", 2); # First two bytes have already been delivered.
+        print self.data.sequence_number();
+        self.data.write(b"78", 6);
+        print self.data.sequence_number();
+        self.data.close();
+    }
+};
+
+public type Sub = unit {
+    s: bytes &eod;
+
+    on %done {
+        print self.s;
+    }
+
+    on %gap(seq: uint64, len: uint64)  {
+        print "Gap at input position %u, length %u" % (seq, len);
+    }
+};
