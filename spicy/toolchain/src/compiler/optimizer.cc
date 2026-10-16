@@ -135,8 +135,10 @@ struct AccessCollector : public visitor::PreOrder {
 };
 
 struct SkipMarker : public visitor::PreOrder {
-    explicit SkipMarker(const std::set<std::pair<ID, ID>>& accessed) : accessed(accessed) {}
+    explicit SkipMarker(Builder* builder, const std::set<std::pair<ID, ID>>& accessed)
+        : builder(builder), accessed(accessed) {}
 
+    Builder* builder;
     const std::set<std::pair<ID, ID>>& accessed;
     bool modified = false;
 
@@ -153,8 +155,8 @@ struct SkipMarker : public visitor::PreOrder {
         if ( ! f->sinks().empty() )
             return;
 
-        // &convert and &requires use $$ — skip marking changes their codegen.
-        if ( f->attributes()->find(attribute::kind::Convert) || f->attributes()->find(attribute::kind::Requires) )
+        // &requires uses $$ — skip marking changes its codegen.
+        if ( f->attributes()->find(attribute::kind::Requires) )
             return;
 
         auto unit_id = unitCanonicalIDForField(f);
@@ -163,6 +165,19 @@ struct SkipMarker : public visitor::PreOrder {
 
         if ( accessed.contains({unit_id, f->id()}) )
             return;
+
+        if ( auto* convert = f->attributes()->find(attribute::kind::Convert) ) {
+            // Field -> Block -> Case -> Switch: exactly three levels up.
+            auto* p = f->parent();
+            bool in_switch =
+                p && p->parent() && p->parent()->parent() && p->parent()->parent()->isA<type::unit::item::Switch>();
+            if ( in_switch )
+                // Preserve the &convert for switch type unification but replace its
+                // expression with default<ItemType>() so no $$ reference remains.
+                convert->replaceChild(builder->context(), convert->value(), builder->default_(f->itemType()->type()));
+            else
+                f->attributes()->remove(attribute::kind::Convert); // noop if absent
+        }
 
         // TODO: This debug log never appears since debug streams live in the
         // HILTI library which does not know about Spicy debug streams.
@@ -190,7 +205,7 @@ bool optimizer::optimize(Builder* builder, hilti::ASTRoot* root) {
     AccessCollector collector(builder);
     visitor::visit(collector, root, ".spicy");
 
-    SkipMarker marker(collector.accessed);
+    SkipMarker marker(builder, collector.accessed);
     visitor::visit(marker, root, ".spicy");
 
     return marker.modified;
