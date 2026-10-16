@@ -173,7 +173,8 @@ struct Visitor : public visitor::PreOrder {
                 // Skipping not supported
             }
 
-            else if ( n->size(context()) )
+            else if ( n->size(context()) && ! n->attributes()->find(attribute::kind::Until) &&
+                      ! n->attributes()->find(attribute::kind::UntilIncluding) )
                 skip = std::make_unique<production::Skip>(context(),
                                                           pf->cg->uniquer()->get(n->id()),
                                                           n,
@@ -181,12 +182,15 @@ struct Visitor : public visitor::PreOrder {
                                                           n->meta().location());
 
             else if ( n->parseType()->type()->isA<hilti::type::Bytes>() ) {
-                // Bytes with fixed size already handled above.
+                // Bytes with `&size` are handled above. Combining `&size` with
+                // `&eod`/`&until`/`&until-including` is left to the full Variable
+                // production because the skip production doesn't enforce `&until`
+                // within a size-limited view.
                 auto* eod_attr = n->attributes()->find(attribute::kind::Eod);
                 auto* until_attr = n->attributes()->find(attribute::kind::Until);
                 auto* until_including_attr = n->attributes()->find(attribute::kind::UntilIncluding);
 
-                if ( eod_attr || until_attr || until_including_attr )
+                if ( (eod_attr || until_attr || until_including_attr) && ! n->size(context()) )
                     skip = std::make_unique<production::Skip>(context(),
                                                               pf->cg->uniquer()->get(n->id()),
                                                               n,
