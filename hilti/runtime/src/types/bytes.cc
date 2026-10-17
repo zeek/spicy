@@ -47,7 +47,7 @@ struct U16Iterator {
     friend bool operator!=(const U16Iterator& a, const U16Iterator& b) { return ! (a == b); };
 
     // Implementation of custom behavior below.
-    enum Order { LE, BE, Detected };
+    enum Order { LE, BE };
 
     U16Iterator(pointer ptr, Order order) : cur(ptr), order(order) {}
 
@@ -55,7 +55,6 @@ struct U16Iterator {
 
     auto operator*() const {
         switch ( order ) {
-            case Detected: [[fallthrough]];
             case LE: return *cur;
             case BE: {
                 auto r = *cur;
@@ -164,9 +163,11 @@ std::string Bytes::decode(unicode::Charset cs, unicode::DecodeErrorStrategy erro
             auto v16 = std::u16string_view{reinterpret_cast<const char16_t*>(Base::data()), Base::size() / 2};
 
             // We prefer to use the byte order from a BOM if present. If none is found use the passed byte order.
-            U16Iterator::Order order = U16Iterator::Detected;
-            if ( ! startsWith("\xFF\xFE") && ! startsWith("\xFE\xFF") )
-                order = (cs.value() == unicode::Charset::UTF16LE ? U16Iterator::LE : U16Iterator::BE);
+            U16Iterator::Order order = (cs.value() == unicode::Charset::UTF16LE ? U16Iterator::LE : U16Iterator::BE);
+            if ( startsWith("\xFF\xFE") )
+                order = U16Iterator::LE;
+            else if ( startsWith("\xFE\xFF") )
+                order = U16Iterator::BE;
 
             auto p = U16Iterator(v16.begin(), order);
             auto e = U16Iterator(v16.end(), order);

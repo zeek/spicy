@@ -74,6 +74,10 @@ TEST_CASE("decode") {
     // Decoding of UTF16 with BOM. The byte order in the charset is just a hint, but we still decode as UTF16.
     CHECK_EQ("\xff\xfeqg\xacN"_b.decode(unicode::Charset ::UTF16BE, unicode::DecodeErrorStrategy::STRICT),
              "\ufeff東京");
+    CHECK_EQ("\xfe\xffgqN\xac"_b.decode(unicode::Charset ::UTF16BE, unicode::DecodeErrorStrategy::STRICT),
+             "\ufeff東京");
+    CHECK_EQ("\xfe\xffgqN\xac"_b.decode(unicode::Charset ::UTF16LE, unicode::DecodeErrorStrategy::STRICT),
+             "\ufeff東京");
 
     // Decoding of too few bytes for UTF16 (expected even number, provided uneven).
     CHECK_THROWS_WITH_AS(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::STRICT),
