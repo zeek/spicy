@@ -60,6 +60,8 @@ Sink::ChunkList::iterator Sink::_addAndCheck(std::optional<hilti::rt::Bytes> dat
             new_c = _chunks.insert(c, Chunk(std::move(prefix), rseq, rseq + prefix_len));
             data = data->sub(data->begin() + prefix_len, data->end());
         }
+        else
+            new_c = _chunks.insert(c, Chunk({}, rseq, rseq + prefix_len));
 
         rseq += prefix_len;
     }
@@ -83,9 +85,11 @@ Sink::ChunkList::iterator Sink::_addAndCheck(std::optional<hilti::rt::Bytes> dat
 
     _reportOverlap(overlap_start, old_data, new_data);
 
-    if ( data && overlap_len < new_c_len ) {
+    if ( overlap_len < new_c_len ) {
         // Recurse to resolve remainder of the new data.
-        data = data->sub(data->begin() + overlap_len, data->end());
+        if ( data )
+            data = data->sub(data->begin() + overlap_len, data->end());
+
         rseq += overlap_len;
 
         if ( new_c == c )
