@@ -1033,6 +1033,13 @@ std::vector<Diagnostic> verify(const Package& package) {
         verifier.verifyParserRoot(root);
     }
 
+    for ( auto root : package.functionRoots() ) {
+        if ( ! package.isValid(root) )
+            emitter.emit(diag::InvalidFunctionRoot, noSite());
+        else if ( package.function(root).kind != FunctionKind::Normal )
+            emitter.emit(diag::FunctionRootNotNormal, root);
+    }
+
     auto reach = computeReachableIds(package);
 
     for ( auto id : reach.duplicate_regions )

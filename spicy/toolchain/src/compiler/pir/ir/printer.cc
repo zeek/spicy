@@ -276,6 +276,9 @@ std::string print(const Package& package) {
     for ( const auto& root : package.parserRoots() )
         out += fmt("parser root: unit %%%u -> function %%%u\n", root.unit.index, root.function.index);
 
+    for ( auto root : package.functionRoots() )
+        out += fmt("function root: function %%%u\n", root.index);
+
     auto reach = computeReachableIds(package);
 
     for ( size_t i = 0; i < package.regions().size(); ++i )

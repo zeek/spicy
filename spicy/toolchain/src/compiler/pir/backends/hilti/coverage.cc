@@ -108,10 +108,64 @@ void checkRegion(const ir::Package& package,
 
 } // namespace
 
+namespace {
+
+// Whether the HILTI backend can lower a value of this type in an ordinary function or foreign signature.
+bool isProcedureType(const ir::Package& package, ir::TypeId id) {
+    const auto& type = package.type(id);
+    switch ( type.kind ) {
+        case ir::TypeKind::Void:
+        case ir::TypeKind::Int64:
+        case ir::TypeKind::UInt8:
+        case ir::TypeKind::UInt64:
+        case ir::TypeKind::Bytes: return true;
+        case ir::TypeKind::Place: return isProcedureType(package, type.type_arguments[0]);
+        case ir::TypeKind::ParserState:
+        case ir::TypeKind::Unit:
+        case ir::TypeKind::Vector:
+        case ir::TypeKind::Opaque:
+        case ir::TypeKind::Tuple: return false;
+    }
+    return false;
+}
+
+// Ordinary functions have no structured regions, so their body is a flat list of procedural operations.
+void checkProcedureRegion(const ir::Package& package, ir::RegionId region, std::vector<UnsupportedFeature>& out) {
+    for ( auto block_id : package.region(region).blocks ) {
+        for ( auto id : package.block(block_id).insts ) {
+            const auto& inst = package.inst(id);
+            const auto* schema = ir::schemaFor(inst.opcode);
+            auto unsupported = [&](std::string reason) {
+                report(out,
+                       schema ? std::string(schema->spelling) : "instruction",
+                       std::move(reason),
+                       toLocation(package, inst.span));
+            };
+            switch ( inst.opcode ) {
+                case ir::Opcode::Argument:
+                case ir::Opcode::Constant:
+                case ir::Opcode::Add:
+                case ir::Opcode::Return:
+                case ir::Opcode::Call:
+                case ir::Opcode::OpaqueOp:
+                case ir::Opcode::LocalPlace:
+                case ir::Opcode::Load:
+                case ir::Opcode::Store: break;
+                default: unsupported("not a procedural operation the HILTI backend can lower"); break;
+            }
+
+            if ( package.isValid(inst.result_type) && ! isProcedureType(package, inst.result_type) )
+                unsupported("value type is not supported by the HILTI backend yet");
+        }
+    }
+}
+
+} // namespace
+
 std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package) {
     std::vector<UnsupportedFeature> out;
-    if ( package.parserRoots().empty() )
-        report(out, "package", "no parser root");
+    if ( package.parserRoots().empty() && package.functionRoots().empty() )
+        report(out, "package", "no parser or function root");
 
     for ( size_t i = 0; i < package.types().size(); ++i ) {
         const auto& type = package.type(ir::TypeId{static_cast<uint32_t>(i)});
@@ -123,11 +177,11 @@ std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package) {
             case ir::TypeKind::Bytes:
             case ir::TypeKind::ParserState:
             case ir::TypeKind::Unit:
+            case ir::TypeKind::Place:
             case ir::TypeKind::Tuple: break;
             case ir::TypeKind::Opaque:
                 report(out, "opaque type", "opaque types are not supported by the HILTI backend yet");
                 break;
-            case ir::TypeKind::Place: report(out, "place", "places are not supported by the HILTI backend yet"); break;
             case ir::TypeKind::Vector:
                 if ( ! isStorageType(package, type.type_arguments[0]) )
                     report(out, "vector", "vector element type cannot be stored by the HILTI backend");
@@ -137,10 +191,14 @@ std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package) {
 
     for ( size_t i = 0; i < package.foreignFunctions().size(); ++i ) {
         const auto& fn = package.foreignFunction(ir::ForeignFunctionId{static_cast<uint32_t>(i)});
-        report(out,
-               "foreign function",
-               fmt("foreign function '%s' is not supported by the HILTI backend yet", fn.name),
-               toLocation(package, fn.span));
+        bool representable = isProcedureType(package, fn.result_type);
+        for ( auto parameter : fn.parameters )
+            representable = representable && isProcedureType(package, parameter);
+        if ( ! representable )
+            report(out,
+                   "foreign function",
+                   fmt("foreign function '%s' has a signature the HILTI backend cannot call yet", fn.name),
+                   toLocation(package, fn.span));
     }
 
     for ( size_t i = 0; i < package.declarations().size(); ++i ) {
@@ -159,28 +217,23 @@ std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package) {
         root_functions.insert(root.function.index);
     auto walk = [&](auto&& self, ir::FunctionId id) -> void {
         if ( active.contains(id.index) ) {
-            report(out, "function", "recursive parser call is not supported");
+            report(out, "function", "recursive call is not supported");
             return;
         }
         if ( ! reached.insert(id.index).second )
             return;
         active.insert(id.index);
         const auto& function = package.function(id);
-        if ( function.kind != ir::FunctionKind::Parser ) {
-            report(out,
-                   "function",
-                   fmt("function '%s' is not a parser function", function.name),
-                   toLocation(package, function.span));
-            active.erase(id.index);
-            return;
-        }
-        checkRegion(package, function.root_region, out, root_functions.contains(id.index) ? 0 : 1);
+        if ( function.kind == ir::FunctionKind::Parser )
+            checkRegion(package, function.root_region, out, root_functions.contains(id.index) ? 0 : 1);
+        else
+            checkProcedureRegion(package, function.root_region, out);
         auto walk_calls = [&](auto&& region_walk, ir::RegionId region) -> void {
             for ( auto block : package.region(region).blocks )
                 for ( auto inst_id : package.block(block).insts ) {
                     const auto& inst = package.inst(inst_id);
                     if ( const auto* p = std::get_if<ir::FunctionPayload>(&inst.payload) ) {
-                        if ( root_functions.contains(p->function.index) )
+                        if ( inst.opcode == ir::Opcode::ParseSubunit && root_functions.contains(p->function.index) )
                             report(out, "parser.parse_subunit", "child call targets a public parser root");
                         self(self, p->function);
                     }
@@ -193,8 +246,11 @@ std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package) {
     };
     for ( const auto& root : package.parserRoots() )
         walk(walk, root.function);
-    if ( ! package.parserRoots().empty() && reached.size() != package.functions().size() )
-        report(out, "package", "contains a function unreachable from parser roots");
+    for ( auto root : package.functionRoots() )
+        walk(walk, root);
+    if ( ! (package.parserRoots().empty() && package.functionRoots().empty()) &&
+         reached.size() != package.functions().size() )
+        report(out, "package", "contains a function unreachable from roots");
     return out;
 }
 

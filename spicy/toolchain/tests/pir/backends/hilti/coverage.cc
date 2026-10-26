@@ -198,3 +198,44 @@ TEST_CASE("repeated coverage checks of equivalent packages agree") {
 }
 
 TEST_SUITE_END();
+
+namespace {
+
+// A public function whose body passes a local to a native `inout` function and returns it.
+void makeInoutRoot(Package& package) {
+    auto builder = package.builder();
+    auto bump =
+        builder.createForeignFunction("bump", "::bump", {builder.placeType(builder.int64Type())}, builder.voidType());
+    auto fn = builder.createFunction("scaled", {builder.int64Type()}, builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto arg = builder.addArgument(fn, block, 0);
+    auto place = builder.addLocalPlace(block, arg);
+    builder.addOpaqueOp(block, bump, {place});
+    builder.addReturn(block, builder.addLoad(block, place));
+    builder.addFunctionRoot(fn);
+}
+
+} // namespace
+
+TEST_CASE("an ordinary function root with a native inout call is supported") {
+    Package package;
+    makeInoutRoot(package);
+
+    REQUIRE(verify(package).empty());
+    CHECK(checkCoverage(package).empty());
+}
+
+TEST_CASE("an ordinary function root with an opaque signature is unsupported") {
+    Package package;
+    auto builder = package.builder();
+    OpaqueTypeInfo info;
+    info.cxx_name = "::Handle";
+    info.lifecycle = OpaqueLifecycle{.copyable = true};
+    auto handle = builder.opaqueType(builder.createOpaqueTypeDecl("Handle", info));
+    auto fn = builder.createFunction("passthrough", {handle}, handle);
+    auto block = builder.createBlock(package.function(fn).root_region);
+    builder.addReturn(block, builder.addArgument(fn, block, 0));
+    builder.addFunctionRoot(fn);
+
+    CHECK_FALSE(checkCoverage(package).empty());
+}

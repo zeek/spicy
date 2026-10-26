@@ -774,10 +774,12 @@ std::optional<UnsupportedFeature> lowerRoots(const RootDiscovery& discovery, ir:
                                    "public foreign functions are not supported yet",
                                    fn_decl->meta().location());
 
-            if ( auto lowered = procedures.function(fn_decl);
-                 auto* feature = std::get_if<UnsupportedFeature>(&lowered) )
+            // Discovery only reports public declarations, so each one is an exported function.
+            auto lowered = procedures.function(fn_decl);
+            if ( auto* feature = std::get_if<UnsupportedFeature>(&lowered) )
                 return *feature;
 
+            package.builder().addFunctionRoot(std::get<ir::FunctionId>(lowered));
             continue;
         }
 

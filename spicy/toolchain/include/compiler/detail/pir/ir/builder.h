@@ -56,6 +56,8 @@ public:
 
     /** Appends a selected parser implementation; call only once the function is complete. */
     void addParserRoot(TypeDeclId unit, FunctionId function);
+    /** Appends a selected public ordinary function; call only once the function is complete. */
+    void addFunctionRoot(FunctionId function);
 
     FunctionId createFunction(std::string name, TypeId result_type, SourceSpanId span = {});
     /** Creates an ordinary function whose parameters are `parameters`, in order. */
