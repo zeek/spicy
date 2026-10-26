@@ -34,6 +34,7 @@
 #include <spicy/ast/types/unit-items/field.h>
 #include <spicy/ast/types/unit.h>
 #include <spicy/ast/visitor.h>
+#include <spicy/compiler/detail/pir/ir/builder.h>
 #include <spicy/compiler/detail/pir/lowerer.h>
 
 using hilti::util::fmt;
@@ -122,7 +123,10 @@ ir::SourceSpanId internSpan(ir::Package& package, const hilti::Location& loc) {
 class ExpressionLowerer {
 public:
     ExpressionLowerer(ir::Package& package, ir::BlockId block, std::string function_feature)
-        : _package(package), _block(block), _function_feature(std::move(function_feature)) {}
+        : _package(package),
+          _builder(package.builder()),
+          _block(block),
+          _function_feature(std::move(function_feature)) {}
 
     std::variant<ir::InstId, UnsupportedFeature> lower(hilti::Expression* expr) {
         if ( auto* ctor_expr = expr->tryAs<hilti::expression::Ctor>() )
@@ -143,7 +147,7 @@ private:
         if ( ! literal || literal->width() != 64 )
             return _unsupported("only signed 64-bit integer literals are supported", loc);
 
-        return _package.addConstant(_block, literal->value(), internSpan(_package, loc));
+        return _builder.addConstant(_block, literal->value(), internSpan(_package, loc));
     }
 
     std::variant<ir::InstId, UnsupportedFeature> _lowerSum(hilti::expression::ResolvedOperator* op) {
@@ -162,7 +166,7 @@ private:
         if ( auto* feature = std::get_if<UnsupportedFeature>(&rhs) )
             return *feature;
 
-        return _package.addAdd(_block,
+        return _builder.addAdd(_block,
                                std::get<ir::InstId>(lhs),
                                std::get<ir::InstId>(rhs),
                                internSpan(_package, op->meta().location()));
@@ -173,11 +177,13 @@ private:
     }
 
     ir::Package& _package;
+    ir::Builder _builder;
     ir::BlockId _block;
     std::string _function_feature;
 };
 
 std::optional<UnsupportedFeature> lowerFunction(hilti::declaration::Function* decl, ir::Package& package) {
+    auto builder = package.builder();
     auto feature = fmt("function '%s'", std::string(decl->id()));
     auto* fn = decl->function();
     auto* ftype = fn->ftype();
@@ -208,17 +214,17 @@ std::optional<UnsupportedFeature> lowerFunction(hilti::declaration::Function* de
     if ( ! ret->expression() )
         return unsupported(feature, "a return value is required", decl->meta().location());
 
-    auto pir_fn = package.createFunction(std::string(decl->id().local()),
-                                         package.int64Type(),
+    auto pir_fn = builder.createFunction(std::string(decl->id().local()),
+                                         builder.int64Type(),
                                          internSpan(package, decl->meta().location()));
-    auto block = package.createBlock(package.function(pir_fn).root_region);
+    auto block = builder.createBlock(package.function(pir_fn).root_region);
 
     ExpressionLowerer lowerer(package, block, feature);
     auto value = lowerer.lower(ret->expression());
     if ( auto* unsupported_feature = std::get_if<UnsupportedFeature>(&value) )
         return *unsupported_feature;
 
-    package.addReturn(block, std::get<ir::InstId>(value), internSpan(package, ret->meta().location()));
+    builder.addReturn(block, std::get<ir::InstId>(value), internSpan(package, ret->meta().location()));
     return std::nullopt;
 }
 
@@ -247,7 +253,10 @@ public:
     UnitLowerer(const std::vector<hilti::declaration::Type*>& declarations,
                 const std::vector<hilti::ast::TypeIndex>& external_hooks,
                 ir::Package& package)
-        : _declarations(declarations), _external_hooks(external_hooks), _package(package) {}
+        : _declarations(declarations),
+          _external_hooks(external_hooks),
+          _package(package),
+          _builder(package.builder()) {}
 
     std::optional<UnsupportedFeature> build(const std::vector<hilti::declaration::Type*>& roots) {
         for ( auto* root : roots )
@@ -258,7 +267,7 @@ public:
         }
 
         for ( auto& spec : _units )
-            spec.declaration = _package.createUnitDecl(std::string(spec.source->id().local()),
+            spec.declaration = _builder.createUnitDecl(std::string(spec.source->id().local()),
                                                        internSpan(_package, spec.source->meta().location()));
 
         for ( auto& spec : _units ) {
@@ -266,21 +275,21 @@ public:
                 ir::TypeId field_type;
                 switch ( field.form ) {
                     case FieldForm::Integer:
-                        field_type = field.width == 8 ? _package.uint8Type() : _package.uint64Type();
+                        field_type = field.width == 8 ? _builder.uint8Type() : _builder.uint64Type();
                         break;
-                    case FieldForm::Bytes: field_type = _package.bytesType(); break;
+                    case FieldForm::Bytes: field_type = _builder.bytesType(); break;
                     case FieldForm::Vector:
-                        field_type = _package.vectorType(_package.unitType(_spec(field.child).declaration));
+                        field_type = _builder.vectorType(_builder.unitType(_spec(field.child).declaration));
                         break;
                 }
-                field.declaration = _package.createFieldDecl(spec.declaration,
+                field.declaration = _builder.createFieldDecl(spec.declaration,
                                                              std::string(field.source->id().local()),
                                                              field_type,
                                                              internSpan(_package, field.source->meta().location()));
             }
-            spec.function = _package.createParserFunction(spec.declaration,
-                                                          _package.parserStateType(),
-                                                          _package.unitType(spec.declaration),
+            spec.function = _builder.createParserFunction(spec.declaration,
+                                                          _builder.parserStateType(),
+                                                          _builder.unitType(spec.declaration),
                                                           internSpan(_package, spec.source->meta().location()));
         }
 
@@ -289,7 +298,7 @@ public:
 
         for ( auto* root : roots ) {
             const auto& spec = _spec(root->type()->type()->as<type::Unit>());
-            _package.addParserRoot(spec.declaration, spec.function);
+            _builder.addParserRoot(spec.declaration, spec.function);
         }
         return std::nullopt;
     }
@@ -417,57 +426,57 @@ private:
 
     void _emit(UnitSpec& spec) {
         auto unit_span = internSpan(_package, spec.source->meta().location());
-        auto block = _package.createBlock(_package.function(spec.function).root_region);
-        auto state = _package.addArgument(spec.function, block, 0, unit_span);
-        auto unit_value = _package.addUnitCreate(block, spec.declaration, unit_span);
+        auto block = _builder.createBlock(_package.function(spec.function).root_region);
+        auto state = _builder.addArgument(spec.function, block, 0, unit_span);
+        auto unit_value = _builder.addUnitCreate(block, spec.declaration, unit_span);
         std::unordered_map<type::unit::item::Field*, ir::InstId> published;
         for ( const auto& field : spec.fields ) {
             auto span = internSpan(_package, field.source->meta().location());
             ir::InstId value;
             if ( field.form == FieldForm::Integer || field.form == FieldForm::Bytes ) {
                 auto read = field.form == FieldForm::Integer ?
-                                _package.addReadInteger(block,
+                                _builder.addReadInteger(block,
                                                         state,
                                                         ir::ReadIntegerPayload{.width = field.width,
                                                                                .signedness = ir::Signedness::Unsigned,
                                                                                .byte_order = ir::ByteOrder::Network},
                                                         span) :
-                                _package.addReadBytes(block, state, field.byte_count, span);
-                state = _package.addTupleGet(block, read, 0, span);
-                value = _package.addTupleGet(block, read, 1, span);
+                                _builder.addReadBytes(block, state, field.byte_count, span);
+                state = _builder.addTupleGet(block, read, 0, span);
+                value = _builder.addTupleGet(block, read, 1, span);
             }
             else {
-                state = _package.addEnterBound(block, state, published.at(field.bound_field), span);
-                auto vector = _package.addVectorEmpty(block, _package.unitType(_spec(field.child).declaration), span);
-                auto body = _package.createRegion();
-                auto body_block = _package.createBlock(body);
-                auto body_state = _package.addRegionArgument(body_block, 0, _package.parserStateType(), span);
-                auto body_vector = _package.addRegionArgument(body_block, 1, _package.inst(vector).result_type, span);
-                auto child = _package.addParseSubunit(body_block, body_state, _spec(field.child).function, span);
-                auto next_state = _package.addTupleGet(body_block, child, 0, span);
-                auto element = _package.addTupleGet(body_block, child, 1, span);
-                auto next_vector = _package.addVectorAppend(body_block, body_vector, element, span);
-                _package.addYield(body_block, {next_state, next_vector}, span);
-                auto repeated = _package.addRepeatToBound(block, {state, vector}, body, span);
-                state = _package.addTupleGet(block, repeated, 0, span);
-                value = _package.addTupleGet(block, repeated, 1, span);
-                state = _package.addLeaveBound(block, state, span);
+                state = _builder.addEnterBound(block, state, published.at(field.bound_field), span);
+                auto vector = _builder.addVectorEmpty(block, _builder.unitType(_spec(field.child).declaration), span);
+                auto body = _builder.createRegion();
+                auto body_block = _builder.createBlock(body);
+                auto body_state = _builder.addRegionArgument(body_block, 0, _builder.parserStateType(), span);
+                auto body_vector = _builder.addRegionArgument(body_block, 1, _package.inst(vector).result_type, span);
+                auto child = _builder.addParseSubunit(body_block, body_state, _spec(field.child).function, span);
+                auto next_state = _builder.addTupleGet(body_block, child, 0, span);
+                auto element = _builder.addTupleGet(body_block, child, 1, span);
+                auto next_vector = _builder.addVectorAppend(body_block, body_vector, element, span);
+                _builder.addYield(body_block, {next_state, next_vector}, span);
+                auto repeated = _builder.addRepeatToBound(block, {state, vector}, body, span);
+                state = _builder.addTupleGet(block, repeated, 0, span);
+                value = _builder.addTupleGet(block, repeated, 1, span);
+                state = _builder.addLeaveBound(block, state, span);
             }
-            unit_value = _package.addPublishField(block, unit_value, value, field.declaration, span);
+            unit_value = _builder.addPublishField(block, unit_value, value, field.declaration, span);
             published[field.source] = value;
         }
-        _package.addParserFinish(block, state, unit_value, unit_span);
+        _builder.addParserFinish(block, state, unit_value, unit_span);
     }
 
     const std::vector<hilti::declaration::Type*>& _declarations;
     const std::vector<hilti::ast::TypeIndex>& _external_hooks;
     ir::Package& _package;
+    ir::Builder _builder;
     std::vector<UnitSpec> _units;
     std::unordered_set<type::Unit*> _seen;
     std::unordered_set<type::Unit*> _visiting;
     std::unordered_set<type::Unit*> _root_units;
 };
-
 
 std::optional<UnsupportedFeature> lowerUnits(const std::vector<hilti::declaration::Type*>& roots,
                                              const std::vector<hilti::declaration::Type*>& unit_declarations,

@@ -3,6 +3,7 @@
 #include <doctest/doctest.h>
 
 #include <spicy/compiler/detail/pir/backends/hilti/coverage.h>
+#include <spicy/compiler/detail/pir/ir/builder.h>
 #include <spicy/compiler/detail/pir/ir/verifier.h>
 
 using namespace spicy::detail::pir;
@@ -21,29 +22,30 @@ struct OneBytePackage {
 
 OneBytePackage makeOneByte(const std::string& name = "OneByte") {
     OneBytePackage s;
-    s.unit = s.package.createUnitDecl(name);
-    s.field = s.package.createFieldDecl(s.unit, "value", s.package.uint8Type());
+    auto builder = s.package.builder();
+    s.unit = builder.createUnitDecl(name);
+    s.field = builder.createFieldDecl(s.unit, "value", builder.uint8Type());
 
-    auto state_type = s.package.parserStateType();
-    auto unit_type = s.package.unitType(s.unit);
-    s.function = s.package.createParserFunction(s.unit, state_type, unit_type);
-    auto block = s.package.createBlock(s.package.function(s.function).root_region);
+    auto state_type = builder.parserStateType();
+    auto unit_type = builder.unitType(s.unit);
+    s.function = builder.createParserFunction(s.unit, state_type, unit_type);
+    auto block = builder.createBlock(s.package.function(s.function).root_region);
 
-    auto state0 = s.package.addArgument(s.function, block, 0);
-    auto unit0 = s.package.addUnitCreate(block, s.unit);
-    auto read = s.package.addReadInteger(block,
-                                         state0,
-                                         ReadIntegerPayload{
-                                             .width = 8,
-                                             .signedness = Signedness::Unsigned,
-                                             .byte_order = ByteOrder::Network,
-                                         });
-    auto state1 = s.package.addTupleGet(block, read, 0);
-    auto value = s.package.addTupleGet(block, read, 1);
-    auto unit1 = s.package.addPublishField(block, unit0, value, s.field);
-    s.package.addParserFinish(block, state1, unit1);
+    auto state0 = builder.addArgument(s.function, block, 0);
+    auto unit0 = builder.addUnitCreate(block, s.unit);
+    auto read = builder.addReadInteger(block,
+                                       state0,
+                                       ReadIntegerPayload{
+                                           .width = 8,
+                                           .signedness = Signedness::Unsigned,
+                                           .byte_order = ByteOrder::Network,
+                                       });
+    auto state1 = builder.addTupleGet(block, read, 0);
+    auto value = builder.addTupleGet(block, read, 1);
+    auto unit1 = builder.addPublishField(block, unit0, value, s.field);
+    builder.addParserFinish(block, state1, unit1);
 
-    s.package.addParserRoot(s.unit, s.function);
+    builder.addParserRoot(s.unit, s.function);
     return s;
 }
 
@@ -59,31 +61,32 @@ TEST_CASE("the canonical one-byte package is supported") {
 
 TEST_CASE("two same-named units in different roots are each supported") {
     Package package;
-    auto unit_a = package.createUnitDecl("Same");
-    auto field_a = package.createFieldDecl(unit_a, "value", package.uint8Type());
-    auto unit_b = package.createUnitDecl("Same");
-    auto field_b = package.createFieldDecl(unit_b, "value", package.uint8Type());
+    auto builder = package.builder();
+    auto unit_a = builder.createUnitDecl("Same");
+    auto field_a = builder.createFieldDecl(unit_a, "value", builder.uint8Type());
+    auto unit_b = builder.createUnitDecl("Same");
+    auto field_b = builder.createFieldDecl(unit_b, "value", builder.uint8Type());
 
-    auto state_type = package.parserStateType();
+    auto state_type = builder.parserStateType();
 
     auto build_root = [&](TypeDeclId unit, DeclId field) {
-        auto unit_type = package.unitType(unit);
-        auto fn = package.createParserFunction(unit, state_type, unit_type);
-        auto block = package.createBlock(package.function(fn).root_region);
-        auto state0 = package.addArgument(fn, block, 0);
-        auto unit0 = package.addUnitCreate(block, unit);
-        auto read = package.addReadInteger(block,
+        auto unit_type = builder.unitType(unit);
+        auto fn = builder.createParserFunction(unit, state_type, unit_type);
+        auto block = builder.createBlock(package.function(fn).root_region);
+        auto state0 = builder.addArgument(fn, block, 0);
+        auto unit0 = builder.addUnitCreate(block, unit);
+        auto read = builder.addReadInteger(block,
                                            state0,
                                            ReadIntegerPayload{
                                                .width = 8,
                                                .signedness = Signedness::Unsigned,
                                                .byte_order = ByteOrder::Network,
                                            });
-        auto state1 = package.addTupleGet(block, read, 0);
-        auto value = package.addTupleGet(block, read, 1);
-        auto unit1 = package.addPublishField(block, unit0, value, field);
-        package.addParserFinish(block, state1, unit1);
-        package.addParserRoot(unit, fn);
+        auto state1 = builder.addTupleGet(block, read, 0);
+        auto value = builder.addTupleGet(block, read, 1);
+        auto unit1 = builder.addPublishField(block, unit0, value, field);
+        builder.addParserFinish(block, state1, unit1);
+        builder.addParserRoot(unit, fn);
     };
 
     build_root(unit_a, field_a);
@@ -95,14 +98,16 @@ TEST_CASE("two same-named units in different roots are each supported") {
 
 TEST_CASE("a package with no parser root is unsupported") {
     Package package;
-    package.createFunction("free", package.voidType());
+    auto builder = package.builder();
+    builder.createFunction("free", builder.voidType());
 
     CHECK_FALSE(checkCoverage(package).empty());
 }
 
 TEST_CASE("a package with a procedural function alongside a parser root is unsupported as a whole") {
     auto sample = makeOneByte();
-    sample.package.createFunction("procedural", sample.package.voidType());
+    auto builder = sample.package.builder();
+    builder.createFunction("procedural", builder.voidType());
 
     auto features = checkCoverage(sample.package);
     REQUIRE_FALSE(features.empty());
@@ -110,38 +115,39 @@ TEST_CASE("a package with a procedural function alongside a parser root is unsup
 
 TEST_CASE("a two-field unit is covered once both fields publish") {
     Package package;
-    auto unit = package.createUnitDecl("TwoFields");
-    auto field_a = package.createFieldDecl(unit, "a", package.uint8Type());
-    auto field_b = package.createFieldDecl(unit, "b", package.uint8Type());
+    auto builder = package.builder();
+    auto unit = builder.createUnitDecl("TwoFields");
+    auto field_a = builder.createFieldDecl(unit, "a", builder.uint8Type());
+    auto field_b = builder.createFieldDecl(unit, "b", builder.uint8Type());
 
-    auto state_type = package.parserStateType();
-    auto unit_type = package.unitType(unit);
-    auto fn = package.createParserFunction(unit, state_type, unit_type);
-    auto block = package.createBlock(package.function(fn).root_region);
-    auto state0 = package.addArgument(fn, block, 0);
-    auto unit0 = package.addUnitCreate(block, unit);
-    auto read_a = package.addReadInteger(block,
+    auto state_type = builder.parserStateType();
+    auto unit_type = builder.unitType(unit);
+    auto fn = builder.createParserFunction(unit, state_type, unit_type);
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto state0 = builder.addArgument(fn, block, 0);
+    auto unit0 = builder.addUnitCreate(block, unit);
+    auto read_a = builder.addReadInteger(block,
                                          state0,
                                          ReadIntegerPayload{
                                              .width = 8,
                                              .signedness = Signedness::Unsigned,
                                              .byte_order = ByteOrder::Network,
                                          });
-    auto state1 = package.addTupleGet(block, read_a, 0);
-    auto value_a = package.addTupleGet(block, read_a, 1);
-    auto unit1 = package.addPublishField(block, unit0, value_a, field_a);
-    auto read_b = package.addReadInteger(block,
+    auto state1 = builder.addTupleGet(block, read_a, 0);
+    auto value_a = builder.addTupleGet(block, read_a, 1);
+    auto unit1 = builder.addPublishField(block, unit0, value_a, field_a);
+    auto read_b = builder.addReadInteger(block,
                                          state1,
                                          ReadIntegerPayload{
                                              .width = 8,
                                              .signedness = Signedness::Unsigned,
                                              .byte_order = ByteOrder::Network,
                                          });
-    auto state2 = package.addTupleGet(block, read_b, 0);
-    auto value_b = package.addTupleGet(block, read_b, 1);
-    auto unit2 = package.addPublishField(block, unit1, value_b, field_b);
-    package.addParserFinish(block, state2, unit2);
-    package.addParserRoot(unit, fn);
+    auto state2 = builder.addTupleGet(block, read_b, 0);
+    auto value_b = builder.addTupleGet(block, read_b, 1);
+    auto unit2 = builder.addPublishField(block, unit1, value_b, field_b);
+    builder.addParserFinish(block, state2, unit2);
+    builder.addParserRoot(unit, fn);
 
     REQUIRE(verify(package).empty());
     CHECK(checkCoverage(package).empty());
@@ -166,17 +172,18 @@ TEST_CASE("an unsupported read-integer width produces a coverage gap") {
 
 TEST_CASE("a published vector of tuples is unsupported as storage") {
     Package package;
-    auto unit = package.createUnitDecl("Tuples");
-    auto element = package.tupleType({package.uint8Type(), package.uint8Type()});
-    auto field = package.createFieldDecl(unit, "items", package.vectorType(element));
-    auto fn = package.createParserFunction(unit, package.parserStateType(), package.unitType(unit));
-    auto block = package.createBlock(package.function(fn).root_region);
-    auto state = package.addArgument(fn, block, 0);
-    auto root = package.addUnitCreate(block, unit);
-    auto items = package.addVectorEmpty(block, element);
-    auto completed = package.addPublishField(block, root, items, field);
-    package.addParserFinish(block, state, completed);
-    package.addParserRoot(unit, fn);
+    auto builder = package.builder();
+    auto unit = builder.createUnitDecl("Tuples");
+    auto element = builder.tupleType({builder.uint8Type(), builder.uint8Type()});
+    auto field = builder.createFieldDecl(unit, "items", builder.vectorType(element));
+    auto fn = builder.createParserFunction(unit, builder.parserStateType(), builder.unitType(unit));
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto state = builder.addArgument(fn, block, 0);
+    auto root = builder.addUnitCreate(block, unit);
+    auto items = builder.addVectorEmpty(block, element);
+    auto completed = builder.addPublishField(block, root, items, field);
+    builder.addParserFinish(block, state, completed);
+    builder.addParserRoot(unit, fn);
 
     REQUIRE(verify(package).empty());
     CHECK_FALSE(checkCoverage(package).empty());

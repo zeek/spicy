@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <limits>
 
+#include <spicy/compiler/detail/pir/ir/builder.h>
 #include <spicy/compiler/detail/pir/ir/package.h>
 #include <spicy/compiler/detail/pir/ir/printer.h>
 #include <spicy/compiler/detail/pir/ir/verifier.h>
@@ -26,12 +27,13 @@ struct Sample {
 
 Sample makeSample() {
     Sample s;
-    auto fn = s.package.createFunction("main", s.package.int64Type());
-    auto block = s.package.createBlock(s.package.function(fn).root_region);
-    auto c40 = s.package.addConstant(block, 40);
-    auto c2 = s.package.addConstant(block, 2);
-    s.add = s.package.addAdd(block, c40, c2);
-    s.package.addReturn(block, s.add);
+    auto builder = s.package.builder();
+    auto fn = builder.createFunction("main", builder.int64Type());
+    auto block = builder.createBlock(s.package.function(fn).root_region);
+    auto c40 = builder.addConstant(block, 40);
+    auto c2 = builder.addConstant(block, 2);
+    s.add = builder.addAdd(block, c40, c2);
+    builder.addReturn(block, s.add);
     return s;
 }
 
@@ -61,6 +63,28 @@ const char* expected_folded =
 
 TEST_SUITE_BEGIN("PIR core");
 
+TEST_CASE("builders share package type identities") {
+    Package package;
+    auto first = package.builder();
+    const auto initial_size = package.types().size();
+    auto second = package.builder();
+    CHECK_EQ(package.types().size(), initial_size);
+    CHECK_EQ(first.voidType(), second.voidType());
+    CHECK_EQ(first.int64Type(), second.int64Type());
+
+    const auto byte = first.uint8Type();
+    const auto integer = first.uint64Type();
+    const auto bytes = first.bytesType();
+    const auto state = first.parserStateType();
+    const auto type_count = package.types().size();
+    CHECK_EQ(second.uint8Type(), byte);
+    CHECK_EQ(second.uint64Type(), integer);
+    CHECK_EQ(second.bytesType(), bytes);
+    CHECK_EQ(second.parserStateType(), state);
+    CHECK_EQ(package.builder().uint8Type(), byte);
+    CHECK_EQ(package.types().size(), type_count);
+}
+
 TEST_CASE("valid package verifies and prints deterministically") {
     auto sample = makeSample();
     CHECK(verify(sample.package).empty());
@@ -81,12 +105,13 @@ TEST_CASE("constant folding replaces add with a constant in place") {
 
 TEST_CASE("constant folding declines to fold on signed overflow") {
     Package package;
-    auto fn = package.createFunction("overflow", package.int64Type());
-    auto block = package.createBlock(package.function(fn).root_region);
-    auto max = package.addConstant(block, std::numeric_limits<int64_t>::max());
-    auto one = package.addConstant(block, 1);
-    auto add = package.addAdd(block, max, one);
-    package.addReturn(block, add);
+    auto builder = package.builder();
+    auto fn = builder.createFunction("overflow", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto max = builder.addConstant(block, std::numeric_limits<int64_t>::max());
+    auto one = builder.addConstant(block, 1);
+    auto add = builder.addAdd(block, max, one);
+    builder.addReturn(block, add);
 
     CHECK(verify(package).empty());
     CHECK_FALSE(foldConstants(package, fn));
@@ -95,11 +120,12 @@ TEST_CASE("constant folding declines to fold on signed overflow") {
 
 TEST_CASE("constant folding safely skips a core.add with too few operands") {
     Package package;
-    auto fn = package.createFunction("bad", package.int64Type());
-    auto block = package.createBlock(package.function(fn).root_region);
-    auto c = package.addConstant(block, 1);
-    auto add = package.addInstForTesting(block, Opcode::Add, {c}, package.int64Type());
-    package.addReturn(block, add);
+    auto builder = package.builder();
+    auto fn = builder.createFunction("bad", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto c = builder.addConstant(block, 1);
+    auto add = builder.addInstForTesting(block, Opcode::Add, {c}, builder.int64Type());
+    builder.addReturn(block, add);
 
     CHECK(hasDiagnostic(verify(package), diag::OperandCountMismatch));
     CHECK_FALSE(foldConstants(package, fn));
@@ -108,12 +134,13 @@ TEST_CASE("constant folding safely skips a core.add with too few operands") {
 
 TEST_CASE("verifier rejects an invalid operand ID") {
     Package package;
-    auto fn = package.createFunction("bad", package.int64Type());
-    auto block = package.createBlock(package.function(fn).root_region);
-    auto c = package.addConstant(block, 1);
+    auto builder = package.builder();
+    auto fn = builder.createFunction("bad", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto c = builder.addConstant(block, 1);
     auto bogus = InstId{999};
-    auto add = package.addInstForTesting(block, Opcode::Add, {c, bogus}, package.int64Type());
-    package.addReturn(block, add);
+    auto add = builder.addInstForTesting(block, Opcode::Add, {c, bogus}, builder.int64Type());
+    builder.addReturn(block, add);
 
     auto diags = verify(package);
     CHECK(hasDiagnostic(diags, diag::InvalidOperandId));
@@ -121,13 +148,14 @@ TEST_CASE("verifier rejects an invalid operand ID") {
 
 TEST_CASE("verifier rejects an operand type mismatch") {
     Package package;
-    auto fn = package.createFunction("bad", package.int64Type());
-    auto block = package.createBlock(package.function(fn).root_region);
-    auto c = package.addConstant(block, 1);
+    auto builder = package.builder();
+    auto fn = builder.createFunction("bad", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto c = builder.addConstant(block, 1);
     auto bad_void =
-        package.addInstForTesting(block, Opcode::Constant, {}, package.voidType(), InstPayload(Int64Literal{0}));
-    auto add = package.addAdd(block, c, bad_void);
-    package.addReturn(block, add);
+        builder.addInstForTesting(block, Opcode::Constant, {}, builder.voidType(), InstPayload(Int64Literal{0}));
+    auto add = builder.addAdd(block, c, bad_void);
+    builder.addReturn(block, add);
 
     auto diags = verify(package);
     CHECK(hasDiagnostic(diags, diag::OperandTypeMismatch));
@@ -135,10 +163,11 @@ TEST_CASE("verifier rejects an operand type mismatch") {
 
 TEST_CASE("verifier rejects a return value that doesn't match the function's result type") {
     Package package;
-    auto fn = package.createFunction("bad", package.int64Type());
-    auto block = package.createBlock(package.function(fn).root_region);
-    auto c = package.addInstForTesting(block, Opcode::Constant, {}, package.voidType(), InstPayload(Int64Literal{0}));
-    package.addReturn(block, c);
+    auto builder = package.builder();
+    auto fn = builder.createFunction("bad", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto c = builder.addInstForTesting(block, Opcode::Constant, {}, builder.voidType(), InstPayload(Int64Literal{0}));
+    builder.addReturn(block, c);
 
     auto diags = verify(package);
     CHECK(hasDiagnostic(diags, diag::ReturnTypeMismatch));
@@ -149,7 +178,7 @@ TEST_CASE("verifier rejects an unattached region and differentiates it from an e
     CHECK(verify(empty.package).empty());
 
     auto sample = makeSample();
-    sample.package.createRegion();
+    sample.package.builder().createRegion();
     auto diags = verify(sample.package);
     CHECK(hasDiagnostic(diags, diag::OrphanRegions));
 
@@ -158,12 +187,13 @@ TEST_CASE("verifier rejects an unattached region and differentiates it from an e
 
 TEST_CASE("verifier rejects a function whose region has more than one block") {
     Package package;
-    auto fn = package.createFunction("bad", package.int64Type());
+    auto builder = package.builder();
+    auto fn = builder.createFunction("bad", builder.int64Type());
     auto region = package.function(fn).root_region;
-    auto first = package.createBlock(region);
-    package.createBlock(region);
-    auto c = package.addConstant(first, 1);
-    package.addReturn(first, c);
+    auto first = builder.createBlock(region);
+    builder.createBlock(region);
+    auto c = builder.addConstant(first, 1);
+    builder.addReturn(first, c);
 
     auto diags = verify(package);
     CHECK(hasDiagnostic(diags, diag::RegionBlockCountMismatch));
@@ -171,11 +201,12 @@ TEST_CASE("verifier rejects a function whose region has more than one block") {
 
 TEST_CASE("verifier rejects an unrecognized opcode") {
     Package package;
-    auto fn = package.createFunction("bad", package.int64Type());
-    auto block = package.createBlock(package.function(fn).root_region);
+    auto builder = package.builder();
+    auto fn = builder.createFunction("bad", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
     auto bogus_op = static_cast<Opcode>(99);
-    auto c = package.addInstForTesting(block, bogus_op, {}, package.int64Type());
-    package.addReturn(block, c);
+    auto c = builder.addInstForTesting(block, bogus_op, {}, builder.int64Type());
+    builder.addReturn(block, c);
 
     auto diags = verify(package);
     CHECK(hasDiagnostic(diags, diag::UnrecognizedOpcode));
@@ -183,11 +214,12 @@ TEST_CASE("verifier rejects an unrecognized opcode") {
 
 TEST_CASE("verifier rejects an instruction after the block terminator") {
     Package package;
-    auto fn = package.createFunction("bad", package.int64Type());
-    auto block = package.createBlock(package.function(fn).root_region);
-    auto c = package.addConstant(block, 1);
-    package.addReturn(block, c);
-    package.addConstant(block, 2);
+    auto builder = package.builder();
+    auto fn = builder.createFunction("bad", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto c = builder.addConstant(block, 1);
+    builder.addReturn(block, c);
+    builder.addConstant(block, 2);
 
     auto diags = verify(package);
     CHECK(hasDiagnostic(diags, diag::TerminatorNotLast));
@@ -195,24 +227,25 @@ TEST_CASE("verifier rejects an instruction after the block terminator") {
 
 TEST_CASE("parser repetition requires a byte-bounded state") {
     Package package;
-    auto unit = package.createUnitDecl("Root");
-    auto field = package.createFieldDecl(unit, "items", package.vectorType(package.uint8Type()));
-    auto fn = package.createParserFunction(unit, package.parserStateType(), package.unitType(unit));
-    auto block = package.createBlock(package.function(fn).root_region);
-    auto state = package.addArgument(fn, block, 0);
-    auto root = package.addUnitCreate(block, unit);
-    auto vector = package.addVectorEmpty(block, package.uint8Type());
-    auto body = package.createRegion();
-    auto body_block = package.createBlock(body);
-    auto body_state = package.addRegionArgument(body_block, 0, package.parserStateType());
-    auto body_vector = package.addRegionArgument(body_block, 1, package.inst(vector).result_type);
-    auto yield = package.addYield(body_block, {body_state, body_vector});
-    auto repeated = package.addRepeatToBound(block, {state, vector}, body);
-    auto next_state = package.addTupleGet(block, repeated, 0);
-    auto items = package.addTupleGet(block, repeated, 1);
-    auto completed = package.addPublishField(block, root, items, field);
-    package.addParserFinish(block, next_state, completed);
-    package.addParserRoot(unit, fn);
+    auto builder = package.builder();
+    auto unit = builder.createUnitDecl("Root");
+    auto field = builder.createFieldDecl(unit, "items", builder.vectorType(builder.uint8Type()));
+    auto fn = builder.createParserFunction(unit, builder.parserStateType(), builder.unitType(unit));
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto state = builder.addArgument(fn, block, 0);
+    auto root = builder.addUnitCreate(block, unit);
+    auto vector = builder.addVectorEmpty(block, builder.uint8Type());
+    auto body = builder.createRegion();
+    auto body_block = builder.createBlock(body);
+    auto body_state = builder.addRegionArgument(body_block, 0, builder.parserStateType());
+    auto body_vector = builder.addRegionArgument(body_block, 1, package.inst(vector).result_type);
+    auto yield = builder.addYield(body_block, {body_state, body_vector});
+    auto repeated = builder.addRepeatToBound(block, {state, vector}, body);
+    auto next_state = builder.addTupleGet(block, repeated, 0);
+    auto items = builder.addTupleGet(block, repeated, 1);
+    auto completed = builder.addPublishField(block, root, items, field);
+    builder.addParserFinish(block, next_state, completed);
+    builder.addParserRoot(unit, fn);
 
     CHECK(hasDiagnostic(verify(package), diag::RepeatRequiresBound));
 
@@ -222,13 +255,14 @@ TEST_CASE("parser repetition requires a byte-bounded state") {
 
 TEST_CASE("parser repetition rejects a body that yields a state after leaving its bound") {
     Package package;
-    auto unit = package.createUnitDecl("Root");
-    auto field = package.createFieldDecl(unit, "items", package.vectorType(package.uint8Type()));
-    auto fn = package.createParserFunction(unit, package.parserStateType(), package.unitType(unit));
-    auto block = package.createBlock(package.function(fn).root_region);
-    auto state = package.addArgument(fn, block, 0);
-    auto root = package.addUnitCreate(block, unit);
-    auto length = package.addReadInteger(block,
+    auto builder = package.builder();
+    auto unit = builder.createUnitDecl("Root");
+    auto field = builder.createFieldDecl(unit, "items", builder.vectorType(builder.uint8Type()));
+    auto fn = builder.createParserFunction(unit, builder.parserStateType(), builder.unitType(unit));
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto state = builder.addArgument(fn, block, 0);
+    auto root = builder.addUnitCreate(block, unit);
+    auto length = builder.addReadInteger(block,
                                          state,
                                          ReadIntegerPayload{
                                              .width = 64,
@@ -236,65 +270,67 @@ TEST_CASE("parser repetition rejects a body that yields a state after leaving it
                                              .byte_order = ByteOrder::Network,
                                          });
     auto bounded =
-        package.addEnterBound(block, package.addTupleGet(block, length, 0), package.addTupleGet(block, length, 1));
-    auto vector = package.addVectorEmpty(block, package.uint8Type());
-    auto body = package.createRegion();
-    auto body_block = package.createBlock(body);
-    auto body_state = package.addRegionArgument(body_block, 0, package.parserStateType());
-    auto body_vector = package.addRegionArgument(body_block, 1, package.inst(vector).result_type);
-    auto item = package.addReadInteger(body_block,
+        builder.addEnterBound(block, builder.addTupleGet(block, length, 0), builder.addTupleGet(block, length, 1));
+    auto vector = builder.addVectorEmpty(block, builder.uint8Type());
+    auto body = builder.createRegion();
+    auto body_block = builder.createBlock(body);
+    auto body_state = builder.addRegionArgument(body_block, 0, builder.parserStateType());
+    auto body_vector = builder.addRegionArgument(body_block, 1, package.inst(vector).result_type);
+    auto item = builder.addReadInteger(body_block,
                                        body_state,
                                        ReadIntegerPayload{
                                            .width = 8,
                                            .signedness = Signedness::Unsigned,
                                            .byte_order = ByteOrder::Network,
                                        });
-    auto unbounded = package.addLeaveBound(body_block, package.addTupleGet(body_block, item, 0));
-    package.addYield(body_block, {unbounded, body_vector});
-    auto repeated = package.addRepeatToBound(block, {bounded, vector}, body);
-    auto next_state = package.addTupleGet(block, repeated, 0);
-    auto items = package.addTupleGet(block, repeated, 1);
-    auto completed = package.addPublishField(block, root, items, field);
-    package.addParserFinish(block, next_state, completed);
-    package.addParserRoot(unit, fn);
+    auto unbounded = builder.addLeaveBound(body_block, builder.addTupleGet(body_block, item, 0));
+    builder.addYield(body_block, {unbounded, body_vector});
+    auto repeated = builder.addRepeatToBound(block, {bounded, vector}, body);
+    auto next_state = builder.addTupleGet(block, repeated, 0);
+    auto items = builder.addTupleGet(block, repeated, 1);
+    auto completed = builder.addPublishField(block, root, items, field);
+    builder.addParserFinish(block, next_state, completed);
+    builder.addParserRoot(unit, fn);
 
     CHECK(hasDiagnostic(verify(package), diag::InvalidYield));
 }
 
 TEST_CASE("parser repetition rejects region arguments beyond its carried values") {
     Package package;
-    auto unit = package.createUnitDecl("Root");
-    auto field = package.createFieldDecl(unit, "items", package.vectorType(package.uint8Type()));
-    auto fn = package.createParserFunction(unit, package.parserStateType(), package.unitType(unit));
-    auto block = package.createBlock(package.function(fn).root_region);
-    auto state = package.addArgument(fn, block, 0);
-    auto root = package.addUnitCreate(block, unit);
-    auto vector = package.addVectorEmpty(block, package.uint8Type());
-    auto body = package.createRegion();
-    auto body_block = package.createBlock(body);
-    auto body_state = package.addRegionArgument(body_block, 0, package.parserStateType());
-    auto body_vector = package.addRegionArgument(body_block, 1, package.inst(vector).result_type);
-    package.addRegionArgument(body_block, 123, package.parserStateType());
-    package.addYield(body_block, {body_state, body_vector});
-    auto repeated = package.addRepeatToBound(block, {state, vector}, body);
-    auto next_state = package.addTupleGet(block, repeated, 0);
-    auto items = package.addTupleGet(block, repeated, 1);
-    auto completed = package.addPublishField(block, root, items, field);
-    package.addParserFinish(block, next_state, completed);
-    package.addParserRoot(unit, fn);
+    auto builder = package.builder();
+    auto unit = builder.createUnitDecl("Root");
+    auto field = builder.createFieldDecl(unit, "items", builder.vectorType(builder.uint8Type()));
+    auto fn = builder.createParserFunction(unit, builder.parserStateType(), builder.unitType(unit));
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto state = builder.addArgument(fn, block, 0);
+    auto root = builder.addUnitCreate(block, unit);
+    auto vector = builder.addVectorEmpty(block, builder.uint8Type());
+    auto body = builder.createRegion();
+    auto body_block = builder.createBlock(body);
+    auto body_state = builder.addRegionArgument(body_block, 0, builder.parserStateType());
+    auto body_vector = builder.addRegionArgument(body_block, 1, package.inst(vector).result_type);
+    builder.addRegionArgument(body_block, 123, builder.parserStateType());
+    builder.addYield(body_block, {body_state, body_vector});
+    auto repeated = builder.addRepeatToBound(block, {state, vector}, body);
+    auto next_state = builder.addTupleGet(block, repeated, 0);
+    auto items = builder.addTupleGet(block, repeated, 1);
+    auto completed = builder.addPublishField(block, root, items, field);
+    builder.addParserFinish(block, next_state, completed);
+    builder.addParserRoot(unit, fn);
 
     CHECK(hasDiagnostic(verify(package), diag::InvalidRegionArgument));
 }
 
 TEST_CASE("uint8 and parser.state intern deterministically and are stable across repeated requests") {
     Package package;
-    auto uint8_1 = package.uint8Type();
-    auto uint8_2 = package.uint8Type();
+    auto builder = package.builder();
+    auto uint8_1 = builder.uint8Type();
+    auto uint8_2 = builder.uint8Type();
     CHECK_EQ(uint8_1, uint8_2);
     CHECK_EQ(package.type(uint8_1).kind, TypeKind::UInt8);
 
-    auto state_1 = package.parserStateType();
-    auto state_2 = package.parserStateType();
+    auto state_1 = builder.parserStateType();
+    auto state_2 = builder.parserStateType();
     CHECK_EQ(state_1, state_2);
     CHECK_EQ(package.type(state_1).kind, TypeKind::ParserState);
 
@@ -303,51 +339,55 @@ TEST_CASE("uint8 and parser.state intern deterministically and are stable across
 
 TEST_CASE("unit and tuple types intern structurally and repeated requests return the same TypeId") {
     Package package;
-    auto unit_decl = package.createUnitDecl("OneByte");
+    auto builder = package.builder();
+    auto unit_decl = builder.createUnitDecl("OneByte");
 
-    auto unit_1 = package.unitType(unit_decl);
-    auto unit_2 = package.unitType(unit_decl);
+    auto unit_1 = builder.unitType(unit_decl);
+    auto unit_2 = builder.unitType(unit_decl);
     CHECK_EQ(unit_1, unit_2);
     CHECK_EQ(package.type(unit_1).kind, TypeKind::Unit);
     CHECK_EQ(package.type(unit_1).declaration, unit_decl);
 
-    auto uint8 = package.uint8Type();
-    auto state = package.parserStateType();
-    auto tuple_1 = package.tupleType({state, uint8});
-    auto tuple_2 = package.tupleType({state, uint8});
+    auto uint8 = builder.uint8Type();
+    auto state = builder.parserStateType();
+    auto tuple_1 = builder.tupleType({state, uint8});
+    auto tuple_2 = builder.tupleType({state, uint8});
     CHECK_EQ(tuple_1, tuple_2);
     CHECK_EQ(package.type(tuple_1).kind, TypeKind::Tuple);
     CHECK_EQ(package.type(tuple_1).type_arguments, std::vector<TypeId>{state, uint8});
 
     // Different element order is a different structural type.
-    auto tuple_3 = package.tupleType({uint8, state});
+    auto tuple_3 = builder.tupleType({uint8, state});
     CHECK_NE(tuple_1, tuple_3);
 }
 
 TEST_CASE("two unit declarations with the same name remain distinct nominal types") {
     Package package;
-    auto decl_a = package.createUnitDecl("Same");
-    auto decl_b = package.createUnitDecl("Same");
+    auto builder = package.builder();
+    auto decl_a = builder.createUnitDecl("Same");
+    auto decl_b = builder.createUnitDecl("Same");
     CHECK_NE(decl_a, decl_b);
 
-    auto type_a = package.unitType(decl_a);
-    auto type_b = package.unitType(decl_b);
+    auto type_a = builder.unitType(decl_a);
+    auto type_b = builder.unitType(decl_b);
     CHECK_NE(type_a, type_b);
 }
 
 TEST_CASE("procedural-only packages retain canonical type numbering") {
     auto sample = makeSample();
+    auto builder = sample.package.builder();
     CHECK_EQ(sample.package.types().size(), 2);
-    CHECK_EQ(sample.package.voidType(), TypeId{0});
-    CHECK_EQ(sample.package.int64Type(), TypeId{1});
+    CHECK_EQ(builder.voidType(), TypeId{0});
+    CHECK_EQ(builder.int64Type(), TypeId{1});
 }
 
 TEST_CASE("field declarations are appended to their owning unit in call order") {
     Package package;
-    auto unit_decl = package.createUnitDecl("OneByte");
-    auto uint8 = package.uint8Type();
-    auto field_a = package.createFieldDecl(unit_decl, "a", uint8);
-    auto field_b = package.createFieldDecl(unit_decl, "b", uint8);
+    auto builder = package.builder();
+    auto unit_decl = builder.createUnitDecl("OneByte");
+    auto uint8 = builder.uint8Type();
+    auto field_a = builder.createFieldDecl(unit_decl, "a", uint8);
+    auto field_b = builder.createFieldDecl(unit_decl, "b", uint8);
 
     CHECK_EQ(package.typeDecl(unit_decl).fields, std::vector<DeclId>{field_a, field_b});
     CHECK_EQ(package.declaration(field_a).owner, unit_decl);
@@ -358,7 +398,7 @@ TEST_CASE("verifier rejects an invalid type declaration on a unit type without a
     Package package;
     // Deliberately malformed: no declared unit backs this type ID's declaration.
     auto unit_decl_placeholder = TypeDeclId{999};
-    package.unitType(unit_decl_placeholder);
+    package.builder().unitType(unit_decl_placeholder);
 
     auto diags = verify(package);
     CHECK(hasDiagnostic(diags, diag::TypeMissingDeclaration));
@@ -366,7 +406,7 @@ TEST_CASE("verifier rejects an invalid type declaration on a unit type without a
 
 TEST_CASE("verifier rejects an invalid tuple element type without asserting") {
     Package package;
-    package.tupleType({TypeId{999}});
+    package.builder().tupleType({TypeId{999}});
 
     auto diags = verify(package);
     CHECK(hasDiagnostic(diags, diag::TypeInvalidTypeArgument));
@@ -374,8 +414,9 @@ TEST_CASE("verifier rejects an invalid tuple element type without asserting") {
 
 TEST_CASE("verifier rejects a field with an invalid owner or type without asserting") {
     Package package;
-    auto unit_decl = package.createUnitDecl("OneByte");
-    package.createFieldDecl(unit_decl, "value", TypeId{999});
+    auto builder = package.builder();
+    auto unit_decl = builder.createUnitDecl("OneByte");
+    builder.createFieldDecl(unit_decl, "value", TypeId{999});
 
     auto diags = verify(package);
     CHECK(hasDiagnostic(diags, diag::InvalidFieldType));

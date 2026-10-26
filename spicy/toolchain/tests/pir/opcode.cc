@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include <spicy/compiler/detail/pir/ir/builder.h>
 #include <spicy/compiler/detail/pir/ir/opcode.h>
 #include <spicy/compiler/detail/pir/ir/package.h>
 #include <spicy/compiler/detail/pir/ir/printer.h>
@@ -92,31 +93,33 @@ TEST_CASE("parser.read_integer's outcome contract exactly covers success, suspen
 
 TEST_CASE("core.tuple_get projects the correct element from a two-element tuple") {
     Package package;
-    auto fn = package.createParserFunction(package.createUnitDecl("U"),
-                                           package.parserStateType(),
-                                           package.unitType(package.createUnitDecl("U2")));
-    auto block = package.createBlock(package.function(fn).root_region);
-    auto state = package.addArgument(fn, block, 0);
-    auto read = package.addReadInteger(block, state, ReadIntegerPayload{.width = 8});
-    auto state1 = package.addTupleGet(block, read, 0);
-    auto value = package.addTupleGet(block, read, 1);
+    auto builder = package.builder();
+    auto fn = builder.createParserFunction(builder.createUnitDecl("U"),
+                                           builder.parserStateType(),
+                                           builder.unitType(builder.createUnitDecl("U2")));
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto state = builder.addArgument(fn, block, 0);
+    auto read = builder.addReadInteger(block, state, ReadIntegerPayload{.width = 8});
+    auto state1 = builder.addTupleGet(block, read, 0);
+    auto value = builder.addTupleGet(block, read, 1);
 
-    CHECK_EQ(package.inst(state1).result_type, package.parserStateType());
-    CHECK_EQ(package.inst(value).result_type, package.uint8Type());
+    CHECK_EQ(package.inst(state1).result_type, builder.parserStateType());
+    CHECK_EQ(package.inst(value).result_type, builder.uint8Type());
 }
 
 TEST_CASE("core.tuple_get on an invalid index is rejected by the verifier without asserting") {
     Package package;
-    auto fn = package.createFunction("f", package.int64Type());
-    auto block = package.createBlock(package.function(fn).root_region);
-    auto tuple_ty = package.tupleType({package.int64Type()});
-    auto tuple_val = package.addInstForTesting(block, Opcode::Constant, {}, tuple_ty, InstPayload(Int64Literal{0}));
-    auto get = package.addInstForTesting(block,
+    auto builder = package.builder();
+    auto fn = builder.createFunction("f", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto tuple_ty = builder.tupleType({builder.int64Type()});
+    auto tuple_val = builder.addInstForTesting(block, Opcode::Constant, {}, tuple_ty, InstPayload(Int64Literal{0}));
+    auto get = builder.addInstForTesting(block,
                                          Opcode::TupleGet,
                                          {tuple_val},
-                                         package.int64Type(),
+                                         builder.int64Type(),
                                          InstPayload(TupleGetPayload{5}));
-    package.addReturn(block, get);
+    builder.addReturn(block, get);
 
     // Must not assert; the invalid projection is reported as a diagnostic.
     (void)verify(package);
@@ -124,31 +127,33 @@ TEST_CASE("core.tuple_get on an invalid index is rejected by the verifier withou
 
 TEST_CASE("core.tuple_get on a non-tuple operand is rejected by the verifier without asserting") {
     Package package;
-    auto fn = package.createFunction("f", package.int64Type());
-    auto block = package.createBlock(package.function(fn).root_region);
-    auto c = package.addConstant(block, 1);
+    auto builder = package.builder();
+    auto fn = builder.createFunction("f", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto c = builder.addConstant(block, 1);
     auto get =
-        package.addInstForTesting(block, Opcode::TupleGet, {c}, package.int64Type(), InstPayload(TupleGetPayload{0}));
-    package.addReturn(block, get);
+        builder.addInstForTesting(block, Opcode::TupleGet, {c}, builder.int64Type(), InstPayload(TupleGetPayload{0}));
+    builder.addReturn(block, get);
 
     (void)verify(package);
 }
 
 TEST_CASE("a fully constructed one-byte parser pipeline verifies with no diagnostics") {
     Package package;
-    auto unit_decl = package.createUnitDecl("OneByte");
-    auto field = package.createFieldDecl(unit_decl, "value", package.uint8Type());
-    auto fn = package.createParserFunction(unit_decl, package.parserStateType(), package.unitType(unit_decl));
-    auto block = package.createBlock(package.function(fn).root_region);
+    auto builder = package.builder();
+    auto unit_decl = builder.createUnitDecl("OneByte");
+    auto field = builder.createFieldDecl(unit_decl, "value", builder.uint8Type());
+    auto fn = builder.createParserFunction(unit_decl, builder.parserStateType(), builder.unitType(unit_decl));
+    auto block = builder.createBlock(package.function(fn).root_region);
 
-    auto state0 = package.addArgument(fn, block, 0);
-    auto unit0 = package.addUnitCreate(block, unit_decl);
-    auto read = package.addReadInteger(block, state0, ReadIntegerPayload{.width = 8});
-    auto state1 = package.addTupleGet(block, read, 0);
-    auto value = package.addTupleGet(block, read, 1);
-    auto unit1 = package.addPublishField(block, unit0, value, field);
-    package.addParserFinish(block, state1, unit1);
-    package.addParserRoot(unit_decl, fn);
+    auto state0 = builder.addArgument(fn, block, 0);
+    auto unit0 = builder.addUnitCreate(block, unit_decl);
+    auto read = builder.addReadInteger(block, state0, ReadIntegerPayload{.width = 8});
+    auto state1 = builder.addTupleGet(block, read, 0);
+    auto value = builder.addTupleGet(block, read, 1);
+    auto unit1 = builder.addPublishField(block, unit0, value, field);
+    builder.addParserFinish(block, state1, unit1);
+    builder.addParserRoot(unit_decl, fn);
 
     auto diags = verify(package);
     for ( const auto& d : diags )
@@ -159,18 +164,19 @@ TEST_CASE("a fully constructed one-byte parser pipeline verifies with no diagnos
 
 TEST_CASE("constant folding ignores parser and unit operations and remains idempotent") {
     Package package;
-    auto unit_decl = package.createUnitDecl("OneByte");
-    package.createFieldDecl(unit_decl, "value", package.uint8Type());
-    auto fn = package.createParserFunction(unit_decl, package.parserStateType(), package.unitType(unit_decl));
-    auto block = package.createBlock(package.function(fn).root_region);
+    auto builder = package.builder();
+    auto unit_decl = builder.createUnitDecl("OneByte");
+    builder.createFieldDecl(unit_decl, "value", builder.uint8Type());
+    auto fn = builder.createParserFunction(unit_decl, builder.parserStateType(), builder.unitType(unit_decl));
+    auto block = builder.createBlock(package.function(fn).root_region);
 
-    auto state0 = package.addArgument(fn, block, 0);
-    auto unit0 = package.addUnitCreate(block, unit_decl);
-    auto read = package.addReadInteger(block, state0, ReadIntegerPayload{.width = 8});
-    auto state1 = package.addTupleGet(block, read, 0);
-    auto value = package.addTupleGet(block, read, 1);
-    auto unit1 = package.addPublishField(block, unit0, value, package.typeDecl(unit_decl).fields[0]);
-    package.addParserFinish(block, state1, unit1);
+    auto state0 = builder.addArgument(fn, block, 0);
+    auto unit0 = builder.addUnitCreate(block, unit_decl);
+    auto read = builder.addReadInteger(block, state0, ReadIntegerPayload{.width = 8});
+    auto state1 = builder.addTupleGet(block, read, 0);
+    auto value = builder.addTupleGet(block, read, 1);
+    auto unit1 = builder.addPublishField(block, unit0, value, package.typeDecl(unit_decl).fields[0]);
+    builder.addParserFinish(block, state1, unit1);
 
     auto before = print(package);
     CHECK_FALSE(foldConstants(package, fn));
@@ -193,12 +199,13 @@ struct OneBytePipeline {
 
 OneBytePipeline makeOneBytePipeline() {
     OneBytePipeline p;
-    p.unit_decl = p.package.createUnitDecl("OneByte");
-    p.field = p.package.createFieldDecl(p.unit_decl, "value", p.package.uint8Type());
-    p.fn = p.package.createParserFunction(p.unit_decl, p.package.parserStateType(), p.package.unitType(p.unit_decl));
-    p.block = p.package.createBlock(p.package.function(p.fn).root_region);
-    p.state0 = p.package.addArgument(p.fn, p.block, 0);
-    p.unit0 = p.package.addUnitCreate(p.block, p.unit_decl);
+    auto builder = p.package.builder();
+    p.unit_decl = builder.createUnitDecl("OneByte");
+    p.field = builder.createFieldDecl(p.unit_decl, "value", builder.uint8Type());
+    p.fn = builder.createParserFunction(p.unit_decl, builder.parserStateType(), builder.unitType(p.unit_decl));
+    p.block = builder.createBlock(p.package.function(p.fn).root_region);
+    p.state0 = builder.addArgument(p.fn, p.block, 0);
+    p.unit0 = builder.addUnitCreate(p.block, p.unit_decl);
     return p;
 }
 
@@ -206,12 +213,13 @@ OneBytePipeline makeOneBytePipeline() {
 
 TEST_CASE("verifier rejects reusing the pre-read parser state after parser.read_integer") {
     auto p = makeOneBytePipeline();
-    auto read = p.package.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
-    auto state1 = p.package.addTupleGet(p.block, read, 0);
-    auto value = p.package.addTupleGet(p.block, read, 1);
-    auto unit1 = p.package.addPublishField(p.block, p.unit0, value, p.field);
+    auto builder = p.package.builder();
+    auto read = builder.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
+    auto state1 = builder.addTupleGet(p.block, read, 0);
+    auto value = builder.addTupleGet(p.block, read, 1);
+    auto unit1 = builder.addPublishField(p.block, p.unit0, value, p.field);
     // Malformed: finishes with the stale pre-read state instead of `state1`.
-    p.package.addParserFinish(p.block, p.state0, unit1);
+    builder.addParserFinish(p.block, p.state0, unit1);
     (void)state1;
 
     auto diags = verify(p.package);
@@ -220,14 +228,15 @@ TEST_CASE("verifier rejects reusing the pre-read parser state after parser.read_
 
 TEST_CASE("verifier rejects consuming the projected successor state twice") {
     auto p = makeOneBytePipeline();
-    auto read = p.package.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
-    auto state1 = p.package.addTupleGet(p.block, read, 0);
-    auto value = p.package.addTupleGet(p.block, read, 1);
-    auto unit1 = p.package.addPublishField(p.block, p.unit0, value, p.field);
+    auto builder = p.package.builder();
+    auto read = builder.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
+    auto state1 = builder.addTupleGet(p.block, read, 0);
+    auto value = builder.addTupleGet(p.block, read, 1);
+    auto unit1 = builder.addPublishField(p.block, p.unit0, value, p.field);
     // Malformed: a second read reuses `state1`, then finish also consumes it.
-    auto read2 = p.package.addReadInteger(p.block, state1, ReadIntegerPayload{.width = 8});
+    auto read2 = builder.addReadInteger(p.block, state1, ReadIntegerPayload{.width = 8});
     (void)read2;
-    p.package.addParserFinish(p.block, state1, unit1);
+    builder.addParserFinish(p.block, state1, unit1);
 
     auto diags = verify(p.package);
     CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::ParserStateReused; }));
@@ -235,15 +244,16 @@ TEST_CASE("verifier rejects consuming the projected successor state twice") {
 
 TEST_CASE("verifier rejects a read with a non-state operand") {
     Package package;
-    auto fn = package.createFunction("f", package.int64Type());
-    auto block = package.createBlock(package.function(fn).root_region);
-    auto c = package.addConstant(block, 1);
-    auto read = package.addInstForTesting(block,
+    auto builder = package.builder();
+    auto fn = builder.createFunction("f", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto c = builder.addConstant(block, 1);
+    auto read = builder.addInstForTesting(block,
                                           Opcode::ReadInteger,
                                           {c},
-                                          package.tupleType({package.uint8Type()}),
+                                          builder.tupleType({builder.uint8Type()}),
                                           InstPayload(ReadIntegerPayload{.width = 8}));
-    package.addReturn(block, read);
+    builder.addReturn(block, read);
 
     auto diags = verify(package);
     CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::OperandTypeMismatch; }));
@@ -251,7 +261,7 @@ TEST_CASE("verifier rejects a read with a non-state operand") {
 
 TEST_CASE("verifier rejects a read with an unsupported payload") {
     auto p = makeOneBytePipeline();
-    p.package.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 16});
+    p.package.builder().addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 16});
 
     auto diags = verify(p.package);
     CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::ReadIntegerUnsupportedPayload; }));
@@ -259,19 +269,20 @@ TEST_CASE("verifier rejects a read with an unsupported payload") {
 
 TEST_CASE("verifier rejects a read whose declared result is not tuple<parser.state, uint8>") {
     Package package;
-    auto fn = package.createFunction("f", package.int64Type());
-    auto block = package.createBlock(package.function(fn).root_region);
-    auto state_arg_fn = package.createParserFunction(package.createUnitDecl("U"),
-                                                     package.parserStateType(),
-                                                     package.unitType(package.createUnitDecl("U2")));
-    auto state_block = package.createBlock(package.function(state_arg_fn).root_region);
-    auto state = package.addArgument(state_arg_fn, state_block, 0);
-    auto read = package.addInstForTesting(state_block,
+    auto builder = package.builder();
+    auto fn = builder.createFunction("f", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto state_arg_fn = builder.createParserFunction(builder.createUnitDecl("U"),
+                                                     builder.parserStateType(),
+                                                     builder.unitType(builder.createUnitDecl("U2")));
+    auto state_block = builder.createBlock(package.function(state_arg_fn).root_region);
+    auto state = builder.addArgument(state_arg_fn, state_block, 0);
+    auto read = builder.addInstForTesting(state_block,
                                           Opcode::ReadInteger,
                                           {state},
-                                          package.int64Type(),
+                                          builder.int64Type(),
                                           InstPayload(ReadIntegerPayload{.width = 8}));
-    package.addInstForTesting(state_block, Opcode::Finish, {read, read}, package.voidType());
+    builder.addInstForTesting(state_block, Opcode::Finish, {read, read}, builder.voidType());
     (void)block;
     (void)fn;
 
@@ -281,16 +292,17 @@ TEST_CASE("verifier rejects a read whose declared result is not tuple<parser.sta
 
 TEST_CASE("parser.finish rejects a normal function") {
     Package package;
-    auto fn = package.createFunction("f", package.voidType());
-    auto block = package.createBlock(package.function(fn).root_region);
-    auto unit_decl = package.createUnitDecl("U");
-    auto state = package.addInstForTesting(block,
+    auto builder = package.builder();
+    auto fn = builder.createFunction("f", builder.voidType());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto unit_decl = builder.createUnitDecl("U");
+    auto state = builder.addInstForTesting(block,
                                            Opcode::Argument,
                                            {},
-                                           package.parserStateType(),
+                                           builder.parserStateType(),
                                            InstPayload(ArgumentPayload{0}));
-    auto unit_val = package.addUnitCreate(block, unit_decl);
-    package.addParserFinish(block, state, unit_val);
+    auto unit_val = builder.addUnitCreate(block, unit_decl);
+    builder.addParserFinish(block, state, unit_val);
 
     auto diags = verify(package);
     CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::FinishInNormalFunction; }));
@@ -298,11 +310,12 @@ TEST_CASE("parser.finish rejects a normal function") {
 
 TEST_CASE("parser.finish rejects a unit from a different declaration than the function's parser unit") {
     auto p = makeOneBytePipeline();
-    auto other_unit = p.package.createUnitDecl("Other");
-    auto other_val = p.package.addUnitCreate(p.block, other_unit);
-    auto read = p.package.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
-    auto state1 = p.package.addTupleGet(p.block, read, 0);
-    p.package.addParserFinish(p.block, state1, other_val);
+    auto builder = p.package.builder();
+    auto other_unit = builder.createUnitDecl("Other");
+    auto other_val = builder.addUnitCreate(p.block, other_unit);
+    auto read = builder.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
+    auto state1 = builder.addTupleGet(p.block, read, 0);
+    builder.addParserFinish(p.block, state1, other_val);
 
     auto diags = verify(p.package);
     CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::ReturnTypeMismatch; }));
@@ -310,14 +323,15 @@ TEST_CASE("parser.finish rejects a unit from a different declaration than the fu
 
 TEST_CASE("field publication rejects a mismatched field owner") {
     auto p = makeOneBytePipeline();
-    auto other_unit = p.package.createUnitDecl("Other");
-    auto other_field = p.package.createFieldDecl(other_unit, "x", p.package.uint8Type());
-    auto read = p.package.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
-    auto state1 = p.package.addTupleGet(p.block, read, 0);
-    auto value = p.package.addTupleGet(p.block, read, 1);
+    auto builder = p.package.builder();
+    auto other_unit = builder.createUnitDecl("Other");
+    auto other_field = builder.createFieldDecl(other_unit, "x", builder.uint8Type());
+    auto read = builder.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
+    auto state1 = builder.addTupleGet(p.block, read, 0);
+    auto value = builder.addTupleGet(p.block, read, 1);
     // Malformed: publishes a field owned by `Other`, not `OneByte`.
-    auto unit1 = p.package.addPublishField(p.block, p.unit0, value, other_field);
-    p.package.addParserFinish(p.block, state1, unit1);
+    auto unit1 = builder.addPublishField(p.block, p.unit0, value, other_field);
+    builder.addParserFinish(p.block, state1, unit1);
 
     auto diags = verify(p.package);
     CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::PublishFieldOwnerMismatch; }));
@@ -325,11 +339,12 @@ TEST_CASE("field publication rejects a mismatched field owner") {
 
 TEST_CASE("field publication rejects a value operand with the wrong type") {
     auto p = makeOneBytePipeline();
-    auto read = p.package.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
-    auto state1 = p.package.addTupleGet(p.block, read, 0);
+    auto builder = p.package.builder();
+    auto read = builder.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
+    auto state1 = builder.addTupleGet(p.block, read, 0);
     // Malformed: publishes `state1` (parser.state) into a uint8 field.
-    auto unit1 = p.package.addPublishField(p.block, p.unit0, state1, p.field);
-    p.package.addParserFinish(p.block, state1, unit1);
+    auto unit1 = builder.addPublishField(p.block, p.unit0, state1, p.field);
+    builder.addParserFinish(p.block, state1, unit1);
 
     auto diags = verify(p.package);
     CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::PublishFieldValueTypeMismatch; }));
@@ -337,12 +352,13 @@ TEST_CASE("field publication rejects a value operand with the wrong type") {
 
 TEST_CASE("field publication rejects a duplicate publication of the same field") {
     auto p = makeOneBytePipeline();
-    auto read = p.package.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
-    auto state1 = p.package.addTupleGet(p.block, read, 0);
-    auto value = p.package.addTupleGet(p.block, read, 1);
-    auto unit1 = p.package.addPublishField(p.block, p.unit0, value, p.field);
-    auto unit2 = p.package.addPublishField(p.block, unit1, value, p.field);
-    p.package.addParserFinish(p.block, state1, unit2);
+    auto builder = p.package.builder();
+    auto read = builder.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
+    auto state1 = builder.addTupleGet(p.block, read, 0);
+    auto value = builder.addTupleGet(p.block, read, 1);
+    auto unit1 = builder.addPublishField(p.block, p.unit0, value, p.field);
+    auto unit2 = builder.addPublishField(p.block, unit1, value, p.field);
+    builder.addParserFinish(p.block, state1, unit2);
 
     auto diags = verify(p.package);
     CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::DuplicateFieldPublication; }));
@@ -350,10 +366,11 @@ TEST_CASE("field publication rejects a duplicate publication of the same field")
 
 TEST_CASE("field publication rejects a missing publication") {
     auto p = makeOneBytePipeline();
-    auto read = p.package.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
-    auto state1 = p.package.addTupleGet(p.block, read, 0);
+    auto builder = p.package.builder();
+    auto read = builder.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
+    auto state1 = builder.addTupleGet(p.block, read, 0);
     // Malformed: never publishes `value`.
-    p.package.addParserFinish(p.block, state1, p.unit0);
+    builder.addParserFinish(p.block, state1, p.unit0);
 
     auto diags = verify(p.package);
     CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::MissingFieldPublication; }));
@@ -361,12 +378,13 @@ TEST_CASE("field publication rejects a missing publication") {
 
 TEST_CASE("field publication rejects stale unit-state reuse and finishing the wrong unit version") {
     auto p = makeOneBytePipeline();
-    auto read = p.package.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
-    auto state1 = p.package.addTupleGet(p.block, read, 0);
-    auto value = p.package.addTupleGet(p.block, read, 1);
-    auto unit1 = p.package.addPublishField(p.block, p.unit0, value, p.field);
+    auto builder = p.package.builder();
+    auto read = builder.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
+    auto state1 = builder.addTupleGet(p.block, read, 0);
+    auto value = builder.addTupleGet(p.block, read, 1);
+    auto unit1 = builder.addPublishField(p.block, p.unit0, value, p.field);
     // Malformed: finishes the stale pre-publish unit value, not `unit1`.
-    p.package.addParserFinish(p.block, state1, p.unit0);
+    builder.addParserFinish(p.block, state1, p.unit0);
     (void)unit1;
 
     auto diags = verify(p.package);
@@ -379,12 +397,13 @@ TEST_CASE("verifier rejects two tuple_get projections of the same read's parser-
     // InstId. The fix must reject this at the point of the second projection, before either
     // fork is ever consumed.
     auto p = makeOneBytePipeline();
-    auto read = p.package.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
-    auto state_a = p.package.addTupleGet(p.block, read, 0);
-    auto state_b = p.package.addTupleGet(p.block, read, 0);
-    auto value = p.package.addTupleGet(p.block, read, 1);
-    auto unit1 = p.package.addPublishField(p.block, p.unit0, value, p.field);
-    p.package.addParserFinish(p.block, state_b, unit1);
+    auto builder = p.package.builder();
+    auto read = builder.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
+    auto state_a = builder.addTupleGet(p.block, read, 0);
+    auto state_b = builder.addTupleGet(p.block, read, 0);
+    auto value = builder.addTupleGet(p.block, read, 1);
+    auto unit1 = builder.addPublishField(p.block, p.unit0, value, p.field);
+    builder.addParserFinish(p.block, state_b, unit1);
     (void)state_a;
 
     auto diags = verify(p.package);
@@ -393,13 +412,14 @@ TEST_CASE("verifier rejects two tuple_get projections of the same read's parser-
 
 TEST_CASE("verifier rejects a duplicate parser root targeting the same unit") {
     auto p = makeOneBytePipeline();
-    auto read = p.package.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
-    auto state1 = p.package.addTupleGet(p.block, read, 0);
-    auto value = p.package.addTupleGet(p.block, read, 1);
-    auto unit1 = p.package.addPublishField(p.block, p.unit0, value, p.field);
-    p.package.addParserFinish(p.block, state1, unit1);
-    p.package.addParserRoot(p.unit_decl, p.fn);
-    p.package.addParserRoot(p.unit_decl, p.fn);
+    auto builder = p.package.builder();
+    auto read = builder.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
+    auto state1 = builder.addTupleGet(p.block, read, 0);
+    auto value = builder.addTupleGet(p.block, read, 1);
+    auto unit1 = builder.addPublishField(p.block, p.unit0, value, p.field);
+    builder.addParserFinish(p.block, state1, unit1);
+    builder.addParserRoot(p.unit_decl, p.fn);
+    builder.addParserRoot(p.unit_decl, p.fn);
 
     auto diags = verify(p.package);
     CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::DuplicateParserRootUnit; }));
@@ -407,7 +427,8 @@ TEST_CASE("verifier rejects a duplicate parser root targeting the same unit") {
 
 TEST_CASE("verifier rejects a field declaration with an invalid owner without asserting") {
     Package package;
-    auto field = package.createFieldDeclForTesting(TypeDeclId{999}, "x", package.uint8Type());
+    auto builder = package.builder();
+    auto field = builder.createFieldDeclForTesting(TypeDeclId{999}, "x", builder.uint8Type());
     (void)field;
 
     auto diags = verify(package);
@@ -416,10 +437,11 @@ TEST_CASE("verifier rejects a field declaration with an invalid owner without as
 
 TEST_CASE("verifier rejects a field that is not listed in its owner's membership vector") {
     Package package;
-    auto unit_decl = package.createUnitDecl("U");
+    auto builder = package.builder();
+    auto unit_decl = builder.createUnitDecl("U");
     // Malformed: owner is valid, but `createFieldDeclForTesting()` never appends to `unit_decl`'s
     // fields, so the two directions of the owner<->membership relationship disagree.
-    package.createFieldDeclForTesting(unit_decl, "x", package.uint8Type());
+    builder.createFieldDeclForTesting(unit_decl, "x", builder.uint8Type());
 
     auto diags = verify(package);
     CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::DeclarationNotInOwnerMembership; }));
@@ -427,10 +449,11 @@ TEST_CASE("verifier rejects a field that is not listed in its owner's membership
 
 TEST_CASE("verifier rejects a field listed more than once in its owner's membership vector") {
     Package package;
-    auto unit_decl = package.createUnitDecl("U");
-    auto field = package.createFieldDecl(unit_decl, "x", package.uint8Type());
+    auto builder = package.builder();
+    auto unit_decl = builder.createUnitDecl("U");
+    auto field = builder.createFieldDecl(unit_decl, "x", builder.uint8Type());
     // Malformed: the same field appears twice in `unit_decl`'s fields list.
-    package.appendFieldForTesting(unit_decl, field);
+    builder.appendFieldForTesting(unit_decl, field);
 
     auto diags = verify(package);
     CHECK(

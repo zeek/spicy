@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include <spicy/compiler/detail/pir/ir/builder.h>
 #include <spicy/compiler/detail/pir/ir/package.h>
 #include <spicy/compiler/detail/pir/ir/verifier.h>
 
@@ -53,10 +54,11 @@ TEST_SUITE("pir::ir::SourceManager") {
 
     TEST_CASE("functions and instructions may omit a span") {
         Package package;
-        auto fn = package.createFunction("f", package.int64Type());
-        auto block = package.createBlock(package.function(fn).root_region);
-        auto c = package.addConstant(block, 1);
-        package.addReturn(block, c);
+        auto builder = package.builder();
+        auto fn = builder.createFunction("f", builder.int64Type());
+        auto block = builder.createBlock(package.function(fn).root_region);
+        auto c = builder.addConstant(block, 1);
+        builder.addReturn(block, c);
 
         CHECK_FALSE(package.function(fn).span.isSet());
         CHECK_FALSE(package.inst(c).span.isSet());
@@ -69,10 +71,11 @@ TEST_SUITE("pir::ir::SourceManager") {
 
     TEST_CASE("verification rejects an invalid source span ID without asserting") {
         Package package;
-        auto fn = package.createFunction("f", package.int64Type(), SourceSpanId{99});
-        auto block = package.createBlock(package.function(fn).root_region);
-        auto c = package.addConstant(block, 1);
-        package.addReturn(block, c);
+        auto builder = package.builder();
+        auto fn = builder.createFunction("f", builder.int64Type(), SourceSpanId{99});
+        auto block = builder.createBlock(package.function(fn).root_region);
+        auto c = builder.addConstant(block, 1);
+        builder.addReturn(block, c);
 
         auto diags = verify(package);
         CHECK(hasDiagnostic(diags, diag::InvalidSourceSpanId));
@@ -80,12 +83,13 @@ TEST_SUITE("pir::ir::SourceManager") {
 
     TEST_CASE("verification rejects an invalid source file ID without asserting") {
         Package package;
+        auto builder = package.builder();
         auto span = package.sourceManager().addSpan(SourceSpan{.file = SourceFileId{99}});
 
-        auto fn = package.createFunction("f", package.int64Type(), span);
-        auto block = package.createBlock(package.function(fn).root_region);
-        auto c = package.addConstant(block, 1);
-        package.addReturn(block, c);
+        auto fn = builder.createFunction("f", builder.int64Type(), span);
+        auto block = builder.createBlock(package.function(fn).root_region);
+        auto c = builder.addConstant(block, 1);
+        builder.addReturn(block, c);
 
         auto diags = verify(package);
         CHECK(hasDiagnostic(diags, diag::InvalidSourceFileId));
@@ -93,14 +97,15 @@ TEST_SUITE("pir::ir::SourceManager") {
 
     TEST_CASE("verification rejects a reversed known range without asserting") {
         Package package;
+        auto builder = package.builder();
         auto file = package.sourceManager().internFile("x.spicy");
         auto span = package.sourceManager().addSpan(
             SourceSpan{.file = file, .begin_line = 5, .begin_column = 1, .end_line = 5, .end_column = 0});
 
-        auto fn = package.createFunction("f", package.int64Type());
-        auto block = package.createBlock(package.function(fn).root_region);
-        auto c = package.addConstant(block, 1, span);
-        package.addReturn(block, c);
+        auto fn = builder.createFunction("f", builder.int64Type());
+        auto block = builder.createBlock(package.function(fn).root_region);
+        auto c = builder.addConstant(block, 1, span);
+        builder.addReturn(block, c);
 
         auto diags = verify(package);
         CHECK(hasDiagnostic(diags, diag::MalformedSourceSpanRange));

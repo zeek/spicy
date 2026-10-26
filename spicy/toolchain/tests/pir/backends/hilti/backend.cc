@@ -12,6 +12,7 @@
 #include <hilti/compiler/init.h>
 
 #include <spicy/compiler/detail/pir/backends/hilti/backend.h>
+#include <spicy/compiler/detail/pir/ir/builder.h>
 #include <spicy/compiler/detail/pir/ir/verifier.h>
 #include <spicy/compiler/init.h>
 
@@ -30,35 +31,36 @@ struct OneBytePackage {
 
 OneBytePackage makeOneByte(const std::string& name = "OneByte") {
     OneBytePackage s;
+    auto builder = s.package.builder();
     auto file = s.package.sourceManager().internFile("one-byte.spicy");
     auto unit_span = s.package.sourceManager().addSpan(
         {.file = file, .begin_line = 3, .begin_column = 13, .end_line = 5, .end_column = 1});
     auto field_span = s.package.sourceManager().addSpan(
         {.file = file, .begin_line = 4, .begin_column = 5, .end_line = 4, .end_column = 17});
-    s.unit = s.package.createUnitDecl(name, unit_span);
-    s.field = s.package.createFieldDecl(s.unit, "value", s.package.uint8Type(), field_span);
+    s.unit = builder.createUnitDecl(name, unit_span);
+    s.field = builder.createFieldDecl(s.unit, "value", builder.uint8Type(), field_span);
 
-    auto state_type = s.package.parserStateType();
-    auto unit_type = s.package.unitType(s.unit);
-    s.function = s.package.createParserFunction(s.unit, state_type, unit_type, unit_span);
-    auto block = s.package.createBlock(s.package.function(s.function).root_region);
+    auto state_type = builder.parserStateType();
+    auto unit_type = builder.unitType(s.unit);
+    s.function = builder.createParserFunction(s.unit, state_type, unit_type, unit_span);
+    auto block = builder.createBlock(s.package.function(s.function).root_region);
 
-    auto state0 = s.package.addArgument(s.function, block, 0, unit_span);
-    auto unit0 = s.package.addUnitCreate(block, s.unit, unit_span);
-    auto read = s.package.addReadInteger(block,
-                                         state0,
-                                         ReadIntegerPayload{
-                                             .width = 8,
-                                             .signedness = Signedness::Unsigned,
-                                             .byte_order = ByteOrder::Network,
-                                         },
-                                         field_span);
-    auto state1 = s.package.addTupleGet(block, read, 0, field_span);
-    auto value = s.package.addTupleGet(block, read, 1, field_span);
-    auto unit1 = s.package.addPublishField(block, unit0, value, s.field, field_span);
-    s.package.addParserFinish(block, state1, unit1, unit_span);
+    auto state0 = builder.addArgument(s.function, block, 0, unit_span);
+    auto unit0 = builder.addUnitCreate(block, s.unit, unit_span);
+    auto read = builder.addReadInteger(block,
+                                       state0,
+                                       ReadIntegerPayload{
+                                           .width = 8,
+                                           .signedness = Signedness::Unsigned,
+                                           .byte_order = ByteOrder::Network,
+                                       },
+                                       field_span);
+    auto state1 = builder.addTupleGet(block, read, 0, field_span);
+    auto value = builder.addTupleGet(block, read, 1, field_span);
+    auto unit1 = builder.addPublishField(block, unit0, value, s.field, field_span);
+    builder.addParserFinish(block, state1, unit1, unit_span);
 
-    s.package.addParserRoot(s.unit, s.function);
+    builder.addParserRoot(s.unit, s.function);
     return s;
 }
 
@@ -115,7 +117,8 @@ TEST_CASE("the canonical one-byte package lowers to a detached module") {
 
 TEST_CASE("an unsupported package lowers to Unsupported and constructs nothing") {
     Package package;
-    package.createFunction("free", package.voidType());
+    auto pir_builder = package.builder();
+    pir_builder.createFunction("free", pir_builder.voidType());
 
     ::hilti::init();
     spicy::init();
