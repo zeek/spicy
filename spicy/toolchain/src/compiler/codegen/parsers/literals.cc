@@ -152,6 +152,10 @@ struct Visitor : public visitor::PreOrder {
 
         auto* re = pb()->cg()->addGlobalConstant(builder()->ctorRegExp(n->patterns(), attrs));
 
+        // `try_save_cur` is non-null in `LiteralMode::Try`. The no-match case
+        // breaks instead of throwing and restores `ncur` to this position.
+        Expression* try_save_cur = nullptr;
+
         auto parse = [&](Expression* result, bool trim) -> Expression* {
             if ( ! result && state().literal_mode != LiteralMode::Skip )
                 result = lp->destination(builder()->typeBytes());
@@ -225,7 +229,14 @@ struct Visitor : public visitor::PreOrder {
 
             auto no_match_error = switch_.addCase(builder()->integer(0));
             pushBuilder(std::move(no_match_error));
-            pb()->parseError("failed to match regular expression", n->meta());
+            if ( try_save_cur ) {
+                // In Try mode, no-match is not an error; reset `ncur` so the
+                // caller sees no advancement.
+                builder()->addAssign(ncur, try_save_cur);
+                builder()->addBreak();
+            }
+            else
+                pb()->parseError("failed to match regular expression", n->meta());
             popBuilder();
 
             auto match = switch_.addDefault();
@@ -264,8 +275,15 @@ struct Visitor : public visitor::PreOrder {
 
             case LiteralMode::Search: // Handled in `parseLiteral`.
             case LiteralMode::Try: {
+                // Save the current position. On no-match the parse loop will
+                // restore `ncur` here; on match `state().cur` is advanced to `ncur`.
+                // Either way we restore `state().cur` to not commit in Try mode.
+                try_save_cur = builder()->addTmp("ocur", state().cur);
                 auto* tmp = builder()->addTmp("result", state().cur);
-                result = parse(tmp, false);
+                parse(tmp, false);
+                auto* ncur = builder()->addTmp("ncur", state().cur);
+                result = builder()->begin(ncur);
+                builder()->addAssign(state().cur, try_save_cur);
                 return;
             }
         }
