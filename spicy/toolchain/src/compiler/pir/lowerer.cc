@@ -8,9 +8,12 @@
 
 #include <hilti/ast/ast-context.h>
 #include <hilti/ast/attribute.h>
+#include <hilti/ast/ctors/bool.h>
+#include <hilti/ast/ctors/bytes.h>
 #include <hilti/ast/ctors/coerced.h>
 #include <hilti/ast/ctors/integer.h>
 #include <hilti/ast/ctors/null.h>
+#include <hilti/ast/ctors/string.h>
 #include <hilti/ast/ctors/tuple.h>
 #include <hilti/ast/declarations/constant.h>
 #include <hilti/ast/declarations/function.h>
@@ -29,16 +32,21 @@
 #include <hilti/ast/statements/declaration.h>
 #include <hilti/ast/statements/expression.h>
 #include <hilti/ast/statements/return.h>
+#include <hilti/ast/types/any.h>
+#include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/bytes.h>
 #include <hilti/ast/types/function.h>
 #include <hilti/ast/types/integer.h>
+#include <hilti/ast/types/library.h>
 #include <hilti/ast/types/name.h>
+#include <hilti/ast/types/string.h>
 #include <hilti/ast/types/vector.h>
 #include <hilti/ast/types/void.h>
 #include <hilti/base/util.h>
 
 #include <spicy/ast/declarations/hook.h>
 #include <spicy/ast/declarations/unit-hook.h>
+#include <spicy/ast/statements/print.h>
 #include <spicy/ast/types/unit-items/field.h>
 #include <spicy/ast/types/unit.h>
 #include <spicy/ast/visitor.h>
@@ -128,23 +136,6 @@ ir::SourceSpanId internSpan(ir::Package& package, const hilti::Location& loc) {
     });
 }
 
-// The PIR type of a Spicy type that procedural code can hold, if PIR can represent it yet.
-std::optional<ir::TypeId> procedureType(ir::Builder& builder, const hilti::UnqualifiedType* type) {
-    if ( const auto* integer = type->tryAs<hilti::type::SignedInteger>(); integer && integer->width() == 64 )
-        return builder.int64Type();
-    if ( const auto* integer = type->tryAs<hilti::type::UnsignedInteger>() ) {
-        if ( integer->width() == 8 )
-            return builder.uint8Type();
-        if ( integer->width() == 64 )
-            return builder.uint64Type();
-    }
-    if ( type->isA<hilti::type::Bytes>() )
-        return builder.bytesType();
-    if ( type->isA<hilti::type::Void>() )
-        return builder.voidType();
-    return std::nullopt;
-}
-
 class ProcedureLowerer;
 
 // A Spicy variable seen by procedural code. A place-backed variable reads and writes through `value`;
@@ -166,68 +157,7 @@ public:
 
     void bind(const hilti::Declaration* decl, Variable variable) { _variables.emplace(decl, variable); }
 
-    std::optional<UnsupportedFeature> lowerStatement(hilti::Statement* stmt) {
-        if ( auto* ret = stmt->tryAs<hilti::statement::Return>() ) {
-            if ( ! ret->expression() ) {
-                _builder.addReturnVoid(_block, internSpan(_package, ret->meta().location()));
-                return std::nullopt;
-            }
-
-            auto value = lower(ret->expression());
-            if ( auto* feature = std::get_if<UnsupportedFeature>(&value) )
-                return *feature;
-
-            _builder.addReturn(_block, std::get<ir::InstId>(value), internSpan(_package, ret->meta().location()));
-            return std::nullopt;
-        }
-
-        if ( auto* decl = stmt->tryAs<hilti::statement::Declaration>() ) {
-            auto* local = decl->declaration()->tryAs<hilti::declaration::LocalVariable>();
-            if ( ! local || ! local->init() )
-                return _unsupported("only local variables with an initializer are supported", stmt->meta().location());
-
-            auto init = lower(local->init());
-            if ( auto* feature = std::get_if<UnsupportedFeature>(&init) )
-                return *feature;
-
-            auto value = std::get<ir::InstId>(init);
-            auto declared = procedureType(_builder, local->type()->type());
-            if ( ! declared || *declared != _package.inst(value).result_type )
-                return _unsupported("local variable initializer must have the declared type", stmt->meta().location());
-
-            auto place = _builder.addLocalPlace(_block, value, internSpan(_package, stmt->meta().location()));
-            bind(local, Variable{.value = place, .is_place = true});
-            return std::nullopt;
-        }
-
-        if ( auto* expr_stmt = stmt->tryAs<hilti::statement::Expression>() ) {
-            auto* expr = expr_stmt->expression();
-            if ( auto* assign = expr->tryAs<hilti::expression::Assign>() ) {
-                auto target = _place(assign->target());
-                if ( auto* feature = std::get_if<UnsupportedFeature>(&target) )
-                    return *feature;
-
-                auto source = lower(assign->source());
-                if ( auto* feature = std::get_if<UnsupportedFeature>(&source) )
-                    return *feature;
-
-                _builder.addStore(_block,
-                                  std::get<ir::InstId>(target),
-                                  std::get<ir::InstId>(source),
-                                  internSpan(_package, stmt->meta().location()));
-                return std::nullopt;
-            }
-
-            // A call's result is discarded; the call itself stays because its effects are observable.
-            auto value = lower(expr);
-            if ( auto* feature = std::get_if<UnsupportedFeature>(&value) )
-                return *feature;
-            return std::nullopt;
-        }
-
-        return _unsupported("only return, local declarations, assignments, and calls are supported",
-                            stmt->meta().location());
-    }
+    std::optional<UnsupportedFeature> lowerStatement(hilti::Statement* stmt);
 
     std::variant<ir::InstId, UnsupportedFeature> lower(hilti::Expression* expr) {
         if ( auto* ctor_expr = expr->tryAs<hilti::expression::Ctor>() )
@@ -245,18 +175,9 @@ public:
         return _unsupported("unsupported expression", expr->meta().location());
     }
 
+    std::variant<ir::InstId, UnsupportedFeature> _lowerCtor(hilti::Ctor* ctor, const hilti::Location& loc);
+
 private:
-    std::variant<ir::InstId, UnsupportedFeature> _lowerCtor(hilti::Ctor* ctor, const hilti::Location& loc) {
-        if ( auto* coerced = ctor->tryAs<hilti::ctor::Coerced>() )
-            ctor = coerced->coercedCtor();
-
-        auto* literal = ctor->tryAs<hilti::ctor::SignedInteger>();
-        if ( ! literal || literal->width() != 64 )
-            return _unsupported("only signed 64-bit integer literals are supported", loc);
-
-        return _builder.addConstant(_block, literal->value(), internSpan(_package, loc));
-    }
-
     std::variant<ir::InstId, UnsupportedFeature> _lowerSum(hilti::expression::ResolvedOperator* op) {
         if ( op->kind() != hilti::operator_::Kind::Sum )
             return _unsupported("only signed-integer addition is supported", op->meta().location());
@@ -334,6 +255,29 @@ class ProcedureLowerer {
 public:
     explicit ProcedureLowerer(ir::Package& package) : _package(package), _builder(package.builder()) {}
 
+    // The PIR type of a Spicy type that procedural code can hold, if PIR can represent it yet.
+    std::optional<ir::TypeId> valueType(const hilti::UnqualifiedType* type) {
+        if ( const auto* integer = type->tryAs<hilti::type::SignedInteger>(); integer && integer->width() == 64 )
+            return _builder.int64Type();
+        if ( const auto* integer = type->tryAs<hilti::type::UnsignedInteger>() ) {
+            if ( integer->width() == 8 )
+                return _builder.uint8Type();
+            if ( integer->width() == 64 )
+                return _builder.uint64Type();
+        }
+        if ( type->isA<hilti::type::Bool>() )
+            return _builder.boolType();
+        if ( type->isA<hilti::type::String>() )
+            return _builder.stringType();
+        if ( type->isA<hilti::type::Bytes>() )
+            return _builder.bytesType();
+        if ( type->isA<hilti::type::Void>() )
+            return _builder.voidType();
+        if ( const auto* library = type->tryAs<hilti::type::Library>() )
+            return _opaque(library);
+        return std::nullopt;
+    }
+
     std::variant<ir::FunctionId, UnsupportedFeature> function(hilti::declaration::Function* decl) {
         if ( auto it = _functions.find(decl); it != _functions.end() )
             return it->second;
@@ -368,8 +312,7 @@ public:
             body.bind(param, Variable{.value = arg, .is_place = param->kind() == hilti::parameter::Kind::InOut});
         }
 
-        auto statements = fn->body()->statements();
-        for ( auto* stmt : statements ) {
+        for ( auto* stmt : fn->body()->statements() ) {
             if ( auto error = body.lowerStatement(stmt) )
                 return *error;
         }
@@ -397,18 +340,56 @@ public:
         if ( ! cxx_name )
             return unsupported(feature, "a foreign function needs a constant &cxxname", decl->meta().location());
 
-        auto parameters = _signature(fn->ftype(), feature, decl->meta().location());
-        if ( auto* unsupported_feature = std::get_if<UnsupportedFeature>(&parameters) )
-            return *unsupported_feature;
-        auto signature = std::get<Signature>(parameters);
+        std::vector<ir::ForeignParameter> parameters;
+        for ( auto* param : fn->ftype()->parameters() ) {
+            if ( param->default_() )
+                return unsupported(feature, "default parameter values are not supported", decl->meta().location());
+
+            auto* type = param->type()->type();
+            if ( type->isA<hilti::type::Any>() ) {
+                if ( param->kind() == hilti::parameter::Kind::InOut )
+                    return unsupported(feature, "inout any parameters are not supported", param->meta().location());
+                parameters.emplace_back(ir::TypeId(), ir::ForeignArgument::TypeInfo);
+                continue;
+            }
+
+            auto value_type = valueType(type);
+            if ( ! value_type || *value_type == _builder.voidType() )
+                return unsupported(feature, "parameter type is not supported yet", param->meta().location());
+
+            parameters.emplace_back(param->kind() == hilti::parameter::Kind::InOut ? _builder.placeType(*value_type) :
+                                                                                     *value_type);
+        }
+
+        auto result = valueType(fn->ftype()->result()->type());
+        if ( ! result )
+            return unsupported(feature, "result type is not supported yet", decl->meta().location());
 
         auto id = _builder.createForeignFunction(std::string(decl->id().local()),
                                                  *cxx_name,
-                                                 signature.types,
-                                                 signature.result,
-                                                 internSpan(_package, decl->meta().location()));
+                                                 std::move(parameters),
+                                                 *result,
+                                                 internSpan(_package, decl->meta().location()),
+                                                 fn->attributes()->find(hilti::attribute::kind::HavePrototype));
         _foreign.emplace(decl, id);
         return id;
+    }
+
+    // The runtime's `hilti::print` (one value) or `hilti::printTuple` (several values) with a newline.
+    ir::ForeignFunctionId printer(bool tuple) {
+        auto& slot = tuple ? _print_tuple : _print;
+        if ( ! slot.isSet() ) {
+            std::vector<ir::ForeignParameter> parameters;
+            parameters.emplace_back(ir::TypeId(), tuple ? ir::ForeignArgument::Tuple : ir::ForeignArgument::TypeInfo);
+            parameters.emplace_back(_builder.boolType());
+            slot = _builder.createForeignFunction(tuple ? "printTuple" : "print",
+                                                  tuple ? "hilti::rt::tuple::print" : "hilti::rt::print",
+                                                  std::move(parameters),
+                                                  _builder.voidType(),
+                                                  ir::SourceSpanId(),
+                                                  true);
+        }
+        return slot;
     }
 
 private:
@@ -426,7 +407,7 @@ private:
             if ( param->default_() )
                 return unsupported(feature, "default parameter values are not supported", loc);
 
-            auto value_type = procedureType(_builder, param->type()->type());
+            auto value_type = valueType(param->type()->type());
             if ( ! value_type || *value_type == _builder.voidType() )
                 return unsupported(feature, "parameter type is not supported yet", param->meta().location());
 
@@ -440,18 +421,159 @@ private:
             signature.declarations.push_back(param);
         }
 
-        auto result = procedureType(_builder, ftype->result()->type());
+        auto result = valueType(ftype->result()->type());
         if ( ! result )
             return unsupported(feature, "result type is not supported yet", loc);
         signature.result = *result;
         return signature;
     }
 
+    // Opaque types are nominal per native type: the same native name and constness is one declaration.
+    ir::TypeId _opaque(const hilti::type::Library* library) {
+        auto key = fmt("%s %s", library->isConstant() ? "const" : "mutable", library->cxxName());
+        if ( auto it = _opaque_types.find(key); it != _opaque_types.end() )
+            return it->second;
+
+        // HILTI copies library values by value, so only a constant native type is assumed copyable.
+        ir::OpaqueTypeInfo info;
+        info.cxx_name = library->cxxName();
+        info.constant = library->isConstant();
+        info.lifecycle = ir::OpaqueLifecycle{.copyable = library->isConstant(), .movable = true};
+        auto decl = _builder.createOpaqueTypeDecl(library->cxxName(), std::move(info));
+        auto type = _builder.opaqueType(decl);
+        _opaque_types.emplace(std::move(key), type);
+        return type;
+    }
+
     ir::Package& _package;
     ir::Builder _builder;
     std::unordered_map<const hilti::declaration::Function*, ir::FunctionId> _functions;
     std::unordered_map<const hilti::declaration::Function*, ir::ForeignFunctionId> _foreign;
+    std::unordered_map<std::string, ir::TypeId> _opaque_types;
+    ir::ForeignFunctionId _print;
+    ir::ForeignFunctionId _print_tuple;
 };
+
+std::variant<ir::InstId, UnsupportedFeature> BodyLowerer::_lowerCtor(hilti::Ctor* ctor, const hilti::Location& loc) {
+    if ( auto* coerced = ctor->tryAs<hilti::ctor::Coerced>() )
+        ctor = coerced->coercedCtor();
+
+    if ( auto* literal = ctor->tryAs<hilti::ctor::SignedInteger>() ) {
+        if ( literal->width() != 64 )
+            return _unsupported("only signed 64-bit integer literals are supported", loc);
+        return _builder.addConstant(_block, literal->value(), internSpan(_package, loc));
+    }
+
+    if ( auto* literal = ctor->tryAs<hilti::ctor::Bool>() )
+        return _builder.addBoolConstant(_block, literal->value(), internSpan(_package, loc));
+
+    if ( auto* literal = ctor->tryAs<hilti::ctor::String>() )
+        return _builder.addStringConstant(_block, literal->value(), internSpan(_package, loc));
+
+    if ( auto* literal = ctor->tryAs<hilti::ctor::Bytes>() )
+        return _builder.addBytesConstant(_block, literal->value(), internSpan(_package, loc));
+
+    if ( auto* tuple = ctor->tryAs<hilti::ctor::Tuple>() ) {
+        std::vector<ir::InstId> elements;
+        for ( auto* element : tuple->value() ) {
+            auto value = lower(element);
+            if ( auto* feature = std::get_if<UnsupportedFeature>(&value) )
+                return *feature;
+            elements.push_back(std::get<ir::InstId>(value));
+        }
+        return _builder.addTuple(_block, std::move(elements), internSpan(_package, loc));
+    }
+
+    return _unsupported("unsupported literal", loc);
+}
+
+std::optional<UnsupportedFeature> BodyLowerer::lowerStatement(hilti::Statement* stmt) {
+    if ( auto* ret = stmt->tryAs<hilti::statement::Return>() ) {
+        if ( ! ret->expression() ) {
+            _builder.addReturnVoid(_block, internSpan(_package, ret->meta().location()));
+            return std::nullopt;
+        }
+
+        auto value = lower(ret->expression());
+        if ( auto* feature = std::get_if<UnsupportedFeature>(&value) )
+            return *feature;
+
+        _builder.addReturn(_block, std::get<ir::InstId>(value), internSpan(_package, ret->meta().location()));
+        return std::nullopt;
+    }
+
+    if ( auto* decl = stmt->tryAs<hilti::statement::Declaration>() ) {
+        auto* local = decl->declaration()->tryAs<hilti::declaration::LocalVariable>();
+        if ( ! local || ! local->init() )
+            return _unsupported("only local variables with an initializer are supported", stmt->meta().location());
+
+        auto init = lower(local->init());
+        if ( auto* feature = std::get_if<UnsupportedFeature>(&init) )
+            return *feature;
+
+        auto value = std::get<ir::InstId>(init);
+        auto declared = _procedures.valueType(local->type()->type());
+        if ( ! declared || *declared != _package.inst(value).result_type )
+            return _unsupported("local variable initializer must have the declared type", stmt->meta().location());
+
+        auto place = _builder.addLocalPlace(_block, value, internSpan(_package, stmt->meta().location()));
+        bind(local, Variable{.value = place, .is_place = true});
+        return std::nullopt;
+    }
+
+    if ( auto* print = stmt->tryAs<spicy::statement::Print>() ) {
+        std::vector<ir::InstId> values;
+        for ( auto* expr : print->expressions() ) {
+            auto value = lower(expr);
+            if ( auto* feature = std::get_if<UnsupportedFeature>(&value) )
+                return *feature;
+            values.push_back(std::get<ir::InstId>(value));
+        }
+
+        // As the standard code generator does: no operand prints an empty line; several operands print as one tuple.
+        auto span = internSpan(_package, stmt->meta().location());
+        if ( values.empty() )
+            values.push_back(_builder.addStringConstant(_block, "", span));
+
+        auto newline = _builder.addBoolConstant(_block, true, span);
+        if ( values.size() == 1 ) {
+            _builder.addOpaqueOp(_block, _procedures.printer(false), {values[0], newline}, span);
+            return std::nullopt;
+        }
+
+        auto tuple = _builder.addTuple(_block, std::move(values), span);
+        _builder.addOpaqueOp(_block, _procedures.printer(true), {tuple, newline}, span);
+        return std::nullopt;
+    }
+
+    if ( auto* expr_stmt = stmt->tryAs<hilti::statement::Expression>() ) {
+        auto* expr = expr_stmt->expression();
+        if ( auto* assign = expr->tryAs<hilti::expression::Assign>() ) {
+            auto target = _place(assign->target());
+            if ( auto* feature = std::get_if<UnsupportedFeature>(&target) )
+                return *feature;
+
+            auto source = lower(assign->source());
+            if ( auto* feature = std::get_if<UnsupportedFeature>(&source) )
+                return *feature;
+
+            _builder.addStore(_block,
+                              std::get<ir::InstId>(target),
+                              std::get<ir::InstId>(source),
+                              internSpan(_package, stmt->meta().location()));
+            return std::nullopt;
+        }
+
+        // A call's result is discarded; the call itself stays because its effects are observable.
+        auto value = lower(expr);
+        if ( auto* feature = std::get_if<UnsupportedFeature>(&value) )
+            return *feature;
+        return std::nullopt;
+    }
+
+    return _unsupported("only return, print, local declarations, assignments, and calls are supported",
+                        stmt->meta().location());
+}
 
 std::variant<ir::InstId, UnsupportedFeature> BodyLowerer::_lowerCall(hilti::expression::ResolvedOperator* op) {
     auto* name = op->op0()->tryAs<hilti::expression::Name>();

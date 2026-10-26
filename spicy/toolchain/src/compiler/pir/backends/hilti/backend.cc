@@ -73,6 +73,20 @@ NameMap makeNames(const ir::Package& package) {
         case ir::TypeKind::UInt64: return b.qualifiedType(b.typeUnsignedInteger(64), ::hilti::Constness::Mutable);
         case ir::TypeKind::Bytes: return b.qualifiedType(b.typeBytes(), ::hilti::Constness::Mutable);
         case ir::TypeKind::Int64: return b.qualifiedType(b.typeSignedInteger(64), ::hilti::Constness::Mutable);
+        case ir::TypeKind::Bool: return b.qualifiedType(b.typeBool(), ::hilti::Constness::Mutable);
+        case ir::TypeKind::String: return b.qualifiedType(b.typeString(), ::hilti::Constness::Mutable);
+        case ir::TypeKind::Tuple: {
+            ::hilti::QualifiedTypes elements;
+            for ( auto element : type.type_arguments )
+                elements.push_back(targetType(b, package, element));
+            return b.qualifiedType(b.typeTuple(elements), ::hilti::Constness::Mutable);
+        }
+        case ir::TypeKind::Opaque: {
+            const auto& info = package.typeDecl(type.declaration).opaque.value();
+            // The library type carries its own constness, so the qualifier stays mutable.
+            auto constness = info.constant ? ::hilti::Constness::Const : ::hilti::Constness::Mutable;
+            return b.qualifiedType(b.typeLibrary(constness, info.cxx_name), ::hilti::Constness::Mutable);
+        }
         // A place is the storage it names, so its HILTI type is that storage's type.
         case ir::TypeKind::Place: return targetType(b, package, type.type_arguments[0]);
         case ir::TypeKind::Unit:
@@ -169,15 +183,39 @@ using LocalBuilder = ::hilti::ExtendedBuilderTemplate<::hilti::Builder>;
     return b.parameter(::hilti::ID(name), targetType(b, package, id)->type(), ::hilti::parameter::Kind::In, meta);
 }
 
+// A formal of a foreign function. `any` and `tuple<*>` formals are the HILTI types the runtime declares, so the
+// HILTI compiler supplies the concrete type information or tuple elements at each call.
+::hilti::declaration::Parameter* foreignParameterFor(::hilti::Builder& b,
+                                                     const ir::Package& package,
+                                                     const std::string& name,
+                                                     const ir::ForeignParameter& parameter,
+                                                     const ::hilti::Meta& meta) {
+    switch ( parameter.argument ) {
+        case ir::ForeignArgument::Value: return parameterFor(b, package, name, parameter.type, meta);
+        case ir::ForeignArgument::TypeInfo:
+            return b.parameter(::hilti::ID(name), b.typeAny(), ::hilti::parameter::Kind::In, meta);
+        case ir::ForeignArgument::Tuple:
+            return b.parameter(::hilti::ID(name),
+                               b.typeTuple(::hilti::type::Wildcard{}),
+                               ::hilti::parameter::Kind::In,
+                               meta);
+    }
+
+    ::hilti::util::cannotBeReached();
+}
+
 // The native declaration of a foreign function, bound to its C++ symbol through `&cxxname`.
 ::hilti::Declaration* lowerForeignFunction(::hilti::Builder& b, const ir::Package& package, ir::ForeignFunctionId id) {
     const auto& fn = package.foreignFunction(id);
     auto meta = metaFor(package, fn.span);
     ::hilti::declaration::Parameters params;
     for ( size_t i = 0; i < fn.parameters.size(); ++i )
-        params.push_back(parameterFor(b, package, fmt("arg_%zu", i), fn.parameters[i], meta));
-    auto* attrs =
-        b.attributeSet({b.attribute(::hilti::attribute::kind::Cxxname, b.stringLiteral(fn.cxx_name), meta)}, meta);
+        params.push_back(foreignParameterFor(b, package, fmt("arg_%zu", i), fn.parameters[i], meta));
+    std::vector<::hilti::Attribute*> attributes;
+    attributes.push_back(b.attribute(::hilti::attribute::kind::Cxxname, b.stringLiteral(fn.cxx_name), meta));
+    if ( fn.have_prototype )
+        attributes.push_back(b.attribute(::hilti::attribute::kind::HavePrototype, meta));
+    auto* attrs = b.attributeSet(attributes, meta);
     return b.function(::hilti::ID(fmt("foreign_%u", id.index)),
                       resultType(b, package, fn.result_type),
                       params,
@@ -692,6 +730,30 @@ private:
             case ir::Opcode::Store:
                 b.addAssign(::hilti::ID(_values.at(inst.args[0].index)), _value(b, inst.args[1]), meta);
                 return;
+            case ir::Opcode::Tuple: {
+                ::hilti::Expressions elements;
+                for ( auto element : inst.args )
+                    elements.push_back(_value(b, element));
+                auto name = fmt("v_%u", id.index);
+                b.addLocal(::hilti::ID(name), targetType(b, _package, inst.result_type), b.tuple(elements, meta), meta);
+                _values[id.index] = std::move(name);
+                return;
+            }
+            case ir::Opcode::BoolConstant:
+            case ir::Opcode::StringConstant:
+            case ir::Opcode::BytesConstant: {
+                auto name = fmt("v_%u", id.index);
+                ::hilti::Expression* value = nullptr;
+                if ( inst.opcode == ir::Opcode::BoolConstant )
+                    value = b.bool_(std::get<ir::BoolLiteral>(inst.payload).value, meta);
+                else if ( inst.opcode == ir::Opcode::StringConstant )
+                    value = b.stringLiteral(std::get<ir::StringLiteral>(inst.payload).value, meta);
+                else
+                    value = b.bytes(std::get<ir::BytesLiteral>(inst.payload).value, meta);
+                b.addLocal(::hilti::ID(name), targetType(b, _package, inst.result_type), value, meta);
+                _values[id.index] = std::move(name);
+                return;
+            }
             default: ::hilti::util::cannotBeReached();
         }
     }

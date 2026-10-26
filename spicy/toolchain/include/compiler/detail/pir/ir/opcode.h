@@ -38,9 +38,27 @@ enum class Opcode {
     LocalPlace,
     Load,
     Store,
+    Tuple,
+    BoolConstant,
+    StringConstant,
+    BytesConstant,
 };
 
-enum class TypeKind { Void, Int64, UInt8, UInt64, Bytes, ParserState, Unit, Tuple, Vector, Opaque, Place };
+enum class TypeKind {
+    Void,
+    Int64,
+    UInt8,
+    UInt64,
+    Bytes,
+    ParserState,
+    Unit,
+    Tuple,
+    Vector,
+    Opaque,
+    Place,
+    Bool,
+    String
+};
 
 enum class TypeConstraintKind {
     Any,
@@ -87,7 +105,9 @@ constexpr ValueDiscipline typeKindDiscipline(TypeKind kind) {
         case TypeKind::Bytes:
         case TypeKind::Tuple:
         case TypeKind::Opaque:
-        case TypeKind::Place: return ValueDiscipline::Copyable;
+        case TypeKind::Place:
+        case TypeKind::Bool:
+        case TypeKind::String: return ValueDiscipline::Copyable;
     }
 
     return ValueDiscipline::Copyable;
@@ -173,6 +193,24 @@ struct ForeignFunctionPayload {
     friend constexpr bool operator==(ForeignFunctionPayload, ForeignFunctionPayload) = default;
 };
 
+struct BoolLiteral {
+    bool value = false;
+
+    friend constexpr bool operator==(BoolLiteral, BoolLiteral) = default;
+};
+
+struct StringLiteral {
+    std::string value;
+
+    friend bool operator==(const StringLiteral&, const StringLiteral&) = default;
+};
+
+struct BytesLiteral {
+    std::string value;
+
+    friend bool operator==(const BytesLiteral&, const BytesLiteral&) = default;
+};
+
 struct ReadBytesPayload {
     uint64_t length = 0;
 
@@ -188,7 +226,10 @@ using InstPayload = std::variant<std::monostate,
                                  FieldPayload,
                                  FunctionPayload,
                                  ReadBytesPayload,
-                                 ForeignFunctionPayload>;
+                                 ForeignFunctionPayload,
+                                 BoolLiteral,
+                                 StringLiteral,
+                                 BytesLiteral>;
 
 enum class PayloadKind {
     None,
@@ -201,6 +242,9 @@ enum class PayloadKind {
     Function,
     ReadBytes,
     ForeignFunction,
+    BoolLiteral,
+    StringLiteral,
+    BytesLiteral,
 };
 
 /** Whether a suspending parser read consumes bytes and how it resumes. */
@@ -257,6 +301,9 @@ constexpr bool payloadMatchesKind(const InstPayload& payload, PayloadKind kind) 
         case PayloadKind::Function: return std::holds_alternative<FunctionPayload>(payload);
         case PayloadKind::ReadBytes: return std::holds_alternative<ReadBytesPayload>(payload);
         case PayloadKind::ForeignFunction: return std::holds_alternative<ForeignFunctionPayload>(payload);
+        case PayloadKind::BoolLiteral: return std::holds_alternative<BoolLiteral>(payload);
+        case PayloadKind::StringLiteral: return std::holds_alternative<StringLiteral>(payload);
+        case PayloadKind::BytesLiteral: return std::holds_alternative<BytesLiteral>(payload);
     }
 
     return false;
@@ -330,7 +377,7 @@ inline constexpr ParserOperationContract KSubunitContract{
 
 // One entry per `Opcode` value, in declaration order, so `schemaFor()` can index directly without
 // per-call allocation.
-inline constexpr std::array<OpcodeSchema, 23> KSchemas{{
+inline constexpr std::array<OpcodeSchema, 27> KSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Constant,
         .spelling = "core.constant",
@@ -557,6 +604,40 @@ inline constexpr std::array<OpcodeSchema, 23> KSchemas{{
                  .payload_kind = PayloadKind::None,
                  .is_terminator = false,
                  .is_pure = false},
+    OpcodeSchema{.opcode = Opcode::Tuple,
+                 .spelling = "core.tuple",
+                 // Operands are the elements, in order; the result is the tuple of their types.
+                 .operand_types = KNoOperandTypes,
+                 .operand_roles = KNoOperandRoles,
+                 .result_type = fixedType(TypeKind::Tuple),
+                 .payload_kind = PayloadKind::None,
+                 .is_terminator = false,
+                 .is_pure = true,
+                 .variadic = true},
+    OpcodeSchema{.opcode = Opcode::BoolConstant,
+                 .spelling = "core.bool_constant",
+                 .operand_types = KNoOperandTypes,
+                 .operand_roles = KNoOperandRoles,
+                 .result_type = fixedType(TypeKind::Bool),
+                 .payload_kind = PayloadKind::BoolLiteral,
+                 .is_terminator = false,
+                 .is_pure = true},
+    OpcodeSchema{.opcode = Opcode::StringConstant,
+                 .spelling = "core.string_constant",
+                 .operand_types = KNoOperandTypes,
+                 .operand_roles = KNoOperandRoles,
+                 .result_type = fixedType(TypeKind::String),
+                 .payload_kind = PayloadKind::StringLiteral,
+                 .is_terminator = false,
+                 .is_pure = true},
+    OpcodeSchema{.opcode = Opcode::BytesConstant,
+                 .spelling = "core.bytes_constant",
+                 .operand_types = KNoOperandTypes,
+                 .operand_roles = KNoOperandRoles,
+                 .result_type = fixedType(TypeKind::Bytes),
+                 .payload_kind = PayloadKind::BytesLiteral,
+                 .is_terminator = false,
+                 .is_pure = true},
 }};
 
 } // namespace detail
@@ -613,6 +694,10 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
         case Opcode::LocalPlace: return {.allocates = true};
         case Opcode::Load: return {.reads_places = true};
         case Opcode::Store: return {.writes_places = true};
+        case Opcode::Tuple:
+        case Opcode::BoolConstant:
+        case Opcode::StringConstant:
+        case Opcode::BytesConstant: return {};
         case Opcode::Finish:
         case Opcode::Yield:
         case Opcode::Return:

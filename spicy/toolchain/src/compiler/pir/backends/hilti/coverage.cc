@@ -1,5 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <algorithm>
 #include <unordered_set>
 
 #include <hilti/base/util.h>
@@ -38,6 +39,8 @@ bool isStorageType(const ir::Package& package, ir::TypeId id) {
         case ir::TypeKind::ParserState:
         case ir::TypeKind::Opaque:
         case ir::TypeKind::Place:
+        case ir::TypeKind::Bool:
+        case ir::TypeKind::String:
         case ir::TypeKind::Tuple: return false;
     }
     return false;
@@ -97,7 +100,11 @@ void checkRegion(const ir::Package& package,
                 case ir::Opcode::Call:
                 case ir::Opcode::LocalPlace:
                 case ir::Opcode::Load:
-                case ir::Opcode::Store: unsupported("procedural lowering is not supported"); break;
+                case ir::Opcode::Store:
+                case ir::Opcode::Tuple:
+                case ir::Opcode::BoolConstant:
+                case ir::Opcode::StringConstant:
+                case ir::Opcode::BytesConstant: unsupported("procedural lowering is not supported"); break;
                 case ir::Opcode::OpaqueOp: unsupported("foreign calls are not supported by the HILTI consumer"); break;
             }
             for ( auto child : inst.regions )
@@ -118,13 +125,20 @@ bool isProcedureType(const ir::Package& package, ir::TypeId id) {
         case ir::TypeKind::Int64:
         case ir::TypeKind::UInt8:
         case ir::TypeKind::UInt64:
-        case ir::TypeKind::Bytes: return true;
+        case ir::TypeKind::Bytes:
+        case ir::TypeKind::Bool:
+        case ir::TypeKind::String: return true;
         case ir::TypeKind::Place: return isProcedureType(package, type.type_arguments[0]);
+        case ir::TypeKind::Tuple:
+            return std::ranges::all_of(type.type_arguments,
+                                       [&](ir::TypeId element) { return isProcedureType(package, element); });
+        case ir::TypeKind::Opaque: {
+            const auto& decl = package.typeDecl(type.declaration);
+            return decl.opaque && decl.opaque->lifecycle && ! decl.opaque->cxx_name.empty();
+        }
         case ir::TypeKind::ParserState:
         case ir::TypeKind::Unit:
-        case ir::TypeKind::Vector:
-        case ir::TypeKind::Opaque:
-        case ir::TypeKind::Tuple: return false;
+        case ir::TypeKind::Vector: return false;
     }
     return false;
 }
@@ -150,7 +164,11 @@ void checkProcedureRegion(const ir::Package& package, ir::RegionId region, std::
                 case ir::Opcode::OpaqueOp:
                 case ir::Opcode::LocalPlace:
                 case ir::Opcode::Load:
-                case ir::Opcode::Store: break;
+                case ir::Opcode::Store:
+                case ir::Opcode::Tuple:
+                case ir::Opcode::BoolConstant:
+                case ir::Opcode::StringConstant:
+                case ir::Opcode::BytesConstant: break;
                 default: unsupported("not a procedural operation the HILTI backend can lower"); break;
             }
 
@@ -178,10 +196,10 @@ std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package) {
             case ir::TypeKind::ParserState:
             case ir::TypeKind::Unit:
             case ir::TypeKind::Place:
-            case ir::TypeKind::Tuple: break;
-            case ir::TypeKind::Opaque:
-                report(out, "opaque type", "opaque types are not supported by the HILTI backend yet");
-                break;
+            case ir::TypeKind::Bool:
+            case ir::TypeKind::String:
+            case ir::TypeKind::Tuple:
+            case ir::TypeKind::Opaque: break;
             case ir::TypeKind::Vector:
                 if ( ! isStorageType(package, type.type_arguments[0]) )
                     report(out, "vector", "vector element type cannot be stored by the HILTI backend");
@@ -192,8 +210,9 @@ std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package) {
     for ( size_t i = 0; i < package.foreignFunctions().size(); ++i ) {
         const auto& fn = package.foreignFunction(ir::ForeignFunctionId{static_cast<uint32_t>(i)});
         bool representable = isProcedureType(package, fn.result_type);
-        for ( auto parameter : fn.parameters )
-            representable = representable && isProcedureType(package, parameter);
+        for ( const auto& parameter : fn.parameters )
+            representable = representable && (parameter.argument != ir::ForeignArgument::Value ||
+                                              isProcedureType(package, parameter.type));
         if ( ! representable )
             report(out,
                    "foreign function",

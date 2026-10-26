@@ -50,6 +50,13 @@ inline constexpr DiagnosticDefinition ForeignFunctionInvalidParameter{
     .message = "foreign function parameter %zu must be a valid type that a native call accepts by value",
 };
 
+inline constexpr DiagnosticDefinition OpaqueLoadRequiresCopyable{
+    .id = "PIR_OPAQUE_LOAD_REQUIRES_COPYABLE",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "core.load copies an opaque value whose native type does not declare copy behavior",
+};
+
 inline constexpr DiagnosticDefinition OpaqueOpInvalidPayload{
     .id = "PIR_OPAQUE_OP_INVALID_PAYLOAD",
     .classification = DiagnosticClassification::Internal,
