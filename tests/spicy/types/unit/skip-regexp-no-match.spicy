@@ -1,0 +1,24 @@
+# @TEST-DOC: A skip regexp that does not match during switch look-ahead (Try mode) should fall through to the default arm without error.
+#
+# The switch probes `Alpha`'s leading `skip /[a-z]+/` in Try mode. For `foo`
+# the regexp matches and the `a` arm is taken; for `123` it returns a definitive
+# no-match (rc=0), the Try-mode path fires, and the default arm is taken instead.
+#
+# @TEST-EXEC: spicyc -c %INPUT
+# @TEST-EXEC: ${SCRIPTS}/printf "foobar" | spicy-dump -d %INPUT >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf "123bar" | spicy-dump -d %INPUT >>output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module test;
+
+type Alpha = unit {
+    name:  skip /[a-z]+/;
+    value: bytes &eod;
+};
+
+public type X = unit {
+    switch {
+        -> a: Alpha;
+        * -> other: bytes &eod;
+    };
+};
