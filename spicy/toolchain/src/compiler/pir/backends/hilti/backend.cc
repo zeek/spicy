@@ -40,13 +40,23 @@ using NameMap = std::unordered_map<uint32_t, FunctionNames>;
 
 NameMap makeNames(const ir::Package& package) {
     NameMap names;
-    for ( size_t i = 0; i < package.functions().size(); ++i )
-        names.emplace(static_cast<uint32_t>(i),
-                      FunctionNames{.function = fmt("parse_child_%zu", i), .result = fmt("ParseResultChild_%zu", i)});
+    for ( size_t i = 0; i < package.functions().size(); ++i ) {
+        auto id = static_cast<uint32_t>(i);
+        if ( package.function(ir::FunctionId{id}).kind == ir::FunctionKind::Parser )
+            names.emplace(id,
+                          FunctionNames{
+                              .function = fmt("parse_child_%zu", i),
+                              .result = fmt("ParseResultChild_%zu", i),
+                          });
+        else
+            names.emplace(id, FunctionNames{.function = fmt("proc_%zu", i)});
+    }
     for ( size_t i = 0; i < package.parserRoots().size(); ++i ) {
         auto& entry = names.at(package.parserRoots()[i].function.index);
         entry = FunctionNames{.function = fmt("parse_root_%zu", i), .result = fmt("ParseResult_%zu", i), .root = true};
     }
+    for ( auto root : package.functionRoots() )
+        names.at(root.index) = FunctionNames{.function = std::string(package.function(root).name), .root = true};
     return names;
 }
 
@@ -62,6 +72,9 @@ NameMap makeNames(const ir::Package& package) {
         case ir::TypeKind::UInt8: return b.qualifiedType(b.typeUnsignedInteger(8), ::hilti::Constness::Mutable);
         case ir::TypeKind::UInt64: return b.qualifiedType(b.typeUnsignedInteger(64), ::hilti::Constness::Mutable);
         case ir::TypeKind::Bytes: return b.qualifiedType(b.typeBytes(), ::hilti::Constness::Mutable);
+        case ir::TypeKind::Int64: return b.qualifiedType(b.typeSignedInteger(64), ::hilti::Constness::Mutable);
+        // A place is the storage it names, so its HILTI type is that storage's type.
+        case ir::TypeKind::Place: return targetType(b, package, type.type_arguments[0]);
         case ir::TypeKind::Unit:
             return b.qualifiedType(b.typeName(::hilti::ID(unitName(type.declaration))), ::hilti::Constness::Mutable);
         case ir::TypeKind::Vector:
@@ -134,6 +147,46 @@ NameMap makeNames(const ir::Package& package) {
 }
 
 using LocalBuilder = ::hilti::ExtendedBuilderTemplate<::hilti::Builder>;
+
+::hilti::QualifiedType* resultType(::hilti::Builder& b, const ir::Package& package, ir::TypeId id) {
+    if ( id == package.voidType() )
+        return b.qualifiedType(b.typeVoid(), ::hilti::Constness::Mutable);
+    return targetType(b, package, id);
+}
+
+// An `inout` parameter is passed by reference, so the caller's place is the storage the callee sees.
+::hilti::declaration::Parameter* parameterFor(::hilti::Builder& b,
+                                              const ir::Package& package,
+                                              const std::string& name,
+                                              ir::TypeId id,
+                                              const ::hilti::Meta& meta) {
+    const auto& type = package.type(id);
+    if ( type.kind == ir::TypeKind::Place )
+        return b.parameter(::hilti::ID(name),
+                           targetType(b, package, type.type_arguments[0])->type(),
+                           ::hilti::parameter::Kind::InOut,
+                           meta);
+    return b.parameter(::hilti::ID(name), targetType(b, package, id)->type(), ::hilti::parameter::Kind::In, meta);
+}
+
+// The native declaration of a foreign function, bound to its C++ symbol through `&cxxname`.
+::hilti::Declaration* lowerForeignFunction(::hilti::Builder& b, const ir::Package& package, ir::ForeignFunctionId id) {
+    const auto& fn = package.foreignFunction(id);
+    auto meta = metaFor(package, fn.span);
+    ::hilti::declaration::Parameters params;
+    for ( size_t i = 0; i < fn.parameters.size(); ++i )
+        params.push_back(parameterFor(b, package, fmt("arg_%zu", i), fn.parameters[i], meta));
+    auto* attrs =
+        b.attributeSet({b.attribute(::hilti::attribute::kind::Cxxname, b.stringLiteral(fn.cxx_name), meta)}, meta);
+    return b.function(::hilti::ID(fmt("foreign_%u", id.index)),
+                      resultType(b, package, fn.result_type),
+                      params,
+                      ::hilti::type::function::Flavor::Function,
+                      ::hilti::declaration::Linkage::Private,
+                      ::hilti::type::function::CallingConvention::Extern,
+                      attrs,
+                      meta);
+}
 
 class FunctionEmitter {
 public:
@@ -534,6 +587,122 @@ private:
     std::unordered_map<uint32_t, std::vector<std::string>> _tuples;
 };
 
+// Lowers an ordinary function body. Each value is a named HILTI local or parameter. A place is the
+// local (or `inout` parameter) it names, so a store assigns to that name and a native `inout` call
+// receives the name by reference.
+class ProcedureEmitter {
+public:
+    ProcedureEmitter(::hilti::Builder& b, const ir::Package& package, const NameMap& names, ir::FunctionId id)
+        : _b(b), _package(package), _names(names), _id(id) {}
+
+    ::hilti::Declaration* emit() {
+        const auto& fn = _package.function(_id);
+        const auto& names = _names.at(_id.index);
+        auto meta = metaFor(_package, fn.span);
+        ::hilti::declaration::Parameters params;
+        for ( size_t i = 0; i < fn.parameters.size(); ++i )
+            params.push_back(parameterFor(_b, _package, fmt("arg_%zu", i), fn.parameters[i], meta));
+
+        auto* body = _b.statementBlock(meta);
+        LocalBuilder fb(_b.context(), body);
+        const auto& region = _package.region(fn.root_region);
+        for ( auto inst_id : _package.block(region.blocks[0]).insts )
+            _lowerInst(fb, inst_id);
+
+        return _b.function(::hilti::ID(names.function),
+                           resultType(_b, _package, fn.result_type),
+                           params,
+                           body,
+                           ::hilti::type::function::Flavor::Function,
+                           names.root ? ::hilti::declaration::Linkage::Public : ::hilti::declaration::Linkage::Private,
+                           names.root ? ::hilti::type::function::CallingConvention::Extern :
+                                        ::hilti::type::function::CallingConvention::Standard,
+                           {},
+                           meta);
+    }
+
+private:
+    ::hilti::Expression* _value(LocalBuilder& b, ir::InstId id) { return b.id(::hilti::ID(_values.at(id.index))); }
+
+    void _lowerInst(LocalBuilder& b, ir::InstId id) {
+        const auto& inst = _package.inst(id);
+        auto meta = metaFor(_package, inst.span);
+        switch ( inst.opcode ) {
+            case ir::Opcode::Argument:
+                _values[id.index] = fmt("arg_%u", std::get<ir::ArgumentPayload>(inst.payload).index);
+                return;
+            case ir::Opcode::Constant: {
+                auto name = fmt("v_%u", id.index);
+                b.addLocal(::hilti::ID(name),
+                           targetType(b, _package, inst.result_type),
+                           b.integer(std::get<ir::Int64Literal>(inst.payload).value),
+                           meta);
+                _values[id.index] = std::move(name);
+                return;
+            }
+            case ir::Opcode::Add: {
+                auto name = fmt("v_%u", id.index);
+                b.addLocal(::hilti::ID(name),
+                           targetType(b, _package, inst.result_type),
+                           b.sum(_value(b, inst.args[0]), _value(b, inst.args[1]), meta),
+                           meta);
+                _values[id.index] = std::move(name);
+                return;
+            }
+            case ir::Opcode::Return:
+                if ( inst.args.empty() )
+                    b.addReturn(meta);
+                else
+                    b.addReturn(_value(b, inst.args[0]), meta);
+                return;
+            case ir::Opcode::Call:
+            case ir::Opcode::OpaqueOp: {
+                ::hilti::ID callee =
+                    inst.opcode == ir::Opcode::Call ?
+                        ::hilti::ID(_names.at(std::get<ir::FunctionPayload>(inst.payload).function.index).function) :
+                        ::hilti::ID(
+                            fmt("foreign_%u", std::get<ir::ForeignFunctionPayload>(inst.payload).function.index));
+                ::hilti::Expressions args;
+                for ( auto arg : inst.args )
+                    args.push_back(_value(b, arg));
+                auto* call = b.call(callee, args, meta);
+                if ( inst.result_type == _package.voidType() ) {
+                    b.addExpression(call);
+                    return;
+                }
+
+                auto name = fmt("v_%u", id.index);
+                b.addLocal(::hilti::ID(name), targetType(b, _package, inst.result_type), call, meta);
+                _values[id.index] = std::move(name);
+                return;
+            }
+            case ir::Opcode::LocalPlace: {
+                auto name = fmt("p_%u", id.index);
+                auto element = _package.type(inst.result_type).type_arguments[0];
+                b.addLocal(::hilti::ID(name), targetType(b, _package, element), _value(b, inst.args[0]), meta);
+                _values[id.index] = std::move(name);
+                return;
+            }
+            case ir::Opcode::Load: {
+                auto name = fmt("v_%u", id.index);
+                b.addLocal(::hilti::ID(name), targetType(b, _package, inst.result_type), _value(b, inst.args[0]), meta);
+                _values[id.index] = std::move(name);
+                return;
+            }
+            case ir::Opcode::Store:
+                b.addAssign(::hilti::ID(_values.at(inst.args[0].index)), _value(b, inst.args[1]), meta);
+                return;
+            default: ::hilti::util::cannotBeReached();
+        }
+    }
+
+    ::hilti::Builder& _b;
+    const ir::Package& _package;
+    const NameMap& _names;
+    ir::FunctionId _id;
+    std::unordered_map<uint32_t, std::string> _values;
+};
+
 } // namespace
 
 LoweringResult lower(::hilti::Builder& builder, const ir::Package& package) {
@@ -556,10 +725,18 @@ LoweringResult lower(::hilti::Builder& builder, const ir::Package& package) {
         decls.push_back(lowerUnitType(builder, package, ir::TypeDeclId{static_cast<uint32_t>(i)}));
     for ( size_t i = 0; i < package.functions().size(); ++i ) {
         auto id = ir::FunctionId{static_cast<uint32_t>(i)};
-        decls.push_back(lowerResultType(builder, package, id, names.at(id.index)));
+        if ( package.function(id).kind == ir::FunctionKind::Parser )
+            decls.push_back(lowerResultType(builder, package, id, names.at(id.index)));
     }
-    for ( size_t i = 0; i < package.functions().size(); ++i )
-        decls.push_back(FunctionEmitter(builder, package, names, ir::FunctionId{static_cast<uint32_t>(i)}).emit());
+    for ( size_t i = 0; i < package.foreignFunctions().size(); ++i )
+        decls.push_back(lowerForeignFunction(builder, package, ir::ForeignFunctionId{static_cast<uint32_t>(i)}));
+    for ( size_t i = 0; i < package.functions().size(); ++i ) {
+        auto id = ir::FunctionId{static_cast<uint32_t>(i)};
+        if ( package.function(id).kind == ir::FunctionKind::Parser )
+            decls.push_back(FunctionEmitter(builder, package, names, id).emit());
+        else
+            decls.push_back(ProcedureEmitter(builder, package, names, id).emit());
+    }
     auto uid = ::hilti::declaration::module::UID(::hilti::ID("__spicy_pir_backend"), ".hlt", ".hlt");
     return builder.declarationModule(uid, {}, decls);
 }

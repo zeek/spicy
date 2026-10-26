@@ -139,6 +139,8 @@ void Builder::addParserRoot(TypeDeclId unit, FunctionId function) {
     _package._parser_roots.push_back(ParserRoot{.unit = unit, .function = function});
 }
 
+void Builder::addFunctionRoot(FunctionId function) { _package._function_roots.push_back(function); }
+
 FunctionId Builder::createFunction(std::string name, TypeId result_type, SourceSpanId span) {
     return createFunction(std::move(name), {}, result_type, span);
 }

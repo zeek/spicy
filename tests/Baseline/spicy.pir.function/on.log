@@ -11,6 +11,7 @@ function %0 "answer" -> int64:
       %1 = core.constant -2 : int64
       %2 = core.add %0, %1 : int64
       %3: core.return %2 : void
+function root: function %0
 
 [debug/spicy-pir] constant folding changed the package: yes
 [debug/spicy-pir] after constant folding:
@@ -23,6 +24,6 @@ function %0 "answer" -> int64:
       %1 = core.constant -2 : int64
       %2 = core.constant -42 : int64
       %3: core.return %2 : void
+function root: function %0
 
-[debug/spicy-pir] HILTI backend unsupported: package (no parser root)
-[debug/spicy-pir] falling back to the standard code generator
+[debug/spicy-pir] attached PIR-produced HILTI module

@@ -1,0 +1,57 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -P "" -o Foo.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -p -D spicy-pir 2>&1 >/dev/null | rg "attached PIR-produced" >route
+# @TEST-EXEC: btest-diff route
+
+# @TEST-DOC: Executes an ordinary public function through PIR and its HILTI backend. The function
+# stores an argument in a local, passes that local to a Spicy helper that forwards it as an `inout`
+# argument to a native function, and returns the updated local. The native function observes the
+# caller's value and mutates it by reference, so the result proves the mutation was visible to the
+# caller, both optimized and unoptimized.
+
+module Test;
+
+function bump(inout x: int64) &cxxname="bump";
+
+function add_one(inout x: int64) {
+    bump(x);
+}
+
+public function scaled(x: int64): int64 {
+    local y: int64 = x;
+    add_one(y);
+    return y;
+}
+
+@TEST-START-FILE driver.cc
+
+#include <iostream>
+
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+#include "Foo.h"
+
+void bump(hilti::rt::integer::safe<int64_t>& x) {
+    std::cout << "bump: " << x << std::endl;
+    x = x + 10;
+}
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    auto r = hlt::_r__spicy_pir_backend::scaled(42);
+    std::cout << "scaled: " << r.get<hilti::rt::integer::safe<int64_t>>() << std::endl;
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    hilti::rt::init();
+    spicy::rt::init();
+    hilti_main();
+    hilti::rt::done();
+    return 0;
+}
+
+@TEST-END-FILE

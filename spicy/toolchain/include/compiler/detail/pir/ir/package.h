@@ -113,6 +113,8 @@ public:
     const Arena<ForeignFunction, ForeignFunctionId>& foreignFunctions() const { return _foreign_functions; }
     /** Selected parser implementations, in source order. */
     const std::vector<ParserRoot>& parserRoots() const { return _parser_roots; }
+    /** Selected public ordinary functions, in source order. */
+    const std::vector<FunctionId>& functionRoots() const { return _function_roots; }
 
     bool isValid(TypeId id) const { return _types.isValid(id); }
     bool isValid(FunctionId id) const { return _functions.isValid(id); }
@@ -135,6 +137,7 @@ private:
     Arena<Declaration, DeclId> _declarations;
     Arena<ForeignFunction, ForeignFunctionId> _foreign_functions;
     std::vector<ParserRoot> _parser_roots;
+    std::vector<FunctionId> _function_roots;
 
     TypeId _void_type;
     TypeId _int64_type;

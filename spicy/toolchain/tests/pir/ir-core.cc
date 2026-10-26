@@ -684,3 +684,19 @@ TEST_CASE("verifier rejects a local place initialized with a void value") {
 
     CHECK(hasDiagnostic(verify(package), diag::LocalPlaceInvalidInitial));
 }
+
+TEST_CASE("verifier rejects a function root that is not an ordinary function") {
+    Package package;
+    auto builder = package.builder();
+    auto unit = builder.createUnitDecl("Unit");
+    builder.addFunctionRoot(builder.createParserFunction(unit, builder.parserStateType(), builder.unitType(unit)));
+
+    CHECK(hasDiagnostic(verify(package), diag::FunctionRootNotNormal));
+}
+
+TEST_CASE("verifier rejects a function root that references no function") {
+    Package package;
+    package.builder().addFunctionRoot(FunctionId{999});
+
+    CHECK(hasDiagnostic(verify(package), diag::InvalidFunctionRoot));
+}

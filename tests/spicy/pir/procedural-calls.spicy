@@ -3,8 +3,8 @@
 # @TEST-EXEC: btest-diff route
 
 # @TEST-DOC: Lowers ordinary functions with locals, assignments, ordinary calls, and a native call that
-# takes an `inout` argument, and prints the resulting PIR route. The HILTI consumer does not yet
-# execute procedural bodies, so the compilation falls back to the standard code generator.
+# takes an `inout` argument, and prints the resulting PIR. The execution of this shape is covered by
+# procedural-execute.spicy.
 
 module Test;
 

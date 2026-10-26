@@ -22,6 +22,20 @@ inline constexpr DiagnosticDefinition PlaceEscapes{
     .message = "a place may only be a parameter or an operand, not a function result, field, or element",
 };
 
+inline constexpr DiagnosticDefinition InvalidFunctionRoot{
+    .id = "PIR_INVALID_FUNCTION_ROOT",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "function root does not reference a valid function",
+};
+
+inline constexpr DiagnosticDefinition FunctionRootNotNormal{
+    .id = "PIR_FUNCTION_ROOT_NOT_NORMAL",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "function root must be an ordinary function",
+};
+
 inline constexpr DiagnosticDefinition NormalFunctionInvalidParameter{
     .id = "PIR_NORMAL_FUNCTION_INVALID_PARAMETER",
     .classification = DiagnosticClassification::Internal,
