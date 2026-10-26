@@ -787,6 +787,31 @@ private:
                 return;
             }
 
+            case Opcode::FieldPlace: {
+                const auto* payload = std::get_if<FieldPayload>(&inst.payload);
+                if ( ! payload )
+                    return;
+
+                if ( ! _package.isValid(payload->field) ) {
+                    _emitter.emit(diag::FieldPlaceInvalidPayload, inst_id);
+                    return;
+                }
+
+                const auto& field = _package.declaration(payload->field);
+                if ( inst.args.empty() || ! _package.isValid(inst.args[0]) )
+                    return;
+
+                auto unit = _package.inst(inst.args[0]).result_type;
+                if ( ! _package.isValid(unit) || _package.type(unit).kind != TypeKind::Unit ||
+                     _package.type(unit).declaration != field.owner )
+                    _emitter.emit(diag::FieldPlaceUnitMismatch, inst_id);
+
+                if ( ! _package.isValid(inst.result_type) || _package.type(inst.result_type).kind != TypeKind::Place ||
+                     _package.type(inst.result_type).type_arguments != std::vector<TypeId>{field.type} )
+                    _emitter.emit(diag::FieldPlaceResultTypeMismatch, inst_id);
+                return;
+            }
+
             case Opcode::Store: {
                 if ( inst.args.size() != 2 || ! _package.isValid(inst.args[0]) || ! _package.isValid(inst.args[1]) )
                     return;

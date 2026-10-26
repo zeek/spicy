@@ -42,6 +42,7 @@ enum class Opcode {
     BoolConstant,
     StringConstant,
     BytesConstant,
+    FieldPlace,
 };
 
 enum class TypeKind {
@@ -344,6 +345,9 @@ inline constexpr OperandRole KParseStateOperandRoles[] = {OperandRole::Consume};
 inline constexpr TypeConstraint KPlaceOperandTypes[] = {anyType()};
 inline constexpr OperandRole KPlaceOperandRoles[] = {OperandRole::Borrow};
 
+inline constexpr TypeConstraint KFieldPlaceOperandTypes[] = {anyType()};
+inline constexpr OperandRole KFieldPlaceOperandRoles[] = {OperandRole::Borrow};
+
 inline constexpr TypeConstraint KStoreOperandTypes[] = {anyType(), anyType()};
 inline constexpr OperandRole KStoreOperandRoles[] = {OperandRole::Borrow, OperandRole::Borrow};
 
@@ -377,7 +381,7 @@ inline constexpr ParserOperationContract KSubunitContract{
 
 // One entry per `Opcode` value, in declaration order, so `schemaFor()` can index directly without
 // per-call allocation.
-inline constexpr std::array<OpcodeSchema, 27> KSchemas{{
+inline constexpr std::array<OpcodeSchema, 28> KSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Constant,
         .spelling = "core.constant",
@@ -638,6 +642,15 @@ inline constexpr std::array<OpcodeSchema, 27> KSchemas{{
                  .payload_kind = PayloadKind::BytesLiteral,
                  .is_terminator = false,
                  .is_pure = true},
+    OpcodeSchema{.opcode = Opcode::FieldPlace,
+                 .spelling = "unit.field_place",
+                 // Operand 0 is the unit being parsed, borrowed to address one of its fields as a place.
+                 .operand_types = KFieldPlaceOperandTypes,
+                 .operand_roles = KFieldPlaceOperandRoles,
+                 .result_type = anyType(),
+                 .payload_kind = PayloadKind::Field,
+                 .is_terminator = false,
+                 .is_pure = false},
 }};
 
 } // namespace detail
@@ -698,6 +711,7 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
         case Opcode::BoolConstant:
         case Opcode::StringConstant:
         case Opcode::BytesConstant: return {};
+        case Opcode::FieldPlace: return {.reads_places = true};
         case Opcode::Finish:
         case Opcode::Yield:
         case Opcode::Return:

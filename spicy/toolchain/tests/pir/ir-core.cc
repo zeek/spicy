@@ -785,3 +785,61 @@ TEST_CASE("verifier rejects a load that copies an opaque value not declared copy
 
     CHECK(hasDiagnostic(verify(package), diag::OpaqueLoadRequiresCopyable));
 }
+
+TEST_CASE("a field place addresses a field of the unit that declares it") {
+    Package package;
+    auto builder = package.builder();
+    auto unit = builder.createUnitDecl("Unit");
+    auto field = builder.createFieldDecl(unit, "length", builder.uint64Type());
+
+    auto fn = builder.createFunction("caller", builder.voidType());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto unit_value = builder.addUnitCreate(block, unit);
+    builder.addLoad(block, builder.addFieldPlace(block, unit_value, field));
+    builder.addReturnVoid(block);
+
+    CHECK(verify(package).empty());
+    CHECK(print(package).find("unit.field_place") != std::string::npos);
+}
+
+TEST_CASE("verifier rejects a field place on a unit that does not declare the field") {
+    Package package;
+    auto builder = package.builder();
+    auto owner = builder.createUnitDecl("Owner");
+    auto other = builder.createUnitDecl("Other");
+    auto field = builder.createFieldDecl(owner, "length", builder.uint64Type());
+
+    auto fn = builder.createFunction("caller", builder.voidType());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto unit_value = builder.addUnitCreate(block, other);
+    builder.addFieldPlace(block, unit_value, field);
+    builder.addReturnVoid(block);
+
+    CHECK(hasDiagnostic(verify(package), diag::FieldPlaceUnitMismatch));
+}
+
+TEST_CASE("verifier rejects a field place with an invalid field or a result that is not a place of the field") {
+    Package package;
+    auto builder = package.builder();
+    auto unit = builder.createUnitDecl("Unit");
+    auto field = builder.createFieldDecl(unit, "length", builder.uint64Type());
+
+    auto fn = builder.createFunction("caller", builder.voidType());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto unit_value = builder.addUnitCreate(block, unit);
+    builder.addInstForTesting(block,
+                              Opcode::FieldPlace,
+                              {unit_value},
+                              builder.placeType(builder.uint8Type()),
+                              InstPayload(FieldPayload{field}));
+    builder.addInstForTesting(block,
+                              Opcode::FieldPlace,
+                              {unit_value},
+                              builder.voidType(),
+                              InstPayload(FieldPayload{DeclId{999}}));
+    builder.addReturnVoid(block);
+
+    auto diags = verify(package);
+    CHECK(hasDiagnostic(diags, diag::FieldPlaceResultTypeMismatch));
+    CHECK(hasDiagnostic(diags, diag::FieldPlaceInvalidPayload));
+}

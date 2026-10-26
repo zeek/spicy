@@ -1,0 +1,103 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -P "" -o Foo.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -p -D spicy-pir 2>&1 >/dev/null | rg "attached PIR-produced" >route
+# @TEST-EXEC: btest-diff route
+
+# @TEST-DOC: Parses a field whose value a native `inout` call changes during a vector's byte bound. The bound
+# is computed by a Spicy helper that passes the length field by reference, so the first vector's length is the
+# updated value. A later vector reads the field directly and therefore observes the update, and a trailing
+# sentinel exposes any vector that consumed the wrong number of bytes. Parsing is chunked so the unit suspends
+# after the mutation, and the output must be identical with and without optimization.
+
+module Test;
+
+function bump(inout x: uint64) &cxxname="bump";
+
+function grow(inout n: uint64): uint64 {
+    bump(n);
+    return n;
+}
+
+type Item = unit {
+    b: uint8;
+};
+
+public type Mutable = unit {
+    length: uint64;
+    first: Item[] &size=grow(self.length);
+    second: Item[] &size=self.length;
+    sentinel: bytes &size=1;
+};
+
+@TEST-START-FILE driver.cc
+
+#include <iostream>
+#include <string>
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+#include "Foo.h"
+
+using Bytes = hilti::rt::Bytes;
+using Stream = hilti::rt::Stream;
+using Result = hlt_internal::_r__spicy_pir_backend::ParseResult_0;
+
+// The native function observes the caller's length and increases it by one, through the reference.
+void bump(hilti::rt::integer::safe<uint64_t>& x) {
+    std::cout << "bump: " << x << std::endl;
+    x = x + 1;
+}
+
+static std::string be(uint64_t n) {
+    std::string x(8, '\0');
+    for ( int i = 7; i >= 0; --i ) { x[i] = static_cast<char>(n & 255); n >>= 8; }
+    return x;
+}
+
+static void show(const char* name, Result x) {
+    std::cout << name << " " << x.kind << " cursor=" << x.cursor.offset()
+              << " unit=" << (x.unit ? "yes" : "no");
+    if ( x.unit ) {
+        std::cout << " length=" << (*x.unit)->field_1
+                  << " first=" << (*x.unit)->field_2.size()
+                  << " second=" << (*x.unit)->field_3.size()
+                  << " sentinel=" << (*x.unit)->field_4;
+    }
+    std::cout << std::endl;
+}
+
+static void parse(const char* name, std::string input, bool frozen) {
+    auto data = hilti::rt::reference::make_value<Stream>();
+    // Feed the input in two chunks so that the parser suspends after the length is read and mutated.
+    auto split = input.size() / 2;
+    data->append(Bytes(input.substr(0, split)));
+    auto r = hlt::_r__spicy_pir_backend::parse_root_0(data, {});
+    if ( ! r ) {
+        std::cout << name << " suspended" << std::endl;
+        data->append(Bytes(input.substr(split)));
+        if ( frozen )
+            data->freeze();
+        r.resume();
+    }
+    show(name, r.get<Result>());
+}
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    // Two items for the old length of 2, three after the native call; both vectors use the updated value.
+    parse("mutated", be(2) + "abc" + "def" + "*", true);
+    // Stopping after the first vector's items leaves the second vector without enough input.
+    parse("short", be(2) + "abc" + "de", true);
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    hilti::rt::init();
+    spicy::rt::init();
+    hilti_main();
+    hilti::rt::done();
+    return 0;
+}
+
+@TEST-END-FILE
