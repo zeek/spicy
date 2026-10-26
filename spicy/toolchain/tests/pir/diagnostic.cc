@@ -2,6 +2,7 @@
 
 #include <doctest/doctest.h>
 
+#include <spicy/compiler/detail/pir/ir/builder.h>
 #include <spicy/compiler/detail/pir/ir/diagnostic.h>
 #include <spicy/compiler/detail/pir/ir/package.h>
 #include <spicy/compiler/detail/pir/ir/verifier.h>
@@ -112,12 +113,13 @@ TEST_SUITE("pir::ir::Diagnostic") {
 
     TEST_CASE("emit() from an InstId automatically retains that instruction's stored span") {
         Package package;
+        auto builder = package.builder();
         auto file = package.sourceManager().internFile("x.spicy");
         auto span = package.sourceManager().addSpan(SourceSpan{.file = file, .begin_line = 9, .begin_column = 2});
 
-        auto fn = package.createFunction("f", package.int64Type());
-        auto block = package.createBlock(package.function(fn).root_region);
-        auto c = package.addConstant(block, 1, span);
+        auto fn = builder.createFunction("f", builder.int64Type());
+        auto block = builder.createBlock(package.function(fn).root_region);
+        auto c = builder.addConstant(block, 1, span);
 
         std::vector<Diagnostic> diags;
         DiagnosticEmitter emitter(package, diags);
@@ -130,10 +132,11 @@ TEST_SUITE("pir::ir::Diagnostic") {
 
     TEST_CASE(".note() from a FunctionId automatically retains that function's stored span") {
         Package package;
+        auto builder = package.builder();
         auto file = package.sourceManager().internFile("x.spicy");
         auto span = package.sourceManager().addSpan(SourceSpan{.file = file, .begin_line = 3, .begin_column = 17});
 
-        auto fn = package.createFunction("answer", package.int64Type(), span);
+        auto fn = builder.createFunction("answer", builder.int64Type(), span);
 
         std::vector<Diagnostic> diags;
         DiagnosticEmitter emitter(package, diags);
@@ -147,16 +150,17 @@ TEST_SUITE("pir::ir::Diagnostic") {
 
     TEST_CASE("ICE rendering is entity-first, with source location as secondary provenance") {
         Package package;
+        auto builder = package.builder();
         auto file = package.sourceManager().internFile("test.spicy");
         auto return_span = package.sourceManager().addSpan(
             SourceSpan{.file = file, .begin_line = 4, .begin_column = 12, .end_line = 4, .end_column = 20});
         auto fn_span = package.sourceManager().addSpan(
             SourceSpan{.file = file, .begin_line = 3, .begin_column = 17, .end_line = 3, .end_column = 30});
 
-        auto fn = package.createFunction("answer", package.int64Type(), fn_span);
-        auto block = package.createBlock(package.function(fn).root_region);
-        auto c = package.addConstant(block, 1);
-        auto ret = package.addInstForTesting(block, Opcode::Return, {c}, package.voidType(), {}, return_span);
+        auto fn = builder.createFunction("answer", builder.int64Type(), fn_span);
+        auto block = builder.createBlock(package.function(fn).root_region);
+        auto c = builder.addConstant(block, 1);
+        auto ret = builder.addInstForTesting(block, Opcode::Return, {c}, builder.voidType(), {}, return_span);
 
         std::vector<Diagnostic> diags;
         DiagnosticEmitter emitter(package, diags);
