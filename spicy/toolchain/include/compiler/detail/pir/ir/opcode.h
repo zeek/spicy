@@ -34,9 +34,13 @@ enum class Opcode {
     ParseSubunit,
     ReadBytes,
     OpaqueOp,
+    Call,
+    LocalPlace,
+    Load,
+    Store,
 };
 
-enum class TypeKind { Void, Int64, UInt8, UInt64, Bytes, ParserState, Unit, Tuple, Vector, Opaque };
+enum class TypeKind { Void, Int64, UInt8, UInt64, Bytes, ParserState, Unit, Tuple, Vector, Opaque, Place };
 
 enum class TypeConstraintKind {
     Any,
@@ -82,7 +86,8 @@ constexpr ValueDiscipline typeKindDiscipline(TypeKind kind) {
         case TypeKind::UInt64:
         case TypeKind::Bytes:
         case TypeKind::Tuple:
-        case TypeKind::Opaque: return ValueDiscipline::Copyable;
+        case TypeKind::Opaque:
+        case TypeKind::Place: return ValueDiscipline::Copyable;
     }
 
     return ValueDiscipline::Copyable;
@@ -289,6 +294,12 @@ inline constexpr OperandRole KEnterBoundOperandRoles[] = {OperandRole::Consume, 
 inline constexpr TypeConstraint KParseStateOperandTypes[] = {fixedType(TypeKind::ParserState)};
 inline constexpr OperandRole KParseStateOperandRoles[] = {OperandRole::Consume};
 
+inline constexpr TypeConstraint KPlaceOperandTypes[] = {anyType()};
+inline constexpr OperandRole KPlaceOperandRoles[] = {OperandRole::Borrow};
+
+inline constexpr TypeConstraint KStoreOperandTypes[] = {anyType(), anyType()};
+inline constexpr OperandRole KStoreOperandRoles[] = {OperandRole::Borrow, OperandRole::Borrow};
+
 inline constexpr TypeConstraint KVariadicOperandTypes[] = {anyType()};
 inline constexpr OperandRole KVariadicOperandRoles[] = {OperandRole::Consume};
 
@@ -319,7 +330,7 @@ inline constexpr ParserOperationContract KSubunitContract{
 
 // One entry per `Opcode` value, in declaration order, so `schemaFor()` can index directly without
 // per-call allocation.
-inline constexpr std::array<OpcodeSchema, 19> KSchemas{{
+inline constexpr std::array<OpcodeSchema, 23> KSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Constant,
         .spelling = "core.constant",
@@ -512,6 +523,40 @@ inline constexpr std::array<OpcodeSchema, 19> KSchemas{{
                  .is_terminator = false,
                  .is_pure = false,
                  .variadic = true},
+    OpcodeSchema{.opcode = Opcode::Call,
+                 .spelling = "core.call",
+                 // Operands follow the callee's parameters, which the verifier checks against the payload.
+                 .operand_types = KNoOperandTypes,
+                 .operand_roles = KNoOperandRoles,
+                 .result_type = anyType(),
+                 .payload_kind = PayloadKind::Function,
+                 .is_terminator = false,
+                 .is_pure = false,
+                 .variadic = true},
+    OpcodeSchema{.opcode = Opcode::LocalPlace,
+                 .spelling = "core.local_place",
+                 .operand_types = KPlaceOperandTypes,
+                 .operand_roles = KPlaceOperandRoles,
+                 .result_type = anyType(),
+                 .payload_kind = PayloadKind::None,
+                 .is_terminator = false,
+                 .is_pure = false},
+    OpcodeSchema{.opcode = Opcode::Load,
+                 .spelling = "core.load",
+                 .operand_types = KPlaceOperandTypes,
+                 .operand_roles = KPlaceOperandRoles,
+                 .result_type = anyType(),
+                 .payload_kind = PayloadKind::None,
+                 .is_terminator = false,
+                 .is_pure = false},
+    OpcodeSchema{.opcode = Opcode::Store,
+                 .spelling = "core.store",
+                 .operand_types = KStoreOperandTypes,
+                 .operand_roles = KStoreOperandRoles,
+                 .result_type = fixedType(TypeKind::Void),
+                 .payload_kind = PayloadKind::None,
+                 .is_terminator = false,
+                 .is_pure = false},
 }};
 
 } // namespace detail
@@ -535,6 +580,8 @@ struct OperationEffects {
     bool may_fail = false;
     bool reads_world = false;
     bool writes_world = false;
+    bool reads_places = false;
+    bool writes_places = false;
 };
 
 constexpr OperationEffects effectsFor(Opcode opcode) {
@@ -556,7 +603,16 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
         case Opcode::UnitCreate: return {.allocates = true};
         case Opcode::PublishField: return {.publishes = true};
         // A foreign function may read and write any state, so it is opaque to every analysis.
-        case Opcode::OpaqueOp: return {.may_fail = true, .reads_world = true, .writes_world = true};
+        case Opcode::OpaqueOp:
+        case Opcode::Call:
+            return {.may_fail = true,
+                    .reads_world = true,
+                    .writes_world = true,
+                    .reads_places = true,
+                    .writes_places = true};
+        case Opcode::LocalPlace: return {.allocates = true};
+        case Opcode::Load: return {.reads_places = true};
+        case Opcode::Store: return {.writes_places = true};
         case Opcode::Finish:
         case Opcode::Yield:
         case Opcode::Return:

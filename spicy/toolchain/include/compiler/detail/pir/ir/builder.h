@@ -33,6 +33,8 @@ public:
     /** Interns a tuple type structurally by its element types. */
     TypeId tupleType(std::vector<TypeId> elements);
     TypeId vectorType(TypeId element);
+    /** Interns a writable place holding `element`; places are never stored in other values. */
+    TypeId placeType(TypeId element);
 
     /** Declares a nominal unit type; returns its identity. */
     TypeDeclId createUnitDecl(std::string name, SourceSpanId span = {});
@@ -56,6 +58,11 @@ public:
     void addParserRoot(TypeDeclId unit, FunctionId function);
 
     FunctionId createFunction(std::string name, TypeId result_type, SourceSpanId span = {});
+    /** Creates an ordinary function whose parameters are `parameters`, in order. */
+    FunctionId createFunction(std::string name,
+                              std::vector<TypeId> parameters,
+                              TypeId result_type,
+                              SourceSpanId span = {});
     /** Creates a `FunctionKind::Parser` function whose one parameter is `state_type`. */
     FunctionId createParserFunction(TypeDeclId unit, TypeId state_type, TypeId unit_type, SourceSpanId span = {});
     RegionId createRegion();
@@ -79,6 +86,8 @@ public:
     InstId addConstant(BlockId block, int64_t value, SourceSpanId span = {});
     InstId addAdd(BlockId block, InstId lhs, InstId rhs, SourceSpanId span = {});
     InstId addReturn(BlockId block, InstId value, SourceSpanId span = {});
+    /** Adds the `core.return` of a function with a `void` result, which carries no operand. */
+    InstId addReturnVoid(BlockId block, SourceSpanId span = {});
 
     /**
      * Adds `core.argument` for parameter `index` of `function`; must be added in increasing
@@ -107,6 +116,14 @@ public:
     InstId addReadBytes(BlockId block, InstId state, uint64_t length, SourceSpanId span = {});
     /** Adds `opaque.op` calling `function` with `args`; its result type is the declaration's. */
     InstId addOpaqueOp(BlockId block, ForeignFunctionId function, std::vector<InstId> args, SourceSpanId span = {});
+    /** Adds `core.call` calling `function` with `args`; its result type is the function's. */
+    InstId addCall(BlockId block, FunctionId function, std::vector<InstId> args, SourceSpanId span = {});
+    /** Adds `core.local_place` that holds a copy of `initial`, and returns the place. */
+    InstId addLocalPlace(BlockId block, InstId initial, SourceSpanId span = {});
+    /** Adds `core.load` reading the element stored in `place`. */
+    InstId addLoad(BlockId block, InstId place, SourceSpanId span = {});
+    /** Adds `core.store` writing `value` into `place`. */
+    InstId addStore(BlockId block, InstId place, InstId value, SourceSpanId span = {});
 
 private:
     Package& _package;

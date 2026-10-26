@@ -60,9 +60,16 @@ public:
         if ( type.kind == TypeKind::Tuple || type.kind == TypeKind::Vector ) {
             if ( type.kind == TypeKind::Vector && type.type_arguments.size() != 1 )
                 _emitter.emit(diag::TypeUnexpectedTypeArguments, id);
-            for ( size_t a = 0; a < type.type_arguments.size(); ++a )
+            for ( size_t a = 0; a < type.type_arguments.size(); ++a ) {
                 if ( ! _package.isValid(type.type_arguments[a]) )
                     _emitter.emit(diag::TypeInvalidTypeArgument, id, a);
+                else if ( _package.type(type.type_arguments[a]).kind == TypeKind::Place )
+                    _emitter.emit(diag::PlaceEscapes, id);
+            }
+        }
+        else if ( type.kind == TypeKind::Place ) {
+            if ( type.type_arguments.size() != 1 || ! _package.isValid(type.type_arguments[0]) )
+                _emitter.emit(diag::PlaceMissingElement, id);
         }
         else if ( ! type.type_arguments.empty() )
             _emitter.emit(diag::TypeUnexpectedTypeArguments, id);
@@ -94,6 +101,8 @@ public:
 
             if ( ! _package.isValid(field.type) )
                 _emitter.emit(diag::InvalidFieldType, field_id);
+            else if ( _package.type(field.type).kind == TypeKind::Place )
+                _emitter.emit(diag::PlaceEscapes, field_id);
         }
     }
 
@@ -119,6 +128,17 @@ public:
 
         if ( ! _package.isValid(fn.result_type) )
             _emitter.emit(diag::InvalidFunctionResultType, id);
+        else if ( _package.type(fn.result_type).kind == TypeKind::Place )
+            _emitter.emit(diag::PlaceEscapes, id);
+
+        if ( fn.kind == FunctionKind::Normal ) {
+            for ( size_t p = 0; p < fn.parameters.size(); ++p ) {
+                auto parameter = fn.parameters[p];
+                if ( ! _package.isValid(parameter) || parameter == _package.voidType() ||
+                     typeDiscipline(_package, parameter) == ValueDiscipline::Affine )
+                    _emitter.emit(diag::NormalFunctionInvalidParameter, id, p);
+            }
+        }
 
         _verifyFunctionKind(id, fn);
 
@@ -578,8 +598,13 @@ private:
         if ( ! schema->is_terminator && is_last_in_block )
             _emitter.emit(diag::MissingTerminator, block_id);
 
-        if ( schema->variadic ? inst.args.size() < schema->operandCount() : inst.args.size() != schema->operandCount() )
+        // A void return has no operand; a value-returning one has exactly one, checked against its function below.
+        bool void_return = inst.opcode == Opcode::Return && inst.args.empty();
+        if ( ! void_return && (schema->variadic ? inst.args.size() < schema->operandCount() :
+                                                  inst.args.size() != schema->operandCount()) )
             _emitter.emit(diag::OperandCountMismatch, inst_id, schema->operandCount(), inst.args.size());
+        if ( void_return && function_result_type != _package.voidType() )
+            _emitter.emit(diag::OperandCountMismatch, inst_id, schema->operandCount(), 0);
 
         if ( ! payloadMatchesKind(inst.payload, schema->payload_kind) ) {
             if ( schema->payload_kind == PayloadKind::None )
@@ -651,6 +676,82 @@ private:
 
                 if ( inst.result_type != operand_type.type_arguments[payload->index] )
                     _emitter.emit(diag::TupleGetResultTypeMismatch, inst_id);
+                return;
+            }
+
+            case Opcode::Call: {
+                const auto* payload = std::get_if<FunctionPayload>(&inst.payload);
+                if ( ! payload )
+                    return;
+
+                if ( ! _package.isValid(payload->function) ) {
+                    _emitter.emit(diag::CallInvalidPayload, inst_id);
+                    return;
+                }
+
+                const auto& callee = _package.function(payload->function);
+                if ( callee.kind != FunctionKind::Normal )
+                    _emitter.emit(diag::CallTargetNotNormal, inst_id);
+
+                if ( inst.args.size() != callee.parameters.size() )
+                    _emitter.emit(diag::CallArgumentCountMismatch, inst_id, callee.parameters.size(), inst.args.size());
+                else {
+                    for ( size_t a = 0; a < inst.args.size(); ++a ) {
+                        if ( _package.isValid(inst.args[a]) &&
+                             _package.inst(inst.args[a]).result_type != callee.parameters[a] )
+                            _emitter.emit(diag::CallArgumentTypeMismatch, inst_id, a);
+                    }
+                }
+
+                if ( inst.result_type != callee.result_type )
+                    _emitter.emit(diag::CallResultTypeMismatch, inst_id);
+                return;
+            }
+
+            case Opcode::LocalPlace: {
+                if ( inst.args.empty() || ! _package.isValid(inst.args[0]) )
+                    return;
+
+                auto initial = _package.inst(inst.args[0]).result_type;
+                if ( ! _package.isValid(initial) || initial == _package.voidType() ||
+                     typeDiscipline(_package, initial) == ValueDiscipline::Affine ) {
+                    _emitter.emit(diag::LocalPlaceInvalidInitial, inst_id);
+                    return;
+                }
+
+                if ( ! _package.isValid(inst.result_type) || _package.type(inst.result_type).kind != TypeKind::Place ||
+                     _package.type(inst.result_type).type_arguments != std::vector<TypeId>{initial} )
+                    _emitter.emit(diag::LocalPlaceResultTypeMismatch, inst_id);
+                return;
+            }
+
+            case Opcode::Load: {
+                if ( inst.args.empty() || ! _package.isValid(inst.args[0]) )
+                    return;
+
+                auto place = _package.inst(inst.args[0]).result_type;
+                if ( ! _package.isValid(place) || _package.type(place).kind != TypeKind::Place ) {
+                    _emitter.emit(diag::PlaceOperandMismatch, inst_id, "core.load");
+                    return;
+                }
+
+                if ( inst.result_type != _package.type(place).type_arguments[0] )
+                    _emitter.emit(diag::LoadResultTypeMismatch, inst_id);
+                return;
+            }
+
+            case Opcode::Store: {
+                if ( inst.args.size() != 2 || ! _package.isValid(inst.args[0]) || ! _package.isValid(inst.args[1]) )
+                    return;
+
+                auto place = _package.inst(inst.args[0]).result_type;
+                if ( ! _package.isValid(place) || _package.type(place).kind != TypeKind::Place ) {
+                    _emitter.emit(diag::PlaceOperandMismatch, inst_id, "core.store");
+                    return;
+                }
+
+                if ( _package.inst(inst.args[1]).result_type != _package.type(place).type_arguments[0] )
+                    _emitter.emit(diag::StoreValueTypeMismatch, inst_id);
                 return;
             }
 

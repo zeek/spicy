@@ -64,6 +64,17 @@ TypeId Builder::tupleType(std::vector<TypeId> elements) {
     return _package._types.add(Type{.kind = TypeKind::Tuple, .type_arguments = std::move(elements)});
 }
 
+TypeId Builder::placeType(TypeId element) {
+    for ( size_t i = 0; i < _package._types.size(); ++i ) {
+        auto id = TypeId{static_cast<uint32_t>(i)};
+        const auto& t = _package._types.get(id);
+        if ( t.kind == TypeKind::Place && t.type_arguments == std::vector<TypeId>{element} )
+            return id;
+    }
+
+    return _package._types.add(Type{.kind = TypeKind::Place, .type_arguments = {element}});
+}
+
 TypeId Builder::vectorType(TypeId element) {
     for ( size_t i = 0; i < _package._types.size(); ++i ) {
         auto id = TypeId{static_cast<uint32_t>(i)};
@@ -129,11 +140,19 @@ void Builder::addParserRoot(TypeDeclId unit, FunctionId function) {
 }
 
 FunctionId Builder::createFunction(std::string name, TypeId result_type, SourceSpanId span) {
+    return createFunction(std::move(name), {}, result_type, span);
+}
+
+FunctionId Builder::createFunction(std::string name,
+                                   std::vector<TypeId> parameters,
+                                   TypeId result_type,
+                                   SourceSpanId span) {
     auto root_region = createRegion();
     return _package._functions.add(Function{
         .name = std::move(name),
         .result_type = result_type,
         .root_region = root_region,
+        .parameters = std::move(parameters),
         .span = span,
     });
 }
@@ -166,7 +185,9 @@ InstId Builder::addInst(BlockId block,
                         SourceSpanId span) {
     [[maybe_unused]] const auto* schema = schemaFor(opcode);
     assert(schema && "addInst() requires a recognized opcode; use addInstForTesting() for deliberately malformed IR");
-    assert(schema->variadic ? args.size() >= schema->operandCount() : args.size() == schema->operandCount());
+    // A void return is the only opcode whose operand count may be zero beyond its variadic form.
+    assert(schema->variadic ? args.size() >= schema->operandCount() :
+                              args.size() == schema->operandCount() || (opcode == Opcode::Return && args.empty()));
     assert(payloadMatchesKind(payload, schema->payload_kind));
 
     return addInstForTesting(block, opcode, std::move(args), result_type, payload, span);
@@ -201,6 +222,10 @@ InstId Builder::addAdd(BlockId block, InstId lhs, InstId rhs, SourceSpanId span)
 
 InstId Builder::addReturn(BlockId block, InstId value, SourceSpanId span) {
     return addInst(block, Opcode::Return, {value}, _package._void_type, {}, span);
+}
+
+InstId Builder::addReturnVoid(BlockId block, SourceSpanId span) {
+    return addInst(block, Opcode::Return, {}, _package._void_type, {}, span);
 }
 
 InstId Builder::addArgument(FunctionId function, BlockId block, uint32_t index, SourceSpanId span) {
@@ -309,6 +334,38 @@ InstId Builder::addOpaqueOp(BlockId block, ForeignFunctionId function, std::vect
                    result_type,
                    InstPayload(ForeignFunctionPayload{function}),
                    span);
+}
+
+InstId Builder::addCall(BlockId block, FunctionId function, std::vector<InstId> args, SourceSpanId span) {
+    // An invalid function leaves the result type invalid; the verifier reports the bad payload.
+    TypeId result_type;
+    if ( _package.isValid(function) )
+        result_type = _package.function(function).result_type;
+
+    return addInst(block, Opcode::Call, std::move(args), result_type, InstPayload(FunctionPayload{function}), span);
+}
+
+InstId Builder::addLocalPlace(BlockId block, InstId initial, SourceSpanId span) {
+    TypeId result_type;
+    if ( _package.isValid(initial) )
+        result_type = placeType(_package.inst(initial).result_type);
+
+    return addInst(block, Opcode::LocalPlace, {initial}, result_type, {}, span);
+}
+
+InstId Builder::addLoad(BlockId block, InstId place, SourceSpanId span) {
+    TypeId result_type;
+    if ( _package.isValid(place) ) {
+        const auto& place_type = _package.type(_package.inst(place).result_type);
+        if ( place_type.kind == TypeKind::Place && place_type.type_arguments.size() == 1 )
+            result_type = place_type.type_arguments[0];
+    }
+
+    return addInst(block, Opcode::Load, {place}, result_type, {}, span);
+}
+
+InstId Builder::addStore(BlockId block, InstId place, InstId value, SourceSpanId span) {
+    return addInst(block, Opcode::Store, {place, value}, _package._void_type, {}, span);
 }
 
 InstId Builder::addReadBytes(BlockId block, InstId state, uint64_t length, SourceSpanId span) {

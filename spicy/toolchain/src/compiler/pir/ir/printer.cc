@@ -147,6 +147,10 @@ std::string typeName(const Package& package, TypeId type_id) {
             return fmt("opaque<@%%%u \"%s\">", t.declaration.index, package.typeDecl(t.declaration).name);
         }
 
+        case TypeKind::Place:
+            return t.type_arguments.size() == 1 ? fmt("place<%s>", typeName(package, t.type_arguments[0])) :
+                                                  "place<<invalid-type>>";
+
         case TypeKind::Tuple: {
             std::string out = "tuple<";
             for ( size_t i = 0; i < t.type_arguments.size(); ++i )

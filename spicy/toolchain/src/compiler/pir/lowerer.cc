@@ -7,26 +7,34 @@
 #include <variant>
 
 #include <hilti/ast/ast-context.h>
+#include <hilti/ast/attribute.h>
 #include <hilti/ast/ctors/coerced.h>
 #include <hilti/ast/ctors/integer.h>
 #include <hilti/ast/ctors/null.h>
+#include <hilti/ast/ctors/tuple.h>
 #include <hilti/ast/declarations/constant.h>
 #include <hilti/ast/declarations/function.h>
 #include <hilti/ast/declarations/global-variable.h>
+#include <hilti/ast/declarations/local-variable.h>
 #include <hilti/ast/declarations/module.h>
+#include <hilti/ast/declarations/parameter.h>
 #include <hilti/ast/declarations/type.h>
+#include <hilti/ast/expressions/assign.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/member.h>
 #include <hilti/ast/expressions/name.h>
 #include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/function.h>
 #include <hilti/ast/operator.h>
+#include <hilti/ast/statements/declaration.h>
+#include <hilti/ast/statements/expression.h>
 #include <hilti/ast/statements/return.h>
 #include <hilti/ast/types/bytes.h>
 #include <hilti/ast/types/function.h>
 #include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/name.h>
 #include <hilti/ast/types/vector.h>
+#include <hilti/ast/types/void.h>
 #include <hilti/base/util.h>
 
 #include <spicy/ast/declarations/hook.h>
@@ -120,22 +128,121 @@ ir::SourceSpanId internSpan(ir::Package& package, const hilti::Location& loc) {
     });
 }
 
-class ExpressionLowerer {
+// The PIR type of a Spicy type that procedural code can hold, if PIR can represent it yet.
+std::optional<ir::TypeId> procedureType(ir::Builder& builder, const hilti::UnqualifiedType* type) {
+    if ( const auto* integer = type->tryAs<hilti::type::SignedInteger>(); integer && integer->width() == 64 )
+        return builder.int64Type();
+    if ( const auto* integer = type->tryAs<hilti::type::UnsignedInteger>() ) {
+        if ( integer->width() == 8 )
+            return builder.uint8Type();
+        if ( integer->width() == 64 )
+            return builder.uint64Type();
+    }
+    if ( type->isA<hilti::type::Bytes>() )
+        return builder.bytesType();
+    if ( type->isA<hilti::type::Void>() )
+        return builder.voidType();
+    return std::nullopt;
+}
+
+class ProcedureLowerer;
+
+// A Spicy variable seen by procedural code. A place-backed variable reads and writes through `value`;
+// otherwise `value` is the immutable SSA value of a by-value parameter.
+struct Variable {
+    ir::InstId value;
+    bool is_place = false;
+};
+
+// Lowers the statements and expressions of one ordinary function body into its single block.
+class BodyLowerer {
 public:
-    ExpressionLowerer(ir::Package& package, ir::BlockId block, std::string function_feature)
-        : _package(package),
+    BodyLowerer(ProcedureLowerer& procedures, ir::Package& package, ir::BlockId block, std::string feature)
+        : _procedures(procedures),
+          _package(package),
           _builder(package.builder()),
           _block(block),
-          _function_feature(std::move(function_feature)) {}
+          _feature(std::move(feature)) {}
+
+    void bind(const hilti::Declaration* decl, Variable variable) { _variables.emplace(decl, variable); }
+
+    std::optional<UnsupportedFeature> lowerStatement(hilti::Statement* stmt) {
+        if ( auto* ret = stmt->tryAs<hilti::statement::Return>() ) {
+            if ( ! ret->expression() ) {
+                _builder.addReturnVoid(_block, internSpan(_package, ret->meta().location()));
+                return std::nullopt;
+            }
+
+            auto value = lower(ret->expression());
+            if ( auto* feature = std::get_if<UnsupportedFeature>(&value) )
+                return *feature;
+
+            _builder.addReturn(_block, std::get<ir::InstId>(value), internSpan(_package, ret->meta().location()));
+            return std::nullopt;
+        }
+
+        if ( auto* decl = stmt->tryAs<hilti::statement::Declaration>() ) {
+            auto* local = decl->declaration()->tryAs<hilti::declaration::LocalVariable>();
+            if ( ! local || ! local->init() )
+                return _unsupported("only local variables with an initializer are supported", stmt->meta().location());
+
+            auto init = lower(local->init());
+            if ( auto* feature = std::get_if<UnsupportedFeature>(&init) )
+                return *feature;
+
+            auto value = std::get<ir::InstId>(init);
+            auto declared = procedureType(_builder, local->type()->type());
+            if ( ! declared || *declared != _package.inst(value).result_type )
+                return _unsupported("local variable initializer must have the declared type", stmt->meta().location());
+
+            auto place = _builder.addLocalPlace(_block, value, internSpan(_package, stmt->meta().location()));
+            bind(local, Variable{.value = place, .is_place = true});
+            return std::nullopt;
+        }
+
+        if ( auto* expr_stmt = stmt->tryAs<hilti::statement::Expression>() ) {
+            auto* expr = expr_stmt->expression();
+            if ( auto* assign = expr->tryAs<hilti::expression::Assign>() ) {
+                auto target = _place(assign->target());
+                if ( auto* feature = std::get_if<UnsupportedFeature>(&target) )
+                    return *feature;
+
+                auto source = lower(assign->source());
+                if ( auto* feature = std::get_if<UnsupportedFeature>(&source) )
+                    return *feature;
+
+                _builder.addStore(_block,
+                                  std::get<ir::InstId>(target),
+                                  std::get<ir::InstId>(source),
+                                  internSpan(_package, stmt->meta().location()));
+                return std::nullopt;
+            }
+
+            // A call's result is discarded; the call itself stays because its effects are observable.
+            auto value = lower(expr);
+            if ( auto* feature = std::get_if<UnsupportedFeature>(&value) )
+                return *feature;
+            return std::nullopt;
+        }
+
+        return _unsupported("only return, local declarations, assignments, and calls are supported",
+                            stmt->meta().location());
+    }
 
     std::variant<ir::InstId, UnsupportedFeature> lower(hilti::Expression* expr) {
         if ( auto* ctor_expr = expr->tryAs<hilti::expression::Ctor>() )
             return _lowerCtor(ctor_expr->ctor(), expr->meta().location());
 
-        if ( auto* op = expr->tryAs<hilti::expression::ResolvedOperator>() )
-            return _lowerSum(op);
+        if ( auto* name = expr->tryAs<hilti::expression::Name>() )
+            return _read(name);
 
-        return _unsupported("unsupported return expression", expr->meta().location());
+        if ( auto* op = expr->tryAs<hilti::expression::ResolvedOperator>() ) {
+            if ( op->kind() == hilti::operator_::Kind::Call )
+                return _lowerCall(op);
+            return _lowerSum(op);
+        }
+
+        return _unsupported("unsupported expression", expr->meta().location());
     }
 
 private:
@@ -172,60 +279,216 @@ private:
                                internSpan(_package, op->meta().location()));
     }
 
+    std::variant<ir::InstId, UnsupportedFeature> _read(hilti::expression::Name* name) {
+        auto variable = _lookup(name);
+        if ( auto* feature = std::get_if<UnsupportedFeature>(&variable) )
+            return *feature;
+
+        const auto& var = std::get<Variable>(variable);
+        if ( ! var.is_place )
+            return var.value;
+        return _builder.addLoad(_block, var.value, internSpan(_package, name->meta().location()));
+    }
+
+    // The place an assignment or `inout` argument writes through; only variables have one.
+    std::variant<ir::InstId, UnsupportedFeature> _place(hilti::Expression* expr) {
+        auto* name = expr->tryAs<hilti::expression::Name>();
+        if ( ! name )
+            return _unsupported("only variables can be assigned or passed as inout arguments", expr->meta().location());
+
+        auto variable = _lookup(name);
+        if ( auto* feature = std::get_if<UnsupportedFeature>(&variable) )
+            return *feature;
+
+        const auto& var = std::get<Variable>(variable);
+        if ( ! var.is_place )
+            return _unsupported("only inout parameters and local variables can be written", expr->meta().location());
+        return var.value;
+    }
+
+    std::variant<Variable, UnsupportedFeature> _lookup(hilti::expression::Name* name) {
+        auto it = _variables.find(name->resolvedDeclaration());
+        if ( it == _variables.end() )
+            return _unsupported(fmt("reference to '%s' is not supported", std::string(name->id())),
+                                name->meta().location());
+        return it->second;
+    }
+
+    std::variant<ir::InstId, UnsupportedFeature> _lowerCall(hilti::expression::ResolvedOperator* op);
+
     UnsupportedFeature _unsupported(std::string reason, const hilti::Location& loc) {
-        return unsupported(_function_feature, std::move(reason), loc);
+        return unsupported(_feature, std::move(reason), loc);
+    }
+
+    ProcedureLowerer& _procedures;
+    ir::Package& _package;
+    ir::Builder _builder;
+    ir::BlockId _block;
+    std::string _feature;
+    std::unordered_map<const hilti::Declaration*, Variable> _variables;
+};
+
+// Lowers ordinary functions, and the foreign functions they call, once each. A function's identity
+// is recorded before its body so that recursive calls resolve to it.
+class ProcedureLowerer {
+public:
+    explicit ProcedureLowerer(ir::Package& package) : _package(package), _builder(package.builder()) {}
+
+    std::variant<ir::FunctionId, UnsupportedFeature> function(hilti::declaration::Function* decl) {
+        if ( auto it = _functions.find(decl); it != _functions.end() )
+            return it->second;
+
+        auto feature = fmt("function '%s'", std::string(decl->id()));
+        auto* fn = decl->function();
+        auto* ftype = fn->ftype();
+
+        if ( fn->attributes()->find(hilti::attribute::kind::Cxxname) )
+            return unsupported(feature, "only ordinary functions can be lowered", decl->meta().location());
+        if ( ftype->flavor() != hilti::type::function::Flavor::Function )
+            return unsupported(feature, "only ordinary functions are supported", decl->meta().location());
+        if ( ftype->callingConvention() != hilti::type::function::CallingConvention::Standard )
+            return unsupported(feature, "only the standard calling convention is supported", decl->meta().location());
+        if ( ! fn->body() )
+            return unsupported(feature, "functions without a body are not supported", decl->meta().location());
+
+        auto parameters = _signature(ftype, feature, decl->meta().location());
+        if ( auto* unsupported_feature = std::get_if<UnsupportedFeature>(&parameters) )
+            return *unsupported_feature;
+        auto signature = std::get<Signature>(parameters);
+
+        auto span = internSpan(_package, decl->meta().location());
+        auto id = _builder.createFunction(std::string(decl->id().local()), signature.types, signature.result, span);
+        _functions.emplace(decl, id);
+
+        auto block = _builder.createBlock(_package.function(id).root_region);
+        BodyLowerer body(*this, _package, block, feature);
+        for ( size_t i = 0; i < signature.declarations.size(); ++i ) {
+            auto* param = signature.declarations[i];
+            auto arg = _builder.addArgument(id, block, i, internSpan(_package, param->meta().location()));
+            body.bind(param, Variable{.value = arg, .is_place = param->kind() == hilti::parameter::Kind::InOut});
+        }
+
+        auto statements = fn->body()->statements();
+        for ( auto* stmt : statements ) {
+            if ( auto error = body.lowerStatement(stmt) )
+                return *error;
+        }
+
+        // A void function may fall off its end; a value-returning one must end in a return.
+        const auto& insts = _package.block(block).insts;
+        if ( insts.empty() || _package.inst(insts.back()).opcode != ir::Opcode::Return ) {
+            if ( signature.result != _builder.voidType() )
+                return unsupported(feature,
+                                   "a function returning a value must end with a return",
+                                   decl->meta().location());
+            _builder.addReturnVoid(block, span);
+        }
+
+        return id;
+    }
+
+    std::variant<ir::ForeignFunctionId, UnsupportedFeature> foreign(hilti::declaration::Function* decl) {
+        if ( auto it = _foreign.find(decl); it != _foreign.end() )
+            return it->second;
+
+        auto feature = fmt("function '%s'", std::string(decl->id()));
+        auto* fn = decl->function();
+        auto cxx_name = fn->attributes()->find(hilti::attribute::kind::Cxxname)->valueAsString();
+        if ( ! cxx_name )
+            return unsupported(feature, "a foreign function needs a constant &cxxname", decl->meta().location());
+
+        auto parameters = _signature(fn->ftype(), feature, decl->meta().location());
+        if ( auto* unsupported_feature = std::get_if<UnsupportedFeature>(&parameters) )
+            return *unsupported_feature;
+        auto signature = std::get<Signature>(parameters);
+
+        auto id = _builder.createForeignFunction(std::string(decl->id().local()),
+                                                 *cxx_name,
+                                                 signature.types,
+                                                 signature.result,
+                                                 internSpan(_package, decl->meta().location()));
+        _foreign.emplace(decl, id);
+        return id;
+    }
+
+private:
+    struct Signature {
+        std::vector<ir::TypeId> types;
+        ir::TypeId result;
+        std::vector<hilti::declaration::Parameter*> declarations;
+    };
+
+    std::variant<Signature, UnsupportedFeature> _signature(hilti::type::Function* ftype,
+                                                           const std::string& feature,
+                                                           const hilti::Location& loc) {
+        Signature signature;
+        for ( auto* param : ftype->parameters() ) {
+            if ( param->default_() )
+                return unsupported(feature, "default parameter values are not supported", loc);
+
+            auto value_type = procedureType(_builder, param->type()->type());
+            if ( ! value_type || *value_type == _builder.voidType() )
+                return unsupported(feature, "parameter type is not supported yet", param->meta().location());
+
+            switch ( param->kind() ) {
+                case hilti::parameter::Kind::Copy:
+                case hilti::parameter::Kind::In: signature.types.push_back(*value_type); break;
+                case hilti::parameter::Kind::InOut: signature.types.push_back(_builder.placeType(*value_type)); break;
+                case hilti::parameter::Kind::Unknown:
+                    return unsupported(feature, "parameter kind is not known", param->meta().location());
+            }
+            signature.declarations.push_back(param);
+        }
+
+        auto result = procedureType(_builder, ftype->result()->type());
+        if ( ! result )
+            return unsupported(feature, "result type is not supported yet", loc);
+        signature.result = *result;
+        return signature;
     }
 
     ir::Package& _package;
     ir::Builder _builder;
-    ir::BlockId _block;
-    std::string _function_feature;
+    std::unordered_map<const hilti::declaration::Function*, ir::FunctionId> _functions;
+    std::unordered_map<const hilti::declaration::Function*, ir::ForeignFunctionId> _foreign;
 };
 
-std::optional<UnsupportedFeature> lowerFunction(hilti::declaration::Function* decl, ir::Package& package) {
-    auto builder = package.builder();
-    auto feature = fmt("function '%s'", std::string(decl->id()));
-    auto* fn = decl->function();
-    auto* ftype = fn->ftype();
+std::variant<ir::InstId, UnsupportedFeature> BodyLowerer::_lowerCall(hilti::expression::ResolvedOperator* op) {
+    auto* name = op->op0()->tryAs<hilti::expression::Name>();
+    auto* callee = name ? name->resolvedDeclaration()->tryAs<hilti::declaration::Function>() : nullptr;
+    if ( ! callee )
+        return _unsupported("only calls to functions are supported", op->meta().location());
 
-    if ( ftype->flavor() != hilti::type::function::Flavor::Function )
-        return unsupported(feature, "only ordinary functions are supported", decl->meta().location());
+    auto* ctor = op->op1()->tryAs<hilti::expression::Ctor>();
+    auto* tuple = ctor ? ctor->ctor()->tryAs<hilti::ctor::Tuple>() : nullptr;
+    if ( ! tuple )
+        return _unsupported("call arguments must be a tuple", op->meta().location());
 
-    if ( ftype->callingConvention() != hilti::type::function::CallingConvention::Standard )
-        return unsupported(feature, "only the standard calling convention is supported", decl->meta().location());
+    const auto& args = tuple->value();
+    const auto params = callee->function()->ftype()->parameters();
+    if ( args.size() != params.size() )
+        return _unsupported("calls must pass every parameter explicitly", op->meta().location());
 
-    if ( ! ftype->parameters().empty() )
-        return unsupported(feature, "parameters are not supported", decl->meta().location());
+    std::vector<ir::InstId> values;
+    for ( size_t i = 0; i < args.size(); ++i ) {
+        auto arg = params[i]->kind() == hilti::parameter::Kind::InOut ? _place(args[i]) : lower(args[i]);
+        if ( auto* feature = std::get_if<UnsupportedFeature>(&arg) )
+            return *feature;
+        values.push_back(std::get<ir::InstId>(arg));
+    }
 
-    auto* result_type = ftype->result()->type()->tryAs<hilti::type::SignedInteger>();
-    if ( ! result_type || result_type->width() != 64 )
-        return unsupported(feature, "only a signed 64-bit integer result is supported", decl->meta().location());
+    auto span = internSpan(_package, op->meta().location());
+    if ( callee->function()->attributes()->find(hilti::attribute::kind::Cxxname) ) {
+        auto foreign = _procedures.foreign(callee);
+        if ( auto* feature = std::get_if<UnsupportedFeature>(&foreign) )
+            return *feature;
+        return _builder.addOpaqueOp(_block, std::get<ir::ForeignFunctionId>(foreign), std::move(values), span);
+    }
 
-    auto* body = fn->body();
-    if ( ! body || body->statements().size() != 1 )
-        return unsupported(feature,
-                           "only a body consisting of a single return statement is supported",
-                           decl->meta().location());
-
-    auto* ret = body->statements()[0]->tryAs<hilti::statement::Return>();
-    if ( ! ret )
-        return unsupported(feature, "only a return statement is supported", decl->meta().location());
-
-    if ( ! ret->expression() )
-        return unsupported(feature, "a return value is required", decl->meta().location());
-
-    auto pir_fn = builder.createFunction(std::string(decl->id().local()),
-                                         builder.int64Type(),
-                                         internSpan(package, decl->meta().location()));
-    auto block = builder.createBlock(package.function(pir_fn).root_region);
-
-    ExpressionLowerer lowerer(package, block, feature);
-    auto value = lowerer.lower(ret->expression());
-    if ( auto* unsupported_feature = std::get_if<UnsupportedFeature>(&value) )
-        return *unsupported_feature;
-
-    builder.addReturn(block, std::get<ir::InstId>(value), internSpan(package, ret->meta().location()));
-    return std::nullopt;
+    auto ordinary = _procedures.function(callee);
+    if ( auto* feature = std::get_if<UnsupportedFeature>(&ordinary) )
+        return *feature;
+    return _builder.addCall(_block, std::get<ir::FunctionId>(ordinary), std::move(values), span);
 }
 
 enum class FieldForm { Integer, Bytes, Vector };
@@ -501,11 +764,19 @@ std::optional<UnsupportedFeature> lowerRoots(const RootDiscovery& discovery, ir:
     if ( discovery.unrepresented_content )
         return discovery.unrepresented_content;
 
+    ProcedureLowerer procedures(package);
+
     std::vector<hilti::declaration::Type*> unit_roots;
     for ( auto* decl : discovery.roots ) {
         if ( auto* fn_decl = decl->tryAs<hilti::declaration::Function>() ) {
-            if ( auto feature = lowerFunction(fn_decl, package) )
-                return feature;
+            if ( fn_decl->function()->attributes()->find(hilti::attribute::kind::Cxxname) )
+                return unsupported(fmt("public foreign function '%s'", std::string(fn_decl->id())),
+                                   "public foreign functions are not supported yet",
+                                   fn_decl->meta().location());
+
+            if ( auto lowered = procedures.function(fn_decl);
+                 auto* feature = std::get_if<UnsupportedFeature>(&lowered) )
+                return *feature;
 
             continue;
         }

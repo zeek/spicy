@@ -6,6 +6,12 @@
 
 module Test;
 
-public function identity(x: int64): int64 {
-    return x;
+public function countdown(x: int64): int64 {
+    local y: int64 = x;
+
+    while ( y < -10 ) {
+        y = y + -1;
+    }
+
+    return y;
 }
