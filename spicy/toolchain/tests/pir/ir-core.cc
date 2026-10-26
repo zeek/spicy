@@ -423,3 +423,147 @@ TEST_CASE("verifier rejects a field with an invalid owner or type without assert
 }
 
 TEST_SUITE_END();
+
+namespace {
+
+OpaqueTypeInfo completeOpaqueInfo(std::string cxx_name) {
+    return OpaqueTypeInfo{.cxx_name = std::move(cxx_name), .lifecycle = OpaqueLifecycle{.copyable = true}};
+}
+
+} // namespace
+
+TEST_CASE("opaque types intern by declaration and never by rendered name") {
+    Package package;
+    auto builder = package.builder();
+    auto decl_a = builder.createOpaqueTypeDecl("Same", completeOpaqueInfo("::Same"));
+    auto decl_b = builder.createOpaqueTypeDecl("Same", completeOpaqueInfo("::Same"));
+
+    auto type_a = builder.opaqueType(decl_a);
+    auto type_b = builder.opaqueType(decl_b);
+    CHECK_NE(type_a, type_b);
+    CHECK_EQ(builder.opaqueType(decl_a), type_a);
+}
+
+TEST_CASE("a resolved foreign call verifies and prints with its native binding") {
+    Package package;
+    auto builder = package.builder();
+    auto handle = builder.opaqueType(builder.createOpaqueTypeDecl("Handle", completeOpaqueInfo("::Handle")));
+    auto make = builder.createForeignFunction("make", "::make_handle", {builder.int64Type()}, handle);
+
+    auto fn = builder.createFunction("caller", handle);
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto arg = builder.addConstant(block, 7);
+    auto made = builder.addOpaqueOp(block, make, {arg});
+    builder.addReturn(block, made);
+
+    CHECK(verify(package).empty());
+    auto dump = print(package);
+    CHECK(dump.find("opaque.op") != std::string::npos);
+    CHECK(dump.find("foreign function %0 \"make\" (native \"::make_handle\")") != std::string::npos);
+}
+
+TEST_CASE("a foreign call without arguments verifies") {
+    Package package;
+    auto builder = package.builder();
+    auto now = builder.createForeignFunction("now", "::now", {}, builder.int64Type());
+
+    auto fn = builder.createFunction("caller", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto value = builder.addOpaqueOp(block, now, {});
+    builder.addReturn(block, value);
+
+    CHECK(verify(package).empty());
+}
+
+TEST_CASE("foreign calls are conservative for every analysis") {
+    const auto effects = effectsFor(Opcode::OpaqueOp);
+    CHECK(effects.reads_world);
+    CHECK(effects.writes_world);
+    CHECK(effects.may_fail);
+    CHECK_FALSE(schemaFor(Opcode::OpaqueOp)->is_pure);
+}
+
+TEST_CASE("verifier rejects an opaque argument of a distinct opaque type") {
+    Package package;
+    auto builder = package.builder();
+    auto handle_a = builder.opaqueType(builder.createOpaqueTypeDecl("A", completeOpaqueInfo("::A")));
+    auto handle_b = builder.opaqueType(builder.createOpaqueTypeDecl("B", completeOpaqueInfo("::B")));
+    auto make_b = builder.createForeignFunction("make_b", "::make_b", {}, handle_b);
+    auto consume = builder.createForeignFunction("consume", "::consume", {handle_a}, builder.int64Type());
+
+    auto fn = builder.createFunction("caller", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto value = builder.addOpaqueOp(block, make_b, {});
+    auto result = builder.addOpaqueOp(block, consume, {value});
+    builder.addReturn(block, result);
+
+    CHECK(hasDiagnostic(verify(package), diag::OpaqueOpArgumentTypeMismatch));
+}
+
+TEST_CASE("verifier rejects a foreign call with the wrong argument count") {
+    Package package;
+    auto builder = package.builder();
+    auto consume = builder.createForeignFunction("consume", "::consume", {builder.int64Type()}, builder.int64Type());
+
+    auto fn = builder.createFunction("caller", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto result = builder.addOpaqueOp(block, consume, {});
+    builder.addReturn(block, result);
+
+    CHECK(hasDiagnostic(verify(package), diag::OpaqueOpArgumentCountMismatch));
+}
+
+TEST_CASE("verifier rejects a foreign call whose result type differs from its declaration") {
+    Package package;
+    auto builder = package.builder();
+    auto handle = builder.opaqueType(builder.createOpaqueTypeDecl("Handle", completeOpaqueInfo("::Handle")));
+    auto make = builder.createForeignFunction("make", "::make_handle", {}, handle);
+
+    auto fn = builder.createFunction("caller", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto call = builder.addInstForTesting(block,
+                                          Opcode::OpaqueOp,
+                                          {},
+                                          builder.int64Type(),
+                                          InstPayload(ForeignFunctionPayload{make}));
+    builder.addReturn(block, call);
+
+    CHECK(hasDiagnostic(verify(package), diag::OpaqueOpResultTypeMismatch));
+}
+
+TEST_CASE("verifier rejects an opaque op that references no foreign function") {
+    Package package;
+    auto builder = package.builder();
+
+    auto fn = builder.createFunction("caller", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto call = builder.addInstForTesting(block,
+                                          Opcode::OpaqueOp,
+                                          {},
+                                          builder.int64Type(),
+                                          InstPayload(ForeignFunctionPayload{ForeignFunctionId{999}}));
+    builder.addReturn(block, call);
+
+    CHECK(hasDiagnostic(verify(package), diag::OpaqueOpInvalidPayload));
+}
+
+TEST_CASE("verifier rejects an opaque declaration without a native name or lifecycle") {
+    Package package;
+    auto builder = package.builder();
+    builder.createOpaqueTypeDecl("Unnamed", OpaqueTypeInfo{.lifecycle = OpaqueLifecycle{}});
+    builder.createOpaqueTypeDecl("Undeclared", OpaqueTypeInfo{.cxx_name = "::Undeclared"});
+
+    CHECK(hasDiagnostic(verify(package), diag::OpaqueDeclarationIncomplete));
+}
+
+TEST_CASE("verifier rejects a foreign function without a binding or with an affine parameter") {
+    Package package;
+    auto builder = package.builder();
+    auto unit = builder.unitType(builder.createUnitDecl("Unit"));
+    builder.createForeignFunction("unbound", "", {builder.int64Type()}, builder.int64Type());
+    builder.createForeignFunction("affine", "::affine", {unit}, builder.int64Type());
+
+    auto diags = verify(package);
+    CHECK(hasDiagnostic(diags, diag::ForeignFunctionMissingBinding));
+    CHECK(hasDiagnostic(diags, diag::ForeignFunctionInvalidParameter));
+}

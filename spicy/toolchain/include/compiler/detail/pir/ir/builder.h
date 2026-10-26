@@ -28,6 +28,8 @@ public:
 
     /** Interns a nominal unit type structurally by `TypeDeclId`. */
     TypeId unitType(TypeDeclId decl);
+    /** Interns an opaque value type nominally by `TypeDeclId`. */
+    TypeId opaqueType(TypeDeclId decl);
     /** Interns a tuple type structurally by its element types. */
     TypeId tupleType(std::vector<TypeId> elements);
     TypeId vectorType(TypeId element);
@@ -36,6 +38,14 @@ public:
     TypeDeclId createUnitDecl(std::string name, SourceSpanId span = {});
     /** Declares a field owned by `unit`, appended in call order. */
     DeclId createFieldDecl(TypeDeclId unit, std::string name, TypeId type, SourceSpanId span = {});
+    /** Declares a nominal opaque value type bound to the native type described by `info`. */
+    TypeDeclId createOpaqueTypeDecl(std::string name, OpaqueTypeInfo info, SourceSpanId span = {});
+    /** Declares a function implemented outside PIR and returns its identity. */
+    ForeignFunctionId createForeignFunction(std::string name,
+                                            std::string cxx_name,
+                                            std::vector<TypeId> parameters,
+                                            TypeId result_type,
+                                            SourceSpanId span = {});
 
     /** Adds unchecked declaration content for verifier tests: does not append to `owner`'s fields. */
     DeclId createFieldDeclForTesting(TypeDeclId owner, std::string name, TypeId type, SourceSpanId span = {});
@@ -95,6 +105,8 @@ public:
     InstId addRepeatToBound(BlockId block, std::vector<InstId> carried, RegionId body, SourceSpanId span = {});
     InstId addParseSubunit(BlockId block, InstId state, FunctionId child, SourceSpanId span = {});
     InstId addReadBytes(BlockId block, InstId state, uint64_t length, SourceSpanId span = {});
+    /** Adds `opaque.op` calling `function` with `args`; its result type is the declaration's. */
+    InstId addOpaqueOp(BlockId block, ForeignFunctionId function, std::vector<InstId> args, SourceSpanId span = {});
 
 private:
     Package& _package;

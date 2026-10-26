@@ -78,6 +78,12 @@ std::optional<std::string> renderPayload(const Package& package, const InstPaylo
     if ( const auto* child = std::get_if<FunctionPayload>(&payload) )
         return fmt("@function %u", child->function.index);
 
+    if ( const auto* foreign = std::get_if<ForeignFunctionPayload>(&payload) ) {
+        if ( ! package.isValid(foreign->function) )
+            return std::string("@foreign <invalid-function>");
+        return fmt("@foreign %%%u \"%s\"", foreign->function.index, package.foreignFunction(foreign->function).name);
+    }
+
     if ( const auto* bytes = std::get_if<ReadBytesPayload>(&payload) )
         return fmt("length=%u", bytes->length);
 
@@ -134,6 +140,13 @@ std::string typeName(const Package& package, TypeId type_id) {
             return fmt("unit<@%%%u \"%s\">", t.declaration.index, package.typeDecl(t.declaration).name);
         }
 
+        case TypeKind::Opaque: {
+            if ( ! package.isValid(t.declaration) )
+                return "opaque<<invalid-decl>>";
+
+            return fmt("opaque<@%%%u \"%s\">", t.declaration.index, package.typeDecl(t.declaration).name);
+        }
+
         case TypeKind::Tuple: {
             std::string out = "tuple<";
             for ( size_t i = 0; i < t.type_arguments.size(); ++i )
@@ -179,6 +192,14 @@ std::string print(const Package& package) {
     for ( size_t i = 0; i < package.typeDecls().size(); ++i ) {
         auto decl_id = TypeDeclId{static_cast<uint32_t>(i)};
         const auto& decl = package.typeDecl(decl_id);
+        if ( decl.kind == TypeDeclKind::Opaque ) {
+            out += fmt("opaque type %%%zu \"%s\" (native \"%s\")\n",
+                       i,
+                       decl.name,
+                       decl.opaque ? decl.opaque->cxx_name : std::string());
+            continue;
+        }
+
         out += fmt("unit %%%zu \"%s\":\n", i, decl.name);
 
         for ( auto field_id : decl.fields ) {
@@ -190,6 +211,19 @@ std::string print(const Package& package) {
             const auto& field = package.declaration(field_id);
             out += fmt("  field %%%u \"%s\" : %s\n", field_id.index, field.name, typeName(package, field.type));
         }
+    }
+
+    for ( size_t i = 0; i < package.foreignFunctions().size(); ++i ) {
+        const auto& fn = package.foreignFunction(ForeignFunctionId{static_cast<uint32_t>(i)});
+        std::string parameters;
+        for ( size_t p = 0; p < fn.parameters.size(); ++p )
+            parameters += (p == 0 ? "" : ", ") + typeName(package, fn.parameters[p]);
+        out += fmt("foreign function %%%zu \"%s\" (native \"%s\") (%s) -> %s\n",
+                   i,
+                   fn.name,
+                   fn.cxx_name,
+                   parameters,
+                   typeName(package, fn.result_type));
     }
 
     for ( size_t i = 0; i < package.functions().size(); ++i ) {

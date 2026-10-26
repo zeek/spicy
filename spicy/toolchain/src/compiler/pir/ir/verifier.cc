@@ -49,6 +49,11 @@ public:
             if ( ! _package.isValid(type.declaration) )
                 _emitter.emit(diag::TypeMissingDeclaration, id);
         }
+        else if ( type.kind == TypeKind::Opaque ) {
+            if ( ! _package.isValid(type.declaration) ||
+                 _package.typeDecl(type.declaration).kind != TypeDeclKind::Opaque )
+                _emitter.emit(diag::TypeOpaqueMissingDeclaration, id);
+        }
         else if ( type.declaration.isSet() )
             _emitter.emit(diag::TypeUnexpectedDeclaration, id);
 
@@ -66,6 +71,15 @@ public:
     void verifyTypeDecl(TypeDeclId id, const TypeDecl& decl) {
         _verifySpan(decl.span, id);
 
+        if ( decl.kind == TypeDeclKind::Opaque ) {
+            if ( ! decl.opaque )
+                _emitter.emit(diag::TypeDeclOpaqueInfoMismatch, id);
+            else if ( decl.opaque->cxx_name.empty() || ! decl.opaque->lifecycle )
+                _emitter.emit(diag::OpaqueDeclarationIncomplete, id);
+        }
+        else if ( decl.opaque )
+            _emitter.emit(diag::TypeDeclOpaqueInfoMismatch, id);
+
         for ( auto field_id : decl.fields ) {
             if ( ! _package.isValid(field_id) ) {
                 _emitter.emit(diag::InvalidFieldDeclarationId, id);
@@ -80,6 +94,23 @@ public:
 
             if ( ! _package.isValid(field.type) )
                 _emitter.emit(diag::InvalidFieldType, field_id);
+        }
+    }
+
+    void verifyForeignFunction(ForeignFunctionId id, const ForeignFunction& fn) {
+        _verifySpan(fn.span, id);
+
+        if ( fn.cxx_name.empty() )
+            _emitter.emit(diag::ForeignFunctionMissingBinding, id);
+
+        if ( ! _package.isValid(fn.result_type) || typeDiscipline(_package, fn.result_type) == ValueDiscipline::Affine )
+            _emitter.emit(diag::ForeignFunctionInvalidResult, id);
+
+        for ( size_t p = 0; p < fn.parameters.size(); ++p ) {
+            auto parameter = fn.parameters[p];
+            if ( ! _package.isValid(parameter) || parameter == _package.voidType() ||
+                 typeDiscipline(_package, parameter) == ValueDiscipline::Affine )
+                _emitter.emit(diag::ForeignFunctionInvalidParameter, id, p);
         }
     }
 
@@ -623,6 +654,32 @@ private:
                 return;
             }
 
+            case Opcode::OpaqueOp: {
+                const auto* payload = std::get_if<ForeignFunctionPayload>(&inst.payload);
+                if ( ! payload )
+                    return;
+
+                if ( ! _package.isValid(payload->function) ) {
+                    _emitter.emit(diag::OpaqueOpInvalidPayload, inst_id);
+                    return;
+                }
+
+                const auto& fn = _package.foreignFunction(payload->function);
+                if ( inst.args.size() != fn.parameters.size() )
+                    _emitter.emit(diag::OpaqueOpArgumentCountMismatch, inst_id, fn.parameters.size(), inst.args.size());
+                else {
+                    for ( size_t a = 0; a < inst.args.size(); ++a ) {
+                        if ( _package.isValid(inst.args[a]) &&
+                             _package.inst(inst.args[a]).result_type != fn.parameters[a] )
+                            _emitter.emit(diag::OpaqueOpArgumentTypeMismatch, inst_id, a);
+                    }
+                }
+
+                if ( inst.result_type != fn.result_type )
+                    _emitter.emit(diag::OpaqueOpResultTypeMismatch, inst_id);
+                return;
+            }
+
             case Opcode::UnitCreate: {
                 const auto* payload = std::get_if<UnitPayload>(&inst.payload);
                 if ( ! payload )
@@ -856,6 +913,11 @@ std::vector<Diagnostic> verify(const Package& package) {
     }
 
     verifier.verifyDeclarationMembership();
+
+    for ( size_t i = 0; i < package.foreignFunctions().size(); ++i ) {
+        auto id = ForeignFunctionId{static_cast<uint32_t>(i)};
+        verifier.verifyForeignFunction(id, package.foreignFunction(id));
+    }
 
     for ( size_t i = 0; i < package.functions().size(); ++i ) {
         auto id = FunctionId{static_cast<uint32_t>(i)};

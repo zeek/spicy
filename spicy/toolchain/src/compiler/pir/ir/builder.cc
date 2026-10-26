@@ -42,6 +42,17 @@ TypeId Builder::unitType(TypeDeclId decl) {
     return _package._types.add(Type{.kind = TypeKind::Unit, .declaration = decl});
 }
 
+TypeId Builder::opaqueType(TypeDeclId decl) {
+    for ( size_t i = 0; i < _package._types.size(); ++i ) {
+        auto id = TypeId{static_cast<uint32_t>(i)};
+        const auto& t = _package._types.get(id);
+        if ( t.kind == TypeKind::Opaque && t.declaration == decl )
+            return id;
+    }
+
+    return _package._types.add(Type{.kind = TypeKind::Opaque, .declaration = decl});
+}
+
 TypeId Builder::tupleType(std::vector<TypeId> elements) {
     for ( size_t i = 0; i < _package._types.size(); ++i ) {
         auto id = TypeId{static_cast<uint32_t>(i)};
@@ -92,6 +103,25 @@ DeclId Builder::createFieldDeclForTesting(TypeDeclId owner, std::string name, Ty
 
 void Builder::appendFieldForTesting(TypeDeclId owner, DeclId field) {
     _package._type_decls.get(owner).fields.push_back(field);
+}
+
+TypeDeclId Builder::createOpaqueTypeDecl(std::string name, OpaqueTypeInfo info, SourceSpanId span) {
+    return _package._type_decls.add(
+        TypeDecl{.kind = TypeDeclKind::Opaque, .name = std::move(name), .opaque = std::move(info), .span = span});
+}
+
+ForeignFunctionId Builder::createForeignFunction(std::string name,
+                                                 std::string cxx_name,
+                                                 std::vector<TypeId> parameters,
+                                                 TypeId result_type,
+                                                 SourceSpanId span) {
+    return _package._foreign_functions.add(ForeignFunction{
+        .name = std::move(name),
+        .cxx_name = std::move(cxx_name),
+        .parameters = std::move(parameters),
+        .result_type = result_type,
+        .span = span,
+    });
 }
 
 void Builder::addParserRoot(TypeDeclId unit, FunctionId function) {
@@ -264,6 +294,20 @@ InstId Builder::addParseSubunit(BlockId block, InstId state, FunctionId child, S
                    {state},
                    tupleType({parserStateType(), _package.function(child).result_type}),
                    InstPayload(FunctionPayload{child}),
+                   span);
+}
+
+InstId Builder::addOpaqueOp(BlockId block, ForeignFunctionId function, std::vector<InstId> args, SourceSpanId span) {
+    // An invalid function leaves the result type invalid; the verifier reports the bad payload.
+    TypeId result_type;
+    if ( _package.isValid(function) )
+        result_type = _package.foreignFunction(function).result_type;
+
+    return addInst(block,
+                   Opcode::OpaqueOp,
+                   std::move(args),
+                   result_type,
+                   InstPayload(ForeignFunctionPayload{function}),
                    span);
 }
 
