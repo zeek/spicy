@@ -10,13 +10,14 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 CMD ["sh"]
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PATH="/opt/spicy/bin:${PATH}"
+ENV PIPX_BIN_DIR=/usr/local/bin
 
 # Spicy build and test dependencies.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends git cmake ninja-build ccache bison flex g++ libfl-dev zlib1g-dev libssl-dev jq locales-all make \
  # Spicy doc dependencies.
- && apt-get install -y --no-install-recommends python3 python3-pip python3-sphinx python3-sphinx-rtd-theme python3-setuptools python3-wheel doxygen \
- && pip3 install --no-cache-dir --break-system-packages "btest>=0.66" pre-commit \
+ && apt-get install -y --no-install-recommends python3 python3-pip python3-sphinx python3-sphinx-rtd-theme python3-setuptools python3-wheel doxygen pre-commit pipx \
+ && pipx install btest \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
