@@ -1,3 +1,22 @@
+1.18.0-dev.45 | 2026-10-26 14:31:47 +0100
+
+  * Fix installation of pre-commit in container images (Benjamin Bannier, Corelight)
+
+    We would previously install pre-commit with `pip install`, directly into
+    the system, with `--break-system-packages`. We deliberately did not pin
+    a version of pre-commit, and a recent upgrade of it fails to install
+    that way on at least debian-13 and ubuntu-24.04 with errors like
+
+          Attempting uninstall: packaging
+            Found existing installation: packaging 24.0
+        ERROR: Cannot uninstall packaging 24.0, RECORD file not found. Hint: The package was installed by debian.
+
+    The real root cause of this failure was our use of `pip install` to add
+    packages and their dependencies to the global system paths which was
+    deprecated years ago, so this patch switches to the system version of
+    pre-commit if available, and also moves away from `pip install` to `pipx
+    install` to install `btest`.
+
 1.18.0-dev.43 | 2026-10-07 16:48:26 +0200
 
   * Bump 3rdparty/json to v3.12.0 (Benjamin Bannier, Corelight)
