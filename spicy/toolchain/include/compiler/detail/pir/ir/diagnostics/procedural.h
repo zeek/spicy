@@ -113,6 +113,27 @@ inline constexpr DiagnosticDefinition TupleResultTypeMismatch{
     .message = "core.tuple result must be the tuple of its operands' types, in order",
 };
 
+inline constexpr DiagnosticDefinition FieldPlaceInvalidPayload{
+    .id = "PIR_FIELD_PLACE_INVALID_PAYLOAD",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "unit.field_place's payload does not reference a valid field",
+};
+
+inline constexpr DiagnosticDefinition FieldPlaceUnitMismatch{
+    .id = "PIR_FIELD_PLACE_UNIT_MISMATCH",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "unit.field_place's operand is not a value of the unit that declares its field",
+};
+
+inline constexpr DiagnosticDefinition FieldPlaceResultTypeMismatch{
+    .id = "PIR_FIELD_PLACE_RESULT_TYPE_MISMATCH",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "unit.field_place result must be a place of its field's type",
+};
+
 inline constexpr DiagnosticDefinition StoreValueTypeMismatch{
     .id = "PIR_STORE_VALUE_TYPE_MISMATCH",
     .classification = DiagnosticClassification::Internal,

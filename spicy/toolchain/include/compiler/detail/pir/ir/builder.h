@@ -130,6 +130,8 @@ public:
     InstId addBytesConstant(BlockId block, std::string value, SourceSpanId span = {});
     /** Adds `core.local_place` that holds a copy of `initial`, and returns the place. */
     InstId addLocalPlace(BlockId block, InstId initial, SourceSpanId span = {});
+    /** Adds `unit.field_place` addressing `field` of `unit_value`, which stays valid only while the unit is. */
+    InstId addFieldPlace(BlockId block, InstId unit_value, DeclId field, SourceSpanId span = {});
     /** Adds `core.load` reading the element stored in `place`. */
     InstId addLoad(BlockId block, InstId place, SourceSpanId span = {});
     /** Adds `core.store` writing `value` into `place`. */

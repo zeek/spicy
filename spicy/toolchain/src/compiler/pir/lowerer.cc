@@ -157,6 +157,12 @@ public:
 
     void bind(const hilti::Declaration* decl, Variable variable) { _variables.emplace(decl, variable); }
 
+    // Makes `self` the unit being parsed, whose fields are the given published declarations by name.
+    void setSelf(ir::InstId unit, std::unordered_map<std::string, ir::DeclId> fields) {
+        _self = unit;
+        _fields = std::move(fields);
+    }
+
     std::optional<UnsupportedFeature> lowerStatement(hilti::Statement* stmt);
 
     std::variant<ir::InstId, UnsupportedFeature> lower(hilti::Expression* expr) {
@@ -169,6 +175,14 @@ public:
         if ( auto* op = expr->tryAs<hilti::expression::ResolvedOperator>() ) {
             if ( op->kind() == hilti::operator_::Kind::Call )
                 return _lowerCall(op);
+            if ( op->kind() == hilti::operator_::Kind::Member ) {
+                auto place = _fieldPlace(op);
+                if ( auto* feature = std::get_if<UnsupportedFeature>(&place) )
+                    return *feature;
+                return _builder.addLoad(_block,
+                                        std::get<ir::InstId>(place),
+                                        internSpan(_package, op->meta().location()));
+            }
             return _lowerSum(op);
         }
 
@@ -211,8 +225,26 @@ private:
         return _builder.addLoad(_block, var.value, internSpan(_package, name->meta().location()));
     }
 
-    // The place an assignment or `inout` argument writes through; only variables have one.
+    // `self.<field>`, addressed through the unit being parsed.
+    std::variant<ir::InstId, UnsupportedFeature> _fieldPlace(hilti::expression::ResolvedOperator* op) {
+        auto* self = op->op0() ? op->op0()->tryAs<hilti::expression::Name>() : nullptr;
+        auto* member = op->op1() ? op->op1()->tryAs<hilti::expression::Member>() : nullptr;
+        if ( ! _self || ! self || self->id() != hilti::ID("self") || ! member )
+            return _unsupported("only published fields of self can be accessed here", op->meta().location());
+
+        auto field = _fields.find(std::string(member->id()));
+        if ( field == _fields.end() )
+            return _unsupported(fmt("field '%s' is not published yet", std::string(member->id())),
+                                op->meta().location());
+        return _builder.addFieldPlace(_block, *_self, field->second, internSpan(_package, op->meta().location()));
+    }
+
+    // The place an assignment or `inout` argument writes through; only variables and fields have one.
     std::variant<ir::InstId, UnsupportedFeature> _place(hilti::Expression* expr) {
+        if ( auto* op = expr->tryAs<hilti::expression::ResolvedOperator>();
+             op && op->kind() == hilti::operator_::Kind::Member )
+            return _fieldPlace(op);
+
         auto* name = expr->tryAs<hilti::expression::Name>();
         if ( ! name )
             return _unsupported("only variables can be assigned or passed as inout arguments", expr->meta().location());
@@ -247,6 +279,8 @@ private:
     ir::BlockId _block;
     std::string _feature;
     std::unordered_map<const hilti::Declaration*, Variable> _variables;
+    std::optional<ir::InstId> _self;
+    std::unordered_map<std::string, ir::DeclId> _fields;
 };
 
 // Lowers ordinary functions, and the foreign functions they call, once each. A function's identity
@@ -620,7 +654,7 @@ struct FieldSpec {
     FieldForm form = FieldForm::Integer;
     uint32_t width = 0;
     uint64_t byte_count = 0;
-    type::unit::item::Field* bound_field = nullptr;
+    hilti::Expression* bound = nullptr; /**< a vector's `&size` */
     type::Unit* child = nullptr;
     ir::DeclId declaration;
 };
@@ -637,11 +671,13 @@ class UnitLowerer {
 public:
     UnitLowerer(const std::vector<hilti::declaration::Type*>& declarations,
                 const std::vector<hilti::ast::TypeIndex>& external_hooks,
-                ir::Package& package)
+                ir::Package& package,
+                ProcedureLowerer& procedures)
         : _declarations(declarations),
           _external_hooks(external_hooks),
           _package(package),
-          _builder(package.builder()) {}
+          _builder(package.builder()),
+          _procedures(procedures) {}
 
     std::optional<UnsupportedFeature> build(const std::vector<hilti::declaration::Type*>& roots) {
         for ( auto* root : roots )
@@ -678,8 +714,10 @@ public:
                                                           internSpan(_package, spec.source->meta().location()));
         }
 
-        for ( auto& spec : _units )
-            _emit(spec);
+        for ( auto& spec : _units ) {
+            if ( auto error = _emit(spec) )
+                return error;
+        }
 
         for ( auto* root : roots ) {
             const auto& spec = _spec(root->type()->type()->as<type::Unit>());
@@ -774,19 +812,9 @@ private:
                 if ( _root_units.contains(f.child) )
                     return reject("vector child must be a private unit", field_loc);
                 auto expr = size->valueAsExpression();
-                auto* member = expr ? (*expr)->tryAs<hilti::expression::ResolvedOperator>() : nullptr;
-                auto* member_name =
-                    member && member->op1() ? member->op1()->tryAs<hilti::expression::Member>() : nullptr;
-                auto* self_name = member && member->op0() ? member->op0()->tryAs<hilti::expression::Name>() : nullptr;
-                if ( ! member || member->kind() != hilti::operator_::Kind::Member || ! member_name || ! self_name ||
-                     self_name->id() != hilti::ID("self") )
-                    return reject("vector &size must reference a prior unit field", field_loc);
-                auto* bound_item = unit->itemByName(member_name->id());
-                f.bound_field = bound_item ? bound_item->tryAs<type::unit::item::Field>() : nullptr;
-                if ( ! f.bound_field || std::ranges::none_of(spec.fields, [&](const FieldSpec& previous) {
-                         return previous.source == f.bound_field && previous.form == FieldForm::Integer;
-                     }) )
-                    return reject("vector &size must reference a previously published unsigned field", field_loc);
+                if ( ! expr )
+                    return reject("vector &size must be an expression", field_loc);
+                f.bound = *expr;
                 auto* child_decl = _declaration(f.child);
                 if ( ! child_decl )
                     return reject("vector child unit has no source declaration", field_loc);
@@ -809,12 +837,13 @@ private:
         return attrs && attrs->attributes().size() == 1 && attrs->find(attribute::kind::Size);
     }
 
-    void _emit(UnitSpec& spec) {
+    std::optional<UnsupportedFeature> _emit(UnitSpec& spec) {
         auto unit_span = internSpan(_package, spec.source->meta().location());
         auto block = _builder.createBlock(_package.function(spec.function).root_region);
         auto state = _builder.addArgument(spec.function, block, 0, unit_span);
         auto unit_value = _builder.addUnitCreate(block, spec.declaration, unit_span);
-        std::unordered_map<type::unit::item::Field*, ir::InstId> published;
+        // The fields published so far, which a later `&size` may read through `self`.
+        std::unordered_map<std::string, ir::DeclId> published;
         for ( const auto& field : spec.fields ) {
             auto span = internSpan(_package, field.source->meta().location());
             ir::InstId value;
@@ -831,7 +860,20 @@ private:
                 value = _builder.addTupleGet(block, read, 1, span);
             }
             else {
-                state = _builder.addEnterBound(block, state, published.at(field.bound_field), span);
+                auto feature = fmt("parser unit '%s'", std::string(spec.source->id()));
+                BodyLowerer bound(_procedures, _package, block, feature);
+                bound.setSelf(unit_value, published);
+                auto length = bound.lower(field.bound);
+                if ( auto* unsupported_feature = std::get_if<UnsupportedFeature>(&length) )
+                    return *unsupported_feature;
+
+                auto length_value = std::get<ir::InstId>(length);
+                if ( _package.inst(length_value).result_type != _builder.uint64Type() )
+                    return unsupported(feature,
+                                       "vector &size must be an unsigned 64-bit integer",
+                                       field.source->meta().location());
+
+                state = _builder.addEnterBound(block, state, length_value, span);
                 auto vector = _builder.addVectorEmpty(block, _builder.unitType(_spec(field.child).declaration), span);
                 auto body = _builder.createRegion();
                 auto body_block = _builder.createBlock(body);
@@ -848,9 +890,10 @@ private:
                 state = _builder.addLeaveBound(block, state, span);
             }
             unit_value = _builder.addPublishField(block, unit_value, value, field.declaration, span);
-            published[field.source] = value;
+            published.emplace(std::string(field.source->id().local()), field.declaration);
         }
         _builder.addParserFinish(block, state, unit_value, unit_span);
+        return std::nullopt;
     }
 
     const std::vector<hilti::declaration::Type*>& _declarations;
@@ -861,13 +904,15 @@ private:
     std::unordered_set<type::Unit*> _seen;
     std::unordered_set<type::Unit*> _visiting;
     std::unordered_set<type::Unit*> _root_units;
+    ProcedureLowerer& _procedures;
 };
 
 std::optional<UnsupportedFeature> lowerUnits(const std::vector<hilti::declaration::Type*>& roots,
                                              const std::vector<hilti::declaration::Type*>& unit_declarations,
                                              const std::vector<hilti::ast::TypeIndex>& units_with_external_hooks,
-                                             ir::Package& package) {
-    return UnitLowerer(unit_declarations, units_with_external_hooks, package).build(roots);
+                                             ir::Package& package,
+                                             ProcedureLowerer& procedures) {
+    return UnitLowerer(unit_declarations, units_with_external_hooks, package, procedures).build(roots);
 }
 
 } // namespace
@@ -917,8 +962,11 @@ std::optional<UnsupportedFeature> lowerRoots(const RootDiscovery& discovery, ir:
         }
     }
 
-    if ( auto feature =
-             lowerUnits(unit_roots, discovery.unit_declarations, discovery.units_with_external_hooks, package) )
+    if ( auto feature = lowerUnits(unit_roots,
+                                   discovery.unit_declarations,
+                                   discovery.units_with_external_hooks,
+                                   package,
+                                   procedures) )
         return feature;
 
     return std::nullopt;

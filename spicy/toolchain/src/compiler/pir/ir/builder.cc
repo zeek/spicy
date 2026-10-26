@@ -390,6 +390,14 @@ InstId Builder::addLocalPlace(BlockId block, InstId initial, SourceSpanId span) 
     return addInst(block, Opcode::LocalPlace, {initial}, result_type, {}, span);
 }
 
+InstId Builder::addFieldPlace(BlockId block, InstId unit_value, DeclId field, SourceSpanId span) {
+    TypeId result_type;
+    if ( _package.isValid(field) )
+        result_type = placeType(_package.declaration(field).type);
+
+    return addInst(block, Opcode::FieldPlace, {unit_value}, result_type, InstPayload(FieldPayload{field}), span);
+}
+
 InstId Builder::addLoad(BlockId block, InstId place, SourceSpanId span) {
     TypeId result_type;
     if ( _package.isValid(place) ) {

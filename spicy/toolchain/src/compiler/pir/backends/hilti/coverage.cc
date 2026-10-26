@@ -94,18 +94,21 @@ void checkRegion(const ir::Package& package,
                         unsupported("only unsigned width-8 and width-64 network-order reads are supported");
                     break;
                 }
+                // Byte bounds may compute their length from calls, constants, and fields, so those operations are
+                // lowered in parser functions too.
                 case ir::Opcode::Constant:
                 case ir::Opcode::Add:
-                case ir::Opcode::Return:
                 case ir::Opcode::Call:
+                case ir::Opcode::OpaqueOp:
+                case ir::Opcode::FieldPlace:
+                case ir::Opcode::Load: break;
+                case ir::Opcode::Return:
                 case ir::Opcode::LocalPlace:
-                case ir::Opcode::Load:
                 case ir::Opcode::Store:
                 case ir::Opcode::Tuple:
                 case ir::Opcode::BoolConstant:
                 case ir::Opcode::StringConstant:
                 case ir::Opcode::BytesConstant: unsupported("procedural lowering is not supported"); break;
-                case ir::Opcode::OpaqueOp: unsupported("foreign calls are not supported by the HILTI consumer"); break;
             }
             for ( auto child : inst.regions )
                 checkRegion(package, child, out, bound_depth);
