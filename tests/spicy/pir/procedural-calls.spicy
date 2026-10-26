@@ -1,0 +1,21 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -p -D spicy-pir >pir.txt 2>pir.log
+# @TEST-EXEC: rg "constructed|core\.(call|local_place|load|store|return)|opaque\.op|foreign function|function %" pir.log >route
+# @TEST-EXEC: btest-diff route
+
+# @TEST-DOC: Lowers ordinary functions with locals, assignments, ordinary calls, and a native call that
+# takes an `inout` argument, and prints the resulting PIR route. The HILTI consumer does not yet
+# execute procedural bodies, so the compilation falls back to the standard code generator.
+
+module Test;
+
+function bump(inout x: int64) &cxxname="bump";
+
+function add_one(inout x: int64) {
+    bump(x);
+}
+
+public function scaled(x: int64): int64 {
+    local y: int64 = x;
+    add_one(y);
+    return y;
+}

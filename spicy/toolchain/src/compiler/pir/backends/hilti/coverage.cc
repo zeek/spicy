@@ -37,6 +37,7 @@ bool isStorageType(const ir::Package& package, ir::TypeId id) {
         case ir::TypeKind::Int64:
         case ir::TypeKind::ParserState:
         case ir::TypeKind::Opaque:
+        case ir::TypeKind::Place:
         case ir::TypeKind::Tuple: return false;
     }
     return false;
@@ -92,7 +93,11 @@ void checkRegion(const ir::Package& package,
                 }
                 case ir::Opcode::Constant:
                 case ir::Opcode::Add:
-                case ir::Opcode::Return: unsupported("procedural lowering is not supported"); break;
+                case ir::Opcode::Return:
+                case ir::Opcode::Call:
+                case ir::Opcode::LocalPlace:
+                case ir::Opcode::Load:
+                case ir::Opcode::Store: unsupported("procedural lowering is not supported"); break;
                 case ir::Opcode::OpaqueOp: unsupported("foreign calls are not supported by the HILTI consumer"); break;
             }
             for ( auto child : inst.regions )
@@ -122,6 +127,7 @@ std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package) {
             case ir::TypeKind::Opaque:
                 report(out, "opaque type", "opaque types are not supported by the HILTI backend yet");
                 break;
+            case ir::TypeKind::Place: report(out, "place", "places are not supported by the HILTI backend yet"); break;
             case ir::TypeKind::Vector:
                 if ( ! isStorageType(package, type.type_arguments[0]) )
                     report(out, "vector", "vector element type cannot be stored by the HILTI backend");

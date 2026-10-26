@@ -567,3 +567,120 @@ TEST_CASE("verifier rejects a foreign function without a binding or with an affi
     CHECK(hasDiagnostic(diags, diag::ForeignFunctionMissingBinding));
     CHECK(hasDiagnostic(diags, diag::ForeignFunctionInvalidParameter));
 }
+
+TEST_CASE("places intern structurally by element type") {
+    Package package;
+    auto builder = package.builder();
+    auto place = builder.placeType(builder.int64Type());
+
+    CHECK_EQ(builder.placeType(builder.int64Type()), place);
+    CHECK_NE(builder.placeType(builder.uint8Type()), place);
+}
+
+TEST_CASE("a call with a local place verifies and prints") {
+    Package package;
+    auto builder = package.builder();
+
+    auto increment = builder.createFunction("increment", {builder.int64Type()}, builder.int64Type());
+    auto increment_block = builder.createBlock(package.function(increment).root_region);
+    auto x = builder.addArgument(increment, increment_block, 0);
+    auto one = builder.addConstant(increment_block, 1);
+    builder.addReturn(increment_block, builder.addAdd(increment_block, x, one));
+
+    auto fn = builder.createFunction("caller", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto place = builder.addLocalPlace(block, builder.addConstant(block, 5));
+    auto value = builder.addLoad(block, place);
+    auto result = builder.addCall(block, increment, {value});
+    builder.addStore(block, place, result);
+    builder.addReturn(block, builder.addLoad(block, place));
+
+    CHECK(verify(package).empty());
+    auto dump = print(package);
+    CHECK(dump.find("core.local_place") != std::string::npos);
+    CHECK(dump.find("core.call") != std::string::npos);
+    CHECK(dump.find("core.store") != std::string::npos);
+    CHECK(dump.find("place<int64>") != std::string::npos);
+}
+
+TEST_CASE("verifier rejects a store whose value differs from the place's element type") {
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("bad", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto place = builder.addLocalPlace(block, builder.addConstant(block, 1));
+    auto byte =
+        builder.addInstForTesting(block, Opcode::Constant, {}, builder.uint8Type(), InstPayload(Int64Literal{2}));
+    builder.addStore(block, place, byte);
+    builder.addReturn(block, builder.addLoad(block, place));
+
+    CHECK(hasDiagnostic(verify(package), diag::StoreValueTypeMismatch));
+}
+
+TEST_CASE("verifier rejects a load and a store whose operand is not a place") {
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("bad", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto not_a_place = builder.addConstant(block, 1);
+    auto loaded = builder.addLoad(block, not_a_place);
+    builder.addStore(block, not_a_place, loaded);
+    builder.addReturn(block, loaded);
+
+    CHECK(hasDiagnostic(verify(package), diag::PlaceOperandMismatch));
+}
+
+TEST_CASE("verifier rejects a call to a parser function") {
+    Package package;
+    auto builder = package.builder();
+    auto unit = builder.createUnitDecl("Unit");
+    auto parser = builder.createParserFunction(unit, builder.parserStateType(), builder.unitType(unit));
+
+    auto fn = builder.createFunction("caller", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    builder.addReturn(block, builder.addCall(block, parser, {}));
+
+    CHECK(hasDiagnostic(verify(package), diag::CallTargetNotNormal));
+}
+
+TEST_CASE("verifier rejects a call with the wrong argument count") {
+    Package package;
+    auto builder = package.builder();
+    auto callee = builder.createFunction("callee", {builder.int64Type()}, builder.int64Type());
+    auto callee_block = builder.createBlock(package.function(callee).root_region);
+    builder.addReturn(callee_block, builder.addArgument(callee, callee_block, 0));
+
+    auto fn = builder.createFunction("caller", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    builder.addReturn(block, builder.addCall(block, callee, {}));
+
+    CHECK(hasDiagnostic(verify(package), diag::CallArgumentCountMismatch));
+}
+
+TEST_CASE("verifier rejects a place stored in a tuple or returned from a function") {
+    Package package;
+    auto builder = package.builder();
+    auto place = builder.placeType(builder.int64Type());
+    builder.tupleType({place});
+
+    auto fn = builder.createFunction("returns_place", place);
+    auto block = builder.createBlock(package.function(fn).root_region);
+    builder.addInstForTesting(block, Opcode::Constant, {}, place, InstPayload(Int64Literal{0}));
+    builder.addInstForTesting(block, Opcode::Return, {}, place);
+
+    auto diags = verify(package);
+    CHECK(hasDiagnostic(diags, diag::PlaceEscapes));
+}
+
+TEST_CASE("verifier rejects a local place initialized with a void value") {
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("bad", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto void_value =
+        builder.addInstForTesting(block, Opcode::Constant, {}, builder.voidType(), InstPayload(Int64Literal{0}));
+    builder.addLocalPlace(block, void_value);
+    builder.addReturn(block, builder.addConstant(block, 0));
+
+    CHECK(hasDiagnostic(verify(package), diag::LocalPlaceInvalidInitial));
+}
