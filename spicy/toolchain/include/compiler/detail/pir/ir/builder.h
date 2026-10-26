@@ -25,6 +25,8 @@ public:
     TypeId bytesType();
     /** Interns `parser.state` lazily so procedural-only packages keep stable type numbering. */
     TypeId parserStateType();
+    TypeId boolType();
+    TypeId stringType();
 
     /** Interns a nominal unit type structurally by `TypeDeclId`. */
     TypeId unitType(TypeDeclId decl);
@@ -45,9 +47,10 @@ public:
     /** Declares a function implemented outside PIR and returns its identity. */
     ForeignFunctionId createForeignFunction(std::string name,
                                             std::string cxx_name,
-                                            std::vector<TypeId> parameters,
+                                            std::vector<ForeignParameter> parameters,
                                             TypeId result_type,
-                                            SourceSpanId span = {});
+                                            SourceSpanId span = {},
+                                            bool have_prototype = false);
 
     /** Adds unchecked declaration content for verifier tests: does not append to `owner`'s fields. */
     DeclId createFieldDeclForTesting(TypeDeclId owner, std::string name, TypeId type, SourceSpanId span = {});
@@ -120,6 +123,11 @@ public:
     InstId addOpaqueOp(BlockId block, ForeignFunctionId function, std::vector<InstId> args, SourceSpanId span = {});
     /** Adds `core.call` calling `function` with `args`; its result type is the function's. */
     InstId addCall(BlockId block, FunctionId function, std::vector<InstId> args, SourceSpanId span = {});
+    /** Adds `core.tuple` of `elements`, in order. */
+    InstId addTuple(BlockId block, std::vector<InstId> elements, SourceSpanId span = {});
+    InstId addBoolConstant(BlockId block, bool value, SourceSpanId span = {});
+    InstId addStringConstant(BlockId block, std::string value, SourceSpanId span = {});
+    InstId addBytesConstant(BlockId block, std::string value, SourceSpanId span = {});
     /** Adds `core.local_place` that holds a copy of `initial`, and returns the place. */
     InstId addLocalPlace(BlockId block, InstId initial, SourceSpanId span = {});
     /** Adds `core.load` reading the element stored in `place`. */

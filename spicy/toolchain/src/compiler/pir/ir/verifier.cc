@@ -116,11 +116,38 @@ public:
             _emitter.emit(diag::ForeignFunctionInvalidResult, id);
 
         for ( size_t p = 0; p < fn.parameters.size(); ++p ) {
-            auto parameter = fn.parameters[p];
-            if ( ! _package.isValid(parameter) || parameter == _package.voidType() ||
-                 typeDiscipline(_package, parameter) == ValueDiscipline::Affine )
+            const auto& parameter = fn.parameters[p];
+            if ( parameter.argument != ForeignArgument::Value )
+                continue;
+
+            if ( ! _package.isValid(parameter.type) || parameter.type == _package.voidType() ||
+                 typeDiscipline(_package, parameter.type) == ValueDiscipline::Affine )
                 _emitter.emit(diag::ForeignFunctionInvalidParameter, id, p);
         }
+    }
+
+    // Whether a value of `type` is an opaque value whose native type declares no copy behavior.
+    bool _isNonCopyableOpaque(TypeId type) const {
+        if ( ! _package.isValid(type) || _package.type(type).kind != TypeKind::Opaque )
+            return false;
+
+        const auto& decl = _package.typeDecl(_package.type(type).declaration);
+        return ! decl.opaque || ! decl.opaque->lifecycle || ! decl.opaque->lifecycle->copyable;
+    }
+
+    // Whether a native call may receive an operand of `type` for `parameter`, by its convention.
+    bool _acceptsArgument(const ForeignParameter& parameter, TypeId type) const {
+        if ( ! _package.isValid(type) )
+            return false;
+
+        switch ( parameter.argument ) {
+            case ForeignArgument::Value: return type == parameter.type;
+            case ForeignArgument::TypeInfo:
+                return type != _package.voidType() && typeDiscipline(_package, type) == ValueDiscipline::Copyable;
+            case ForeignArgument::Tuple: return _package.type(type).kind == TypeKind::Tuple;
+        }
+
+        return false;
     }
 
     void verifyFunction(FunctionId id, const Function& fn) {
@@ -737,6 +764,26 @@ private:
 
                 if ( inst.result_type != _package.type(place).type_arguments[0] )
                     _emitter.emit(diag::LoadResultTypeMismatch, inst_id);
+                else if ( _isNonCopyableOpaque(inst.result_type) )
+                    _emitter.emit(diag::OpaqueLoadRequiresCopyable, inst_id);
+                return;
+            }
+
+            case Opcode::Tuple: {
+                if ( ! _package.isValid(inst.result_type) || _package.type(inst.result_type).kind != TypeKind::Tuple ) {
+                    _emitter.emit(diag::TupleResultTypeMismatch, inst_id);
+                    return;
+                }
+
+                const auto& elements = _package.type(inst.result_type).type_arguments;
+                if ( elements.size() != inst.args.size() ) {
+                    _emitter.emit(diag::TupleResultTypeMismatch, inst_id);
+                    return;
+                }
+
+                for ( size_t a = 0; a < inst.args.size(); ++a )
+                    if ( _package.isValid(inst.args[a]) && _package.inst(inst.args[a]).result_type != elements[a] )
+                        _emitter.emit(diag::TupleResultTypeMismatch, inst_id);
                 return;
             }
 
@@ -770,8 +817,10 @@ private:
                     _emitter.emit(diag::OpaqueOpArgumentCountMismatch, inst_id, fn.parameters.size(), inst.args.size());
                 else {
                     for ( size_t a = 0; a < inst.args.size(); ++a ) {
-                        if ( _package.isValid(inst.args[a]) &&
-                             _package.inst(inst.args[a]).result_type != fn.parameters[a] )
+                        if ( ! _package.isValid(inst.args[a]) )
+                            continue;
+
+                        if ( ! _acceptsArgument(fn.parameters[a], _package.inst(inst.args[a]).result_type) )
                             _emitter.emit(diag::OpaqueOpArgumentTypeMismatch, inst_id, a);
                     }
                 }

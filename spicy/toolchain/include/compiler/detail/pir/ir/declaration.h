@@ -56,6 +56,22 @@ struct TypeDecl {
     SourceSpanId span;
 };
 
+/** How a native call receives an argument, beyond the parameter's declared type. */
+enum class ForeignArgument {
+    Value,    /**< a value of the parameter's declared type */
+    TypeInfo, /**< any copyable value; the native call also receives its runtime type information */
+    Tuple,    /**< any tuple; the native call takes a wildcard tuple whose element types the operand carries */
+};
+
+/** A formal parameter of a foreign function. `type` is invalid for `TypeInfo` and `Tuple`, which check operands by
+ * convention. */
+struct ForeignParameter {
+    TypeId type;
+    ForeignArgument argument = ForeignArgument::Value;
+
+    ForeignParameter(TypeId t = {}, ForeignArgument a = ForeignArgument::Value) : type(t), argument(a) {}
+};
+
 /**
  * A function implemented outside PIR. Calls to it are `opaque.op` operations; `cxx_name` is the
  * native symbol that a backend binds to.
@@ -63,8 +79,10 @@ struct TypeDecl {
 struct ForeignFunction {
     std::string name;     /**< printer/diagnostic sugar only */
     std::string cxx_name; /**< native symbol; empty if undeclared */
-    std::vector<TypeId> parameters;
+    std::vector<ForeignParameter> parameters;
     TypeId result_type;
+    /** The native prototype is provided by the runtime's headers rather than generated for the module. */
+    bool have_prototype = false;
     /** Invalid means absent. */
     SourceSpanId span;
 };

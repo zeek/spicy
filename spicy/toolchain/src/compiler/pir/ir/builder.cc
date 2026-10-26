@@ -25,6 +25,18 @@ TypeId Builder::bytesType() {
     return _package._bytes_type;
 }
 
+TypeId Builder::boolType() {
+    if ( ! _package._bool_type.isSet() )
+        _package._bool_type = _package._types.add(Type{.kind = TypeKind::Bool});
+    return _package._bool_type;
+}
+
+TypeId Builder::stringType() {
+    if ( ! _package._string_type.isSet() )
+        _package._string_type = _package._types.add(Type{.kind = TypeKind::String});
+    return _package._string_type;
+}
+
 TypeId Builder::parserStateType() {
     if ( ! _package._parser_state_type.isSet() )
         _package._parser_state_type = _package._types.add(Type{.kind = TypeKind::ParserState});
@@ -123,14 +135,16 @@ TypeDeclId Builder::createOpaqueTypeDecl(std::string name, OpaqueTypeInfo info, 
 
 ForeignFunctionId Builder::createForeignFunction(std::string name,
                                                  std::string cxx_name,
-                                                 std::vector<TypeId> parameters,
+                                                 std::vector<ForeignParameter> parameters,
                                                  TypeId result_type,
-                                                 SourceSpanId span) {
+                                                 SourceSpanId span,
+                                                 bool have_prototype) {
     return _package._foreign_functions.add(ForeignFunction{
         .name = std::move(name),
         .cxx_name = std::move(cxx_name),
         .parameters = std::move(parameters),
         .result_type = result_type,
+        .have_prototype = have_prototype,
         .span = span,
     });
 }
@@ -345,6 +359,27 @@ InstId Builder::addCall(BlockId block, FunctionId function, std::vector<InstId> 
         result_type = _package.function(function).result_type;
 
     return addInst(block, Opcode::Call, std::move(args), result_type, InstPayload(FunctionPayload{function}), span);
+}
+
+InstId Builder::addTuple(BlockId block, std::vector<InstId> elements, SourceSpanId span) {
+    std::vector<TypeId> types;
+    types.reserve(elements.size());
+    for ( auto element : elements )
+        types.push_back(_package.inst(element).result_type);
+
+    return addInst(block, Opcode::Tuple, std::move(elements), tupleType(std::move(types)), {}, span);
+}
+
+InstId Builder::addBoolConstant(BlockId block, bool value, SourceSpanId span) {
+    return addInst(block, Opcode::BoolConstant, {}, boolType(), InstPayload(BoolLiteral{value}), span);
+}
+
+InstId Builder::addStringConstant(BlockId block, std::string value, SourceSpanId span) {
+    return addInst(block, Opcode::StringConstant, {}, stringType(), InstPayload(StringLiteral{std::move(value)}), span);
+}
+
+InstId Builder::addBytesConstant(BlockId block, std::string value, SourceSpanId span) {
+    return addInst(block, Opcode::BytesConstant, {}, bytesType(), InstPayload(BytesLiteral{std::move(value)}), span);
 }
 
 InstId Builder::addLocalPlace(BlockId block, InstId initial, SourceSpanId span) {

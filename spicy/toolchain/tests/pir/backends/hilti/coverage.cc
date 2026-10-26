@@ -225,12 +225,11 @@ TEST_CASE("an ordinary function root with a native inout call is supported") {
     CHECK(checkCoverage(package).empty());
 }
 
-TEST_CASE("an ordinary function root with an opaque signature is unsupported") {
+TEST_CASE("an ordinary function root with an opaque signature whose lifecycle is undeclared is unsupported") {
     Package package;
     auto builder = package.builder();
     OpaqueTypeInfo info;
     info.cxx_name = "::Handle";
-    info.lifecycle = OpaqueLifecycle{.copyable = true};
     auto handle = builder.opaqueType(builder.createOpaqueTypeDecl("Handle", info));
     auto fn = builder.createFunction("passthrough", {handle}, handle);
     auto block = builder.createBlock(package.function(fn).root_region);

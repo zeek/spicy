@@ -87,7 +87,27 @@ std::optional<std::string> renderPayload(const Package& package, const InstPaylo
     if ( const auto* bytes = std::get_if<ReadBytesPayload>(&payload) )
         return fmt("length=%u", bytes->length);
 
+    if ( const auto* boolean = std::get_if<BoolLiteral>(&payload) )
+        return std::string(boolean->value ? "true" : "false");
+
+    if ( const auto* string = std::get_if<StringLiteral>(&payload) )
+        return fmt("\"%s\"", string->value);
+
+    if ( const auto* bytes = std::get_if<BytesLiteral>(&payload) )
+        return fmt("b\"%s\"", bytes->value);
+
     return std::nullopt;
+}
+
+// A foreign formal as written in a declaration: a value's type, or the generic formal its convention names.
+std::string foreignParameterName(const Package& package, const ForeignParameter& parameter) {
+    switch ( parameter.argument ) {
+        case ForeignArgument::Value: return typeName(package, parameter.type);
+        case ForeignArgument::TypeInfo: return "any";
+        case ForeignArgument::Tuple: return "tuple<*>";
+    }
+
+    return "<unknown-argument>";
 }
 
 std::string printInst(const Package& package, InstId id) {
@@ -128,6 +148,8 @@ std::string typeName(const Package& package, TypeId type_id) {
         case TypeKind::UInt64: return "uint64";
         case TypeKind::Bytes: return "bytes";
         case TypeKind::ParserState: return "parser.state";
+        case TypeKind::Bool: return "bool";
+        case TypeKind::String: return "string";
 
         case TypeKind::Vector:
             return t.type_arguments.size() == 1 ? fmt("vector<%s>", typeName(package, t.type_arguments[0])) :
@@ -221,7 +243,7 @@ std::string print(const Package& package) {
         const auto& fn = package.foreignFunction(ForeignFunctionId{static_cast<uint32_t>(i)});
         std::string parameters;
         for ( size_t p = 0; p < fn.parameters.size(); ++p )
-            parameters += (p == 0 ? "" : ", ") + typeName(package, fn.parameters[p]);
+            parameters += (p == 0 ? "" : ", ") + foreignParameterName(package, fn.parameters[p]);
         out += fmt("foreign function %%%zu \"%s\" (native \"%s\") (%s) -> %s\n",
                    i,
                    fn.name,

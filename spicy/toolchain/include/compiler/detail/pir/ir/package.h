@@ -145,6 +145,8 @@ private:
     TypeId _uint64_type;       /**< invalid until first requested */
     TypeId _bytes_type;        /**< invalid until first requested */
     TypeId _parser_state_type; /**< invalid until first requested */
+    TypeId _bool_type;         /**< invalid until first requested */
+    TypeId _string_type;       /**< invalid until first requested */
 
     SourceManager _sources;
 };

@@ -1,0 +1,64 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -P "" -o Foo.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -p -D spicy-pir 2>&1 >/dev/null | rg "attached PIR-produced" >route
+# @TEST-EXEC: btest-diff route
+
+# @TEST-DOC: Executes foreign functions that create and inspect a native opaque value. The value is a
+# copyable `const` library type, so a local copy and a call that discards its result are both observable
+# through the native side effects, in order, both optimized and unoptimized.
+
+module Test;
+
+type Info = __library_type_const("hilti::rt::TypeInfo*");
+
+function make_info(x: int64): Info &cxxname="make_info";
+function info_length(i: Info): int64 &cxxname="info_length";
+
+public function answer(x: int64): int64 {
+    local i: Info = make_info(x);
+    local j = i;
+    info_length(i);
+    return info_length(j) + info_length(i);
+}
+
+@TEST-START-FILE driver.cc
+
+#include <iostream>
+
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+#include "Foo.h"
+
+const hilti::rt::TypeInfo* make_info(const hilti::rt::integer::safe<int64_t>& x) {
+    static hilti::rt::TypeInfo short_info;
+    static hilti::rt::TypeInfo long_info;
+    short_info.display = "short";
+    long_info.display = "a longer name";
+    std::cout << "make_info: " << x << std::endl;
+    return x < 10 ? &short_info : &long_info;
+}
+
+hilti::rt::integer::safe<int64_t> info_length(const hilti::rt::TypeInfo* const& i) {
+    std::cout << "info_length: " << i->display << std::endl;
+    return static_cast<int64_t>(std::string(i->display).size());
+}
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    auto r = hlt::_r__spicy_pir_backend::answer(42);
+    std::cout << "answer: " << r.get<hilti::rt::integer::safe<int64_t>>() << std::endl;
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    hilti::rt::init();
+    spicy::rt::init();
+    hilti_main();
+    hilti::rt::done();
+    return 0;
+}
+
+@TEST-END-FILE

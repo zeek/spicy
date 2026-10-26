@@ -700,3 +700,88 @@ TEST_CASE("verifier rejects a function root that references no function") {
 
     CHECK(hasDiagnostic(verify(package), diag::InvalidFunctionRoot));
 }
+
+TEST_CASE("bool, string, bytes, and tuple values verify and print") {
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("values", builder.voidType());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto flag = builder.addBoolConstant(block, true);
+    auto text = builder.addStringConstant(block, "text");
+    auto data = builder.addBytesConstant(block, "data");
+    builder.addTuple(block, {flag, text, data});
+    builder.addReturnVoid(block);
+
+    CHECK(verify(package).empty());
+    auto dump = print(package);
+    CHECK(dump.find("core.bool_constant") != std::string::npos);
+    CHECK(dump.find("core.string_constant \"text\"") != std::string::npos);
+    CHECK(dump.find("core.bytes_constant b\"data\"") != std::string::npos);
+    CHECK(dump.find("tuple<bool, string, bytes>") != std::string::npos);
+}
+
+TEST_CASE("verifier rejects a tuple whose result does not match its operands") {
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("bad", builder.voidType());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto value = builder.addConstant(block, 1);
+    builder.addInstForTesting(block, Opcode::Tuple, {value}, builder.tupleType({builder.uint8Type()}));
+    builder.addReturnVoid(block);
+
+    CHECK(hasDiagnostic(verify(package), diag::TupleResultTypeMismatch));
+}
+
+namespace {
+
+ForeignParameter anyParameter() { return ForeignParameter{TypeId(), ForeignArgument::TypeInfo}; }
+ForeignParameter tupleParameter() { return ForeignParameter{TypeId(), ForeignArgument::Tuple}; }
+
+} // namespace
+
+TEST_CASE("a native any formal accepts any copyable operand, and a tuple formal accepts only tuples") {
+    Package package;
+    auto builder = package.builder();
+    auto show = builder.createForeignFunction("show", "::show", {anyParameter()}, builder.voidType());
+    auto show_tuple =
+        builder.createForeignFunction("show_tuple", "::show_tuple", {tupleParameter()}, builder.voidType());
+
+    auto fn = builder.createFunction("caller", builder.voidType());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    builder.addOpaqueOp(block, show, {builder.addConstant(block, 1)});
+    builder.addOpaqueOp(block, show, {builder.addBoolConstant(block, false)});
+    builder.addOpaqueOp(block, show_tuple, {builder.addTuple(block, {builder.addConstant(block, 2)})});
+    builder.addReturnVoid(block);
+    CHECK(verify(package).empty());
+
+    Package bad;
+    auto bad_builder = bad.builder();
+    auto tuple_only = bad_builder.createForeignFunction("show_tuple",
+                                                        "::show_tuple",
+                                                        {ForeignParameter{TypeId(), ForeignArgument::Tuple}},
+                                                        bad_builder.voidType());
+    auto bad_fn = bad_builder.createFunction("caller", bad_builder.voidType());
+    auto bad_block = bad_builder.createBlock(bad.function(bad_fn).root_region);
+    bad_builder.addOpaqueOp(bad_block, tuple_only, {bad_builder.addConstant(bad_block, 1)});
+    bad_builder.addReturnVoid(bad_block);
+
+    CHECK(hasDiagnostic(verify(bad), diag::OpaqueOpArgumentTypeMismatch));
+}
+
+TEST_CASE("verifier rejects a load that copies an opaque value not declared copyable") {
+    Package package;
+    auto builder = package.builder();
+    OpaqueTypeInfo info;
+    info.cxx_name = "::Handle";
+    info.lifecycle = OpaqueLifecycle{.copyable = false, .movable = true};
+    auto handle = builder.opaqueType(builder.createOpaqueTypeDecl("Handle", info));
+    auto make = builder.createForeignFunction("make", "::make", {}, handle);
+
+    auto fn = builder.createFunction("caller", builder.voidType());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto place = builder.addLocalPlace(block, builder.addOpaqueOp(block, make, {}));
+    builder.addLoad(block, place);
+    builder.addReturnVoid(block);
+
+    CHECK(hasDiagnostic(verify(package), diag::OpaqueLoadRequiresCopyable));
+}

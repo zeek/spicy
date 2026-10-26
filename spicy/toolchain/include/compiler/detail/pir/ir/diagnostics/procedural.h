@@ -106,6 +106,13 @@ inline constexpr DiagnosticDefinition LoadResultTypeMismatch{
     .message = "core.load result must be the element type of its place",
 };
 
+inline constexpr DiagnosticDefinition TupleResultTypeMismatch{
+    .id = "PIR_TUPLE_RESULT_TYPE_MISMATCH",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "core.tuple result must be the tuple of its operands' types, in order",
+};
+
 inline constexpr DiagnosticDefinition StoreValueTypeMismatch{
     .id = "PIR_STORE_VALUE_TYPE_MISMATCH",
     .classification = DiagnosticClassification::Internal,
