@@ -1,3 +1,13 @@
+1.18.0-dev.47 | 2026-10-26 17:23:55 -0400
+
+  * Fix sink reassembly of gaps overlapping buffered data (suraiya sulthana)
+
+    Sink::_addAndCheck() only split off the non-overlapping parts of a new
+    chunk when it carried data. For a gap starting before a buffered chunk
+    it returned an uninitialized iterator that _newData() then dereferenced,
+    and for a gap extending past a buffered chunk it dropped the remainder,
+    so no gap was reported. Handle gaps the same way as data.
+
 1.18.0-dev.45 | 2026-10-26 14:31:47 +0100
 
   * Fix installation of pre-commit in container images (Benjamin Bannier, Corelight)
