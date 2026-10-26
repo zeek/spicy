@@ -36,6 +36,7 @@ bool isStorageType(const ir::Package& package, ir::TypeId id) {
         case ir::TypeKind::Void:
         case ir::TypeKind::Int64:
         case ir::TypeKind::ParserState:
+        case ir::TypeKind::Opaque:
         case ir::TypeKind::Tuple: return false;
     }
     return false;
@@ -92,6 +93,7 @@ void checkRegion(const ir::Package& package,
                 case ir::Opcode::Constant:
                 case ir::Opcode::Add:
                 case ir::Opcode::Return: unsupported("procedural lowering is not supported"); break;
+                case ir::Opcode::OpaqueOp: unsupported("foreign calls are not supported by the HILTI consumer"); break;
             }
             for ( auto child : inst.regions )
                 checkRegion(package, child, out, bound_depth);
@@ -117,11 +119,22 @@ std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package) {
             case ir::TypeKind::ParserState:
             case ir::TypeKind::Unit:
             case ir::TypeKind::Tuple: break;
+            case ir::TypeKind::Opaque:
+                report(out, "opaque type", "opaque types are not supported by the HILTI backend yet");
+                break;
             case ir::TypeKind::Vector:
                 if ( ! isStorageType(package, type.type_arguments[0]) )
                     report(out, "vector", "vector element type cannot be stored by the HILTI backend");
                 break;
         }
+    }
+
+    for ( size_t i = 0; i < package.foreignFunctions().size(); ++i ) {
+        const auto& fn = package.foreignFunction(ir::ForeignFunctionId{static_cast<uint32_t>(i)});
+        report(out,
+               "foreign function",
+               fmt("foreign function '%s' is not supported by the HILTI backend yet", fn.name),
+               toLocation(package, fn.span));
     }
 
     for ( size_t i = 0; i < package.declarations().size(); ++i ) {

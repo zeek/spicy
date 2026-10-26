@@ -81,11 +81,22 @@ std::string renderEntity(const Package& package, const DiagnosticEntity& entity)
     if ( const auto* id = std::get_if<TypeDeclId>(&entity) ) {
         if ( package.isValid(*id) ) {
             const auto& decl = package.typeDecl(*id);
+            const char* kind = decl.kind == TypeDeclKind::Opaque ? "opaque type" : "unit";
             if ( ! decl.name.empty() )
-                return fmt("unit %%%u \"%s\"", id->index, decl.name);
-            return fmt("unit %%%u", id->index);
+                return fmt("%s %%%u \"%s\"", kind, id->index, decl.name);
+            return fmt("%s %%%u", kind, id->index);
         }
         return fmt("unit %%%u (invalid)", id->index);
+    }
+
+    if ( const auto* id = std::get_if<ForeignFunctionId>(&entity) ) {
+        if ( package.isValid(*id) ) {
+            const auto& fn = package.foreignFunction(*id);
+            if ( ! fn.name.empty() )
+                return fmt("foreign function %%%u \"%s\"", id->index, fn.name);
+            return fmt("foreign function %%%u", id->index);
+        }
+        return fmt("foreign function %%%u (invalid)", id->index);
     }
 
     if ( const auto* id = std::get_if<DeclId>(&entity) ) {

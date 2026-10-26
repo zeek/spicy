@@ -55,6 +55,7 @@ constexpr ExpectedSchema ExpectedSchemas[] = {
      .spelling = "unit.publish_field",
      .operand_count = 2,
      .payload_kind = PayloadKind::Field},
+    {.opcode = Opcode::OpaqueOp, .spelling = "opaque.op", .payload_kind = PayloadKind::ForeignFunction},
 };
 
 } // namespace

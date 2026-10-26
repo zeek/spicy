@@ -11,6 +11,7 @@
 #include <spicy/compiler/detail/pir/ir/diagnostic-definition.h>
 #include <spicy/compiler/detail/pir/ir/diagnostics/core.h>
 #include <spicy/compiler/detail/pir/ir/diagnostics/declarations.h>
+#include <spicy/compiler/detail/pir/ir/diagnostics/foreign.h>
 #include <spicy/compiler/detail/pir/ir/diagnostics/parser.h>
 #include <spicy/compiler/detail/pir/ir/diagnostics/source.h>
 #include <spicy/compiler/detail/pir/ir/package.h>
@@ -20,7 +21,7 @@ namespace spicy::detail::pir::ir {
 
 /** A typed anchor for a diagnostic; `std::monostate` means no typed entity is available. */
 using DiagnosticEntity =
-    std::variant<std::monostate, FunctionId, RegionId, BlockId, InstId, TypeId, TypeDeclId, DeclId>;
+    std::variant<std::monostate, FunctionId, RegionId, BlockId, InstId, TypeId, TypeDeclId, DeclId, ForeignFunctionId>;
 
 /** Where a diagnostic (or note) points: an optional source span plus an optional typed IR anchor. */
 struct DiagnosticSite {
@@ -81,6 +82,13 @@ inline DiagnosticSite siteFor(const Package& package, DeclId id) {
     SourceSpanId span;
     if ( package.isValid(id) )
         span = package.declaration(id).span;
+    return DiagnosticSite{.source = span, .entity = id};
+}
+
+inline DiagnosticSite siteFor(const Package& package, ForeignFunctionId id) {
+    SourceSpanId span;
+    if ( package.isValid(id) )
+        span = package.foreignFunction(id).span;
     return DiagnosticSite{.source = span, .entity = id};
 }
 

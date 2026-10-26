@@ -33,9 +33,10 @@ enum class Opcode {
     RepeatToBound,
     ParseSubunit,
     ReadBytes,
+    OpaqueOp,
 };
 
-enum class TypeKind { Void, Int64, UInt8, UInt64, Bytes, ParserState, Unit, Tuple, Vector };
+enum class TypeKind { Void, Int64, UInt8, UInt64, Bytes, ParserState, Unit, Tuple, Vector, Opaque };
 
 enum class TypeConstraintKind {
     Any,
@@ -80,7 +81,8 @@ constexpr ValueDiscipline typeKindDiscipline(TypeKind kind) {
         case TypeKind::UInt8:
         case TypeKind::UInt64:
         case TypeKind::Bytes:
-        case TypeKind::Tuple: return ValueDiscipline::Copyable;
+        case TypeKind::Tuple:
+        case TypeKind::Opaque: return ValueDiscipline::Copyable;
     }
 
     return ValueDiscipline::Copyable;
@@ -160,6 +162,12 @@ struct FunctionPayload {
     friend constexpr bool operator==(FunctionPayload, FunctionPayload) = default;
 };
 
+struct ForeignFunctionPayload {
+    ForeignFunctionId function;
+
+    friend constexpr bool operator==(ForeignFunctionPayload, ForeignFunctionPayload) = default;
+};
+
 struct ReadBytesPayload {
     uint64_t length = 0;
 
@@ -174,7 +182,8 @@ using InstPayload = std::variant<std::monostate,
                                  UnitPayload,
                                  FieldPayload,
                                  FunctionPayload,
-                                 ReadBytesPayload>;
+                                 ReadBytesPayload,
+                                 ForeignFunctionPayload>;
 
 enum class PayloadKind {
     None,
@@ -186,6 +195,7 @@ enum class PayloadKind {
     Field,
     Function,
     ReadBytes,
+    ForeignFunction,
 };
 
 /** Whether a suspending parser read consumes bytes and how it resumes. */
@@ -241,6 +251,7 @@ constexpr bool payloadMatchesKind(const InstPayload& payload, PayloadKind kind) 
         case PayloadKind::Field: return std::holds_alternative<FieldPayload>(payload);
         case PayloadKind::Function: return std::holds_alternative<FunctionPayload>(payload);
         case PayloadKind::ReadBytes: return std::holds_alternative<ReadBytesPayload>(payload);
+        case PayloadKind::ForeignFunction: return std::holds_alternative<ForeignFunctionPayload>(payload);
     }
 
     return false;
@@ -308,7 +319,7 @@ inline constexpr ParserOperationContract KSubunitContract{
 
 // One entry per `Opcode` value, in declaration order, so `schemaFor()` can index directly without
 // per-call allocation.
-inline constexpr std::array<OpcodeSchema, 18> KSchemas{{
+inline constexpr std::array<OpcodeSchema, 19> KSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Constant,
         .spelling = "core.constant",
@@ -490,6 +501,17 @@ inline constexpr std::array<OpcodeSchema, 18> KSchemas{{
                  .is_terminator = false,
                  .is_pure = false,
                  .parser_contract = KReadBytesContract},
+    OpcodeSchema{.opcode = Opcode::OpaqueOp,
+                 .spelling = "opaque.op",
+                 // The operands are checked against the payload's declaration rather than a static constraint,
+                 // so an arbitrary count is allowed here. The result is that declaration's result type.
+                 .operand_types = KNoOperandTypes,
+                 .operand_roles = KNoOperandRoles,
+                 .result_type = anyType(),
+                 .payload_kind = PayloadKind::ForeignFunction,
+                 .is_terminator = false,
+                 .is_pure = false,
+                 .variadic = true},
 }};
 
 } // namespace detail
@@ -511,6 +533,8 @@ struct OperationEffects {
     bool publishes = false;
     bool may_suspend = false;
     bool may_fail = false;
+    bool reads_world = false;
+    bool writes_world = false;
 };
 
 constexpr OperationEffects effectsFor(Opcode opcode) {
@@ -531,6 +555,8 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
         case Opcode::VectorAppend:
         case Opcode::UnitCreate: return {.allocates = true};
         case Opcode::PublishField: return {.publishes = true};
+        // A foreign function may read and write any state, so it is opaque to every analysis.
+        case Opcode::OpaqueOp: return {.may_fail = true, .reads_world = true, .writes_world = true};
         case Opcode::Finish:
         case Opcode::Yield:
         case Opcode::Return:
