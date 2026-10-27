@@ -3,6 +3,7 @@
 #pragma once
 
 #include <optional>
+#include <string>
 #include <vector>
 
 #include <hilti/ast/ast-context.h>
@@ -19,6 +20,7 @@ struct RootDiscovery {
     std::vector<hilti::declaration::Type*> unit_declarations;
     std::vector<hilti::ast::TypeIndex> units_with_external_hooks;
     std::optional<UnsupportedFeature> unrepresented_content;
+    std::vector<std::string> cxx_includes; /**< `%cxx-include` headers of all modules */
 };
 
 RootDiscovery discoverRoots(const hilti::ASTContext& ctx);

@@ -21,6 +21,7 @@
 #include <hilti/ast/declarations/local-variable.h>
 #include <hilti/ast/declarations/module.h>
 #include <hilti/ast/declarations/parameter.h>
+#include <hilti/ast/declarations/property.h>
 #include <hilti/ast/declarations/type.h>
 #include <hilti/ast/expressions/assign.h>
 #include <hilti/ast/expressions/ctor.h>
@@ -70,6 +71,7 @@ struct VisitorRoots : public visitor::PreOrder {
     std::vector<hilti::declaration::Type*> unit_declarations;
     std::vector<hilti::ast::TypeIndex> units_with_external_hooks;
     std::optional<UnsupportedFeature> unrepresented_content;
+    std::vector<std::string> cxx_includes;
 
     static bool skipsImplementation(hilti::Declaration* n) {
         auto* m = n->parent<hilti::declaration::Module>();
@@ -79,6 +81,29 @@ struct VisitorRoots : public visitor::PreOrder {
     void operator()(hilti::declaration::Function* n) final {
         if ( n->isPublic() && ! skipsImplementation(n) )
             roots.push_back(n);
+    }
+
+    void operator()(hilti::declaration::Module* n) final {
+        for ( auto* property : n->moduleProperties("%cxx-include") ) {
+            auto* expr = property->expression();
+            auto* ctor = expr ? expr->tryAs<hilti::expression::Ctor>() : nullptr;
+            auto* str = ctor ? ctor->ctor()->tryAs<hilti::ctor::String>() : nullptr;
+            if ( ! str ) {
+                if ( ! unrepresented_content )
+                    unrepresented_content = unsupported(fmt("module '%s'", std::string(n->id())),
+                                                        "%cxx-include must be a constant string",
+                                                        property->meta().location());
+                continue;
+            }
+
+            cxx_includes.emplace_back(str->value());
+        }
+
+        // The PIR backend has no module initialization, so top-level statements must select the legacy output.
+        if ( ! n->skipImplementation() && ! n->statements()->statements().empty() && ! unrepresented_content )
+            unrepresented_content = unsupported(fmt("module '%s'", std::string(n->id())),
+                                                "module initialization is not supported yet",
+                                                n->meta().location());
     }
 
     void operator()(hilti::declaration::Type* n) final {
@@ -179,14 +204,18 @@ public:
                 auto place = _fieldPlace(op);
                 if ( auto* feature = std::get_if<UnsupportedFeature>(&place) )
                     return *feature;
-                return _builder.addLoad(_block,
-                                        std::get<ir::InstId>(place),
-                                        internSpan(_package, op->meta().location()));
+                return _load(std::get<ir::InstId>(place), op->meta().location());
             }
             return _lowerSum(op);
         }
 
         return _unsupported("unsupported expression", expr->meta().location());
+    }
+
+    // Whether the block being filled already ends in a return, so any further statement is unreachable.
+    bool returned() const {
+        const auto& insts = _package.block(_block).insts;
+        return ! insts.empty() && _package.inst(insts.back()).opcode == ir::Opcode::Return;
     }
 
     std::variant<ir::InstId, UnsupportedFeature> _lowerCtor(hilti::Ctor* ctor, const hilti::Location& loc);
@@ -222,7 +251,25 @@ private:
         const auto& var = std::get<Variable>(variable);
         if ( ! var.is_place )
             return var.value;
-        return _builder.addLoad(_block, var.value, internSpan(_package, name->meta().location()));
+        return _load(var.value, name->meta().location());
+    }
+
+    // Reading a place copies its value, which a native type that declares no copy behavior cannot do.
+    std::variant<ir::InstId, UnsupportedFeature> _load(ir::InstId place, const hilti::Location& loc) {
+        auto type = _package.inst(place).result_type;
+        if ( _package.isValid(type) && _package.type(type).kind == ir::TypeKind::Place )
+            type = _package.type(type).type_arguments[0];
+        if ( _isNonCopyableOpaque(type) )
+            return _unsupported("reading a mutable foreign value by copy", loc);
+        return _builder.addLoad(_block, place, internSpan(_package, loc));
+    }
+
+    bool _isNonCopyableOpaque(ir::TypeId type) const {
+        if ( ! _package.isValid(type) || _package.type(type).kind != ir::TypeKind::Opaque )
+            return false;
+
+        const auto& decl = _package.typeDecl(_package.type(type).declaration);
+        return ! decl.opaque || ! decl.opaque->lifecycle || ! decl.opaque->lifecycle->copyable;
     }
 
     // `self.<field>`, addressed through the unit being parsed.
@@ -347,6 +394,8 @@ public:
         }
 
         for ( auto* stmt : fn->body()->statements() ) {
+            if ( body.returned() )
+                return unsupported(feature, "statements after a return are not supported", stmt->meta().location());
             if ( auto error = body.lowerStatement(stmt) )
                 return *error;
         }
@@ -383,7 +432,9 @@ public:
             if ( type->isA<hilti::type::Any>() ) {
                 if ( param->kind() == hilti::parameter::Kind::InOut )
                     return unsupported(feature, "inout any parameters are not supported", param->meta().location());
-                parameters.emplace_back(ir::TypeId(), ir::ForeignArgument::TypeInfo);
+                bool as_pointer = param->attributes()->find(hilti::attribute::kind::CxxAnyAsPtr) != nullptr;
+                parameters.emplace_back(ir::TypeId(),
+                                        as_pointer ? ir::ForeignArgument::AnyPointer : ir::ForeignArgument::TypeInfo);
                 continue;
             }
 
@@ -414,7 +465,8 @@ public:
         auto& slot = tuple ? _print_tuple : _print;
         if ( ! slot.isSet() ) {
             std::vector<ir::ForeignParameter> parameters;
-            parameters.emplace_back(ir::TypeId(), tuple ? ir::ForeignArgument::Tuple : ir::ForeignArgument::TypeInfo);
+            parameters.emplace_back(ir::TypeId(),
+                                    tuple ? ir::ForeignArgument::AnyTuple : ir::ForeignArgument::TypeInfo);
             parameters.emplace_back(_builder.boolType());
             slot = _builder.createForeignFunction(tuple ? "printTuple" : "print",
                                                   tuple ? "hilti::rt::tuple::print" : "hilti::rt::print",
@@ -920,16 +972,22 @@ std::optional<UnsupportedFeature> lowerUnits(const std::vector<hilti::declaratio
 RootDiscovery discoverRoots(const hilti::ASTContext& ctx) {
     auto v = VisitorRoots();
     visitor::visit(v, ctx.root(), ".spicy");
-    return RootDiscovery{.roots = std::move(v.roots),
-                         .unit_declarations = std::move(v.unit_declarations),
-                         .units_with_external_hooks = std::move(v.units_with_external_hooks),
-                         .unrepresented_content = std::move(v.unrepresented_content)};
+    return RootDiscovery{
+        .roots = std::move(v.roots),
+        .unit_declarations = std::move(v.unit_declarations),
+        .units_with_external_hooks = std::move(v.units_with_external_hooks),
+        .unrepresented_content = std::move(v.unrepresented_content),
+        .cxx_includes = std::move(v.cxx_includes),
+    };
 }
 
 std::optional<UnsupportedFeature> lowerRoots(const RootDiscovery& discovery, ir::Package& package) {
     // If discovery doesn't support something, lowering also won't.
     if ( discovery.unrepresented_content )
         return discovery.unrepresented_content;
+
+    for ( const auto& include : discovery.cxx_includes )
+        package.builder().addCxxInclude(include);
 
     ProcedureLowerer procedures(package);
 

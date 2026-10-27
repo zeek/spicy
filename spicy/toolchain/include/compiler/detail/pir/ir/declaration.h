@@ -58,13 +58,14 @@ struct TypeDecl {
 
 /** How a native call receives an argument, beyond the parameter's declared type. */
 enum class ForeignArgument {
-    Value,    /**< a value of the parameter's declared type */
-    TypeInfo, /**< any copyable value; the native call also receives its runtime type information */
-    Tuple,    /**< any tuple; the native call takes a wildcard tuple whose element types the operand carries */
+    Value,      /**< a value of the parameter's declared type */
+    TypeInfo,   /**< any copyable value; the native call also receives its runtime type information */
+    AnyPointer, /**< any copyable value passed by pointer to its storage, plus its runtime type information */
+    AnyTuple,   /**< any tuple; the native call takes a wildcard tuple whose element types the operand carries */
 };
 
-/** A formal parameter of a foreign function. `type` is invalid for `TypeInfo` and `Tuple`, which check operands by
- * convention. */
+/** A formal parameter of a foreign function. `type` is invalid for the `any` and tuple conventions, which check
+ * operands by convention. */
 struct ForeignParameter {
     TypeId type;
     ForeignArgument argument = ForeignArgument::Value;

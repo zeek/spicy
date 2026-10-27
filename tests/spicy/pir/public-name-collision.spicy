@@ -1,0 +1,22 @@
+# @TEST-EXEC: spicyc --experimental-pir -j %INPUT other.spicy >output
+# @TEST-EXEC: spicyc --experimental-pir -p -D spicy-pir %INPUT other.spicy 2>&1 >/dev/null | rg "attached PIR-produced" >route
+# @TEST-EXEC: btest-diff route
+
+# @TEST-DOC: Tests that two public functions with the same local name in different modules compile through PIR
+# as one package, so that their backend symbols do not collide.
+
+module Test;
+
+public function answer(): int64 {
+    return 42;
+}
+
+@TEST-START-FILE other.spicy
+
+module Other;
+
+public function answer(): int64 {
+    return 11;
+}
+
+@TEST-END-FILE

@@ -1,0 +1,13 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: Tests that top-level statements of a module, which run at module initialization, prevent selection
+# of the PIR-only route. The legacy generator retains the statements.
+
+module Test;
+
+print "INIT MUST RUN";
+
+public function answer(): int64 {
+    return 42;
+}

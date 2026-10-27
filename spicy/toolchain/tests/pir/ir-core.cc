@@ -735,7 +735,7 @@ TEST_CASE("verifier rejects a tuple whose result does not match its operands") {
 namespace {
 
 ForeignParameter anyParameter() { return ForeignParameter{TypeId(), ForeignArgument::TypeInfo}; }
-ForeignParameter tupleParameter() { return ForeignParameter{TypeId(), ForeignArgument::Tuple}; }
+ForeignParameter tupleParameter() { return ForeignParameter{TypeId(), ForeignArgument::AnyTuple}; }
 
 } // namespace
 
@@ -745,11 +745,16 @@ TEST_CASE("a native any formal accepts any copyable operand, and a tuple formal 
     auto show = builder.createForeignFunction("show", "::show", {anyParameter()}, builder.voidType());
     auto show_tuple =
         builder.createForeignFunction("show_tuple", "::show_tuple", {tupleParameter()}, builder.voidType());
+    auto show_pointer = builder.createForeignFunction("show_pointer",
+                                                      "::show_pointer",
+                                                      {ForeignParameter{TypeId(), ForeignArgument::AnyPointer}},
+                                                      builder.voidType());
 
     auto fn = builder.createFunction("caller", builder.voidType());
     auto block = builder.createBlock(package.function(fn).root_region);
     builder.addOpaqueOp(block, show, {builder.addConstant(block, 1)});
     builder.addOpaqueOp(block, show, {builder.addBoolConstant(block, false)});
+    builder.addOpaqueOp(block, show_pointer, {builder.addConstant(block, 3)});
     builder.addOpaqueOp(block, show_tuple, {builder.addTuple(block, {builder.addConstant(block, 2)})});
     builder.addReturnVoid(block);
     CHECK(verify(package).empty());
@@ -758,7 +763,7 @@ TEST_CASE("a native any formal accepts any copyable operand, and a tuple formal 
     auto bad_builder = bad.builder();
     auto tuple_only = bad_builder.createForeignFunction("show_tuple",
                                                         "::show_tuple",
-                                                        {ForeignParameter{TypeId(), ForeignArgument::Tuple}},
+                                                        {ForeignParameter{TypeId(), ForeignArgument::AnyTuple}},
                                                         bad_builder.voidType());
     auto bad_fn = bad_builder.createFunction("caller", bad_builder.voidType());
     auto bad_block = bad_builder.createBlock(bad.function(bad_fn).root_region);
@@ -784,6 +789,40 @@ TEST_CASE("verifier rejects a load that copies an opaque value not declared copy
     builder.addReturnVoid(block);
 
     CHECK(hasDiagnostic(verify(package), diag::OpaqueLoadRequiresCopyable));
+}
+
+TEST_CASE("verifier checks call operands even though calls declare no operand types") {
+    Package package;
+    auto builder = package.builder();
+    auto callee = builder.createFunction("callee", {builder.int64Type()}, builder.int64Type());
+    auto callee_block = builder.createBlock(package.function(callee).root_region);
+    auto callee_arg = builder.addArgument(callee, callee_block, 0);
+    builder.addReturn(callee_block, callee_arg);
+
+    auto invalid = builder.createFunction("invalid", builder.int64Type());
+    auto invalid_block = builder.createBlock(package.function(invalid).root_region);
+    builder.addReturn(invalid_block, builder.addCall(invalid_block, callee, {InstId{9999}}));
+    CHECK(hasDiagnostic(verify(package), diag::InvalidOperandId));
+
+    auto foreign = builder.createFunction("foreign", builder.int64Type());
+    auto foreign_block = builder.createBlock(package.function(foreign).root_region);
+    builder.addReturn(foreign_block, builder.addCall(foreign_block, callee, {callee_arg}));
+    CHECK(hasDiagnostic(verify(package), diag::OperandNotSameBlock));
+
+    Package cyclic;
+    auto cyclic_builder = cyclic.builder();
+    auto cyclic_callee =
+        cyclic_builder.createFunction("callee", {cyclic_builder.int64Type()}, cyclic_builder.int64Type());
+    auto cyclic_callee_block = cyclic_builder.createBlock(cyclic.function(cyclic_callee).root_region);
+    cyclic_builder.addReturn(cyclic_callee_block, cyclic_builder.addArgument(cyclic_callee, cyclic_callee_block, 0));
+
+    auto fn = cyclic_builder.createFunction("caller", cyclic_builder.int64Type());
+    auto block = cyclic_builder.createBlock(cyclic.function(fn).root_region);
+    auto constant = cyclic_builder.addConstant(block, 42);
+    auto call = cyclic_builder.addCall(block, cyclic_callee, {constant});
+    cyclic.replaceInst(constant, Opcode::Call, {call}, FunctionPayload{cyclic_callee});
+    cyclic_builder.addReturn(block, call);
+    CHECK(hasDiagnostic(verify(cyclic), diag::OperandUsedBeforeDefinition));
 }
 
 TEST_CASE("a field place addresses a field of the unit that declares it") {

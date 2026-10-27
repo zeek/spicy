@@ -1,0 +1,18 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -p -D spicy-pir 2>&1 >/dev/null | rg "attached PIR-produced" >route
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -c 2>/dev/null | rg "native-pointer.h" >includes
+# @TEST-EXEC: btest-diff route
+# @TEST-EXEC: btest-diff includes
+
+# @TEST-DOC: Tests that the native headers declared by `%cxx-include` reach the generated PIR module, because a
+# foreign function declared with `&have_prototype` relies on them for its prototype.
+
+module Test;
+
+%cxx-include="native-pointer.h";
+
+function observe(x: any &cxx-any-as-ptr) &cxxname="observe" &have_prototype;
+
+public function answer(): int64 {
+    observe(-42);
+    return 42;
+}

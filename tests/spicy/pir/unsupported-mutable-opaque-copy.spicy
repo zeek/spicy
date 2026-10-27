@@ -1,0 +1,18 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: Tests that copying a mutable native library value prevents selection of the PIR-only route, because
+# the native type declares no copy behavior. The legacy generator retains the copy.
+
+module Test;
+
+type Handle = __library_type("hilti::rt::TypeInfo*");
+
+function make_handle(): Handle &cxxname="make_handle";
+function consume(h: Handle) &cxxname="consume";
+
+public function answer(): int64 {
+    local h = make_handle();
+    consume(h);
+    return 42;
+}
