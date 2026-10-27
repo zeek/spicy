@@ -954,6 +954,19 @@ TEST_CASE("View") {
         CHECK_EQ(ncur.data().str(), "BC");
     }
 
+    SUBCASE("advanceToNextData after trimming all input") {
+        auto stream = Stream("ABC"_b);
+        auto view = stream.view();
+        stream.trim(stream.end());
+
+        auto ncur = view.advanceToNextData();
+        CHECK_EQ(ncur.offset(), 3U);
+        CHECK_EQ(ncur.size(), 0U);
+
+        stream.append("D");
+        CHECK_EQ(ncur.data(), "D"_b);
+    }
+
     SUBCASE("dataForPrint") {
         auto s = make_stream({"AAA", "BBB", "CCC"});
         REQUIRE_EQ(s.numberOfChunks(), 3);
