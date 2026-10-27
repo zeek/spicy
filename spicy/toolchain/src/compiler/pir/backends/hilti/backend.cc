@@ -2,6 +2,7 @@
 
 #include <limits>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -29,6 +30,12 @@ namespace {
     return ::hilti::Meta(::hilti::Location(file, span.begin_line, span.end_line, span.begin_column, span.end_column));
 }
 
+// The synthetic module that holds every emitted declaration.
+constexpr std::string_view ModuleName = "__spicy_pir_backend";
+
+// A module-level declaration, qualified by its module so that a parameter or local of the same name cannot hide it.
+::hilti::ID moduleLevel(const std::string& name) { return ::hilti::ID({ModuleName, name}); }
+
 std::string unitName(ir::TypeDeclId id) { return fmt("Unit_%u", id.index); }
 std::string fieldName(ir::DeclId id) { return fmt("field_%u", id.index); }
 
@@ -42,6 +49,8 @@ using NameMap = std::unordered_map<uint32_t, FunctionNames>;
 
 // Public functions keep their source names where possible. Roots from different source modules may share a local name,
 // and a name may collide with a generated one, so a clashing root gets a numeric suffix.
+// TODO: Allocate implementation names by PIR identity to avoid collisions
+// after target normalization, such as C++ class and class_.
 NameMap makeNames(const ir::Package& package) {
     NameMap names;
     std::unordered_set<uint32_t> roots;
@@ -312,8 +321,8 @@ protected:
             case ir::Opcode::OpaqueOp: {
                 ::hilti::ID callee =
                     inst.opcode == ir::Opcode::Call ?
-                        ::hilti::ID(names_.at(std::get<ir::FunctionPayload>(inst.payload).function.index).function) :
-                        ::hilti::ID(
+                        moduleLevel(names_.at(std::get<ir::FunctionPayload>(inst.payload).function.index).function) :
+                        moduleLevel(
                             fmt("foreign_%u", std::get<ir::ForeignFunctionPayload>(inst.payload).function.index));
                 ::hilti::Expressions args;
                 for ( auto arg : inst.args )
@@ -687,7 +696,7 @@ private:
                 const auto& child_names = names_.at(child.index);
                 auto name = fmt("v_%u", id.index);
                 b.addLocal(::hilti::ID(name),
-                           b.call(::hilti::ID(child_names.function),
+                           b.call(moduleLevel(child_names.function),
                                   {b.id(::hilti::ID("data")),
                                    b.id(::hilti::ID("cursor")),
                                    b.id(::hilti::ID("bound_end"))},
@@ -858,7 +867,7 @@ LoweringResult lower(::hilti::Builder& builder, const ir::Package& package) {
         else
             decls.push_back(ProcedureEmitter(builder, package, names, id).emit());
     }
-    auto uid = ::hilti::declaration::module::UID(::hilti::ID("__spicy_pir_backend"), ".hlt", ".hlt");
+    auto uid = ::hilti::declaration::module::UID(::hilti::ID(ModuleName), ".hlt", ".hlt");
     return builder.declarationModule(uid, {}, decls);
 }
 
