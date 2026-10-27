@@ -277,9 +277,8 @@ View View::advanceToNextData() const {
     if ( last_end )
         return View(zero + *last_end, _end);
 
-    // If we have not found a next non-gap chunk simply return a view at the next
-    // byte. Since this is a gap chunk this can cause recovery in the caller.
-    return advance(1U);
+    // No chunks remain. Keep the position adjusted for any trimmed input.
+    return View(std::move(i), _end);
 }
 
 UnsafeConstIterator View::find(Byte b, UnsafeConstIterator n) const {
