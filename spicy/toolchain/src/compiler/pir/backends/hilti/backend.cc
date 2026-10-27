@@ -3,6 +3,7 @@
 #include <limits>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -39,10 +40,18 @@ struct FunctionNames {
 
 using NameMap = std::unordered_map<uint32_t, FunctionNames>;
 
+// Public functions keep their source names where possible. Roots from different source modules may share a local name,
+// and a name may collide with a generated one, so a clashing root gets a numeric suffix.
 NameMap makeNames(const ir::Package& package) {
     NameMap names;
+    std::unordered_set<uint32_t> roots;
+    for ( auto root : package.functionRoots() )
+        roots.insert(root.index);
+
     for ( size_t i = 0; i < package.functions().size(); ++i ) {
         auto id = static_cast<uint32_t>(i);
+        if ( roots.contains(id) )
+            continue;
         if ( package.function(ir::FunctionId{id}).kind == ir::FunctionKind::Parser )
             names.emplace(id,
                           FunctionNames{
@@ -56,8 +65,26 @@ NameMap makeNames(const ir::Package& package) {
         auto& entry = names.at(package.parserRoots()[i].function.index);
         entry = FunctionNames{.function = fmt("parse_root_%zu", i), .result = fmt("ParseResult_%zu", i), .root = true};
     }
-    for ( auto root : package.functionRoots() )
-        names.at(root.index) = FunctionNames{.function = std::string(package.function(root).name), .root = true};
+
+    std::unordered_set<std::string> taken = {"OutcomeKind", "hilti", "spicy_rt"};
+    for ( const auto& [_, entry] : names ) {
+        taken.insert(entry.function);
+        if ( ! entry.result.empty() )
+            taken.insert(entry.result);
+    }
+    for ( size_t i = 0; i < package.typeDecls().size(); ++i )
+        taken.insert(unitName(ir::TypeDeclId{static_cast<uint32_t>(i)}));
+    for ( size_t i = 0; i < package.foreignFunctions().size(); ++i )
+        taken.insert(fmt("foreign_%zu", i));
+
+    for ( auto root : package.functionRoots() ) {
+        const auto base = std::string(package.function(root).name);
+        auto name = base;
+        for ( size_t n = 1; taken.contains(name); ++n )
+            name = fmt("%s_%zu", base, n);
+        taken.insert(name);
+        names.emplace(root.index, FunctionNames{.function = name, .root = true});
+    }
     return names;
 }
 
@@ -195,7 +222,16 @@ using LocalBuilder = ::hilti::ExtendedBuilderTemplate<::hilti::Builder>;
         case ir::ForeignArgument::Value: return parameterFor(b, package, name, parameter.type, meta);
         case ir::ForeignArgument::TypeInfo:
             return b.parameter(::hilti::ID(name), b.typeAny(), ::hilti::parameter::Kind::In, meta);
-        case ir::ForeignArgument::Tuple:
+        case ir::ForeignArgument::AnyPointer: {
+            auto* attrs = b.attributeSet({b.attribute(::hilti::attribute::kind::CxxAnyAsPtr, meta)}, meta);
+            return b.declarationParameter(::hilti::ID(name),
+                                          b.typeAny(),
+                                          ::hilti::parameter::Kind::In,
+                                          nullptr,
+                                          attrs,
+                                          meta);
+        }
+        case ir::ForeignArgument::AnyTuple:
             return b.parameter(::hilti::ID(name),
                                b.typeTuple(::hilti::type::Wildcard{}),
                                ::hilti::parameter::Kind::In,
@@ -795,6 +831,8 @@ LoweringResult lower(::hilti::Builder& builder, const ir::Package& package) {
 
     auto names = makeNames(package);
     ::hilti::Declarations decls = {builder.import("hilti"), builder.import("spicy_rt")};
+    for ( const auto& include : package.cxxIncludes() )
+        decls.push_back(builder.declarationProperty(::hilti::ID("%cxx-include"), builder.stringLiteral(include)));
     auto* outcome = builder.typeEnum(::hilti::type::enum_::Labels{
         builder.typeEnumLabel(::hilti::ID("Success")),
         builder.typeEnumLabel(::hilti::ID("UnexpectedEod")),

@@ -115,6 +115,8 @@ public:
     const std::vector<ParserRoot>& parserRoots() const { return _parser_roots; }
     /** Selected public ordinary functions, in source order. */
     const std::vector<FunctionId>& functionRoots() const { return _function_roots; }
+    /** Native headers that the foreign declarations depend on, in source order without duplicates. */
+    const std::vector<std::string>& cxxIncludes() const { return _cxx_includes; }
 
     bool isValid(TypeId id) const { return _types.isValid(id); }
     bool isValid(FunctionId id) const { return _functions.isValid(id); }
@@ -138,6 +140,7 @@ private:
     Arena<ForeignFunction, ForeignFunctionId> _foreign_functions;
     std::vector<ParserRoot> _parser_roots;
     std::vector<FunctionId> _function_roots;
+    std::vector<std::string> _cxx_includes;
 
     TypeId _void_type;
     TypeId _int64_type;

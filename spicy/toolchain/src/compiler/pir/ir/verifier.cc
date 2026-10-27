@@ -143,8 +143,9 @@ public:
         switch ( parameter.argument ) {
             case ForeignArgument::Value: return type == parameter.type;
             case ForeignArgument::TypeInfo:
+            case ForeignArgument::AnyPointer:
                 return type != _package.voidType() && typeDiscipline(_package, type) == ValueDiscipline::Copyable;
-            case ForeignArgument::Tuple: return _package.type(type).kind == TypeKind::Tuple;
+            case ForeignArgument::AnyTuple: return _package.type(type).kind == TypeKind::Tuple;
         }
 
         return false;
@@ -640,17 +641,13 @@ private:
                 _emitter.emit(diag::MissingPayload, inst_id);
         }
 
+        // Opcodes without operand type constraints (such as calls) still need their operands checked for validity,
+        // block membership, and definition order.
         for ( size_t a = 0; a < inst.args.size(); ++a ) {
-            if ( schema->operand_types.empty() )
-                break;
-            _verifyOperand(function_id,
-                           inst_id,
-                           block_id,
-                           schema->operand_types[std::min(a, schema->operand_types.size() - 1)],
-                           a,
-                           inst.args[a],
-                           defined,
-                           function_result_type);
+            const TypeConstraint* constraint =
+                schema->operand_types.empty() ? nullptr :
+                                                &schema->operand_types[std::min(a, schema->operand_types.size() - 1)];
+            _verifyOperand(function_id, inst_id, block_id, constraint, a, inst.args[a], defined, function_result_type);
         }
 
         _verifyResultType(inst_id, inst, *schema);
@@ -1000,7 +997,7 @@ private:
     void _verifyOperand(FunctionId function_id,
                         InstId user,
                         BlockId block_id,
-                        const TypeConstraint& constraint,
+                        const TypeConstraint* constraint,
                         size_t operand_index,
                         InstId arg,
                         const std::unordered_set<uint32_t>& defined,
@@ -1025,8 +1022,8 @@ private:
         if ( arg_inst.result_type == _package.voidType() )
             _emitter.emit(diag::VoidOperandUsed, user, operand_index);
 
-        if ( ! _satisfies(constraint, arg_inst.result_type, function_result_type) ) {
-            if ( constraint.kind == TypeConstraintKind::SameAsFunctionResult )
+        if ( constraint && ! _satisfies(*constraint, arg_inst.result_type, function_result_type) ) {
+            if ( constraint->kind == TypeConstraintKind::SameAsFunctionResult )
                 _emitter
                     .emit(diag::ReturnTypeMismatch,
                           user,

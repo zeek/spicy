@@ -104,7 +104,8 @@ std::string foreignParameterName(const Package& package, const ForeignParameter&
     switch ( parameter.argument ) {
         case ForeignArgument::Value: return typeName(package, parameter.type);
         case ForeignArgument::TypeInfo: return "any";
-        case ForeignArgument::Tuple: return "tuple<*>";
+        case ForeignArgument::AnyPointer: return "any &cxx-any-as-ptr";
+        case ForeignArgument::AnyTuple: return "tuple<*>";
     }
 
     return "<unknown-argument>";

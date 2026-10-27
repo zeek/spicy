@@ -1,5 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <algorithm>
 #include <cassert>
 #include <utility>
 
@@ -154,6 +155,12 @@ void Builder::addParserRoot(TypeDeclId unit, FunctionId function) {
 }
 
 void Builder::addFunctionRoot(FunctionId function) { _package._function_roots.push_back(function); }
+
+void Builder::addCxxInclude(std::string header) {
+    auto& includes = _package._cxx_includes;
+    if ( std::ranges::find(includes, header) == includes.end() )
+        includes.push_back(std::move(header));
+}
 
 FunctionId Builder::createFunction(std::string name, TypeId result_type, SourceSpanId span) {
     return createFunction(std::move(name), {}, result_type, span);
