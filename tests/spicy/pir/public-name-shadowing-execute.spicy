@@ -1,0 +1,54 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -P "" -o Foo.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -p -D spicy-pir 2>&1 >/dev/null | rg "attached PIR-produced" >route
+# @TEST-EXEC: btest-diff route
+
+# @TEST-DOC: Tests that a call to a public function is not captured by a generated parameter or local of the
+# same name in the caller. The callees are named like the generated parameters and locals of the caller.
+
+module Test;
+
+public function arg_0(): int64 {
+    return 11;
+}
+
+public function v_2(): int64 {
+    return 22;
+}
+
+public function with_parameter(x: int64): int64 {
+    return arg_0() + x;
+}
+
+public function with_local(): int64 {
+    local x: int64 = 42;
+    return v_2() + x;
+}
+
+@TEST-START-FILE driver.cc
+
+#include <iostream>
+
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+#include "Foo.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    auto a = hlt::_r__spicy_pir_backend::with_parameter(100);
+    auto b = hlt::_r__spicy_pir_backend::with_local();
+    std::cout << "with_parameter: " << a.get<hilti::rt::integer::safe<int64_t>>() << std::endl;
+    std::cout << "with_local: " << b.get<hilti::rt::integer::safe<int64_t>>() << std::endl;
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    hilti::rt::init();
+    spicy::rt::init();
+    hilti_main();
+    hilti::rt::done();
+    return 0;
+}
+
+@TEST-END-FILE
