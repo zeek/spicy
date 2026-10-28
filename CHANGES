@@ -1,3 +1,17 @@
+1.18.0-dev.51 | 2026-10-28 09:54:56 -0400
+
+  * GH-2536: Fix synchronization after fully trimmed input (Evan Typanski, Corelight)
+
+    Fixes #2536
+
+    A nested parser can trim all available input, then fail. If the outer
+    parser then attempts to synchronize, where the view starts before that
+    retained range, advancing the cursor will advance from the *original*,
+    not the new one. This means synchronization won't see the new data and
+    cause an invalid iterator.
+
+    Instead, just use the previously computed iterator for that case.
+
 1.18.0-dev.49 | 2026-10-28 06:45:27 -0400
 
   * GH-2526: Fix `!info` counting as `!in` operator (Evan Typanski, Corelight)
