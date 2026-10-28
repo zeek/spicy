@@ -150,8 +150,8 @@ ForeignFunctionId Builder::createForeignFunction(std::string name,
     });
 }
 
-void Builder::addParserRoot(TypeDeclId unit, FunctionId function) {
-    _package._parser_roots.push_back(ParserRoot{.unit = unit, .function = function});
+void Builder::addParserRoot(TypeDeclId unit, FunctionId function, std::string name) {
+    _package._parser_roots.push_back(ParserRoot{.unit = unit, .function = function, .name = std::move(name)});
 }
 
 void Builder::addFunctionRoot(FunctionId function) { _package._function_roots.push_back(function); }
@@ -439,6 +439,22 @@ InstId Builder::addGlobalPlace(BlockId block, GlobalId global, SourceSpanId span
         result_type = placeType(_package.global(global).type);
 
     return addInst(block, Opcode::GlobalPlace, {}, result_type, InstPayload(GlobalPayload{global}), span);
+}
+
+InstId Builder::addUint64Constant(BlockId block, uint64_t value, SourceSpanId span) {
+    return addInst(block, Opcode::Uint64Constant, {}, uint64Type(), InstPayload(Uint64Literal{value}), span);
+}
+
+InstId Builder::addForeignConstant(BlockId block, TypeId type, std::string spelling, SourceSpanId span) {
+    return addInst(block, Opcode::ForeignConstant, {}, type, InstPayload(StringLiteral{std::move(spelling)}), span);
+}
+
+InstId Builder::addPortConstant(BlockId block, TypeId type, PortLiteral value, SourceSpanId span) {
+    return addInst(block, Opcode::PortConstant, {}, type, InstPayload(value), span);
+}
+
+InstId Builder::addLinkerScope(BlockId block, SourceSpanId span) {
+    return addInst(block, Opcode::LinkerScope, {}, uint64Type(), {}, span);
 }
 
 InstId Builder::addInvokeHook(BlockId block, InstId unit_value, FunctionId hook, SourceSpanId span) {

@@ -77,6 +77,7 @@ struct Function {
 struct ParserRoot {
     TypeDeclId unit;
     FunctionId function;
+    std::string name; /**< the parser's exported, qualified name */
 };
 
 /**

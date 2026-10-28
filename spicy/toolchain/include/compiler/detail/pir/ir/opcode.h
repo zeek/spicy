@@ -48,6 +48,10 @@ enum class Opcode {
     Equal,
     GlobalPlace,
     InvokeHook,
+    Uint64Constant,
+    ForeignConstant,
+    PortConstant,
+    LinkerScope,
 };
 
 enum class TypeKind {
@@ -193,6 +197,22 @@ struct GlobalPayload {
     friend constexpr bool operator==(GlobalPayload, GlobalPayload) = default;
 };
 
+struct Uint64Literal {
+    uint64_t value = 0;
+
+    friend constexpr bool operator==(Uint64Literal, Uint64Literal) = default;
+};
+
+/** The transport protocol of a port, as the runtime's `hilti::rt::Protocol` names it. */
+enum class Transport { TCP, UDP, ICMP };
+
+struct PortLiteral {
+    uint16_t number = 0;
+    Transport transport = Transport::TCP;
+
+    friend constexpr bool operator==(PortLiteral, PortLiteral) = default;
+};
+
 struct FunctionPayload {
     FunctionId function;
 
@@ -259,7 +279,9 @@ using InstPayload = std::variant<std::monostate,
                                  BytesLiteral,
                                  BranchPayload,
                                  JumpPayload,
-                                 GlobalPayload>;
+                                 GlobalPayload,
+                                 Uint64Literal,
+                                 PortLiteral>;
 
 enum class PayloadKind {
     None,
@@ -278,6 +300,8 @@ enum class PayloadKind {
     Branch,
     Jump,
     Global,
+    Uint64Literal,
+    Port,
 };
 
 /** Whether a suspending parser read consumes bytes and how it resumes. */
@@ -340,6 +364,8 @@ constexpr bool payloadMatchesKind(const InstPayload& payload, PayloadKind kind) 
         case PayloadKind::Branch: return std::holds_alternative<BranchPayload>(payload);
         case PayloadKind::Jump: return std::holds_alternative<JumpPayload>(payload);
         case PayloadKind::Global: return std::holds_alternative<GlobalPayload>(payload);
+        case PayloadKind::Uint64Literal: return std::holds_alternative<Uint64Literal>(payload);
+        case PayloadKind::Port: return std::holds_alternative<PortLiteral>(payload);
     }
 
     return false;
@@ -423,7 +449,7 @@ inline constexpr ParserOperationContract KSubunitContract{
 
 // One entry per `Opcode` value, in declaration order, so `schemaFor()` can index directly without
 // per-call allocation.
-inline constexpr std::array<OpcodeSchema, 33> KSchemas{{
+inline constexpr std::array<OpcodeSchema, 37> KSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Constant,
         .spelling = "core.constant",
@@ -736,6 +762,38 @@ inline constexpr std::array<OpcodeSchema, 33> KSchemas{{
                  .payload_kind = PayloadKind::Function,
                  .is_terminator = false,
                  .is_pure = false},
+    OpcodeSchema{.opcode = Opcode::Uint64Constant,
+                 .spelling = "core.uint64_constant",
+                 .operand_types = KNoOperandTypes,
+                 .operand_roles = KNoOperandRoles,
+                 .result_type = fixedType(TypeKind::UInt64),
+                 .payload_kind = PayloadKind::Uint64Literal,
+                 .is_terminator = false,
+                 .is_pure = true},
+    OpcodeSchema{.opcode = Opcode::ForeignConstant,
+                 .spelling = "core.foreign_constant",
+                 .operand_types = KNoOperandTypes,
+                 .operand_roles = KNoOperandRoles,
+                 .result_type = fixedType(TypeKind::Opaque),
+                 .payload_kind = PayloadKind::StringLiteral,
+                 .is_terminator = false,
+                 .is_pure = true},
+    OpcodeSchema{.opcode = Opcode::PortConstant,
+                 .spelling = "core.port_constant",
+                 .operand_types = KNoOperandTypes,
+                 .operand_roles = KNoOperandRoles,
+                 .result_type = fixedType(TypeKind::Opaque),
+                 .payload_kind = PayloadKind::Port,
+                 .is_terminator = false,
+                 .is_pure = true},
+    OpcodeSchema{.opcode = Opcode::LinkerScope,
+                 .spelling = "core.linker_scope",
+                 .operand_types = KNoOperandTypes,
+                 .operand_roles = KNoOperandRoles,
+                 .result_type = fixedType(TypeKind::UInt64),
+                 .payload_kind = PayloadKind::None,
+                 .is_terminator = false,
+                 .is_pure = true},
 }};
 
 } // namespace detail
@@ -796,7 +854,11 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
         case Opcode::Tuple:
         case Opcode::BoolConstant:
         case Opcode::StringConstant:
-        case Opcode::BytesConstant: return {};
+        case Opcode::BytesConstant:
+        case Opcode::Uint64Constant:
+        case Opcode::ForeignConstant:
+        case Opcode::PortConstant:
+        case Opcode::LinkerScope: return {};
         case Opcode::FieldPlace:
         case Opcode::GlobalPlace: return {.reads_places = true};
         case Opcode::Finish:

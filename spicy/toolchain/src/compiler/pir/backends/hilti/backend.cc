@@ -47,9 +47,17 @@ struct FunctionNames {
     bool root = false;
 };
 
-// Names of the package's functions, plus the module-level names the backend generates for globals.
+// The names of one parser entry: its adapter, its registered record, and its registration.
+struct ParserEntryNames {
+    std::string parse1;
+    std::string parser;
+    std::string registration;
+};
+
+// Names of the package's functions, plus the module-level names the backend generates for globals and parser entries.
 struct NameMap : std::unordered_map<uint32_t, FunctionNames> {
-    std::vector<std::string> globals; /**< by global index */
+    std::vector<std::string> globals;             /**< by global index */
+    std::vector<ParserEntryNames> parser_entries; /**< by parser root index */
 };
 
 // Public functions keep their source names where possible. Roots from different source modules may share a local name,
@@ -111,6 +119,10 @@ NameMap makeNames(const ir::Package& package) {
     };
     for ( size_t i = 0; i < package.globals().size(); ++i )
         names.globals.push_back(unique(fmt("g_%zu", i)));
+    for ( size_t i = 0; i < package.parserRoots().size(); ++i )
+        names.parser_entries.push_back(ParserEntryNames{.parse1 = unique(fmt("parse1_%zu", i)),
+                                                        .parser = unique(fmt("parser_%zu", i)),
+                                                        .registration = unique(fmt("register_parser_%zu", i))});
     return names;
 }
 
@@ -415,6 +427,40 @@ protected:
                     elements.push_back(_value(b, element));
                 auto name = fmt("v_%u", id.index);
                 b.addLocal(::hilti::ID(name), targetType(b, package_, inst.result_type), b.tuple(elements, meta), meta);
+                values_[id.index] = std::move(name);
+                return true;
+            }
+            case ir::Opcode::Uint64Constant: {
+                auto name = fmt("v_%u", id.index);
+                b.addLocal(::hilti::ID(name),
+                           targetType(b, package_, inst.result_type),
+                           b.integer(std::get<ir::Uint64Literal>(inst.payload).value, meta),
+                           meta);
+                values_[id.index] = std::move(name);
+                return true;
+            }
+            case ir::Opcode::ForeignConstant:
+                // A native constant is named where it is used, so it needs no local.
+                values_[id.index] = std::get<ir::StringLiteral>(inst.payload).value;
+                return true;
+            case ir::Opcode::PortConstant: {
+                auto name = fmt("v_%u", id.index);
+                const auto& port = std::get<ir::PortLiteral>(inst.payload);
+                ::hilti::rt::Protocol protocol = ::hilti::rt::Protocol::TCP;
+                if ( port.transport == ir::Transport::UDP )
+                    protocol = ::hilti::rt::Protocol::UDP;
+                else if ( port.transport == ir::Transport::ICMP )
+                    protocol = ::hilti::rt::Protocol::ICMP;
+                b.addLocal(::hilti::ID(name),
+                           targetType(b, package_, inst.result_type),
+                           b.port(::hilti::rt::Port(port.number, protocol), meta),
+                           meta);
+                values_[id.index] = std::move(name);
+                return true;
+            }
+            case ir::Opcode::LinkerScope: {
+                auto name = fmt("v_%u", id.index);
+                b.addLocal(::hilti::ID(name), targetType(b, package_, inst.result_type), b.scope(meta), meta);
                 values_[id.index] = std::move(name);
                 return true;
             }
@@ -921,6 +967,123 @@ private:
 
 } // namespace
 
+// The runtime entry of one parser root: a `parse1` adapter with the runtime's endpoint signature, the
+// `spicy_rt::Parser` record that describes the parser, and the initialization that registers that record. The record
+// must outlive the runtime's use of it, so it is a module-level variable rather than a local of the registration.
+void lowerParserEntry(::hilti::Builder& builder,
+                      const ir::Package& package,
+                      const NameMap& names,
+                      const ir::ParserRoot& root,
+                      size_t index,
+                      ::hilti::Declarations& decls) {
+    auto meta = metaFor(package, package.function(root.function).span);
+    const auto& names_root = names.at(root.function.index);
+    const auto& entry = names.parser_entries.at(index);
+    const auto& parse1 = entry.parse1;
+    const auto& parser = entry.parser;
+    auto* view_type = builder.qualifiedType(builder.typeStreamView(), ::hilti::Constness::Mutable);
+    auto* context_type =
+        builder.qualifiedType(builder.typeLibrary(::hilti::Constness::Mutable, "::spicy::rt::UnitContext"),
+                              ::hilti::Constness::Mutable);
+
+    // The adapter takes the runtime's endpoint arguments, runs the root parser over them, and returns where the parser
+    // finished. Resumption needs no adapter state: the root's own input waits suspend the call, and the runtime resumes
+    // it with the same input.
+    ::hilti::declaration::Parameters params = {
+        builder.parameter(::hilti::ID("data"),
+                          builder.typeValueReference(
+                              builder.qualifiedType(builder.typeStream(), ::hilti::Constness::Mutable)),
+                          ::hilti::parameter::Kind::InOut,
+                          meta),
+        builder.parameter(::hilti::ID("initial_cursor"),
+                          builder.typeOptional(view_type),
+                          ::hilti::parameter::Kind::In,
+                          meta),
+        builder.parameter(::hilti::ID("unit_context"),
+                          builder.typeOptional(context_type),
+                          ::hilti::parameter::Kind::In,
+                          meta),
+    };
+    auto* body = builder.statementBlock(meta);
+    LocalBuilder fb(builder.context(), body);
+    fb.addLocal(::hilti::ID("result"),
+                fb.call(moduleLevel(names_root.function),
+                        {fb.id(::hilti::ID("data")), fb.id(::hilti::ID("initial_cursor"))},
+                        meta),
+                meta);
+    auto* success =
+        fb.equal(fb.member(fb.id(::hilti::ID("result")), "kind"), fb.id(::hilti::ID("OutcomeKind::Success")), meta);
+    auto returned = fb.addIf(success, meta);
+    returned->addReturn(returned->member(returned->id(::hilti::ID("result")), "cursor"), meta);
+    fb.addThrow(fb.exception(fb.typeName("spicy_rt::ParseError"), "parsing did not complete", meta), meta);
+    decls.push_back(builder.function(::hilti::ID(parse1),
+                                     view_type,
+                                     params,
+                                     body,
+                                     ::hilti::type::function::Flavor::Function,
+                                     ::hilti::declaration::Linkage::Public,
+                                     ::hilti::type::function::CallingConvention::Extern,
+                                     {},
+                                     meta));
+
+    // The record is what the runtime reads: the parser's exported name, its adapter, and its unit's type information.
+    auto* none = builder.null(meta);
+    auto* mime = builder.vector(builder.qualifiedType(builder.typeVector(
+                                                          builder.qualifiedType(builder.typeName("spicy_rt::MIMEType"),
+                                                                                ::hilti::Constness::Const)),
+                                                      ::hilti::Constness::Const),
+                                {},
+                                meta);
+    auto* ports =
+        builder.vector(builder.qualifiedType(builder.typeVector(
+                                                 builder.qualifiedType(builder.typeName("spicy_rt::ParserPort"),
+                                                                       ::hilti::Constness::Const)),
+                                             ::hilti::Constness::Const),
+                       {},
+                       meta);
+    auto* record =
+        builder.struct_({builder.ctorStructField(::hilti::ID("name"), builder.stringLiteral(root.name, meta)),
+                         builder.ctorStructField(::hilti::ID("is_public"), builder.bool_(true, meta)),
+                         builder.ctorStructField(::hilti::ID("parse1"), builder.id(::hilti::ID(parse1))),
+                         builder.ctorStructField(::hilti::ID("parse2"), none),
+                         builder.ctorStructField(::hilti::ID("parse3"), none),
+                         builder.ctorStructField(::hilti::ID("context_new"), none),
+                         builder.ctorStructField(::hilti::ID("type_"), builder.id(::hilti::ID(unitName(root.unit)))),
+                         builder.ctorStructField(::hilti::ID("description"), builder.stringMutable("", meta)),
+                         builder.ctorStructField(::hilti::ID("mime_types"), mime),
+                         builder.ctorStructField(::hilti::ID("ports"), ports)},
+                        meta);
+    // The runtime keeps a pointer to the record, so the record is a field of a module-level variable, whose storage
+    // stays in place for the program's lifetime. The record is assigned in the registration, which runs at
+    // initialization.
+    decls.push_back(
+        builder.global(::hilti::ID(parser),
+                       builder.qualifiedType(builder.typeName("spicy_rt::Parser"), ::hilti::Constness::Mutable),
+                       ::hilti::declaration::Linkage::Private,
+                       meta));
+
+    // Registration runs at initialization, after the record's module-level variable is initialized.
+    auto* register_body = builder.statementBlock(meta);
+    LocalBuilder rb(builder.context(), register_body);
+    rb.addAssign(rb.id(::hilti::ID(parser)), record);
+    rb.addExpression(rb.call("spicy_rt::registerParser",
+                             {rb.id(::hilti::ID(parser)),
+                              rb.scope(meta),
+                              rb.strongReference(rb.qualifiedType(rb.typeName(::hilti::ID(unitName(root.unit))),
+                                                                  ::hilti::Constness::Const),
+                                                 meta)},
+                             meta));
+    decls.push_back(builder.function(::hilti::ID(entry.registration),
+                                     builder.qualifiedType(builder.typeVoid(), ::hilti::Constness::Const),
+                                     {},
+                                     register_body,
+                                     ::hilti::type::function::Flavor::Function,
+                                     ::hilti::declaration::Linkage::Init,
+                                     ::hilti::type::function::CallingConvention::Standard,
+                                     {},
+                                     meta));
+}
+
 LoweringResult lower(::hilti::Builder& builder, const ir::Package& package) {
     auto unsupported = checkCoverage(package);
     if ( ! unsupported.empty() )
@@ -966,6 +1129,9 @@ LoweringResult lower(::hilti::Builder& builder, const ir::Package& package) {
                                        ::hilti::declaration::Linkage::Private,
                                        meta));
     }
+    for ( size_t i = 0; i < package.parserRoots().size(); ++i )
+        lowerParserEntry(builder, package, names, package.parserRoots()[i], i, decls);
+
     auto uid = ::hilti::declaration::module::UID(::hilti::ID(ModuleName), ".hlt", ".hlt");
     return builder.declarationModule(uid, {}, decls);
 }
