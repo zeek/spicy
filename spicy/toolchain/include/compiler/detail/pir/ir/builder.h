@@ -66,7 +66,7 @@ public:
     /** Appends a module-level function to run at the given initialization phase. */
     void addInitializer(InitPhase phase, FunctionId function);
     /** Appends a selected parser implementation; call only once the function is complete. */
-    void addParserRoot(TypeDeclId unit, FunctionId function);
+    void addParserRoot(TypeDeclId unit, FunctionId function, std::string name = {});
     /** Appends a selected public ordinary function; call only once the function is complete. */
     void addFunctionRoot(FunctionId function);
     /** Records a native header to include; repeated headers are ignored. */
@@ -142,6 +142,14 @@ public:
     InstId addBoolConstant(BlockId block, bool value, SourceSpanId span = {});
     InstId addStringConstant(BlockId block, std::string value, SourceSpanId span = {});
     InstId addBytesConstant(BlockId block, std::string value, SourceSpanId span = {});
+    /** Adds `core.uint64_constant` holding `value`. */
+    InstId addUint64Constant(BlockId block, uint64_t value, SourceSpanId span = {});
+    /** Adds `core.foreign_constant` naming a native constant `spelling` of the opaque type `type`. */
+    InstId addForeignConstant(BlockId block, TypeId type, std::string spelling, SourceSpanId span = {});
+    /** Adds `core.port_constant` holding a port of type `type`, which is the opaque native port type. */
+    InstId addPortConstant(BlockId block, TypeId type, PortLiteral value, SourceSpanId span = {});
+    /** Adds `core.linker_scope`, the scope that identifies this package's parsers to the runtime. */
+    InstId addLinkerScope(BlockId block, SourceSpanId span = {});
     /** Adds `core.global_place` addressing `global`, which stays valid for the whole program. */
     InstId addGlobalPlace(BlockId block, GlobalId global, SourceSpanId span = {});
     /** Adds `core.local_place` that holds a copy of `initial`, and returns the place. */

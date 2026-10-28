@@ -102,6 +102,17 @@ std::optional<std::string> renderPayload(const Package& package, const InstPaylo
             return std::string("@<invalid-global>");
         return fmt("@global %%%u \"%s\"", global->global.index, package.global(global->global).name);
     }
+    if ( const auto* literal = std::get_if<Uint64Literal>(&payload) )
+        return fmt("%llu", static_cast<unsigned long long>(literal->value));
+
+    if ( const auto* port = std::get_if<PortLiteral>(&payload) ) {
+        switch ( port->transport ) {
+            case Transport::TCP: return fmt("%u/tcp", port->number);
+            case Transport::UDP: return fmt("%u/udp", port->number);
+            case Transport::ICMP: return fmt("%u/icmp", port->number);
+        }
+    }
+
     if ( const auto* bytes = std::get_if<BytesLiteral>(&payload) )
         return fmt("b\"%s\"", bytes->value);
 

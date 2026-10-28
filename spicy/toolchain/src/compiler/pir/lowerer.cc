@@ -13,8 +13,10 @@
 #include <hilti/ast/ctors/coerced.h>
 #include <hilti/ast/ctors/integer.h>
 #include <hilti/ast/ctors/null.h>
+#include <hilti/ast/ctors/port.h>
 #include <hilti/ast/ctors/string.h>
 #include <hilti/ast/ctors/tuple.h>
+#include <hilti/ast/ctors/vector.h>
 #include <hilti/ast/declarations/constant.h>
 #include <hilti/ast/declarations/function.h>
 #include <hilti/ast/declarations/global-variable.h>
@@ -26,6 +28,7 @@
 #include <hilti/ast/expressions/assign.h>
 #include <hilti/ast/expressions/coerced.h>
 #include <hilti/ast/expressions/ctor.h>
+#include <hilti/ast/expressions/keyword.h>
 #include <hilti/ast/expressions/logical-not.h>
 #include <hilti/ast/expressions/member.h>
 #include <hilti/ast/expressions/name.h>
@@ -63,6 +66,17 @@ using hilti::util::fmt;
 namespace spicy::detail::pir {
 
 namespace {
+
+// The PIR transport of a runtime protocol, if a port of that protocol can be a constant.
+std::optional<ir::Transport> portTransport(hilti::rt::Protocol protocol) {
+    if ( protocol == hilti::rt::Protocol::TCP )
+        return ir::Transport::TCP;
+    if ( protocol == hilti::rt::Protocol::UDP )
+        return ir::Transport::UDP;
+    if ( protocol == hilti::rt::Protocol::ICMP )
+        return ir::Transport::ICMP;
+    return std::nullopt;
+}
 
 UnsupportedFeature unsupported(const std::string& feature, std::string reason, const hilti::Location& loc) {
     return UnsupportedFeature{.feature = feature, .reason = std::move(reason), .location = loc};
@@ -238,8 +252,16 @@ public:
         if ( auto* ctor_expr = expr->tryAs<hilti::expression::Ctor>() )
             return _lowerCtor(ctor_expr->ctor(), expr->meta().location());
 
-        if ( auto* name = expr->tryAs<hilti::expression::Name>() )
+        if ( auto* name = expr->tryAs<hilti::expression::Name>() ) {
+            // Enum labels of a named native enum refer to the native constant, not to a declaration.
+            if ( ! name->resolvedDeclaration() )
+                return _lowerForeignConstant(name);
             return _read(name);
+        }
+
+        if ( auto* keyword = expr->tryAs<hilti::expression::Keyword>();
+             keyword && keyword->kind() == hilti::expression::keyword::Kind::Scope )
+            return _builder.addLinkerScope(_block, internSpan(_package, expr->meta().location()));
 
         if ( auto* negation = expr->tryAs<hilti::expression::LogicalNot>() ) {
             auto operand = lower(negation->expression());
@@ -451,6 +473,9 @@ private:
         return it->second;
     }
 
+    // A constant of a native type, referred to by its spelling in the runtime.
+    std::variant<ir::InstId, UnsupportedFeature> _lowerForeignConstant(hilti::expression::Name* name);
+
     // A module-level variable is addressed through a place created in the current block.
     std::variant<Variable, UnsupportedFeature> _lookupGlobal(hilti::declaration::GlobalVariable* global,
                                                              const hilti::Location& loc);
@@ -498,8 +523,14 @@ public:
 
     // The PIR type of a Spicy type that procedural code can hold, if PIR can represent it yet.
     std::optional<ir::TypeId> valueType(const hilti::UnqualifiedType* type) {
-        if ( const auto* named = type->tryAs<hilti::type::Name>() )
+        if ( const auto* named = type->tryAs<hilti::type::Name>() ) {
+            // The finite set of named enums that procedural code passes to the runtime.
+            if ( named->id() == hilti::ID("hilti::Protocol") )
+                return _opaqueNative("hilti::rt::Protocol", true);
             return named->resolvedType() ? valueType(named->resolvedType()) : std::nullopt;
+        }
+        if ( type->isA<hilti::type::Port>() )
+            return _opaqueNative("hilti::rt::Port", true);
         if ( const auto* vector = type->tryAs<hilti::type::Vector>() ) {
             auto element = valueType(vector->elementType()->type());
             if ( ! element || *element == _builder.voidType() )
@@ -729,16 +760,20 @@ private:
 
     // Opaque types are nominal per native type: the same native name and constness is one declaration.
     ir::TypeId _opaque(const hilti::type::Library* library) {
-        auto key = fmt("%s %s", library->isConstant() ? "const" : "mutable", library->cxxName());
+        return _opaqueNative(library->cxxName(), library->isConstant());
+    }
+
+    ir::TypeId _opaqueNative(const std::string& cxx_name, bool constant) {
+        auto key = fmt("%s %s", constant ? "const" : "mutable", cxx_name);
         if ( auto it = _opaque_types.find(key); it != _opaque_types.end() )
             return it->second;
 
         // HILTI copies library values by value, so only a constant native type is assumed copyable.
         ir::OpaqueTypeInfo info;
-        info.cxx_name = library->cxxName();
-        info.constant = library->isConstant();
-        info.lifecycle = ir::OpaqueLifecycle{.copyable = library->isConstant(), .movable = true};
-        auto decl = _builder.createOpaqueTypeDecl(library->cxxName(), std::move(info));
+        info.cxx_name = cxx_name;
+        info.constant = constant;
+        info.lifecycle = ir::OpaqueLifecycle{.copyable = constant, .movable = true};
+        auto decl = _builder.createOpaqueTypeDecl(cxx_name, std::move(info));
         auto type = _builder.opaqueType(decl);
         _opaque_types.emplace(std::move(key), type);
         return type;
@@ -765,6 +800,14 @@ std::variant<Variable, UnsupportedFeature> BodyLowerer::_lookupGlobal(hilti::dec
     return Variable{.value = place, .is_place = true};
 }
 
+std::variant<ir::InstId, UnsupportedFeature> BodyLowerer::_lowerForeignConstant(hilti::expression::Name* name) {
+    auto loc = name->meta().location();
+    auto type = _procedures.valueType(name->type()->type());
+    if ( ! type || _package.type(*type).kind != ir::TypeKind::Opaque )
+        return _unsupported(fmt("reference to '%s' is not supported", std::string(name->id())), loc);
+    return _builder.addForeignConstant(_block, *type, std::string(name->id()), internSpan(_package, loc));
+}
+
 std::variant<ir::InstId, UnsupportedFeature> BodyLowerer::_lowerCtor(hilti::Ctor* ctor, const hilti::Location& loc) {
     if ( auto* coerced = ctor->tryAs<hilti::ctor::Coerced>() )
         ctor = coerced->coercedCtor();
@@ -773,6 +816,43 @@ std::variant<ir::InstId, UnsupportedFeature> BodyLowerer::_lowerCtor(hilti::Ctor
         if ( literal->width() != 64 )
             return _unsupported("only signed 64-bit integer literals are supported", loc);
         return _builder.addConstant(_block, literal->value(), internSpan(_package, loc));
+    }
+
+    if ( auto* literal = ctor->tryAs<hilti::ctor::UnsignedInteger>() ) {
+        if ( literal->width() != 64 )
+            return _unsupported("only unsigned 64-bit integer literals are supported", loc);
+        return _builder.addUint64Constant(_block, literal->value(), internSpan(_package, loc));
+    }
+
+    if ( auto* literal = ctor->tryAs<hilti::ctor::Port>() ) {
+        auto type = _procedures.valueType(literal->type()->type());
+        if ( ! type )
+            return _unsupported("unsupported port type", loc);
+
+        const auto& port = literal->value();
+        auto transport = portTransport(port.protocol());
+        if ( ! transport )
+            return _unsupported("unsupported port protocol", loc);
+        return _builder.addPortConstant(_block,
+                                        *type,
+                                        ir::PortLiteral{.number = port.port(), .transport = *transport},
+                                        internSpan(_package, loc));
+    }
+
+    if ( auto* vector = ctor->tryAs<hilti::ctor::Vector>() ) {
+        auto element = _procedures.valueType(vector->elementType()->type());
+        if ( ! element )
+            return _unsupported("unsupported vector element type", loc);
+
+        auto span = internSpan(_package, loc);
+        auto result = _builder.addVectorEmpty(_block, *element, span);
+        for ( auto* value : vector->value() ) {
+            auto appended = lower(value);
+            if ( auto* feature = std::get_if<UnsupportedFeature>(&appended) )
+                return *feature;
+            result = _builder.addVectorAppend(_block, result, std::get<ir::InstId>(appended), span);
+        }
+        return result;
     }
 
     if ( auto* literal = ctor->tryAs<hilti::ctor::Bool>() )
@@ -1068,7 +1148,7 @@ public:
 
         for ( auto* root : roots ) {
             const auto& spec = _spec(root->type()->type()->as<type::Unit>());
-            _builder.addParserRoot(spec.declaration, spec.function);
+            _builder.addParserRoot(spec.declaration, spec.function, std::string(spec.unit->typeID().str()));
         }
         return std::nullopt;
     }
@@ -1354,9 +1434,9 @@ RootDiscovery discoverRoots(const hilti::ASTContext& ctx) {
     return RootDiscovery{
         .roots = std::move(v.roots),
         .unit_declarations = std::move(v.unit_declarations),
-        .unit_hooks = std::move(v.unit_hooks),
         .unrepresented_content = std::move(v.unrepresented_content),
         .cxx_includes = std::move(v.cxx_includes),
+        .unit_hooks = std::move(v.unit_hooks),
         .globals = std::move(v.globals),
         .initializers = std::move(v.initializers),
     };

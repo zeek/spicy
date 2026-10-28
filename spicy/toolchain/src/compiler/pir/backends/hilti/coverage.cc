@@ -118,6 +118,10 @@ void checkRegion(const ir::Package& package,
                 case ir::Opcode::Load: break;
                 case ir::Opcode::Return:
                 case ir::Opcode::GlobalPlace:
+                case ir::Opcode::Uint64Constant:
+                case ir::Opcode::ForeignConstant:
+                case ir::Opcode::PortConstant:
+                case ir::Opcode::LinkerScope:
                 case ir::Opcode::LocalPlace:
                 case ir::Opcode::Store:
                 case ir::Opcode::Tuple:
@@ -187,6 +191,10 @@ void checkProcedureRegion(const ir::Package& package, ir::RegionId region, std::
                 case ir::Opcode::GlobalPlace:
                 case ir::Opcode::VectorEmpty:
                 case ir::Opcode::VectorAppend:
+                case ir::Opcode::Uint64Constant:
+                case ir::Opcode::ForeignConstant:
+                case ir::Opcode::PortConstant:
+                case ir::Opcode::LinkerScope:
                 case ir::Opcode::LocalPlace:
                 case ir::Opcode::Load:
                 case ir::Opcode::Store:

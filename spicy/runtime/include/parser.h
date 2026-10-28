@@ -194,6 +194,29 @@ struct Parser {
         _initProfiling();
     }
 
+    /** Constructs a parser that has an endpoint `parse1` but no `parse3` or context constructor. */
+    Parser(::hilti::rt::struct_::tag::Inits,
+           std::string_view name,
+           bool is_public,
+           Parse1Function parse1,
+           hilti::rt::any parse2,
+           hilti::rt::Null /* null */,
+           hilti::rt::Null /* null */,
+           const hilti::rt::TypeInfo* type,
+           hilti::rt::String description,
+           hilti::rt::Vector<MIMEType> mime_types,
+           hilti::rt::Vector<ParserPort> ports)
+        : name(name),
+          is_public(is_public),
+          parse1(parse1),
+          parse2(std::move(parse2)),
+          type_info(type),
+          description(std::move(description)),
+          mime_types(std::move(mime_types)),
+          ports(std::move(ports)) {
+        _initProfiling();
+    }
+
     Parser(::hilti::rt::struct_::tag::Inits,
            std::string_view name,
            bool is_public,
