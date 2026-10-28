@@ -1,8 +1,9 @@
 # @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
 # @TEST-EXEC: btest-diff on.log
 
-# @TEST-DOC: Tests that copying a mutable native library value prevents selection of the PIR-only route, because
-# the native type declares no copy behavior. The legacy generator retains the copy.
+# @TEST-DOC: Tests that reading a mutable native library value twice prevents selection of the PIR-only route,
+# because the first read moves the value and the second would copy it, which the native type does not allow. The
+# legacy generator retains the copy.
 
 module Test;
 
@@ -13,6 +14,7 @@ function consume(h: Handle) &cxxname="consume";
 
 public function answer(): int64 {
     local h = make_handle();
+    consume(h);
     consume(h);
     return 42;
 }

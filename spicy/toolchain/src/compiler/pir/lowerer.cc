@@ -441,8 +441,15 @@ private:
             return *feature;
 
         const auto& var = std::get<Variable>(variable);
-        if ( ! var.is_place )
+        if ( ! var.is_place ) {
+            // A native value that cannot be copied moves out of its variable, which may be read once. A second read
+            // would need a copy.
+            if ( _isNonCopyableOpaque(_package.inst(var.value).result_type) ) {
+                if ( ! _moved.insert(name->resolvedDeclaration()).second )
+                    return _unsupported("reading a mutable foreign value by copy", name->meta().location());
+            }
             return var.value;
+        }
         return _load(var.value, name->meta().location());
     }
 
@@ -549,6 +556,7 @@ private:
     bool _open = true;
     std::string _feature;
     std::unordered_map<const hilti::Declaration*, Variable> _variables;
+    std::unordered_set<const hilti::Declaration*> _moved; /**< non-copyable variables already read */
     std::optional<ir::InstId> _self;
     std::unordered_map<std::string, ir::DeclId> _fields;
 };
@@ -1060,6 +1068,13 @@ std::optional<UnsupportedFeature> BodyLowerer::lowerStatement(hilti::Statement* 
         if ( ! declared || *declared != _package.inst(value).result_type )
             return _unsupported("local variable initializer must have the declared type", stmt->meta().location());
 
+        // A native value that cannot be copied is held as the value itself, so that a later read moves it. It cannot be
+        // assigned, since an assignment needs a place, and PIR does not yet give such a place.
+        if ( _isNonCopyableOpaque(*declared) ) {
+            bind(local, Variable{.value = value, .is_place = false});
+            return std::nullopt;
+        }
+
         auto place = _builder.addLocalPlace(_block, value, internSpan(_package, stmt->meta().location()));
         bind(local, Variable{.value = place, .is_place = true});
         return std::nullopt;
@@ -1283,6 +1298,11 @@ private:
 
         if ( unit->mayHaveFilter() )
             return reject("units that may have a filter attached are not supported yet", decl->meta().location());
+        // Ports, MIME types, and descriptions go into the parser's registration record, which PIR does not build yet.
+        for ( const auto* property : {"%port", "%mime-type", "%description"} ) {
+            if ( ! unit->propertyItems(property).empty() )
+                return reject(fmt("unit property '%s' is not supported yet", property), decl->meta().location());
+        }
         if ( ! unit->parameters().empty() || (unit->attributes() && *unit->attributes()) || unit->contextType() )
             return reject("unit parameters, attributes, and context are not supported", decl->meta().location());
 
