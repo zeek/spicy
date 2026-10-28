@@ -6,6 +6,7 @@
 #include <limits>
 
 #include <spicy/compiler/detail/pir/ir/builder.h>
+#include <spicy/compiler/detail/pir/ir/cfg.h>
 #include <spicy/compiler/detail/pir/ir/package.h>
 #include <spicy/compiler/detail/pir/ir/printer.h>
 #include <spicy/compiler/detail/pir/ir/verifier.h>
@@ -185,15 +186,23 @@ TEST_CASE("verifier rejects an unattached region and differentiates it from an e
     CHECK_NE(print(sample.package), print(empty.package));
 }
 
-TEST_CASE("verifier rejects a function whose region has more than one block") {
+TEST_CASE("verifier rejects a parser function whose region has more than one block") {
     Package package;
     auto builder = package.builder();
-    auto fn = builder.createFunction("bad", builder.int64Type());
+    auto unit = builder.createUnitDecl("Unit");
+    auto fn = builder.createParserFunction(unit, builder.parserStateType(), builder.unitType(unit));
     auto region = package.function(fn).root_region;
-    auto first = builder.createBlock(region);
     builder.createBlock(region);
-    auto c = builder.addConstant(first, 1);
-    builder.addReturn(first, c);
+    builder.createBlock(region);
+
+    auto diags = verify(package);
+    CHECK(hasDiagnostic(diags, diag::RegionBlockCountMismatch));
+}
+
+TEST_CASE("verifier rejects an ordinary function whose region has no block") {
+    Package package;
+    auto builder = package.builder();
+    builder.createFunction("bad", builder.int64Type());
 
     auto diags = verify(package);
     CHECK(hasDiagnostic(diags, diag::RegionBlockCountMismatch));
@@ -881,4 +890,276 @@ TEST_CASE("verifier rejects a field place with an invalid field or a result that
     auto diags = verify(package);
     CHECK(hasDiagnostic(diags, diag::FieldPlaceResultTypeMismatch));
     CHECK(hasDiagnostic(diags, diag::FieldPlaceInvalidPayload));
+}
+
+TEST_CASE("an ordinary function may branch, and a value defined before the branch is used after the join") {
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("pick", {builder.boolType()}, builder.int64Type());
+    auto region = package.function(fn).root_region;
+    auto entry = builder.createBlock(region);
+    auto then_block = builder.createBlock(region);
+    auto else_block = builder.createBlock(region);
+    auto join = builder.createBlock(region);
+
+    auto flag = builder.addArgument(fn, entry, 0);
+    auto base = builder.addConstant(entry, 40);
+    builder.addBranch(entry, flag, then_block, else_block);
+
+    builder.addJump(then_block, join);
+    builder.addJump(else_block, join);
+
+    builder.addReturn(join, builder.addAdd(join, base, builder.addConstant(join, 2)));
+
+    CHECK(verify(package).empty());
+    auto dump = print(package);
+    CHECK(dump.find("core.branch %0, then %1, else %2") != std::string::npos);
+    CHECK(dump.find("core.jump %3") != std::string::npos);
+}
+
+TEST_CASE("an ordinary function whose arms both return leaves no join block") {
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("pick", {builder.boolType()}, builder.int64Type());
+    auto region = package.function(fn).root_region;
+    auto entry = builder.createBlock(region);
+    auto then_block = builder.createBlock(region);
+    auto else_block = builder.createBlock(region);
+
+    auto flag = builder.addArgument(fn, entry, 0);
+    builder.addBranch(entry, flag, then_block, else_block);
+    builder.addReturn(then_block, builder.addConstant(then_block, 1));
+    builder.addReturn(else_block, builder.addConstant(else_block, 2));
+
+    CHECK(verify(package).empty());
+}
+
+TEST_CASE("verifier rejects a branch on a condition that is not a bool") {
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("bad", builder.int64Type());
+    auto region = package.function(fn).root_region;
+    auto entry = builder.createBlock(region);
+    auto then_block = builder.createBlock(region);
+    auto else_block = builder.createBlock(region);
+
+    builder.addBranch(entry, builder.addConstant(entry, 1), then_block, else_block);
+    builder.addReturn(then_block, builder.addConstant(then_block, 1));
+    builder.addReturn(else_block, builder.addConstant(else_block, 2));
+
+    CHECK(hasDiagnostic(verify(package), diag::OperandTypeMismatch));
+}
+
+TEST_CASE("verifier rejects a successor that belongs to another function body") {
+    Package package;
+    auto builder = package.builder();
+    auto other = builder.createFunction("other", builder.int64Type());
+    auto other_block = builder.createBlock(package.function(other).root_region);
+    builder.addReturn(other_block, builder.addConstant(other_block, 1));
+
+    auto fn = builder.createFunction("bad", builder.int64Type());
+    auto entry = builder.createBlock(package.function(fn).root_region);
+    builder.addJump(entry, other_block);
+
+    CHECK(hasDiagnostic(verify(package), diag::InvalidSuccessor));
+}
+
+TEST_CASE("verifier rejects a cycle in an ordinary function's control flow") {
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("loop", builder.int64Type());
+    auto region = package.function(fn).root_region;
+    auto first = builder.createBlock(region);
+    auto second = builder.createBlock(region);
+    builder.addJump(first, second);
+    builder.addJump(second, first);
+
+    CHECK(hasDiagnostic(verify(package), diag::ControlFlowCycle));
+}
+
+TEST_CASE("verifier rejects a value used in a block that its defining block does not dominate") {
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("bad", builder.int64Type());
+    auto region = package.function(fn).root_region;
+    auto entry = builder.createBlock(region);
+    auto then_block = builder.createBlock(region);
+    auto else_block = builder.createBlock(region);
+    auto join = builder.createBlock(region);
+
+    builder.addBranch(entry, builder.addBoolConstant(entry, true), then_block, else_block);
+    auto only_on_then = builder.addConstant(then_block, 1);
+    builder.addJump(then_block, join);
+    builder.addJump(else_block, join);
+    builder.addReturn(join, only_on_then);
+
+    CHECK(hasDiagnostic(verify(package), diag::OperandNotSameBlock));
+}
+
+TEST_CASE("core.equal compares two integers or two bools of one type and yields a bool") {
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("compare", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    builder.addEqual(block, builder.addConstant(block, 1), builder.addConstant(block, 2));
+    builder.addEqual(block, builder.addBoolConstant(block, true), builder.addBoolConstant(block, false));
+    builder.addReturn(block, builder.addConstant(block, 0));
+
+    CHECK(verify(package).empty());
+    CHECK(print(package).find("core.equal") != std::string::npos);
+}
+
+TEST_CASE("verifier rejects core.equal on operands of different or non-comparable types") {
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("bad", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    builder.addEqual(block, builder.addConstant(block, 1), builder.addBoolConstant(block, true));
+    builder.addEqual(block, builder.addBytesConstant(block, "a"), builder.addBytesConstant(block, "a"));
+    builder.addReturn(block, builder.addConstant(block, 0));
+
+    CHECK(hasDiagnostic(verify(package), diag::EqualOperandTypeMismatch));
+}
+
+TEST_CASE("verifier rejects a branch or jump in a parser function") {
+    Package package;
+    auto builder = package.builder();
+    auto unit = builder.createUnitDecl("Unit");
+    auto fn = builder.createParserFunction(unit, builder.parserStateType(), builder.unitType(unit));
+    auto region = package.function(fn).root_region;
+    auto first = builder.createBlock(region);
+    builder.addJump(first, first);
+
+    CHECK(hasDiagnostic(verify(package), diag::ControlFlowOutsideFunctionBody));
+}
+
+TEST_CASE("an affine value consumed on each of two exclusive arms is consumed once per path") {
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("fill", {builder.boolType()}, builder.voidType());
+    auto region = package.function(fn).root_region;
+    auto entry = builder.createBlock(region);
+    auto then_block = builder.createBlock(region);
+    auto else_block = builder.createBlock(region);
+
+    auto flag = builder.addArgument(fn, entry, 0);
+    auto vector = builder.addVectorEmpty(entry, builder.int64Type());
+    builder.addBranch(entry, flag, then_block, else_block);
+    builder.addVectorAppend(then_block, vector, builder.addConstant(then_block, 1));
+    builder.addReturnVoid(then_block);
+    builder.addVectorAppend(else_block, vector, builder.addConstant(else_block, 2));
+    builder.addReturnVoid(else_block);
+
+    CHECK(verify(package).empty());
+}
+
+TEST_CASE("verifier rejects an affine value consumed on a path that reaches a second consumer") {
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("fill", {builder.boolType()}, builder.voidType());
+    auto region = package.function(fn).root_region;
+    auto entry = builder.createBlock(region);
+    auto then_block = builder.createBlock(region);
+    auto join = builder.createBlock(region);
+
+    auto flag = builder.addArgument(fn, entry, 0);
+    auto vector = builder.addVectorEmpty(entry, builder.int64Type());
+    builder.addBranch(entry, flag, then_block, join);
+    builder.addVectorAppend(then_block, vector, builder.addConstant(then_block, 1));
+    builder.addJump(then_block, join);
+    builder.addVectorAppend(join, vector, builder.addConstant(join, 2));
+    builder.addReturnVoid(join);
+
+    CHECK(hasDiagnostic(verify(package), diag::ParserStateReused));
+}
+
+TEST_CASE("the dominator tree and post-dominators of a diamond") {
+    // 0 -> {1, 2}, 1 -> 3, 2 -> 3, and 3 exits.
+    std::vector<std::vector<size_t>> successors = {{1, 2}, {3}, {3}, {}};
+    auto idom = immediateDominators(successors, 0);
+    CHECK(idom == std::vector<size_t>{0, 0, 0, 0});
+    CHECK(dominates(idom, 0, 3));
+    CHECK_FALSE(dominates(idom, 1, 3));
+
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("diamond", {builder.boolType()}, builder.int64Type());
+    auto region = package.function(fn).root_region;
+    auto entry = builder.createBlock(region);
+    auto left = builder.createBlock(region);
+    auto right = builder.createBlock(region);
+    auto join = builder.createBlock(region);
+    builder.addBranch(entry, builder.addArgument(fn, entry, 0), left, right);
+    builder.addJump(left, join);
+    builder.addJump(right, join);
+    builder.addReturn(join, builder.addConstant(join, 0));
+
+    auto cfg = buildCfg(package, region);
+    CHECK(isAcyclic(cfg));
+    auto ipdom = immediatePostDominators(cfg);
+    CHECK(ipdom[0].kind == PostDominator::Kind::Block);
+    CHECK(ipdom[0].position == 3);
+    CHECK(ipdom[3].kind == PostDominator::Kind::Exit);
+    CHECK(isStructured(cfg, branchJoins(cfg)));
+}
+
+TEST_CASE("postorder follows successors in order, tolerates cycles, and omits unreachable positions") {
+    // 0 -> {1, 2}, 1 -> 0 (a cycle), 2 -> {}, and 3 is unreachable from 0.
+    std::vector<std::vector<size_t>> successors = {{1, 2}, {0}, {}, {0}};
+    CHECK(postorder(successors, 0) == std::vector<size_t>{1, 2, 0});
+    CHECK(postorder({{1}, {0}}, 0) == std::vector<size_t>{1, 0});
+}
+
+TEST_CASE("an early return inside a nested guard still structures to one emission per block") {
+    // if (a) { if (b) return 1; } return 2;  -- the inner return cuts across the outer join.
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("pick", {builder.boolType(), builder.boolType()}, builder.int64Type());
+    auto region = package.function(fn).root_region;
+    auto entry = builder.createBlock(region);
+    auto outer_then = builder.createBlock(region);
+    auto outer_else = builder.createBlock(region);
+    auto inner_then = builder.createBlock(region);
+    auto inner_else = builder.createBlock(region);
+    auto inner_join = builder.createBlock(region);
+    auto join = builder.createBlock(region);
+
+    auto a = builder.addArgument(fn, entry, 0);
+    auto b = builder.addArgument(fn, entry, 1);
+    builder.addBranch(entry, a, outer_then, outer_else);
+    builder.addBranch(outer_then, b, inner_then, inner_else);
+    builder.addReturn(inner_then, builder.addConstant(inner_then, 1));
+    builder.addJump(inner_else, inner_join);
+    builder.addJump(inner_join, join);
+    builder.addJump(outer_else, join);
+    builder.addReturn(join, builder.addConstant(join, 2));
+
+    CHECK(verify(package).empty());
+    auto cfg = buildCfg(package, region);
+    auto joins = branchJoins(cfg);
+    CHECK(joins[0] == std::optional<size_t>(cfg.position.at(join.index)));
+    CHECK(isStructured(cfg, joins));
+}
+
+TEST_CASE("two arms that both reach the same two returning blocks are not structured") {
+    // 0 -> {1, 2}, 1 -> {3, 4}, 2 -> {3, 4}: each arm reaches both exits, so one of them is emitted twice.
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("crossing", {builder.boolType()}, builder.int64Type());
+    auto region = package.function(fn).root_region;
+    auto b0 = builder.createBlock(region);
+    auto b1 = builder.createBlock(region);
+    auto b2 = builder.createBlock(region);
+    auto b3 = builder.createBlock(region);
+    auto b4 = builder.createBlock(region);
+    auto flag = builder.addArgument(fn, b0, 0);
+    builder.addBranch(b0, flag, b1, b2);
+    builder.addBranch(b1, flag, b3, b4);
+    builder.addBranch(b2, flag, b3, b4);
+    builder.addReturn(b3, builder.addConstant(b3, 1));
+    builder.addReturn(b4, builder.addConstant(b4, 2));
+
+    CHECK(verify(package).empty());
+    auto cfg = buildCfg(package, region);
+    CHECK_FALSE(isStructured(cfg, branchJoins(cfg)));
 }

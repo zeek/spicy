@@ -24,7 +24,35 @@ inline constexpr DiagnosticDefinition RegionBlockCountMismatch{
     .id = "PIR_REGION_BLOCK_COUNT_MISMATCH",
     .classification = DiagnosticClassification::Internal,
     .severity = DiagnosticSeverity::Error,
-    .message = "function's region must contain exactly one block, has %zu",
+    .message = "function's region must contain exactly one block (an ordinary function needs at least one), has %zu",
+};
+
+inline constexpr DiagnosticDefinition InvalidSuccessor{
+    .id = "PIR_INVALID_SUCCESSOR",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "terminator's successor is not a block of the same function body",
+};
+
+inline constexpr DiagnosticDefinition ControlFlowCycle{
+    .id = "PIR_CONTROL_FLOW_CYCLE",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "function's control flow contains a cycle, which PIR does not support yet",
+};
+
+inline constexpr DiagnosticDefinition ControlFlowOutsideFunctionBody{
+    .id = "PIR_CONTROL_FLOW_OUTSIDE_FUNCTION_BODY",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "branches and jumps are only allowed in the root region of an ordinary function",
+};
+
+inline constexpr DiagnosticDefinition EqualOperandTypeMismatch{
+    .id = "PIR_EQUAL_OPERAND_TYPE_MISMATCH",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "core.equal operands must have the same comparable type (int64, uint8, uint64, or bool)",
 };
 
 inline constexpr DiagnosticDefinition InvalidBlockId{

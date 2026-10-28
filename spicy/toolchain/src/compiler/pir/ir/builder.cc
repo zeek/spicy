@@ -420,6 +420,23 @@ InstId Builder::addStore(BlockId block, InstId place, InstId value, SourceSpanId
     return addInst(block, Opcode::Store, {place, value}, _package._void_type, {}, span);
 }
 
+InstId Builder::addEqual(BlockId block, InstId lhs, InstId rhs, SourceSpanId span) {
+    return addInst(block, Opcode::Equal, {lhs, rhs}, boolType(), {}, span);
+}
+
+InstId Builder::addBranch(BlockId block, InstId condition, BlockId then_block, BlockId else_block, SourceSpanId span) {
+    return addInst(block,
+                   Opcode::Branch,
+                   {condition},
+                   _package._void_type,
+                   BranchPayload{.then_block = then_block, .else_block = else_block},
+                   span);
+}
+
+InstId Builder::addJump(BlockId block, BlockId target, SourceSpanId span) {
+    return addInst(block, Opcode::Jump, {}, _package._void_type, JumpPayload{.target = target}, span);
+}
+
 InstId Builder::addReadBytes(BlockId block, InstId state, uint64_t length, SourceSpanId span) {
     return addInst(block,
                    Opcode::ReadBytes,

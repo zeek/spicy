@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <variant>
 
+#include <spicy/compiler/detail/pir/ir/cfg.h>
 #include <spicy/compiler/detail/pir/ir/printer.h>
 #include <spicy/compiler/detail/pir/ir/reachability.h>
 #include <spicy/compiler/detail/pir/ir/verifier.h>
@@ -39,6 +40,11 @@ ValueDiscipline typeDiscipline(const Package& package, TypeId id) {
     std::unordered_set<uint32_t> visiting;
     return typeDiscipline(package, id, visiting);
 }
+
+// Kinda weird, just makes a unique key for tuple instruction + its index
+// so we can check if this tuple instruction gets consumed multiple
+// times from just a "key."
+uint64_t slotKey(InstId tuple_inst, uint32_t index) { return (static_cast<uint64_t>(tuple_inst.index) << 32U) | index; }
 
 class Verifier {
 public:
@@ -175,7 +181,35 @@ public:
             return;
         }
 
+        if ( fn.kind != FunctionKind::Normal ) {
+            _verifyRegion(id, fn.root_region, fn, {});
+            return;
+        }
+
+        // An ordinary function's body is a CFG, so its blocks are checked against the dominator tree and its
+        // affine values against all of its paths.
+        _beginBody(id, fn);
         _verifyRegion(id, fn.root_region, fn, {});
+        if ( ! _cfg.blocks.empty() )
+            _verifyBodyAffinity();
+        _endBody();
+    }
+
+    void _beginBody(FunctionId id, const Function& fn) {
+        _cfg = buildCfg(_package, fn.root_region);
+        _in_body = true;
+        if ( _cfg.blocks.empty() )
+            return;
+
+        if ( ! isAcyclic(_cfg) )
+            _emitter.emit(diag::ControlFlowCycle, id);
+        _idom = immediateDominators(_cfg.successors, 0);
+    }
+
+    void _endBody() {
+        _in_body = false;
+        _cfg = {};
+        _idom.clear();
     }
 
     void _verifyRegion(FunctionId id, RegionId region_id, const Function& fn, InstId owner) {
@@ -186,7 +220,8 @@ public:
         if ( ! _owned_regions.insert(region_id.index).second )
             _emitter.emit(diag::InvalidStructuredRegion, owner.isSet() ? owner : InstId{});
         const auto& region = _package.region(region_id);
-        if ( region.blocks.size() != 1 )
+        bool multi_block_body = ! owner.isSet() && fn.kind == FunctionKind::Normal;
+        if ( multi_block_body ? region.blocks.empty() : region.blocks.size() != 1 )
             _emitter.emit(diag::RegionBlockCountMismatch, id, region.blocks.size());
 
         for ( auto block_id : region.blocks ) {
@@ -368,7 +403,10 @@ private:
         if ( owner.isSet() )
             _verifyRegionSignature(block_id, owner, bounded_states);
         else {
-            _verifyArgumentPrefix(function_id, block_id, fn);
+            // Only the entry block may start with arguments; ordinary functions' other blocks hold none.
+            bool entry = block_id == _package.region(fn.root_region).blocks.front();
+            if ( entry )
+                _verifyArgumentPrefix(function_id, block_id, fn);
             for ( auto inst_id : block.insts ) {
                 if ( ! _package.isValid(inst_id) )
                     continue;
@@ -377,9 +415,13 @@ private:
                     _emitter.emit(diag::InvalidRegionArgument, inst_id);
                 else if ( inst.opcode == Opcode::Yield )
                     _emitter.emit(diag::InvalidYield, inst_id);
+                else if ( inst.opcode == Opcode::Argument && ! entry )
+                    _emitter.emit(diag::ArgumentNotLeading, inst_id);
             }
         }
-        _verifyParserStateAffinity(function_id, block_id);
+        // An ordinary function's body checks parser-state affinity across all of its blocks at once.
+        if ( owner.isSet() || fn.kind == FunctionKind::Parser )
+            _verifyParserStateAffinity(function_id, block_id);
         if ( ! owner.isSet() )
             _verifyUnitStateAffinity(function_id, block_id, fn);
     }
@@ -478,13 +520,6 @@ private:
         std::unordered_map<uint32_t, InstId> consumed_by;
         std::unordered_map<uint64_t, InstId> projected_by;
 
-        // Kinda weird, just makes a unique key for tuple instruction + its index
-        // so we can check if this tuple instruction gets consumed multiple
-        // times from just a "key.""
-        auto slot_key = [](InstId tuple_inst, uint32_t index) -> uint64_t {
-            return (static_cast<uint64_t>(tuple_inst.index) << 32) | index;
-        };
-
         for ( auto inst_id : block.insts ) {
             if ( ! _package.isValid(inst_id) )
                 continue;
@@ -501,7 +536,7 @@ private:
                 if ( typeDiscipline(_package, inst.result_type) != ValueDiscipline::Affine )
                     continue;
 
-                auto [it, inserted] = projected_by.try_emplace(slot_key(inst.args[0], payload->index), inst_id);
+                auto [it, inserted] = projected_by.try_emplace(slotKey(inst.args[0], payload->index), inst_id);
                 if ( ! inserted )
                     _emitter.emit(diag::ParserStateReused, inst_id);
                 continue;
@@ -729,6 +764,36 @@ private:
 
                 if ( inst.result_type != callee.result_type )
                     _emitter.emit(diag::CallResultTypeMismatch, inst_id);
+                return;
+            }
+
+            case Opcode::Branch: {
+                const auto* payload = std::get_if<BranchPayload>(&inst.payload);
+                if ( ! payload )
+                    return;
+
+                _verifySuccessor(inst_id, inst, payload->then_block);
+                _verifySuccessor(inst_id, inst, payload->else_block);
+                return;
+            }
+
+            case Opcode::Jump: {
+                const auto* payload = std::get_if<JumpPayload>(&inst.payload);
+                if ( ! payload )
+                    return;
+
+                _verifySuccessor(inst_id, inst, payload->target);
+                return;
+            }
+
+            case Opcode::Equal: {
+                if ( inst.args.size() != 2 || ! _package.isValid(inst.args[0]) || ! _package.isValid(inst.args[1]) )
+                    return;
+
+                auto lhs = _package.inst(inst.args[0]).result_type;
+                auto rhs = _package.inst(inst.args[1]).result_type;
+                if ( lhs != rhs || ! _package.isValid(lhs) || ! _isComparable(_package.type(lhs).kind) )
+                    _emitter.emit(diag::EqualOperandTypeMismatch, inst_id);
                 return;
             }
 
@@ -994,6 +1059,131 @@ private:
         }
     }
 
+    // The types that `core.equal` compares.
+    static bool _isComparable(TypeKind kind) {
+        switch ( kind ) {
+            case TypeKind::Int64:
+            case TypeKind::UInt8:
+            case TypeKind::UInt64:
+            case TypeKind::Bool: return true;
+            case TypeKind::Void:
+            case TypeKind::Bytes:
+            case TypeKind::ParserState:
+            case TypeKind::Unit:
+            case TypeKind::Tuple:
+            case TypeKind::Vector:
+            case TypeKind::Opaque:
+            case TypeKind::Place:
+            case TypeKind::String: return false;
+        }
+
+        return false;
+    }
+
+    // A branch or jump may only target blocks of the same ordinary function body.
+    void _verifySuccessor(InstId inst_id, const Inst& inst, BlockId target) {
+        if ( ! _in_body || ! _cfg.contains(inst.parent) ) {
+            _emitter.emit(diag::ControlFlowOutsideFunctionBody, inst_id);
+            return;
+        }
+
+        if ( ! _package.isValid(target) || ! _cfg.contains(target) )
+            _emitter.emit(diag::InvalidSuccessor, inst_id);
+    }
+
+    // Whether a value defined in `def` is available in `use` by dominance. Blocks outside the body are never
+    // available, and a use in a block unreachable from the entry is vacuously available.
+    bool _availableFrom(BlockId def, BlockId use) const {
+        if ( ! _in_body || ! _cfg.contains(def) || ! _cfg.contains(use) )
+            return false;
+
+        auto use_position = _cfg.position.at(use.index);
+        if ( _idom[use_position] == NoPosition )
+            return true;
+
+        return dominates(_idom, _cfg.position.at(def.index), use_position);
+    }
+
+    // Affine values in an ordinary function may flow through several blocks, so each must be consumed at most once
+    // along any path. Two consumers conflict unless neither can reach the other.
+    void _verifyBodyAffinity() {
+        const auto count = _cfg.blocks.size();
+        std::vector<std::vector<bool>> reaches(count, std::vector<bool>(count, false));
+        for ( size_t from = 0; from < count; ++from ) {
+            std::vector<size_t> pending = _cfg.successors[from];
+            while ( ! pending.empty() ) {
+                auto next = pending.back();
+                pending.pop_back();
+                if ( reaches[from][next] )
+                    continue;
+
+                reaches[from][next] = true;
+                pending.insert(pending.end(), _cfg.successors[next].begin(), _cfg.successors[next].end());
+            }
+        }
+
+        struct Consumer {
+            InstId inst;
+            size_t block;
+        };
+        std::unordered_map<uint32_t, std::vector<Consumer>> consumed_values;
+        std::unordered_map<uint64_t, std::vector<Consumer>> projected_slots;
+
+        for ( size_t block = 0; block < count; ++block ) {
+            for ( auto inst_id : _package.block(_cfg.blocks[block]).insts ) {
+                if ( ! _package.isValid(inst_id) )
+                    continue;
+
+                const auto& inst = _package.inst(inst_id);
+                if ( inst.opcode == Opcode::TupleGet ) {
+                    const auto* payload = std::get_if<TupleGetPayload>(&inst.payload);
+                    if ( ! payload || inst.args.empty() || ! _package.isValid(inst.args[0]) )
+                        continue;
+
+                    if ( typeDiscipline(_package, inst.result_type) == ValueDiscipline::Affine )
+                        projected_slots[slotKey(inst.args[0], payload->index)].push_back(
+                            {.inst = inst_id, .block = block});
+                    continue;
+                }
+
+                const auto* schema = schemaFor(inst.opcode);
+                if ( ! schema || schema->operand_roles.empty() )
+                    continue;
+
+                for ( size_t a = 0; a < inst.args.size(); ++a ) {
+                    if ( schema->operand_roles[std::min(a, schema->operand_roles.size() - 1)] != OperandRole::Consume )
+                        continue;
+
+                    auto arg = inst.args[a];
+                    if ( ! _package.isValid(arg) )
+                        continue;
+
+                    if ( typeDiscipline(_package, _package.inst(arg).result_type) == ValueDiscipline::Affine )
+                        consumed_values[arg.index].push_back({.inst = inst_id, .block = block});
+                }
+            }
+        }
+
+        auto check = [&](const std::vector<Consumer>& consumers) {
+            for ( size_t later = 1; later < consumers.size(); ++later ) {
+                for ( size_t earlier = 0; earlier < later; ++earlier ) {
+                    const auto& a = consumers[earlier];
+                    const auto& b = consumers[later];
+                    bool same_path = a.block == b.block || reaches[a.block][b.block] || reaches[b.block][a.block];
+                    if ( same_path ) {
+                        _emitter.emit(diag::ParserStateReused, b.inst);
+                        break;
+                    }
+                }
+            }
+        };
+
+        for ( const auto& [_, consumers] : consumed_values )
+            check(consumers);
+        for ( const auto& [_, consumers] : projected_slots )
+            check(consumers);
+    }
+
     void _verifyOperand(FunctionId function_id,
                         InstId user,
                         BlockId block_id,
@@ -1010,11 +1200,12 @@ private:
         const auto& arg_inst = _package.inst(arg);
 
         if ( arg_inst.parent != block_id ) {
-            _emitter.emit(diag::OperandNotSameBlock, user, operand_index);
-            return;
+            if ( ! _availableFrom(arg_inst.parent, block_id) ) {
+                _emitter.emit(diag::OperandNotSameBlock, user, operand_index);
+                return;
+            }
         }
-
-        if ( ! defined.contains(arg.index) ) {
+        else if ( ! defined.contains(arg.index) ) {
             _emitter.emit(diag::OperandUsedBeforeDefinition, user, operand_index);
             return;
         }
@@ -1065,6 +1256,10 @@ private:
     DiagnosticEmitter _emitter;
     std::unordered_set<uint32_t> _active_regions;
     std::unordered_set<uint32_t> _owned_regions;
+    // The CFG and dominator tree of the ordinary function body being verified, if any.
+    bool _in_body = false;
+    Cfg _cfg;
+    std::vector<size_t> _idom;
 };
 
 } // namespace

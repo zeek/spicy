@@ -30,8 +30,10 @@
 #include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/function.h>
 #include <hilti/ast/operator.h>
+#include <hilti/ast/statements/block.h>
 #include <hilti/ast/statements/declaration.h>
 #include <hilti/ast/statements/expression.h>
+#include <hilti/ast/statements/if.h>
 #include <hilti/ast/statements/return.h>
 #include <hilti/ast/types/any.h>
 #include <hilti/ast/types/bool.h>
@@ -170,13 +172,19 @@ struct Variable {
     bool is_place = false;
 };
 
-// Lowers the statements and expressions of one ordinary function body into its single block.
+// Lowers the statements and expressions of one ordinary function body. Statements are appended to `_block`, which
+// changes when control flow splits; `_open` is false once control can no longer reach the end of the body.
 class BodyLowerer {
 public:
-    BodyLowerer(ProcedureLowerer& procedures, ir::Package& package, ir::BlockId block, std::string feature)
+    BodyLowerer(ProcedureLowerer& procedures,
+                ir::Package& package,
+                ir::RegionId region,
+                ir::BlockId block,
+                std::string feature)
         : _procedures(procedures),
           _package(package),
           _builder(package.builder()),
+          _region(region),
           _block(block),
           _feature(std::move(feature)) {}
 
@@ -190,6 +198,31 @@ public:
 
     std::optional<UnsupportedFeature> lowerStatement(hilti::Statement* stmt);
 
+    // Lowers statements in order. Once control has left the current path, any further statement is unreachable.
+    template<typename Statements>
+    std::optional<UnsupportedFeature> lowerStatements(const Statements& statements) {
+        for ( auto* stmt : statements ) {
+            if ( ! _open )
+                return _unsupported("statements after a return are not supported", stmt->meta().location());
+            if ( auto error = lowerStatement(stmt) )
+                return error;
+        }
+
+        return std::nullopt;
+    }
+
+    // Whether control can still reach the end of the body.
+    bool open() const { return _open; }
+
+    // Ends the body with `core.return` when it falls off the end, which only a function without a result may do.
+    void returnVoidIfOpen(ir::SourceSpanId span) {
+        if ( ! _open )
+            return;
+
+        _builder.addReturnVoid(_block, span);
+        _open = false;
+    }
+
     std::variant<ir::InstId, UnsupportedFeature> lower(hilti::Expression* expr) {
         if ( auto* ctor_expr = expr->tryAs<hilti::expression::Ctor>() )
             return _lowerCtor(ctor_expr->ctor(), expr->meta().location());
@@ -200,6 +233,8 @@ public:
         if ( auto* op = expr->tryAs<hilti::expression::ResolvedOperator>() ) {
             if ( op->kind() == hilti::operator_::Kind::Call )
                 return _lowerCall(op);
+            if ( op->kind() == hilti::operator_::Kind::Equal )
+                return _lowerEqual(op);
             if ( op->kind() == hilti::operator_::Kind::Member ) {
                 auto place = _fieldPlace(op);
                 if ( auto* feature = std::get_if<UnsupportedFeature>(&place) )
@@ -212,15 +247,39 @@ public:
         return _unsupported("unsupported expression", expr->meta().location());
     }
 
-    // Whether the block being filled already ends in a return, so any further statement is unreachable.
-    bool returned() const {
-        const auto& insts = _package.block(_block).insts;
-        return ! insts.empty() && _package.inst(insts.back()).opcode == ir::Opcode::Return;
-    }
-
     std::variant<ir::InstId, UnsupportedFeature> _lowerCtor(hilti::Ctor* ctor, const hilti::Location& loc);
 
 private:
+    // `==` on two values of the same integer or bool type, which the PIR verifier restricts to the same types.
+    std::variant<ir::InstId, UnsupportedFeature> _lowerEqual(hilti::expression::ResolvedOperator* op) {
+        auto lhs = lower(op->op0());
+        if ( auto* feature = std::get_if<UnsupportedFeature>(&lhs) )
+            return *feature;
+
+        auto rhs = lower(op->op1());
+        if ( auto* feature = std::get_if<UnsupportedFeature>(&rhs) )
+            return *feature;
+
+        auto type = _package.inst(std::get<ir::InstId>(lhs)).result_type;
+        if ( type != _package.inst(std::get<ir::InstId>(rhs)).result_type )
+            return _unsupported("only operands of the same type can be compared", op->meta().location());
+
+        if ( ! _package.isValid(type) )
+            return _unsupported("only integers and bools can be compared", op->meta().location());
+        switch ( _package.type(type).kind ) {
+            case ir::TypeKind::Int64:
+            case ir::TypeKind::UInt8:
+            case ir::TypeKind::UInt64:
+            case ir::TypeKind::Bool: break;
+            default: return _unsupported("only integers and bools can be compared", op->meta().location());
+        }
+
+        return _builder.addEqual(_block,
+                                 std::get<ir::InstId>(lhs),
+                                 std::get<ir::InstId>(rhs),
+                                 internSpan(_package, op->meta().location()));
+    }
+
     std::variant<ir::InstId, UnsupportedFeature> _lowerSum(hilti::expression::ResolvedOperator* op) {
         if ( op->kind() != hilti::operator_::Kind::Sum )
             return _unsupported("only signed-integer addition is supported", op->meta().location());
@@ -316,6 +375,23 @@ private:
 
     std::variant<ir::InstId, UnsupportedFeature> _lowerCall(hilti::expression::ResolvedOperator* op);
 
+    // Lowers the body of one arm of an `if`, starting at `start`. Yields the block the arm falls through from, or
+    // nothing if the arm returns.
+    std::variant<std::optional<ir::BlockId>, UnsupportedFeature> _lowerArm(hilti::Statement* body, ir::BlockId start) {
+        _block = start;
+        _open = true;
+        if ( body ) {
+            if ( auto error = lowerStatement(body) )
+                return *error;
+        }
+
+        if ( ! _open )
+            return std::optional<ir::BlockId>{};
+        return std::optional<ir::BlockId>{_block};
+    }
+
+    std::optional<UnsupportedFeature> _lowerIf(hilti::statement::If* stmt);
+
     UnsupportedFeature _unsupported(std::string reason, const hilti::Location& loc) {
         return unsupported(_feature, std::move(reason), loc);
     }
@@ -323,7 +399,9 @@ private:
     ProcedureLowerer& _procedures;
     ir::Package& _package;
     ir::Builder _builder;
+    ir::RegionId _region;
     ir::BlockId _block;
+    bool _open = true;
     std::string _feature;
     std::unordered_map<const hilti::Declaration*, Variable> _variables;
     std::optional<ir::InstId> _self;
@@ -385,30 +463,22 @@ public:
         auto id = _builder.createFunction(std::string(decl->id().local()), signature.types, signature.result, span);
         _functions.emplace(decl, id);
 
-        auto block = _builder.createBlock(_package.function(id).root_region);
-        BodyLowerer body(*this, _package, block, feature);
+        auto region = _package.function(id).root_region;
+        auto block = _builder.createBlock(region);
+        BodyLowerer body(*this, _package, region, block, feature);
         for ( size_t i = 0; i < signature.declarations.size(); ++i ) {
             auto* param = signature.declarations[i];
             auto arg = _builder.addArgument(id, block, i, internSpan(_package, param->meta().location()));
             body.bind(param, Variable{.value = arg, .is_place = param->kind() == hilti::parameter::Kind::InOut});
         }
 
-        for ( auto* stmt : fn->body()->statements() ) {
-            if ( body.returned() )
-                return unsupported(feature, "statements after a return are not supported", stmt->meta().location());
-            if ( auto error = body.lowerStatement(stmt) )
-                return *error;
-        }
+        if ( auto error = body.lowerStatements(fn->body()->statements()) )
+            return *error;
 
         // A void function may fall off its end; a value-returning one must end in a return.
-        const auto& insts = _package.block(block).insts;
-        if ( insts.empty() || _package.inst(insts.back()).opcode != ir::Opcode::Return ) {
-            if ( signature.result != _builder.voidType() )
-                return unsupported(feature,
-                                   "a function returning a value must end with a return",
-                                   decl->meta().location());
-            _builder.addReturnVoid(block, span);
-        }
+        if ( body.open() && signature.result != _builder.voidType() )
+            return unsupported(feature, "a function returning a value must end with a return", decl->meta().location());
+        body.returnVoidIfOpen(span);
 
         return id;
     }
@@ -573,10 +643,54 @@ std::variant<ir::InstId, UnsupportedFeature> BodyLowerer::_lowerCtor(hilti::Ctor
     return _unsupported("unsupported literal", loc);
 }
 
+std::optional<UnsupportedFeature> BodyLowerer::_lowerIf(hilti::statement::If* stmt) {
+    if ( stmt->init() )
+        return _unsupported("if statements with an initializer are not supported", stmt->meta().location());
+
+    auto cond = lower(stmt->condition());
+    if ( auto* feature = std::get_if<UnsupportedFeature>(&cond) )
+        return *feature;
+
+    auto condition = std::get<ir::InstId>(cond);
+    if ( _package.inst(condition).result_type != _builder.boolType() )
+        return _unsupported("if conditions must be bool", stmt->condition()->meta().location());
+
+    auto span = internSpan(_package, stmt->meta().location());
+    auto then_block = _builder.createBlock(_region);
+    auto else_block = _builder.createBlock(_region);
+    _builder.addBranch(_block, condition, then_block, else_block, span);
+
+    auto then_end = _lowerArm(stmt->true_(), then_block);
+    if ( auto* feature = std::get_if<UnsupportedFeature>(&then_end) )
+        return *feature;
+    auto else_end = _lowerArm(stmt->false_(), else_block);
+    if ( auto* feature = std::get_if<UnsupportedFeature>(&else_end) )
+        return *feature;
+
+    auto fall_through_then = std::get<std::optional<ir::BlockId>>(then_end);
+    auto fall_through_else = std::get<std::optional<ir::BlockId>>(else_end);
+    if ( ! fall_through_then && ! fall_through_else ) {
+        // Both arms return, so nothing after the statement is reachable.
+        _open = false;
+        return std::nullopt;
+    }
+
+    auto join = _builder.createBlock(_region);
+    if ( fall_through_then )
+        _builder.addJump(*fall_through_then, join, span);
+    if ( fall_through_else )
+        _builder.addJump(*fall_through_else, join, span);
+
+    _block = join;
+    _open = true;
+    return std::nullopt;
+}
+
 std::optional<UnsupportedFeature> BodyLowerer::lowerStatement(hilti::Statement* stmt) {
     if ( auto* ret = stmt->tryAs<hilti::statement::Return>() ) {
         if ( ! ret->expression() ) {
             _builder.addReturnVoid(_block, internSpan(_package, ret->meta().location()));
+            _open = false;
             return std::nullopt;
         }
 
@@ -585,8 +699,15 @@ std::optional<UnsupportedFeature> BodyLowerer::lowerStatement(hilti::Statement* 
             return *feature;
 
         _builder.addReturn(_block, std::get<ir::InstId>(value), internSpan(_package, ret->meta().location()));
+        _open = false;
         return std::nullopt;
     }
+
+    if ( auto* block = stmt->tryAs<hilti::statement::Block>() )
+        return lowerStatements(block->statements());
+
+    if ( auto* if_stmt = stmt->tryAs<hilti::statement::If>() )
+        return _lowerIf(if_stmt);
 
     if ( auto* decl = stmt->tryAs<hilti::statement::Declaration>() ) {
         auto* local = decl->declaration()->tryAs<hilti::declaration::LocalVariable>();
@@ -913,7 +1034,8 @@ private:
             }
             else {
                 auto feature = fmt("parser unit '%s'", std::string(spec.source->id()));
-                BodyLowerer bound(_procedures, _package, block, feature);
+                // A bound is an expression, so it never adds blocks and needs no region.
+                BodyLowerer bound(_procedures, _package, ir::RegionId(), block, feature);
                 bound.setSelf(unit_value, published);
                 auto length = bound.lower(field.bound);
                 if ( auto* unsupported_feature = std::get_if<UnsupportedFeature>(&length) )

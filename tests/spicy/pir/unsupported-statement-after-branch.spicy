@@ -1,0 +1,18 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: Tests that a statement after an `if` whose arms both return prevents selection of the PIR-only
+# route. Both arms end the body, so the statement is unreachable; the legacy generator accepts such a function.
+
+module Test;
+
+public function pick(flag: bool): int64 {
+    if ( flag ) {
+        return 1;
+    }
+    else {
+        return 2;
+    }
+
+    print "unreachable";
+}

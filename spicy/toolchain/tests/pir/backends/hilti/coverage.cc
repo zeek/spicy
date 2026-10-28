@@ -238,3 +238,52 @@ TEST_CASE("an ordinary function root with an opaque signature whose lifecycle is
 
     CHECK_FALSE(checkCoverage(package).empty());
 }
+
+TEST_CASE("branches that rejoin, including past an early return, are supported and crossing ones are not") {
+    // `closes_after_return` joins its arms at the block after the inner return; `crossing` reaches the same two
+    // returning blocks from both arms.
+    auto build = [](const char* shape) {
+        Package package;
+        auto builder = package.builder();
+        auto fn = builder.createFunction("pick", {builder.boolType()}, builder.int64Type());
+        auto region = package.function(fn).root_region;
+        auto b0 = builder.createBlock(region);
+        auto b1 = builder.createBlock(region);
+        auto b2 = builder.createBlock(region);
+        auto b3 = builder.createBlock(region);
+        auto b4 = builder.createBlock(region);
+        auto flag = builder.addArgument(fn, b0, 0);
+        builder.addBranch(b0, flag, b1, b2);
+        std::string_view name = shape;
+        if ( name == "diamond" ) {
+            builder.addJump(b1, b3);
+            builder.addJump(b2, b3);
+            builder.addJump(b3, b4);
+            builder.addReturn(b4, builder.addConstant(b4, 2));
+        }
+        else if ( name == "closes_after_return" ) {
+            builder.addBranch(b1, flag, b3, b4);
+            builder.addJump(b2, b4);
+            builder.addReturn(b3, builder.addConstant(b3, 1));
+            builder.addReturn(b4, builder.addConstant(b4, 2));
+        }
+        else {
+            builder.addBranch(b1, flag, b3, b4);
+            builder.addBranch(b2, flag, b3, b4);
+            builder.addReturn(b3, builder.addConstant(b3, 1));
+            builder.addReturn(b4, builder.addConstant(b4, 2));
+        }
+        builder.addFunctionRoot(fn);
+        return package;
+    };
+
+    for ( const char* shape : {"diamond", "closes_after_return"} ) {
+        auto package = build(shape);
+        CHECK(verify(package).empty());
+        CHECK(checkCoverage(package).empty());
+    }
+
+    auto crossing = build("crossing");
+    CHECK(verify(crossing).empty());
+    CHECK_FALSE(checkCoverage(crossing).empty());
+}

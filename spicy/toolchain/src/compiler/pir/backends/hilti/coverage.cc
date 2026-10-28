@@ -6,6 +6,7 @@
 #include <hilti/base/util.h>
 
 #include <spicy/compiler/detail/pir/backends/hilti/coverage.h>
+#include <spicy/compiler/detail/pir/ir/cfg.h>
 
 using ::hilti::util::fmt;
 
@@ -108,7 +109,10 @@ void checkRegion(const ir::Package& package,
                 case ir::Opcode::Tuple:
                 case ir::Opcode::BoolConstant:
                 case ir::Opcode::StringConstant:
-                case ir::Opcode::BytesConstant: unsupported("procedural lowering is not supported"); break;
+                case ir::Opcode::BytesConstant:
+                case ir::Opcode::Branch:
+                case ir::Opcode::Jump:
+                case ir::Opcode::Equal: unsupported("procedural lowering is not supported"); break;
             }
             for ( auto child : inst.regions )
                 checkRegion(package, child, out, bound_depth);
@@ -171,7 +175,10 @@ void checkProcedureRegion(const ir::Package& package, ir::RegionId region, std::
                 case ir::Opcode::Tuple:
                 case ir::Opcode::BoolConstant:
                 case ir::Opcode::StringConstant:
-                case ir::Opcode::BytesConstant: break;
+                case ir::Opcode::BytesConstant:
+                case ir::Opcode::Branch:
+                case ir::Opcode::Jump:
+                case ir::Opcode::Equal: break;
                 default: unsupported("not a procedural operation the HILTI backend can lower"); break;
             }
 
@@ -179,6 +186,11 @@ void checkProcedureRegion(const ir::Package& package, ir::RegionId region, std::
                 unsupported("value type is not supported by the HILTI backend yet");
         }
     }
+
+    // The HILTI backend emits each branch's arms and then its join, so every block must fall into that structure once.
+    auto cfg = ir::buildCfg(package, region);
+    if ( ! cfg.blocks.empty() && ! ir::isStructured(cfg, ir::branchJoins(cfg)) )
+        report(out, "control flow", "control flow must be structured as nested branches with joins");
 }
 
 } // namespace

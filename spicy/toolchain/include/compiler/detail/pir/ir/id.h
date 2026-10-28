@@ -27,4 +27,8 @@ using TypeId = ID<TypeTag>;
 struct FunctionTag {};
 using FunctionId = ID<FunctionTag>;
 
+// `BlockId` is named by terminator payloads in `opcode.h` (branch and jump targets), so it is defined here too.
+struct BlockTag {};
+using BlockId = ID<BlockTag>;
+
 } // namespace spicy::detail::pir::ir
