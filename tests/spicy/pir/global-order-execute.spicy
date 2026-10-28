@@ -1,0 +1,42 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -P "" -o Foo.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+
+# @TEST-DOC: Initializes module-level variables in declaration order, even when a function reaches a later variable
+# first. The second variable reads the first, so it is correct only if the first is initialized before it.
+
+module Test;
+
+global a: int64 = 10;
+global b: int64 = a + 1;
+
+public function answer(): int64 {
+    return b;
+}
+
+@TEST-START-FILE driver.cc
+
+#include <iostream>
+
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+#include "Foo.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    auto r = hlt::_r__spicy_pir_backend::answer();
+    std::cout << "answer: " << r.get<hilti::rt::integer::safe<int64_t>>() << std::endl;
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    hilti::rt::init();
+    spicy::rt::init();
+    hilti_main();
+    hilti::rt::done();
+    return 0;
+}
+
+@TEST-END-FILE

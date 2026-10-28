@@ -57,6 +57,14 @@ public:
     /** Appends `field` to `owner`'s fields list again, for verifier tests of duplicate membership. */
     void appendFieldForTesting(TypeDeclId owner, DeclId field);
 
+    /**
+     * Declares a package-level variable of `type`. Its initializer is set by `setGlobalInitializer()`, which
+     * the caller does once the initializer function exists, so that the variable can be referenced before then.
+     */
+    GlobalId createGlobal(std::string name, TypeId type, SourceSpanId span = {});
+    void setGlobalInitializer(GlobalId global, FunctionId initializer);
+    /** Appends a module-level function to run at the given initialization phase. */
+    void addInitializer(InitPhase phase, FunctionId function);
     /** Appends a selected parser implementation; call only once the function is complete. */
     void addParserRoot(TypeDeclId unit, FunctionId function);
     /** Appends a selected public ordinary function; call only once the function is complete. */
@@ -130,6 +138,8 @@ public:
     InstId addBoolConstant(BlockId block, bool value, SourceSpanId span = {});
     InstId addStringConstant(BlockId block, std::string value, SourceSpanId span = {});
     InstId addBytesConstant(BlockId block, std::string value, SourceSpanId span = {});
+    /** Adds `core.global_place` addressing `global`, which stays valid for the whole program. */
+    InstId addGlobalPlace(BlockId block, GlobalId global, SourceSpanId span = {});
     /** Adds `core.local_place` that holds a copy of `initial`, and returns the place. */
     InstId addLocalPlace(BlockId block, InstId initial, SourceSpanId span = {});
     /** Adds `unit.field_place` addressing `field` of `unit_value`, which stays valid only while the unit is. */

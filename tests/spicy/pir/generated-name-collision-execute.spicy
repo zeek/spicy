@@ -1,0 +1,45 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -P "" -o Foo.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+
+# @TEST-DOC: Compiles public functions whose names match the names the backend gives its module-level variables.
+# The public functions keep distinct names, so the module declares each one once and both run.
+
+module Test;
+
+global x: int64 = 1;
+
+public function g_0(): int64 {
+    return x + 1;
+}
+
+public function g_0_1(): int64 {
+    return x + 2;
+}
+
+@TEST-START-FILE driver.cc
+
+#include <iostream>
+
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+#include "Foo.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    auto a = hlt::_r__spicy_pir_backend::g_0();
+    auto b = hlt::_r__spicy_pir_backend::g_0_1();
+    std::cout << "g_0: " << a.get<hilti::rt::integer::safe<int64_t>>() << std::endl;
+    std::cout << "g_0_1: " << b.get<hilti::rt::integer::safe<int64_t>>() << std::endl;
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    hilti::rt::init();
+    spicy::rt::init();
+    hilti_main();
+    hilti::rt::done();
+    return 0;
+}
+
+@TEST-END-FILE

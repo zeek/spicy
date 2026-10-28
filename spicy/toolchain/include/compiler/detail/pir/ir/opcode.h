@@ -46,6 +46,7 @@ enum class Opcode {
     Branch,
     Jump,
     Equal,
+    GlobalPlace,
 };
 
 enum class TypeKind {
@@ -185,6 +186,12 @@ struct FieldPayload {
     friend constexpr bool operator==(FieldPayload, FieldPayload) = default;
 };
 
+struct GlobalPayload {
+    GlobalId global;
+
+    friend constexpr bool operator==(GlobalPayload, GlobalPayload) = default;
+};
+
 struct FunctionPayload {
     FunctionId function;
 
@@ -250,7 +257,8 @@ using InstPayload = std::variant<std::monostate,
                                  StringLiteral,
                                  BytesLiteral,
                                  BranchPayload,
-                                 JumpPayload>;
+                                 JumpPayload,
+                                 GlobalPayload>;
 
 enum class PayloadKind {
     None,
@@ -268,6 +276,7 @@ enum class PayloadKind {
     BytesLiteral,
     Branch,
     Jump,
+    Global,
 };
 
 /** Whether a suspending parser read consumes bytes and how it resumes. */
@@ -329,6 +338,7 @@ constexpr bool payloadMatchesKind(const InstPayload& payload, PayloadKind kind) 
         case PayloadKind::BytesLiteral: return std::holds_alternative<BytesLiteral>(payload);
         case PayloadKind::Branch: return std::holds_alternative<BranchPayload>(payload);
         case PayloadKind::Jump: return std::holds_alternative<JumpPayload>(payload);
+        case PayloadKind::Global: return std::holds_alternative<GlobalPayload>(payload);
     }
 
     return false;
@@ -409,7 +419,7 @@ inline constexpr ParserOperationContract KSubunitContract{
 
 // One entry per `Opcode` value, in declaration order, so `schemaFor()` can index directly without
 // per-call allocation.
-inline constexpr std::array<OpcodeSchema, 31> KSchemas{{
+inline constexpr std::array<OpcodeSchema, 32> KSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Constant,
         .spelling = "core.constant",
@@ -705,6 +715,14 @@ inline constexpr std::array<OpcodeSchema, 31> KSchemas{{
                  .payload_kind = PayloadKind::None,
                  .is_terminator = false,
                  .is_pure = true},
+    OpcodeSchema{.opcode = Opcode::GlobalPlace,
+                 .spelling = "core.global_place",
+                 .operand_types = KNoOperandTypes,
+                 .operand_roles = KNoOperandRoles,
+                 .result_type = anyType(),
+                 .payload_kind = PayloadKind::Global,
+                 .is_terminator = false,
+                 .is_pure = false},
 }};
 
 } // namespace detail
@@ -765,7 +783,8 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
         case Opcode::BoolConstant:
         case Opcode::StringConstant:
         case Opcode::BytesConstant: return {};
-        case Opcode::FieldPlace: return {.reads_places = true};
+        case Opcode::FieldPlace:
+        case Opcode::GlobalPlace: return {.reads_places = true};
         case Opcode::Finish:
         case Opcode::Yield:
         case Opcode::Return:

@@ -17,10 +17,12 @@ namespace spicy::detail::pir::ir {
 struct TypeDeclTag {};
 struct DeclTag {};
 struct ForeignFunctionTag {};
+struct GlobalTag {};
 
 using TypeDeclId = ID<TypeDeclTag>;
 using DeclId = ID<DeclTag>;
 using ForeignFunctionId = ID<ForeignFunctionTag>;
+using GlobalId = ID<GlobalTag>;
 
 enum class TypeDeclKind { Unit, Opaque };
 enum class DeclKind { Field };
@@ -94,6 +96,18 @@ struct Declaration {
     TypeDeclId owner;
     std::string name; /**< printer/diagnostic sugar only */
     TypeId type;
+    /** Invalid means absent. */
+    SourceSpanId span;
+};
+
+/**
+ * A package-level variable. Its value comes from `initializer`, a function without parameters that module
+ * initialization runs once. Reads and writes go through a place that `core.global_place` addresses.
+ */
+struct Global {
+    std::string name; /**< printer/diagnostic sugar only */
+    TypeId type;
+    FunctionId initializer; /**< invalid until the initializer is lowered */
     /** Invalid means absent. */
     SourceSpanId span;
 };

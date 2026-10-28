@@ -97,6 +97,11 @@ std::optional<std::string> renderPayload(const Package& package, const InstPaylo
         return fmt("then %%%u, else %%%u", branch->then_block.index, branch->else_block.index);
     if ( const auto* jump = std::get_if<JumpPayload>(&payload) )
         return fmt("%%%u", jump->target.index);
+    if ( const auto* global = std::get_if<GlobalPayload>(&payload) ) {
+        if ( ! package.isValid(global->global) )
+            return std::string("@<invalid-global>");
+        return fmt("@global %%%u \"%s\"", global->global.index, package.global(global->global).name);
+    }
     if ( const auto* bytes = std::get_if<BytesLiteral>(&payload) )
         return fmt("b\"%s\"", bytes->value);
 
