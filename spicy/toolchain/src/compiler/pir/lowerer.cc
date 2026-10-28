@@ -31,23 +31,29 @@
 #include <hilti/ast/expressions/keyword.h>
 #include <hilti/ast/expressions/logical-not.h>
 #include <hilti/ast/expressions/member.h>
+#include <hilti/ast/expressions/move.h>
 #include <hilti/ast/expressions/name.h>
 #include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/function.h>
 #include <hilti/ast/operator.h>
 #include <hilti/ast/statements/block.h>
+#include <hilti/ast/statements/comment.h>
 #include <hilti/ast/statements/declaration.h>
 #include <hilti/ast/statements/expression.h>
 #include <hilti/ast/statements/if.h>
 #include <hilti/ast/statements/return.h>
+#include <hilti/ast/statements/set_location.h>
 #include <hilti/ast/types/any.h>
 #include <hilti/ast/types/bool.h>
 #include <hilti/ast/types/bytes.h>
+#include <hilti/ast/types/enum.h>
 #include <hilti/ast/types/function.h>
 #include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/library.h>
 #include <hilti/ast/types/name.h>
+#include <hilti/ast/types/set.h>
 #include <hilti/ast/types/string.h>
+#include <hilti/ast/types/tuple.h>
 #include <hilti/ast/types/vector.h>
 #include <hilti/ast/types/void.h>
 #include <hilti/base/util.h>
@@ -66,6 +72,9 @@ using hilti::util::fmt;
 namespace spicy::detail::pir {
 
 namespace {
+
+// The named enums that procedural code passes to the runtime, by the enum's name. Their labels are native constants.
+bool isNativeEnum(const hilti::ID& enum_id) { return enum_id == hilti::ID("hilti::Protocol"); }
 
 // The PIR transport of a runtime protocol, if a port of that protocol can be a constant.
 std::optional<ir::Transport> portTransport(hilti::rt::Protocol protocol) {
@@ -93,9 +102,11 @@ struct VisitorRoots : public visitor::PreOrder {
     std::vector<hilti::declaration::GlobalVariable*> globals;
     std::vector<std::pair<hilti::declaration::Function*, ir::InitPhase>> initializers;
 
+    // Declarations of HILTI library modules, and of modules that already have an implementation elsewhere, are not
+    // lowered: only the Spicy modules of this compilation are.
     static bool skipsImplementation(hilti::Declaration* n) {
         auto* m = n->parent<hilti::declaration::Module>();
-        return m && m->skipImplementation();
+        return m && (m->skipImplementation() || m->uid().parse_extension != ".spicy");
     }
 
     void operator()(hilti::declaration::Function* n) final {
@@ -253,15 +264,19 @@ public:
             return _lowerCtor(ctor_expr->ctor(), expr->meta().location());
 
         if ( auto* name = expr->tryAs<hilti::expression::Name>() ) {
-            // Enum labels of a named native enum refer to the native constant, not to a declaration.
-            if ( ! name->resolvedDeclaration() )
+            // Labels of a native enum name the native constant, whether or not they resolve to a declaration.
+            if ( isNativeEnum(name->id().namespace_()) )
                 return _lowerForeignConstant(name);
             return _read(name);
         }
 
         if ( auto* keyword = expr->tryAs<hilti::expression::Keyword>();
              keyword && keyword->kind() == hilti::expression::keyword::Kind::Scope )
-            return _builder.addLinkerScope(_block, internSpan(_package, expr->meta().location()));
+            return _lowerLinkedArtifactScope(expr->meta().location());
+
+        // A move hands over the value it names. The place it came from is not read again by the program.
+        if ( auto* moved = expr->tryAs<hilti::expression::Move>() )
+            return lower(moved->expression());
 
         if ( auto* negation = expr->tryAs<hilti::expression::LogicalNot>() ) {
             auto operand = lower(negation->expression());
@@ -280,6 +295,8 @@ public:
                 return _lowerEqual(op);
             if ( op->kind() == hilti::operator_::Kind::MemberCall )
                 return _lowerMemberCall(op);
+            if ( op->kind() == hilti::operator_::Kind::Add && op->op0()->type()->type()->isA<hilti::type::Set>() )
+                return _lowerSetInsert(op);
             if ( op->kind() == hilti::operator_::Kind::Member ) {
                 auto place = _fieldPlace(op);
                 if ( auto* feature = std::get_if<UnsupportedFeature>(&place) )
@@ -295,6 +312,25 @@ public:
     std::variant<ir::InstId, UnsupportedFeature> _lowerCtor(hilti::Ctor* ctor, const hilti::Location& loc);
 
 private:
+    // `set += element` on a local set. The insertion is stored back into the set's place, as for `push_back`.
+    std::variant<ir::InstId, UnsupportedFeature> _lowerSetInsert(hilti::expression::ResolvedOperator* op) {
+        auto place = _place(op->op0());
+        if ( auto* feature = std::get_if<UnsupportedFeature>(&place) )
+            return *feature;
+
+        auto element = lower(op->op1());
+        if ( auto* feature = std::get_if<UnsupportedFeature>(&element) )
+            return *feature;
+
+        auto set = _load(std::get<ir::InstId>(place), op->meta().location());
+        if ( auto* feature = std::get_if<UnsupportedFeature>(&set) )
+            return *feature;
+
+        auto span = internSpan(_package, op->meta().location());
+        auto inserted = _builder.addSetInsert(_block, std::get<ir::InstId>(set), std::get<ir::InstId>(element), span);
+        return _builder.addStore(_block, std::get<ir::InstId>(place), inserted, span);
+    }
+
     // Methods on a local vector. `push_back` appends to the vector in its place, so the place is stored again.
     // `reserve` only changes capacity, which no value observes, so it leaves no operation behind.
     std::variant<ir::InstId, UnsupportedFeature> _lowerMemberCall(hilti::expression::ResolvedOperator* op) {
@@ -380,9 +416,10 @@ private:
         if ( op->kind() != hilti::operator_::Kind::Sum )
             return _unsupported("only signed-integer addition is supported", op->meta().location());
 
-        auto* result_type = op->result()->type()->tryAs<hilti::type::SignedInteger>();
-        if ( ! result_type || result_type->width() != 64 )
-            return _unsupported("only signed 64-bit integer addition is supported", op->meta().location());
+        auto* signed_type = op->result()->type()->tryAs<hilti::type::SignedInteger>();
+        auto* unsigned_type = op->result()->type()->tryAs<hilti::type::UnsignedInteger>();
+        if ( ! ((signed_type && signed_type->width() == 64) || (unsigned_type && unsigned_type->width() == 64)) )
+            return _unsupported("only 64-bit integer addition is supported", op->meta().location());
 
         auto lhs = lower(op->op0());
         if ( auto* feature = std::get_if<UnsupportedFeature>(&lhs) )
@@ -475,6 +512,7 @@ private:
 
     // A constant of a native type, referred to by its spelling in the runtime.
     std::variant<ir::InstId, UnsupportedFeature> _lowerForeignConstant(hilti::expression::Name* name);
+    ir::InstId _lowerLinkedArtifactScope(const hilti::Location& loc);
 
     // A module-level variable is addressed through a place created in the current block.
     std::variant<Variable, UnsupportedFeature> _lookupGlobal(hilti::declaration::GlobalVariable* global,
@@ -521,13 +559,24 @@ class ProcedureLowerer {
 public:
     explicit ProcedureLowerer(ir::Package& package) : _package(package), _builder(package.builder()) {}
 
+    // The finite set of named enums that procedural code passes to the runtime, by the enum's name.
+    std::optional<ir::TypeId> nativeEnum(const hilti::ID& enum_id) {
+        if ( isNativeEnum(enum_id) )
+            return _opaqueNative("hilti::rt::Protocol", true);
+        return std::nullopt;
+    }
+
     // The PIR type of a Spicy type that procedural code can hold, if PIR can represent it yet.
     std::optional<ir::TypeId> valueType(const hilti::UnqualifiedType* type) {
         if ( const auto* named = type->tryAs<hilti::type::Name>() ) {
-            // The finite set of named enums that procedural code passes to the runtime.
-            if ( named->id() == hilti::ID("hilti::Protocol") )
-                return _opaqueNative("hilti::rt::Protocol", true);
+            if ( auto native = nativeEnum(named->id()) )
+                return native;
             return named->resolvedType() ? valueType(named->resolvedType()) : std::nullopt;
+        }
+        if ( type->isA<hilti::type::Enum>() ) {
+            if ( auto native = nativeEnum(type->typeID()) )
+                return native;
+            return std::nullopt;
         }
         if ( type->isA<hilti::type::Port>() )
             return _opaqueNative("hilti::rt::Port", true);
@@ -536,6 +585,22 @@ public:
             if ( ! element || *element == _builder.voidType() )
                 return std::nullopt;
             return _builder.vectorType(*element);
+        }
+        if ( const auto* set = type->tryAs<hilti::type::Set>() ) {
+            auto element = valueType(set->elementType()->type());
+            if ( ! element || *element == _builder.voidType() )
+                return std::nullopt;
+            return _builder.setType(*element);
+        }
+        if ( const auto* tuple = type->tryAs<hilti::type::Tuple>() ) {
+            std::vector<ir::TypeId> elements;
+            for ( const auto* element : tuple->elements() ) {
+                auto value = valueType(element->type()->type());
+                if ( ! value || *value == _builder.voidType() )
+                    return std::nullopt;
+                elements.push_back(*value);
+            }
+            return _builder.tupleType(std::move(elements));
         }
         if ( const auto* integer = type->tryAs<hilti::type::SignedInteger>(); integer && integer->width() == 64 )
             return _builder.int64Type();
@@ -704,6 +769,19 @@ public:
         return id;
     }
 
+    // The accessor for the scope that identifies the linked artifact to the runtime. The target supplies its
+    // implementation, so it is reported as a binding.
+    ir::ForeignFunctionId linkedArtifactScope() {
+        if ( ! _linked_artifact_scope.isSet() ) {
+            _linked_artifact_scope =
+                _builder.createTargetForeignFunction("linked_artifact_scope", {}, _builder.uint64Type());
+            _bindings.push_back({.function = _linked_artifact_scope, .kind = TargetBindingKind::LinkedArtifactScope});
+        }
+        return _linked_artifact_scope;
+    }
+
+    const std::vector<TargetBinding>& bindings() const { return _bindings; }
+
     // The runtime's `hilti::print` (one value) or `hilti::printTuple` (several values) with a newline.
     ir::ForeignFunctionId printer(bool tuple) {
         auto& slot = tuple ? _print_tuple : _print;
@@ -788,6 +866,8 @@ private:
     std::unordered_map<std::string, ir::TypeId> _opaque_types;
     ir::ForeignFunctionId _print;
     ir::ForeignFunctionId _print_tuple;
+    ir::ForeignFunctionId _linked_artifact_scope;
+    std::vector<TargetBinding> _bindings;
 };
 
 std::variant<Variable, UnsupportedFeature> BodyLowerer::_lookupGlobal(hilti::declaration::GlobalVariable* global,
@@ -800,9 +880,14 @@ std::variant<Variable, UnsupportedFeature> BodyLowerer::_lookupGlobal(hilti::dec
     return Variable{.value = place, .is_place = true};
 }
 
+ir::InstId BodyLowerer::_lowerLinkedArtifactScope(const hilti::Location& loc) {
+    return _builder.addOpaqueOp(_block, _procedures.linkedArtifactScope(), {}, internSpan(_package, loc));
+}
+
 std::variant<ir::InstId, UnsupportedFeature> BodyLowerer::_lowerForeignConstant(hilti::expression::Name* name) {
     auto loc = name->meta().location();
-    auto type = _procedures.valueType(name->type()->type());
+    // An enum label names its enum, so the label's type follows from that enum.
+    auto type = _procedures.nativeEnum(name->id().namespace_());
     if ( ! type || _package.type(*type).kind != ir::TypeKind::Opaque )
         return _unsupported(fmt("reference to '%s' is not supported", std::string(name->id())), loc);
     return _builder.addForeignConstant(_block, *type, std::string(name->id()), internSpan(_package, loc));
@@ -947,14 +1032,18 @@ std::optional<UnsupportedFeature> BodyLowerer::lowerStatement(hilti::Statement* 
     if ( auto* decl = stmt->tryAs<hilti::statement::Declaration>() ) {
         auto* local = decl->declaration()->tryAs<hilti::declaration::LocalVariable>();
         if ( local && ! local->init() ) {
-            // The only default value a local may have is an empty vector.
+            // The only default values a local may have are an empty vector and an empty set.
             auto declared = _procedures.valueType(local->type()->type());
-            if ( ! declared || _package.type(*declared).kind != ir::TypeKind::Vector )
-                return _unsupported("only local vectors may be declared without an initializer",
+            if ( ! declared || (_package.type(*declared).kind != ir::TypeKind::Vector &&
+                                _package.type(*declared).kind != ir::TypeKind::Set) )
+                return _unsupported("only local vectors and sets may be declared without an initializer",
                                     stmt->meta().location());
 
             auto span = internSpan(_package, stmt->meta().location());
-            auto empty = _builder.addVectorEmpty(_block, _package.type(*declared).type_arguments[0], span);
+            auto element = _package.type(*declared).type_arguments[0];
+            auto empty = _package.type(*declared).kind == ir::TypeKind::Vector ?
+                             _builder.addVectorEmpty(_block, element, span) :
+                             _builder.addSetEmpty(_block, element, span);
             bind(local, Variable{.value = _builder.addLocalPlace(_block, empty, span), .is_place = true});
             return std::nullopt;
         }
@@ -1001,6 +1090,14 @@ std::optional<UnsupportedFeature> BodyLowerer::lowerStatement(hilti::Statement* 
         return std::nullopt;
     }
 
+    // A location marker around an expression is the expression as a statement, with the location it carries.
+    if ( auto* marked = stmt->tryAs<hilti::statement::SetLocation>() ) {
+        auto value = lower(marked->expression());
+        if ( auto* feature = std::get_if<UnsupportedFeature>(&value) )
+            return *feature;
+        return std::nullopt;
+    }
+
     if ( auto* expr_stmt = stmt->tryAs<hilti::statement::Expression>() ) {
         auto* expr = expr_stmt->expression();
         if ( auto* assign = expr->tryAs<hilti::expression::Assign>() ) {
@@ -1025,6 +1122,10 @@ std::optional<UnsupportedFeature> BodyLowerer::lowerStatement(hilti::Statement* 
             return *feature;
         return std::nullopt;
     }
+
+    // A comment has no effect on the parser.
+    if ( stmt->isA<hilti::statement::Comment>() )
+        return std::nullopt;
 
     return _unsupported("only return, print, local declarations, assignments, and calls are supported",
                         stmt->meta().location());
@@ -1442,7 +1543,9 @@ RootDiscovery discoverRoots(const hilti::ASTContext& ctx) {
     };
 }
 
-std::optional<UnsupportedFeature> lowerRoots(const RootDiscovery& discovery, ir::Package& package) {
+std::optional<UnsupportedFeature> lowerRoots(const RootDiscovery& discovery,
+                                             ir::Package& package,
+                                             std::vector<TargetBinding>& bindings) {
     // If discovery doesn't support something, lowering also won't.
     if ( discovery.unrepresented_content )
         return discovery.unrepresented_content;
@@ -1505,6 +1608,7 @@ std::optional<UnsupportedFeature> lowerRoots(const RootDiscovery& discovery, ir:
     if ( auto feature = lowerUnits(unit_roots, discovery.unit_declarations, discovery.unit_hooks, package, procedures) )
         return feature;
 
+    bindings = procedures.bindings();
     return std::nullopt;
 }
 

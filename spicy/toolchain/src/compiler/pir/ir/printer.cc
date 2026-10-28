@@ -176,6 +176,10 @@ std::string typeName(const Package& package, TypeId type_id) {
             return t.type_arguments.size() == 1 ? fmt("vector<%s>", typeName(package, t.type_arguments[0])) :
                                                   "vector<<invalid-type>>";
 
+        case TypeKind::Set:
+            return t.type_arguments.size() == 1 ? fmt("set<%s>", typeName(package, t.type_arguments[0])) :
+                                                  "set<<invalid-type>>";
+
         case TypeKind::Unit: {
             if ( ! package.isValid(t.declaration) )
                 return "unit<<invalid-decl>>";
@@ -265,10 +269,10 @@ std::string print(const Package& package) {
         std::string parameters;
         for ( size_t p = 0; p < fn.parameters.size(); ++p )
             parameters += (p == 0 ? "" : ", ") + foreignParameterName(package, fn.parameters[p]);
-        out += fmt("foreign function %%%zu \"%s\" (native \"%s\") (%s) -> %s\n",
+        out += fmt("foreign function %%%zu \"%s\" (%s) (%s) -> %s\n",
                    i,
                    fn.name,
-                   fn.cxx_name,
+                   fn.target_provided ? std::string("target-provided") : fmt("native \"%s\"", fn.cxx_name),
                    parameters,
                    typeName(package, fn.result_type));
     }

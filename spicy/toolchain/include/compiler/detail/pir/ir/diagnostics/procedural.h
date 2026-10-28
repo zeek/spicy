@@ -141,6 +141,13 @@ inline constexpr DiagnosticDefinition GlobalPlaceInvalidPayload{
     .message = "core.global_place's payload does not reference a valid global",
 };
 
+inline constexpr DiagnosticDefinition AddOperandTypeMismatch{
+    .id = "PIR_ADD_OPERAND_TYPE_MISMATCH",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "core.add operands and result must have one 64-bit integer type",
+};
+
 inline constexpr DiagnosticDefinition InvokeHookInvalidPayload{
     .id = "PIR_INVOKE_HOOK_INVALID_PAYLOAD",
     .classification = DiagnosticClassification::Internal,

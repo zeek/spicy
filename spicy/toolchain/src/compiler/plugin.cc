@@ -129,8 +129,8 @@ hilti::Plugin spicy::detail::createSpicyPlugin() {
                 else {
                     // A successful PIR build; try the HILTI backend before deciding whether the
                     // legacy generator runs at all for this compilation.
-                    const auto& package = std::get<pir::Success>(*result).package;
-                    auto lowering = pir::backend::hilti::lower(*spicy_builder, package);
+                    const auto& success = std::get<pir::Success>(*result);
+                    auto lowering = pir::backend::hilti::lower(*spicy_builder, success.package, success.bindings);
 
                     if ( auto* pir_module = std::get_if<hilti::declaration::Module*>(&lowering) ) {
                         auto pir_uid = spicy_builder->context()->addModule(*pir_module);

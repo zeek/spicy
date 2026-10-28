@@ -33,7 +33,7 @@ inline constexpr DiagnosticDefinition ForeignFunctionMissingBinding{
     .id = "PIR_FOREIGN_FUNCTION_MISSING_BINDING",
     .classification = DiagnosticClassification::Internal,
     .severity = DiagnosticSeverity::Error,
-    .message = "foreign function does not name its native symbol",
+    .message = "foreign function must either name its native symbol or be provided by the target",
 };
 
 inline constexpr DiagnosticDefinition ForeignFunctionInvalidResult{

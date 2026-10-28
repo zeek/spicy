@@ -35,6 +35,7 @@ bool isStorageType(const ir::Package& package, ir::TypeId id) {
         case ir::TypeKind::Bytes:
         case ir::TypeKind::Unit: return true;
         case ir::TypeKind::Vector: return isStorageType(package, type.type_arguments[0]);
+        case ir::TypeKind::Set: return false;
         case ir::TypeKind::Void:
         case ir::TypeKind::Int64:
         case ir::TypeKind::ParserState:
@@ -55,6 +56,9 @@ bool isVectorElementType(const ir::Package& package, ir::TypeId id) {
         case ir::TypeKind::Bool:
         case ir::TypeKind::String:
         case ir::TypeKind::Opaque: return true;
+        case ir::TypeKind::Tuple:
+            return std::ranges::all_of(package.type(id).type_arguments,
+                                       [&](ir::TypeId element) { return isVectorElementType(package, element); });
         default: return isStorageType(package, id);
     }
 }
@@ -118,10 +122,11 @@ void checkRegion(const ir::Package& package,
                 case ir::Opcode::Load: break;
                 case ir::Opcode::Return:
                 case ir::Opcode::GlobalPlace:
+                case ir::Opcode::SetEmpty:
+                case ir::Opcode::SetInsert:
                 case ir::Opcode::Uint64Constant:
                 case ir::Opcode::ForeignConstant:
                 case ir::Opcode::PortConstant:
-                case ir::Opcode::LinkerScope:
                 case ir::Opcode::LocalPlace:
                 case ir::Opcode::Store:
                 case ir::Opcode::Tuple:
@@ -161,7 +166,8 @@ bool isProcedureType(const ir::Package& package, ir::TypeId id) {
             const auto& decl = package.typeDecl(type.declaration);
             return decl.opaque && decl.opaque->lifecycle && ! decl.opaque->cxx_name.empty();
         }
-        case ir::TypeKind::Vector: return isProcedureType(package, type.type_arguments[0]);
+        case ir::TypeKind::Vector:
+        case ir::TypeKind::Set: return isProcedureType(package, type.type_arguments[0]);
         case ir::TypeKind::ParserState:
         case ir::TypeKind::Unit: return false;
     }
@@ -191,10 +197,11 @@ void checkProcedureRegion(const ir::Package& package, ir::RegionId region, std::
                 case ir::Opcode::GlobalPlace:
                 case ir::Opcode::VectorEmpty:
                 case ir::Opcode::VectorAppend:
+                case ir::Opcode::SetEmpty:
+                case ir::Opcode::SetInsert:
                 case ir::Opcode::Uint64Constant:
                 case ir::Opcode::ForeignConstant:
                 case ir::Opcode::PortConstant:
-                case ir::Opcode::LinkerScope:
                 case ir::Opcode::LocalPlace:
                 case ir::Opcode::Load:
                 case ir::Opcode::Store:
@@ -224,8 +231,23 @@ void checkProcedureRegion(const ir::Package& package, ir::RegionId region, std::
 
 } // namespace
 
-std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package) {
+std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package, const std::vector<TargetBinding>& bindings) {
     std::vector<UnsupportedFeature> out;
+    std::unordered_set<uint32_t> bound;
+    for ( const auto& binding : bindings ) {
+        bool valid = package.isValid(binding.function) && bound.insert(binding.function.index).second;
+        if ( valid ) {
+            // The scope of the linked artifact is a zero-argument accessor of an unsigned 64-bit value.
+            const auto& fn = package.foreignFunction(binding.function);
+            valid = fn.target_provided && binding.kind == TargetBindingKind::LinkedArtifactScope &&
+                    fn.parameters.empty() && package.isValid(fn.result_type) &&
+                    package.type(fn.result_type).kind == ir::TypeKind::UInt64;
+        }
+
+        if ( ! valid )
+            report(out, "target binding", "a foreign function has no valid implementation for its target binding");
+    }
+
     if ( package.parserRoots().empty() && package.functionRoots().empty() )
         report(out, "package", "no parser or function root");
 
@@ -248,11 +270,21 @@ std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package) {
                 if ( ! isVectorElementType(package, type.type_arguments[0]) )
                     report(out, "vector", "vector element type cannot be stored by the HILTI backend");
                 break;
+            case ir::TypeKind::Set:
+                if ( ! isVectorElementType(package, type.type_arguments[0]) )
+                    report(out, "set", "set element type cannot be stored by the HILTI backend");
+                break;
         }
     }
 
     for ( size_t i = 0; i < package.foreignFunctions().size(); ++i ) {
         const auto& fn = package.foreignFunction(ir::ForeignFunctionId{static_cast<uint32_t>(i)});
+        // Nothing but a binding implements a function that the target provides.
+        if ( fn.target_provided && ! bound.contains(static_cast<uint32_t>(i)) )
+            report(out,
+                   "foreign function",
+                   fmt("foreign function '%s' is provided by the target, which has no binding for it", fn.name),
+                   toLocation(package, fn.span));
         bool representable = isProcedureType(package, fn.result_type);
         for ( const auto& parameter : fn.parameters )
             representable = representable && (parameter.argument != ir::ForeignArgument::Value ||

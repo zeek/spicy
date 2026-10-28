@@ -1,5 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <cassert>
 #include <limits>
 #include <optional>
 #include <string>
@@ -58,14 +59,18 @@ struct ParserEntryNames {
 struct NameMap : std::unordered_map<uint32_t, FunctionNames> {
     std::vector<std::string> globals;             /**< by global index */
     std::vector<ParserEntryNames> parser_entries; /**< by parser root index */
+    /** Foreign functions that the target realizes itself, by function index. They get no declaration. */
+    std::unordered_map<uint32_t, TargetBindingKind> bound;
 };
 
 // Public functions keep their source names where possible. Roots from different source modules may share a local name,
 // and a name may collide with a generated one, so a clashing root gets a numeric suffix.
 // TODO: Allocate implementation names by PIR identity to avoid collisions
 // after target normalization, such as C++ class and class_.
-NameMap makeNames(const ir::Package& package) {
+NameMap makeNames(const ir::Package& package, const std::vector<TargetBinding>& bindings) {
     NameMap names;
+    for ( const auto& binding : bindings )
+        names.bound.emplace(binding.function.index, binding.kind);
     std::unordered_set<uint32_t> roots;
     for ( auto root : package.functionRoots() )
         roots.insert(root.index);
@@ -149,6 +154,12 @@ NameMap makeNames(const ir::Package& package) {
         }
         case ir::TypeKind::Opaque: {
             const auto& info = package.typeDecl(type.declaration).opaque.value();
+            // The native port and protocol types are the HILTI types of the same names, which native calls take as they
+            // are.
+            if ( info.cxx_name == "hilti::rt::Port" )
+                return b.qualifiedType(b.typePort(), ::hilti::Constness::Mutable);
+            if ( info.cxx_name == "hilti::rt::Protocol" )
+                return b.qualifiedType(b.typeName(::hilti::ID("hilti::Protocol")), ::hilti::Constness::Mutable);
             // The library type carries its own constness, so the qualifier stays mutable.
             auto constness = info.constant ? ::hilti::Constness::Const : ::hilti::Constness::Mutable;
             return b.qualifiedType(b.typeLibrary(constness, info.cxx_name), ::hilti::Constness::Mutable);
@@ -159,6 +170,9 @@ NameMap makeNames(const ir::Package& package) {
             return b.qualifiedType(b.typeName(::hilti::ID(unitName(type.declaration))), ::hilti::Constness::Mutable);
         case ir::TypeKind::Vector:
             return b.qualifiedType(b.typeVector(targetType(b, package, type.type_arguments[0])),
+                                   ::hilti::Constness::Mutable);
+        case ir::TypeKind::Set:
+            return b.qualifiedType(b.typeSet(targetType(b, package, type.type_arguments[0])),
                                    ::hilti::Constness::Mutable);
         default: ::hilti::util::cannotBeReached();
     }
@@ -359,6 +373,19 @@ protected:
                 return true;
             case ir::Opcode::Call:
             case ir::Opcode::OpaqueOp: {
+                if ( inst.opcode == ir::Opcode::OpaqueOp ) {
+                    // A call to a function that the target realizes becomes the target's own expression.
+                    auto function = std::get<ir::ForeignFunctionPayload>(inst.payload).function;
+                    if ( auto bound = names_.bound.find(function.index); bound != names_.bound.end() ) {
+                        // The scope of the linked artifact is the only target binding so far.
+                        assert(bound->second == TargetBindingKind::LinkedArtifactScope);
+                        auto name = fmt("v_%u", id.index);
+                        b.addLocal(::hilti::ID(name), targetType(b, package_, inst.result_type), b.scope(meta), meta);
+                        values_[id.index] = std::move(name);
+                        return true;
+                    }
+                }
+
                 ::hilti::ID callee =
                     inst.opcode == ir::Opcode::Call ?
                         moduleLevel(names_.at(std::get<ir::FunctionPayload>(inst.payload).function.index).function) :
@@ -421,6 +448,17 @@ protected:
                 b.addExpression(b.memberCall(_value(b, inst.args[0]), "push_back", {_value(b, inst.args[1])}, meta));
                 values_[id.index] = values_.at(inst.args[0].index);
                 return true;
+            case ir::Opcode::SetEmpty: {
+                auto name = fmt("v_%u", id.index);
+                b.addLocal(::hilti::ID(name), targetType(b, package_, inst.result_type), meta);
+                values_[id.index] = std::move(name);
+                return true;
+            }
+            case ir::Opcode::SetInsert:
+                // As for a vector, the insertion extends the storage its operand names.
+                b.addExpression(b.add(_value(b, inst.args[0]), _value(b, inst.args[1]), meta));
+                values_[id.index] = values_.at(inst.args[0].index);
+                return true;
             case ir::Opcode::Tuple: {
                 ::hilti::Expressions elements;
                 for ( auto element : inst.args )
@@ -455,12 +493,6 @@ protected:
                            targetType(b, package_, inst.result_type),
                            b.port(::hilti::rt::Port(port.number, protocol), meta),
                            meta);
-                values_[id.index] = std::move(name);
-                return true;
-            }
-            case ir::Opcode::LinkerScope: {
-                auto name = fmt("v_%u", id.index);
-                b.addLocal(::hilti::ID(name), targetType(b, package_, inst.result_type), b.scope(meta), meta);
                 values_[id.index] = std::move(name);
                 return true;
             }
@@ -982,9 +1014,7 @@ void lowerParserEntry(::hilti::Builder& builder,
     const auto& parse1 = entry.parse1;
     const auto& parser = entry.parser;
     auto* view_type = builder.qualifiedType(builder.typeStreamView(), ::hilti::Constness::Mutable);
-    auto* context_type =
-        builder.qualifiedType(builder.typeLibrary(::hilti::Constness::Mutable, "::spicy::rt::UnitContext"),
-                              ::hilti::Constness::Mutable);
+    auto* context_type = builder.qualifiedType(builder.typeName("spicy_rt::UnitContext"), ::hilti::Constness::Mutable);
 
     // The adapter takes the runtime's endpoint arguments, runs the root parser over them, and returns where the parser
     // finished. Resumption needs no adapter state: the root's own input waits suspend the call, and the runtime resumes
@@ -1006,6 +1036,8 @@ void lowerParserEntry(::hilti::Builder& builder,
     };
     auto* body = builder.statementBlock(meta);
     LocalBuilder fb(builder.context(), body);
+    // Unit contexts are not supported yet, so the adapter refuses one.
+    fb.addExpression(fb.call("spicy_rt::rejectUnitContext", {fb.id(::hilti::ID("unit_context"))}, meta));
     fb.addLocal(::hilti::ID("result"),
                 fb.call(moduleLevel(names_root.function),
                         {fb.id(::hilti::ID("data")), fb.id(::hilti::ID("initial_cursor"))},
@@ -1084,12 +1116,14 @@ void lowerParserEntry(::hilti::Builder& builder,
                                      meta));
 }
 
-LoweringResult lower(::hilti::Builder& builder, const ir::Package& package) {
-    auto unsupported = checkCoverage(package);
+LoweringResult lower(::hilti::Builder& builder,
+                     const ir::Package& package,
+                     const std::vector<TargetBinding>& bindings) {
+    auto unsupported = checkCoverage(package, bindings);
     if ( ! unsupported.empty() )
         return Unsupported{std::move(unsupported)};
 
-    auto names = makeNames(package);
+    auto names = makeNames(package, bindings);
     ::hilti::Declarations decls = {builder.import("hilti"), builder.import("spicy_rt")};
     for ( const auto& include : package.cxxIncludes() )
         decls.push_back(builder.declarationProperty(::hilti::ID("%cxx-include"), builder.stringLiteral(include)));
@@ -1110,7 +1144,8 @@ LoweringResult lower(::hilti::Builder& builder, const ir::Package& package) {
             decls.push_back(lowerResultType(builder, package, id, names.at(id.index)));
     }
     for ( size_t i = 0; i < package.foreignFunctions().size(); ++i )
-        decls.push_back(lowerForeignFunction(builder, package, ir::ForeignFunctionId{static_cast<uint32_t>(i)}));
+        if ( ! names.bound.contains(static_cast<uint32_t>(i)) )
+            decls.push_back(lowerForeignFunction(builder, package, ir::ForeignFunctionId{static_cast<uint32_t>(i)}));
     for ( size_t i = 0; i < package.functions().size(); ++i ) {
         auto id = ir::FunctionId{static_cast<uint32_t>(i)};
         if ( package.function(id).kind == ir::FunctionKind::Parser )

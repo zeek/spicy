@@ -565,16 +565,25 @@ TEST_CASE("verifier rejects an opaque declaration without a native name or lifec
     CHECK(hasDiagnostic(verify(package), diag::OpaqueDeclarationIncomplete));
 }
 
-TEST_CASE("verifier rejects a foreign function without a binding or with an affine parameter") {
+TEST_CASE("verifier rejects a foreign function without a binding or with a void parameter") {
     Package package;
     auto builder = package.builder();
-    auto unit = builder.unitType(builder.createUnitDecl("Unit"));
     builder.createForeignFunction("unbound", "", {builder.int64Type()}, builder.int64Type());
-    builder.createForeignFunction("affine", "::affine", {unit}, builder.int64Type());
+    builder.createForeignFunction("void", "::void_arg", {builder.voidType()}, builder.int64Type());
 
     auto diags = verify(package);
     CHECK(hasDiagnostic(diags, diag::ForeignFunctionMissingBinding));
     CHECK(hasDiagnostic(diags, diag::ForeignFunctionInvalidParameter));
+}
+
+TEST_CASE("verifier accepts a foreign function that takes an affine value by value") {
+    Package package;
+    auto builder = package.builder();
+    auto vector = builder.vectorType(builder.int64Type());
+    builder.createForeignFunction("take", "::take", {vector}, builder.int64Type());
+
+    auto diags = verify(package);
+    CHECK_FALSE(hasDiagnostic(diags, diag::ForeignFunctionInvalidParameter));
 }
 
 TEST_CASE("places intern structurally by element type") {

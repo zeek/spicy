@@ -434,6 +434,17 @@ public:
     ~ParseError() override; /* required to create vtable, see hilti::rt::Exception */
 };
 
+namespace detail {
+
+// Rejects a context that a parser cannot use. Parsers compiled by the experimental Parser IR do not support contexts
+// yet.
+inline void rejectUnitContext(const hilti::rt::Optional<UnitContext>& ctx) {
+    if ( ctx )
+        throw ParseError("unit contexts are not supported by this parser");
+}
+
+} // namespace detail
+
 /**
  * Exception triggering backtracking to the most recent ``&try``. Derived from
  * ``ParseError`` so that if it's not caught, it turns into a regular parsing
