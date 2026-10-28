@@ -156,6 +156,23 @@ void Builder::addParserRoot(TypeDeclId unit, FunctionId function) {
 
 void Builder::addFunctionRoot(FunctionId function) { _package._function_roots.push_back(function); }
 
+GlobalId Builder::createGlobal(std::string name, TypeId type, SourceSpanId span) {
+    return _package._globals.add(Global{
+        .name = std::move(name),
+        .type = type,
+        .initializer = {},
+        .span = span,
+    });
+}
+
+void Builder::setGlobalInitializer(GlobalId global, FunctionId initializer) {
+    _package._globals.get(global).initializer = initializer;
+}
+
+void Builder::addInitializer(InitPhase phase, FunctionId function) {
+    _package._initializers.push_back(Initializer{.phase = phase, .function = function});
+}
+
 void Builder::addCxxInclude(std::string header) {
     auto& includes = _package._cxx_includes;
     if ( std::ranges::find(includes, header) == includes.end() )
@@ -403,6 +420,14 @@ InstId Builder::addFieldPlace(BlockId block, InstId unit_value, DeclId field, So
         result_type = placeType(_package.declaration(field).type);
 
     return addInst(block, Opcode::FieldPlace, {unit_value}, result_type, InstPayload(FieldPayload{field}), span);
+}
+
+InstId Builder::addGlobalPlace(BlockId block, GlobalId global, SourceSpanId span) {
+    TypeId result_type;
+    if ( _package.isValid(global) )
+        result_type = placeType(_package.global(global).type);
+
+    return addInst(block, Opcode::GlobalPlace, {}, result_type, InstPayload(GlobalPayload{global}), span);
 }
 
 InstId Builder::addLoad(BlockId block, InstId place, SourceSpanId span) {

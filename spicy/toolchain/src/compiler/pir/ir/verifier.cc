@@ -874,6 +874,23 @@ private:
                 return;
             }
 
+            case Opcode::GlobalPlace: {
+                const auto* payload = std::get_if<GlobalPayload>(&inst.payload);
+                if ( ! payload )
+                    return;
+
+                if ( ! _package.isValid(payload->global) ) {
+                    _emitter.emit(diag::GlobalPlaceInvalidPayload, inst_id);
+                    return;
+                }
+
+                const auto& global = _package.global(payload->global);
+                if ( ! _package.isValid(inst.result_type) || _package.type(inst.result_type).kind != TypeKind::Place ||
+                     _package.type(inst.result_type).type_arguments != std::vector<TypeId>{global.type} )
+                    _emitter.emit(diag::GlobalPlaceResultTypeMismatch, inst_id);
+                return;
+            }
+
             case Opcode::Store: {
                 if ( inst.args.size() != 2 || ! _package.isValid(inst.args[0]) || ! _package.isValid(inst.args[1]) )
                     return;

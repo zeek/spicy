@@ -134,6 +134,20 @@ inline constexpr DiagnosticDefinition FieldPlaceResultTypeMismatch{
     .message = "unit.field_place result must be a place of its field's type",
 };
 
+inline constexpr DiagnosticDefinition GlobalPlaceInvalidPayload{
+    .id = "PIR_GLOBAL_PLACE_INVALID_PAYLOAD",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "core.global_place's payload does not reference a valid global",
+};
+
+inline constexpr DiagnosticDefinition GlobalPlaceResultTypeMismatch{
+    .id = "PIR_GLOBAL_PLACE_RESULT_TYPE_MISMATCH",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "core.global_place result must be a place of its global's type",
+};
+
 inline constexpr DiagnosticDefinition StoreValueTypeMismatch{
     .id = "PIR_STORE_VALUE_TYPE_MISMATCH",
     .classification = DiagnosticClassification::Internal,

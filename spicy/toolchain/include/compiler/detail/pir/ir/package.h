@@ -75,6 +75,18 @@ struct ParserRoot {
     FunctionId function;
 };
 
+/**
+ * A module initialization phase. Pre-initialization functions run before any global is initialized, and
+ * initialization functions run after all of them.
+ */
+enum class InitPhase { PreInit, Init };
+
+/** One module-level function run during initialization, in the order of `Package::initializers()`. */
+struct Initializer {
+    InitPhase phase;
+    FunctionId function;
+};
+
 class Builder;
 
 /** The central place that stores the PIR arenas and outputs. */
@@ -97,6 +109,7 @@ public:
     const TypeDecl& typeDecl(TypeDeclId id) const { return _type_decls.get(id); }
     const Declaration& declaration(DeclId id) const { return _declarations.get(id); }
     const ForeignFunction& foreignFunction(ForeignFunctionId id) const { return _foreign_functions.get(id); }
+    const Global& global(GlobalId id) const { return _globals.get(id); }
 
     /** Replaces an instruction while preserving its ID and result type. */
     void replaceInst(InstId id, Opcode opcode, std::vector<InstId> args, InstPayload payload = {});
@@ -109,8 +122,11 @@ public:
     const Arena<TypeDecl, TypeDeclId>& typeDecls() const { return _type_decls; }
     const Arena<Declaration, DeclId>& declarations() const { return _declarations; }
     const Arena<ForeignFunction, ForeignFunctionId>& foreignFunctions() const { return _foreign_functions; }
+    const Arena<Global, GlobalId>& globals() const { return _globals; }
     /** Selected parser implementations, in source order. */
     const std::vector<ParserRoot>& parserRoots() const { return _parser_roots; }
+    /** Module-level functions run at initialization, in order. */
+    const std::vector<Initializer>& initializers() const { return _initializers; }
     /** Selected public ordinary functions, in source order. */
     const std::vector<FunctionId>& functionRoots() const { return _function_roots; }
     /** Native headers that the foreign declarations depend on, in source order without duplicates. */
@@ -124,6 +140,7 @@ public:
     bool isValid(TypeDeclId id) const { return _type_decls.isValid(id); }
     bool isValid(DeclId id) const { return _declarations.isValid(id); }
     bool isValid(ForeignFunctionId id) const { return _foreign_functions.isValid(id); }
+    bool isValid(GlobalId id) const { return _globals.isValid(id); }
 
 private:
     friend class Builder;
@@ -136,7 +153,9 @@ private:
     Arena<TypeDecl, TypeDeclId> _type_decls;
     Arena<Declaration, DeclId> _declarations;
     Arena<ForeignFunction, ForeignFunctionId> _foreign_functions;
+    Arena<Global, GlobalId> _globals;
     std::vector<ParserRoot> _parser_roots;
+    std::vector<Initializer> _initializers;
     std::vector<FunctionId> _function_roots;
     std::vector<std::string> _cxx_includes;
 

@@ -74,6 +74,8 @@ struct VisitorRoots : public visitor::PreOrder {
     std::vector<hilti::ast::TypeIndex> units_with_external_hooks;
     std::optional<UnsupportedFeature> unrepresented_content;
     std::vector<std::string> cxx_includes;
+    std::vector<hilti::declaration::GlobalVariable*> globals;
+    std::vector<std::pair<hilti::declaration::Function*, ir::InitPhase>> initializers;
 
     static bool skipsImplementation(hilti::Declaration* n) {
         auto* m = n->parent<hilti::declaration::Module>();
@@ -81,7 +83,16 @@ struct VisitorRoots : public visitor::PreOrder {
     }
 
     void operator()(hilti::declaration::Function* n) final {
-        if ( n->isPublic() && ! skipsImplementation(n) )
+        if ( skipsImplementation(n) )
+            return;
+
+        switch ( n->linkage() ) {
+            case hilti::declaration::Linkage::PreInit: initializers.emplace_back(n, ir::InitPhase::PreInit); return;
+            case hilti::declaration::Linkage::Init: initializers.emplace_back(n, ir::InitPhase::Init); return;
+            default: break;
+        }
+
+        if ( n->isPublic() )
             roots.push_back(n);
     }
 
@@ -135,10 +146,8 @@ struct VisitorRoots : public visitor::PreOrder {
     }
 
     void operator()(hilti::declaration::GlobalVariable* n) final {
-        if ( ! skipsImplementation(n) && ! unrepresented_content )
-            unrepresented_content = unsupported("global variable",
-                                                "global variables and their initialization are not supported yet",
-                                                n->meta().location());
+        if ( ! skipsImplementation(n) )
+            globals.push_back(n);
     }
 
     void operator()(hilti::declaration::Constant* n) final {
@@ -366,12 +375,20 @@ private:
     }
 
     std::variant<Variable, UnsupportedFeature> _lookup(hilti::expression::Name* name) {
+        auto* declaration = name->resolvedDeclaration();
+        if ( auto* global = declaration ? declaration->tryAs<hilti::declaration::GlobalVariable>() : nullptr )
+            return _lookupGlobal(global, name->meta().location());
+
         auto it = _variables.find(name->resolvedDeclaration());
         if ( it == _variables.end() )
             return _unsupported(fmt("reference to '%s' is not supported", std::string(name->id())),
                                 name->meta().location());
         return it->second;
     }
+
+    // A module-level variable is addressed through a place created in the current block.
+    std::variant<Variable, UnsupportedFeature> _lookupGlobal(hilti::declaration::GlobalVariable* global,
+                                                             const hilti::Location& loc);
 
     std::variant<ir::InstId, UnsupportedFeature> _lowerCall(hilti::expression::ResolvedOperator* op);
 
@@ -480,6 +497,59 @@ public:
             return unsupported(feature, "a function returning a value must end with a return", decl->meta().location());
         body.returnVoidIfOpen(span);
 
+        return id;
+    }
+
+    // Gives a module-level variable its identity. Identities follow declaration order, which is the order that module
+    // initialization runs in, so they are allocated before any initializer or function body refers to a variable.
+    std::variant<ir::GlobalId, UnsupportedFeature> declareGlobal(hilti::declaration::GlobalVariable* decl) {
+        if ( auto it = _globals.find(decl); it != _globals.end() )
+            return it->second;
+
+        auto feature = fmt("global '%s'", std::string(decl->id()));
+        auto type = valueType(decl->type()->type());
+        if ( ! type || *type == _builder.voidType() )
+            return unsupported(feature, "global type is not supported yet", decl->meta().location());
+        if ( ! decl->init() )
+            return unsupported(feature,
+                               "globals without an initializer are not supported yet",
+                               decl->meta().location());
+
+        auto id = _builder.createGlobal(std::string(decl->id().local()),
+                                        *type,
+                                        internSpan(_package, decl->meta().location()));
+        _globals.emplace(decl, id);
+        return id;
+    }
+
+    // Lowers a module-level variable once, after its identity exists. Its initializer is an ordinary function that
+    // module initialization calls.
+    std::variant<ir::GlobalId, UnsupportedFeature> global(hilti::declaration::GlobalVariable* decl) {
+        auto declared = declareGlobal(decl);
+        if ( auto* feature = std::get_if<UnsupportedFeature>(&declared) )
+            return *feature;
+
+        auto id = std::get<ir::GlobalId>(declared);
+        if ( ! _initialized_globals.insert(decl).second )
+            return id;
+
+        auto feature = fmt("global '%s'", std::string(decl->id()));
+        auto span = internSpan(_package, decl->meta().location());
+        auto type = _package.global(id).type;
+
+        auto init = _builder.createFunction(fmt("%s_init", std::string(decl->id().local())),
+                                            std::vector<ir::TypeId>{},
+                                            type,
+                                            span);
+        auto region = _package.function(init).root_region;
+        auto block = _builder.createBlock(region);
+        BodyLowerer body(*this, _package, region, block, feature);
+        auto value = body.lower(decl->init());
+        if ( auto* unsupported_feature = std::get_if<UnsupportedFeature>(&value) )
+            return *unsupported_feature;
+
+        _builder.addReturn(block, std::get<ir::InstId>(value), span);
+        _builder.setGlobalInitializer(id, init);
         return id;
     }
 
@@ -604,11 +674,23 @@ private:
     ir::Package& _package;
     ir::Builder _builder;
     std::unordered_map<const hilti::declaration::Function*, ir::FunctionId> _functions;
+    std::unordered_map<const hilti::declaration::GlobalVariable*, ir::GlobalId> _globals;
+    std::unordered_set<const hilti::declaration::GlobalVariable*> _initialized_globals;
     std::unordered_map<const hilti::declaration::Function*, ir::ForeignFunctionId> _foreign;
     std::unordered_map<std::string, ir::TypeId> _opaque_types;
     ir::ForeignFunctionId _print;
     ir::ForeignFunctionId _print_tuple;
 };
+
+std::variant<Variable, UnsupportedFeature> BodyLowerer::_lookupGlobal(hilti::declaration::GlobalVariable* global,
+                                                                      const hilti::Location& loc) {
+    auto id = _procedures.global(global);
+    if ( auto* feature = std::get_if<UnsupportedFeature>(&id) )
+        return *feature;
+
+    auto place = _builder.addGlobalPlace(_block, std::get<ir::GlobalId>(id), internSpan(_package, loc));
+    return Variable{.value = place, .is_place = true};
+}
 
 std::variant<ir::InstId, UnsupportedFeature> BodyLowerer::_lowerCtor(hilti::Ctor* ctor, const hilti::Location& loc) {
     if ( auto* coerced = ctor->tryAs<hilti::ctor::Coerced>() )
@@ -1100,6 +1182,8 @@ RootDiscovery discoverRoots(const hilti::ASTContext& ctx) {
         .units_with_external_hooks = std::move(v.units_with_external_hooks),
         .unrepresented_content = std::move(v.unrepresented_content),
         .cxx_includes = std::move(v.cxx_includes),
+        .globals = std::move(v.globals),
+        .initializers = std::move(v.initializers),
     };
 }
 
@@ -1112,6 +1196,14 @@ std::optional<UnsupportedFeature> lowerRoots(const RootDiscovery& discovery, ir:
         package.builder().addCxxInclude(include);
 
     ProcedureLowerer procedures(package);
+
+    // Identities first, in declaration order, so that the globals' order does not depend on which function refers to
+    // them first.
+    for ( auto* decl : discovery.globals ) {
+        if ( auto declared = procedures.declareGlobal(decl);
+             auto* feature = std::get_if<UnsupportedFeature>(&declared) )
+            return *feature;
+    }
 
     std::vector<hilti::declaration::Type*> unit_roots;
     for ( auto* decl : discovery.roots ) {
@@ -1140,6 +1232,19 @@ std::optional<UnsupportedFeature> lowerRoots(const RootDiscovery& discovery, ir:
 
             continue;
         }
+    }
+
+    for ( auto* decl : discovery.globals ) {
+        if ( auto lowered = procedures.global(decl); auto* feature = std::get_if<UnsupportedFeature>(&lowered) )
+            return *feature;
+    }
+
+    for ( const auto& [decl, phase] : discovery.initializers ) {
+        auto lowered = procedures.function(decl);
+        if ( auto* feature = std::get_if<UnsupportedFeature>(&lowered) )
+            return *feature;
+
+        package.builder().addInitializer(phase, std::get<ir::FunctionId>(lowered));
     }
 
     if ( auto feature = lowerUnits(unit_roots,

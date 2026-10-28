@@ -1,0 +1,55 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -P "" -o Foo.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -p -D spicy-pir 2>&1 >/dev/null | rg "attached PIR-produced" >route
+# @TEST-EXEC: btest-diff route
+
+# @TEST-DOC: Executes module-level variables through PIR. Each variable is initialized by its own
+# initializer function when the module initializes, and a later variable reads an earlier one. Public
+# functions read and write the variables, so the updates persist across calls. The result matches the
+# value the variables should hold after each call, both optimized and unoptimized.
+
+module Test;
+
+global counter: int64 = 10;
+global doubled: int64 = counter + counter;
+
+public function next(): int64 {
+    counter = counter + 1;
+    return counter;
+}
+
+public function total(): int64 {
+    return doubled + next();
+}
+
+@TEST-START-FILE driver.cc
+
+#include <iostream>
+
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+#include "Foo.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    auto n1 = hlt::_r__spicy_pir_backend::next();
+    std::cout << "next: " << n1.get<hilti::rt::integer::safe<int64_t>>() << std::endl;
+    auto t = hlt::_r__spicy_pir_backend::total();
+    std::cout << "total: " << t.get<hilti::rt::integer::safe<int64_t>>() << std::endl;
+    auto n2 = hlt::_r__spicy_pir_backend::next();
+    std::cout << "next: " << n2.get<hilti::rt::integer::safe<int64_t>>() << std::endl;
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    hilti::rt::init();
+    spicy::rt::init();
+    hilti_main();
+    hilti::rt::done();
+    return 0;
+}
+
+@TEST-END-FILE

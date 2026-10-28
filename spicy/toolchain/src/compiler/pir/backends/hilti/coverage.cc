@@ -104,6 +104,7 @@ void checkRegion(const ir::Package& package,
                 case ir::Opcode::FieldPlace:
                 case ir::Opcode::Load: break;
                 case ir::Opcode::Return:
+                case ir::Opcode::GlobalPlace:
                 case ir::Opcode::LocalPlace:
                 case ir::Opcode::Store:
                 case ir::Opcode::Tuple:
@@ -169,6 +170,7 @@ void checkProcedureRegion(const ir::Package& package, ir::RegionId region, std::
                 case ir::Opcode::Return:
                 case ir::Opcode::Call:
                 case ir::Opcode::OpaqueOp:
+                case ir::Opcode::GlobalPlace:
                 case ir::Opcode::LocalPlace:
                 case ir::Opcode::Load:
                 case ir::Opcode::Store:
@@ -282,6 +284,10 @@ std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package) {
         walk(walk, root.function);
     for ( auto root : package.functionRoots() )
         walk(walk, root);
+    for ( const auto& initializer : package.initializers() )
+        walk(walk, initializer.function);
+    for ( size_t i = 0; i < package.globals().size(); ++i )
+        walk(walk, package.global(ir::GlobalId{static_cast<uint32_t>(i)}).initializer);
     if ( ! (package.parserRoots().empty() && package.functionRoots().empty()) &&
          reached.size() != package.functions().size() )
         report(out, "package", "contains a function unreachable from roots");

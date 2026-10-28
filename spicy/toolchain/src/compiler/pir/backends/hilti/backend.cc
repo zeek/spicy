@@ -47,7 +47,10 @@ struct FunctionNames {
     bool root = false;
 };
 
-using NameMap = std::unordered_map<uint32_t, FunctionNames>;
+// Names of the package's functions, plus the module-level names the backend generates for globals.
+struct NameMap : std::unordered_map<uint32_t, FunctionNames> {
+    std::vector<std::string> globals; /**< by global index */
+};
 
 // Public functions keep their source names where possible. Roots from different source modules may share a local name,
 // and a name may collide with a generated one, so a clashing root gets a numeric suffix.
@@ -96,6 +99,18 @@ NameMap makeNames(const ir::Package& package) {
         taken.insert(name);
         names.emplace(root.index, FunctionNames{.function = name, .root = true});
     }
+
+    // Generated names avoid every name that a public function keeps, so that a public function's name is never changed
+    // to make room for them.
+    auto unique = [&taken](const std::string& base) {
+        auto name = base;
+        for ( size_t n = 1; taken.contains(name); ++n )
+            name = fmt("%s_%zu", base, n);
+        taken.insert(name);
+        return name;
+    };
+    for ( size_t i = 0; i < package.globals().size(); ++i )
+        names.globals.push_back(unique(fmt("g_%zu", i)));
     return names;
 }
 
@@ -274,6 +289,17 @@ using LocalBuilder = ::hilti::ExtendedBuilderTemplate<::hilti::Builder>;
                       meta);
 }
 
+// The phase of a module-level function that initialization runs, if the package lists it as an initializer.
+std::optional<::hilti::declaration::Linkage> initializerLinkage(const ir::Package& package, ir::FunctionId id) {
+    for ( const auto& initializer : package.initializers() ) {
+        if ( initializer.function != id )
+            continue;
+        return initializer.phase == ir::InitPhase::PreInit ? ::hilti::declaration::Linkage::PreInit :
+                                                             ::hilti::declaration::Linkage::Init;
+    }
+    return std::nullopt;
+}
+
 // The PIR operations that ordinary function bodies consist of, and that parser byte bounds may compute their
 // length from. A value is a named HILTI local, parameter, or cursor, or a field of the unit being parsed, which is
 // addressed through its unit.
@@ -358,6 +384,9 @@ protected:
                 fields_[id.index] = {values_.at(inst.args[0].index), fieldName(field)};
                 return true;
             }
+            case ir::Opcode::GlobalPlace:
+                values_[id.index] = names_.globals.at(std::get<ir::GlobalPayload>(inst.payload).global.index);
+                return true;
             case ir::Opcode::Store: b.addAssign(_value(b, inst.args[0]), _value(b, inst.args[1]), meta); return true;
             case ir::Opcode::Equal: {
                 auto name = fmt("v_%u", id.index);
@@ -806,8 +835,12 @@ private:
 // receives the name by reference.
 class ProcedureEmitter : public ProceduralOps {
 public:
-    ProcedureEmitter(::hilti::Builder& b, const ir::Package& package, const NameMap& names, ir::FunctionId id)
-        : ProceduralOps(package, names), _b(b), _id(id) {}
+    ProcedureEmitter(::hilti::Builder& b,
+                     const ir::Package& package,
+                     const NameMap& names,
+                     ir::FunctionId id,
+                     std::optional<::hilti::declaration::Linkage> linkage = std::nullopt)
+        : ProceduralOps(package, names), _b(b), _id(id), _linkage(linkage) {}
 
     ::hilti::Declaration* emit() {
         const auto& fn = package_.function(_id);
@@ -828,7 +861,9 @@ public:
                            params,
                            body,
                            ::hilti::type::function::Flavor::Function,
-                           names.root ? ::hilti::declaration::Linkage::Public : ::hilti::declaration::Linkage::Private,
+                           _linkage   ? *_linkage :
+                           names.root ? ::hilti::declaration::Linkage::Public :
+                                        ::hilti::declaration::Linkage::Private,
                            names.root ? ::hilti::type::function::CallingConvention::Extern :
                                         ::hilti::type::function::CallingConvention::Standard,
                            {},
@@ -872,6 +907,7 @@ private:
 
     ::hilti::Builder& _b;
     ir::FunctionId _id;
+    std::optional<::hilti::declaration::Linkage> _linkage;
     ir::Cfg _cfg;
     std::vector<std::optional<size_t>> _joins;
 };
@@ -910,7 +946,18 @@ LoweringResult lower(::hilti::Builder& builder, const ir::Package& package) {
         if ( package.function(id).kind == ir::FunctionKind::Parser )
             decls.push_back(FunctionEmitter(builder, package, names, id).emit());
         else
-            decls.push_back(ProcedureEmitter(builder, package, names, id).emit());
+            decls.push_back(ProcedureEmitter(builder, package, names, id, initializerLinkage(package, id)).emit());
+    }
+    for ( size_t i = 0; i < package.globals().size(); ++i ) {
+        const auto id = ir::GlobalId{static_cast<uint32_t>(i)};
+        const auto& global = package.global(id);
+        auto meta = metaFor(package, global.span);
+        auto* init = builder.call(moduleLevel(names.at(global.initializer.index).function), {}, meta);
+        decls.push_back(builder.global(::hilti::ID(names.globals.at(id.index)),
+                                       targetType(builder, package, global.type),
+                                       init,
+                                       ::hilti::declaration::Linkage::Private,
+                                       meta));
     }
     auto uid = ::hilti::declaration::module::UID(::hilti::ID(ModuleName), ".hlt", ".hlt");
     return builder.declarationModule(uid, {}, decls);
