@@ -1,3 +1,13 @@
+1.18.0-dev.55 | 2026-10-28 17:01:52 -0400
+
+  * Honor big-endian BOM when decoding UTF-16 bytes (suraiya sulthana)
+
+    `Bytes::decode` lets a leading BOM override the byte order of the
+    requested charset, but a BOM only selected `U16Iterator::Detected`,
+    which read code units in host order. A big-endian BOM (`FE FF`) was
+    therefore decoded as little-endian on little-endian hosts. Pick the
+    byte order from the BOM explicitly.
+
 1.18.0-dev.53 | 2026-10-28 17:01:12 -0400
 
   * Fix sink reassembly of writes overlapping delivered data (suraiya sulthana)
