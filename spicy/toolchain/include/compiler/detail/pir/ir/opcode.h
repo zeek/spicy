@@ -47,6 +47,7 @@ enum class Opcode {
     Jump,
     Equal,
     GlobalPlace,
+    InvokeHook,
 };
 
 enum class TypeKind {
@@ -381,9 +382,12 @@ inline constexpr OperandRole KPlaceOperandRoles[] = {OperandRole::Borrow};
 
 inline constexpr TypeConstraint KFieldPlaceOperandTypes[] = {anyType()};
 inline constexpr OperandRole KFieldPlaceOperandRoles[] = {OperandRole::Borrow};
+inline constexpr TypeConstraint KInvokeHookOperandTypes[] = {anyType()};
+inline constexpr OperandRole KInvokeHookOperandRoles[] = {OperandRole::Borrow};
 
 inline constexpr TypeConstraint KStoreOperandTypes[] = {anyType(), anyType()};
-inline constexpr OperandRole KStoreOperandRoles[] = {OperandRole::Borrow, OperandRole::Borrow};
+inline constexpr OperandRole KStoreOperandRoles[] = {OperandRole::Borrow, OperandRole::Consume};
+inline constexpr OperandRole KLocalPlaceOperandRoles[] = {OperandRole::Consume};
 
 inline constexpr TypeConstraint KBranchOperandTypes[] = {fixedType(TypeKind::Bool)};
 inline constexpr OperandRole KBranchOperandRoles[] = {OperandRole::Borrow};
@@ -419,7 +423,7 @@ inline constexpr ParserOperationContract KSubunitContract{
 
 // One entry per `Opcode` value, in declaration order, so `schemaFor()` can index directly without
 // per-call allocation.
-inline constexpr std::array<OpcodeSchema, 32> KSchemas{{
+inline constexpr std::array<OpcodeSchema, 33> KSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Constant,
         .spelling = "core.constant",
@@ -625,7 +629,7 @@ inline constexpr std::array<OpcodeSchema, 32> KSchemas{{
     OpcodeSchema{.opcode = Opcode::LocalPlace,
                  .spelling = "core.local_place",
                  .operand_types = KPlaceOperandTypes,
-                 .operand_roles = KPlaceOperandRoles,
+                 .operand_roles = KLocalPlaceOperandRoles,
                  .result_type = anyType(),
                  .payload_kind = PayloadKind::None,
                  .is_terminator = false,
@@ -723,6 +727,15 @@ inline constexpr std::array<OpcodeSchema, 32> KSchemas{{
                  .payload_kind = PayloadKind::Global,
                  .is_terminator = false,
                  .is_pure = false},
+    OpcodeSchema{.opcode = Opcode::InvokeHook,
+                 .spelling = "unit.invoke_hook",
+                 // Operand 0 is the unit being parsed, borrowed by the hook; the hook is the payload's function.
+                 .operand_types = KInvokeHookOperandTypes,
+                 .operand_roles = KInvokeHookOperandRoles,
+                 .result_type = fixedType(TypeKind::Void),
+                 .payload_kind = PayloadKind::Function,
+                 .is_terminator = false,
+                 .is_pure = false},
 }};
 
 } // namespace detail
@@ -771,6 +784,7 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
         // A foreign function may read and write any state, so it is opaque to every analysis.
         case Opcode::OpaqueOp:
         case Opcode::Call:
+        case Opcode::InvokeHook:
             return {.may_fail = true,
                     .reads_world = true,
                     .writes_world = true,

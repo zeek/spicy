@@ -397,6 +397,18 @@ protected:
                 values_[id.index] = std::move(name);
                 return true;
             }
+            case ir::Opcode::VectorEmpty: {
+                auto name = fmt("v_%u", id.index);
+                auto* type = targetType(b, package_, inst.result_type);
+                b.addLocal(::hilti::ID(name), type, b.vector(type, {}, meta), meta);
+                values_[id.index] = std::move(name);
+                return true;
+            }
+            case ir::Opcode::VectorAppend:
+                // The vector is affine, so the append extends the storage its operand names.
+                b.addExpression(b.memberCall(_value(b, inst.args[0]), "push_back", {_value(b, inst.args[1])}, meta));
+                values_[id.index] = values_.at(inst.args[0].index);
+                return true;
             case ir::Opcode::Tuple: {
                 ::hilti::Expressions elements;
                 for ( auto element : inst.args )
@@ -679,16 +691,11 @@ private:
             }
             case ir::Opcode::ReadInteger: _lowerRead(b, id, true); return;
             case ir::Opcode::ReadBytes: _lowerRead(b, id, false); return;
-            case ir::Opcode::VectorEmpty: {
-                auto name = fmt("v_%u", id.index);
-                auto* type = targetType(b, package_, inst.result_type);
-                b.addLocal(::hilti::ID(name), type, b.vector(type, {}, meta), meta);
-                values_[id.index] = std::move(name);
-                return;
-            }
-            case ir::Opcode::VectorAppend:
-                b.addExpression(b.memberCall(_value(b, inst.args[0]), "push_back", {_value(b, inst.args[1])}, meta));
-                values_[id.index] = values_.at(inst.args[0].index);
+            case ir::Opcode::InvokeHook:
+                b.addExpression(
+                    b.call(moduleLevel(names_.at(std::get<ir::FunctionPayload>(inst.payload).function.index).function),
+                           {_value(b, inst.args[0])},
+                           meta));
                 return;
             case ir::Opcode::EnterBound: {
                 auto* length = _value(b, inst.args[1]);

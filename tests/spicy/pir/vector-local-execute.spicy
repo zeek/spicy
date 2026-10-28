@@ -1,0 +1,47 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -P "" -o Foo.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -p -D spicy-pir 2>&1 >/dev/null | rg "attached PIR-produced" >route
+# @TEST-EXEC: btest-diff route
+
+# @TEST-DOC: Builds a local vector through PIR. The function reserves capacity, appends two elements
+# computed from its argument, and returns the vector. The returned contents match between the
+# optimized and unoptimized builds.
+
+module Test;
+
+public function collect(n: int64): vector<int64> {
+    local v: vector<int64>;
+    v.reserve(2);
+    v.push_back(n);
+    v.push_back(n + 1);
+    return v;
+}
+
+@TEST-START-FILE driver.cc
+
+#include <iostream>
+
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+#include "Foo.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    auto r = hlt::_r__spicy_pir_backend::collect(10);
+    for ( auto x : r.get<hilti::rt::Vector<hilti::rt::integer::safe<int64_t>>>() )
+        std::cout << "element: " << x << std::endl;
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    hilti::rt::init();
+    spicy::rt::init();
+    hilti_main();
+    hilti::rt::done();
+    return 0;
+}
+
+@TEST-END-FILE

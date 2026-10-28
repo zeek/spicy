@@ -1,0 +1,13 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: Tests that `reserve` on a receiver PIR cannot address falls back, rather than dropping the receiver's
+# access. Legacy execution evaluates the index and fails on the empty vector, so the PIR route must not omit it.
+
+module Test;
+
+public function f(): uint64 {
+    local v: vector<vector<uint64>>;
+    v[0].reserve(1);
+    return 0;
+}
