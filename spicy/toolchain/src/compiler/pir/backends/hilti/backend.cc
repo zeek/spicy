@@ -1,6 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <limits>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -13,6 +14,7 @@
 #include <hilti/base/util.h>
 
 #include <spicy/compiler/detail/pir/backends/hilti/backend.h>
+#include <spicy/compiler/detail/pir/ir/cfg.h>
 
 using ::hilti::util::fmt;
 
@@ -357,6 +359,15 @@ protected:
                 return true;
             }
             case ir::Opcode::Store: b.addAssign(_value(b, inst.args[0]), _value(b, inst.args[1]), meta); return true;
+            case ir::Opcode::Equal: {
+                auto name = fmt("v_%u", id.index);
+                b.addLocal(::hilti::ID(name),
+                           targetType(b, package_, inst.result_type),
+                           b.equal(_value(b, inst.args[0]), _value(b, inst.args[1]), meta),
+                           meta);
+                values_[id.index] = std::move(name);
+                return true;
+            }
             case ir::Opcode::Tuple: {
                 ::hilti::Expressions elements;
                 for ( auto element : inst.args )
@@ -808,11 +819,9 @@ public:
 
         auto* body = _b.statementBlock(meta);
         LocalBuilder fb(_b.context(), body);
-        const auto& region = package_.region(fn.root_region);
-        for ( auto inst_id : package_.block(region.blocks[0]).insts ) {
-            if ( ! _lowerProcedural(fb, inst_id) )
-                ::hilti::util::cannotBeReached();
-        }
+        _cfg = ir::buildCfg(package_, fn.root_region);
+        _joins = ir::branchJoins(_cfg);
+        _emitRange(fb, 0, std::nullopt);
 
         return _b.function(::hilti::ID(names.function),
                            resultType(_b, package_, fn.result_type),
@@ -827,8 +836,44 @@ public:
     }
 
 private:
+    // Emits the blocks from position `pos` up to `stop`. A branch emits its arms up to its join, which follows them at
+    // the same level, so the HILTI output nests exactly where the CFG branches. Coverage ensures every block is emitted
+    // once.
+    void _emitRange(LocalBuilder& b, size_t pos, std::optional<size_t> stop) {
+        while ( pos != stop.value_or(ir::NoPosition) ) {
+            const auto& insts = package_.block(_cfg.blocks[pos]).insts;
+            for ( size_t i = 0; i + 1 < insts.size(); ++i ) {
+                if ( ! _lowerProcedural(b, insts[i]) )
+                    ::hilti::util::cannotBeReached();
+            }
+
+            const auto terminator = insts.back();
+            const auto& inst = package_.inst(terminator);
+            if ( inst.opcode == ir::Opcode::Jump ) {
+                pos = _cfg.successors[pos][0];
+                continue;
+            }
+
+            if ( inst.opcode != ir::Opcode::Branch ) {
+                if ( ! _lowerProcedural(b, terminator) )
+                    ::hilti::util::cannotBeReached();
+                return;
+            }
+
+            auto arms = b.addIfElse(_value(b, inst.args[0]), metaFor(package_, inst.span));
+            _emitRange(*arms.first, _cfg.successors[pos][0], _joins[pos]);
+            _emitRange(*arms.second, _cfg.successors[pos][1], _joins[pos]);
+            if ( ! _joins[pos] )
+                return;
+
+            pos = *_joins[pos];
+        }
+    }
+
     ::hilti::Builder& _b;
     ir::FunctionId _id;
+    ir::Cfg _cfg;
+    std::vector<std::optional<size_t>> _joins;
 };
 
 } // namespace

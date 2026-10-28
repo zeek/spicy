@@ -1,0 +1,138 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -P "" -o Foo.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT --strict-public-api -P "" -o Legacy.h
+# @TEST-EXEC: spicyc %INPUT --strict-public-api -j legacy-driver.cc >legacy
+# @TEST-EXEC: cmp output legacy
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -p -D spicy-pir 2>&1 >/dev/null | rg "core.branch|core.jump|core.equal" >route
+# @TEST-EXEC: btest-diff route
+
+# @TEST-DOC: Executes guards through PIR's control flow. A handler-style condition with a side effect is
+# evaluated once, and both of its outcomes run. Early returns leave the function, and both arms of an
+# `if` assign a local that is read after the join. An `else if` chain returns from one arm and falls
+# through from another, and a void function falls off the end of its body. The output matches the
+# legacy build both optimized and unoptimized.
+
+module Test;
+
+function note(x: int64): int64 {
+    print "note", x;
+    return x;
+}
+
+public function guard(n: int64, flag: bool): int64 {
+    local picked: int64 = 0;
+
+    if ( note(n) == 3 ) {
+        print "then";
+        return 10;
+    }
+
+    if ( flag ) {
+        picked = 1;
+    }
+    else {
+        picked = 2;
+    }
+
+    print "picked", picked;
+    return picked;
+}
+
+public function classify(n: int64): int64 {
+    if ( note(n) == 1 ) {
+        return 100;
+    }
+    else {
+        if ( n == 2 ) {
+            return 200;
+        }
+    }
+
+    return 300;
+}
+
+public function toggle(flag: bool): void {
+    if ( flag ) {
+        print "on";
+    }
+    else {
+        print "off";
+    }
+}
+
+@TEST-START-FILE driver.cc
+
+#include <iostream>
+
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+#include "Foo.h"
+
+using Int = hilti::rt::integer::safe<int64_t>;
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    for ( int n : {3, 1, 2, 4} ) {
+        for ( bool flag : {false, true} ) {
+            auto g = hlt::_r__spicy_pir_backend::guard(n, flag);
+            std::cout << "guard " << n << " " << flag << " = " << g.get<Int>() << std::endl;
+        }
+
+        auto c = hlt::_r__spicy_pir_backend::classify(n);
+        std::cout << "classify " << n << " = " << c.get<Int>() << std::endl;
+    }
+
+    hlt::_r__spicy_pir_backend::toggle(true);
+    hlt::_r__spicy_pir_backend::toggle(false);
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    hilti::rt::init();
+    spicy::rt::init();
+    hilti_main();
+    hilti::rt::done();
+    return 0;
+}
+
+@TEST-END-FILE
+
+@TEST-START-FILE legacy-driver.cc
+
+#include <iostream>
+
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+#include "Legacy.h"
+
+using Int = hilti::rt::integer::safe<int64_t>;
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    for ( int n : {3, 1, 2, 4} ) {
+        for ( bool flag : {false, true} ) {
+            auto g = hlt_internal::Test::guard(n, flag);
+            std::cout << "guard " << n << " " << flag << " = " << g << std::endl;
+        }
+
+        auto c = hlt_internal::Test::classify(n);
+        std::cout << "classify " << n << " = " << c << std::endl;
+    }
+
+    hlt_internal::Test::toggle(true);
+    hlt_internal::Test::toggle(false);
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    hilti::rt::init();
+    spicy::rt::init();
+    hilti_main();
+    hilti::rt::done();
+    return 0;
+}
+
+@TEST-END-FILE

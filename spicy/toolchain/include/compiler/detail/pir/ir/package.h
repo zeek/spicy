@@ -15,11 +15,9 @@
 namespace spicy::detail::pir::ir {
 
 struct RegionTag {};
-struct BlockTag {};
 struct InstTag {};
 
 using RegionId = ID<RegionTag>;
-using BlockId = ID<BlockTag>;
 using InstId = ID<InstTag>;
 
 static_assert(std::is_trivially_copyable_v<TypeId> && sizeof(TypeId) == 4);

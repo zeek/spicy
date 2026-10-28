@@ -93,6 +93,10 @@ std::optional<std::string> renderPayload(const Package& package, const InstPaylo
     if ( const auto* string = std::get_if<StringLiteral>(&payload) )
         return fmt("\"%s\"", string->value);
 
+    if ( const auto* branch = std::get_if<BranchPayload>(&payload) )
+        return fmt("then %%%u, else %%%u", branch->then_block.index, branch->else_block.index);
+    if ( const auto* jump = std::get_if<JumpPayload>(&payload) )
+        return fmt("%%%u", jump->target.index);
     if ( const auto* bytes = std::get_if<BytesLiteral>(&payload) )
         return fmt("b\"%s\"", bytes->value);
 

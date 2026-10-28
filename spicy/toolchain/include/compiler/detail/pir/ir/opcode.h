@@ -43,6 +43,9 @@ enum class Opcode {
     StringConstant,
     BytesConstant,
     FieldPlace,
+    Branch,
+    Jump,
+    Equal,
 };
 
 enum class TypeKind {
@@ -194,6 +197,21 @@ struct ForeignFunctionPayload {
     friend constexpr bool operator==(ForeignFunctionPayload, ForeignFunctionPayload) = default;
 };
 
+/** Successors of `core.branch`: `then_block` when its condition is true, `else_block` otherwise. */
+struct BranchPayload {
+    BlockId then_block;
+    BlockId else_block;
+
+    friend constexpr bool operator==(BranchPayload, BranchPayload) = default;
+};
+
+/** The successor of `core.jump`. */
+struct JumpPayload {
+    BlockId target;
+
+    friend constexpr bool operator==(JumpPayload, JumpPayload) = default;
+};
+
 struct BoolLiteral {
     bool value = false;
 
@@ -230,7 +248,9 @@ using InstPayload = std::variant<std::monostate,
                                  ForeignFunctionPayload,
                                  BoolLiteral,
                                  StringLiteral,
-                                 BytesLiteral>;
+                                 BytesLiteral,
+                                 BranchPayload,
+                                 JumpPayload>;
 
 enum class PayloadKind {
     None,
@@ -246,6 +266,8 @@ enum class PayloadKind {
     BoolLiteral,
     StringLiteral,
     BytesLiteral,
+    Branch,
+    Jump,
 };
 
 /** Whether a suspending parser read consumes bytes and how it resumes. */
@@ -305,6 +327,8 @@ constexpr bool payloadMatchesKind(const InstPayload& payload, PayloadKind kind) 
         case PayloadKind::BoolLiteral: return std::holds_alternative<BoolLiteral>(payload);
         case PayloadKind::StringLiteral: return std::holds_alternative<StringLiteral>(payload);
         case PayloadKind::BytesLiteral: return std::holds_alternative<BytesLiteral>(payload);
+        case PayloadKind::Branch: return std::holds_alternative<BranchPayload>(payload);
+        case PayloadKind::Jump: return std::holds_alternative<JumpPayload>(payload);
     }
 
     return false;
@@ -351,6 +375,10 @@ inline constexpr OperandRole KFieldPlaceOperandRoles[] = {OperandRole::Borrow};
 inline constexpr TypeConstraint KStoreOperandTypes[] = {anyType(), anyType()};
 inline constexpr OperandRole KStoreOperandRoles[] = {OperandRole::Borrow, OperandRole::Borrow};
 
+inline constexpr TypeConstraint KBranchOperandTypes[] = {fixedType(TypeKind::Bool)};
+inline constexpr OperandRole KBranchOperandRoles[] = {OperandRole::Borrow};
+inline constexpr TypeConstraint KEqualOperandTypes[] = {anyType(), anyType()};
+inline constexpr OperandRole KEqualOperandRoles[] = {OperandRole::Borrow, OperandRole::Borrow};
 inline constexpr TypeConstraint KVariadicOperandTypes[] = {anyType()};
 inline constexpr OperandRole KVariadicOperandRoles[] = {OperandRole::Consume};
 
@@ -381,7 +409,7 @@ inline constexpr ParserOperationContract KSubunitContract{
 
 // One entry per `Opcode` value, in declaration order, so `schemaFor()` can index directly without
 // per-call allocation.
-inline constexpr std::array<OpcodeSchema, 28> KSchemas{{
+inline constexpr std::array<OpcodeSchema, 31> KSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Constant,
         .spelling = "core.constant",
@@ -651,6 +679,32 @@ inline constexpr std::array<OpcodeSchema, 28> KSchemas{{
                  .payload_kind = PayloadKind::Field,
                  .is_terminator = false,
                  .is_pure = false},
+    OpcodeSchema{.opcode = Opcode::Branch,
+                 .spelling = "core.branch",
+                 // Operand 0 is the condition; both successors are in the payload.
+                 .operand_types = KBranchOperandTypes,
+                 .operand_roles = KBranchOperandRoles,
+                 .result_type = fixedType(TypeKind::Void),
+                 .payload_kind = PayloadKind::Branch,
+                 .is_terminator = true,
+                 .is_pure = false},
+    OpcodeSchema{.opcode = Opcode::Jump,
+                 .spelling = "core.jump",
+                 .operand_types = KNoOperandTypes,
+                 .operand_roles = KNoOperandRoles,
+                 .result_type = fixedType(TypeKind::Void),
+                 .payload_kind = PayloadKind::Jump,
+                 .is_terminator = true,
+                 .is_pure = false},
+    OpcodeSchema{.opcode = Opcode::Equal,
+                 .spelling = "core.equal",
+                 // Both operands have the same type, which the verifier checks against the comparable types.
+                 .operand_types = KEqualOperandTypes,
+                 .operand_roles = KEqualOperandRoles,
+                 .result_type = fixedType(TypeKind::Bool),
+                 .payload_kind = PayloadKind::None,
+                 .is_terminator = false,
+                 .is_pure = true},
 }};
 
 } // namespace detail
@@ -719,7 +773,10 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
         case Opcode::Constant:
         case Opcode::Argument:
         case Opcode::RegionArgument:
-        case Opcode::TupleGet: return {};
+        case Opcode::TupleGet:
+        case Opcode::Branch:
+        case Opcode::Jump:
+        case Opcode::Equal: return {};
     }
     return {.reads_input = true,
             .changes_parser_state = true,
