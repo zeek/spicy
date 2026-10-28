@@ -77,11 +77,14 @@ struct ForeignParameter {
 
 /**
  * A function implemented outside PIR. Calls to it are `opaque.op` operations; `cxx_name` is the
- * native symbol that a backend binds to.
+ * native symbol that a backend binds to. A function that only the target adapter can implement, such as
+ * one that returns the identity of the linked artifact, has no native symbol. It is `target_provided`
+ * instead, and a backend that has no binding for it cannot lower the package.
  */
 struct ForeignFunction {
     std::string name;     /**< printer/diagnostic sugar only */
-    std::string cxx_name; /**< native symbol; empty if undeclared */
+    std::string cxx_name; /**< native symbol; empty if undeclared or `target_provided` */
+    bool target_provided = false;
     std::vector<ForeignParameter> parameters;
     TypeId result_type;
     /** The native prototype is provided by the runtime's headers rather than generated for the module. */

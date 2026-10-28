@@ -35,6 +35,8 @@ public:
     /** Interns a tuple type structurally by its element types. */
     TypeId tupleType(std::vector<TypeId> elements);
     TypeId vectorType(TypeId element);
+    /** Interns a set type, whose elements are `element`. */
+    TypeId setType(TypeId element);
     /** Interns a writable place holding `element`; places are never stored in other values. */
     TypeId placeType(TypeId element);
 
@@ -45,6 +47,11 @@ public:
     /** Declares a nominal opaque value type bound to the native type described by `info`. */
     TypeDeclId createOpaqueTypeDecl(std::string name, OpaqueTypeInfo info, SourceSpanId span = {});
     /** Declares a function implemented outside PIR and returns its identity. */
+    /** Declares a foreign function that the target adapter implements, which therefore has no native symbol. */
+    ForeignFunctionId createTargetForeignFunction(std::string name,
+                                                  std::vector<ForeignParameter> parameters,
+                                                  TypeId result_type,
+                                                  SourceSpanId span = {});
     ForeignFunctionId createForeignFunction(std::string name,
                                             std::string cxx_name,
                                             std::vector<ForeignParameter> parameters,
@@ -126,6 +133,10 @@ public:
     InstId addYield(BlockId block, std::vector<InstId> values, SourceSpanId span = {});
     InstId addVectorEmpty(BlockId block, TypeId element, SourceSpanId span = {});
     InstId addVectorAppend(BlockId block, InstId vector, InstId value, SourceSpanId span = {});
+    /** Adds `core.set_empty` of `element`. */
+    InstId addSetEmpty(BlockId block, TypeId element, SourceSpanId span = {});
+    /** Adds `core.set_insert`, which adds `value` to `set` and yields the set. */
+    InstId addSetInsert(BlockId block, InstId set, InstId value, SourceSpanId span = {});
     InstId addEnterBound(BlockId block, InstId state, InstId length, SourceSpanId span = {});
     InstId addLeaveBound(BlockId block, InstId state, SourceSpanId span = {});
     InstId addRepeatToBound(BlockId block, std::vector<InstId> carried, RegionId body, SourceSpanId span = {});
@@ -148,8 +159,6 @@ public:
     InstId addForeignConstant(BlockId block, TypeId type, std::string spelling, SourceSpanId span = {});
     /** Adds `core.port_constant` holding a port of type `type`, which is the opaque native port type. */
     InstId addPortConstant(BlockId block, TypeId type, PortLiteral value, SourceSpanId span = {});
-    /** Adds `core.linker_scope`, the scope that identifies this package's parsers to the runtime. */
-    InstId addLinkerScope(BlockId block, SourceSpanId span = {});
     /** Adds `core.global_place` addressing `global`, which stays valid for the whole program. */
     InstId addGlobalPlace(BlockId block, GlobalId global, SourceSpanId span = {});
     /** Adds `core.local_place` that holds a copy of `initial`, and returns the place. */

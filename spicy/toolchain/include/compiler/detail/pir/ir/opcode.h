@@ -51,7 +51,8 @@ enum class Opcode {
     Uint64Constant,
     ForeignConstant,
     PortConstant,
-    LinkerScope,
+    SetEmpty,
+    SetInsert,
 };
 
 enum class TypeKind {
@@ -64,6 +65,7 @@ enum class TypeKind {
     Unit,
     Tuple,
     Vector,
+    Set,
     Opaque,
     Place,
     Bool,
@@ -107,7 +109,8 @@ constexpr ValueDiscipline typeKindDiscipline(TypeKind kind) {
     switch ( kind ) {
         case TypeKind::ParserState:
         case TypeKind::Unit:
-        case TypeKind::Vector: return ValueDiscipline::Affine;
+        case TypeKind::Vector:
+        case TypeKind::Set: return ValueDiscipline::Affine;
         case TypeKind::Void:
         case TypeKind::Int64:
         case TypeKind::UInt8:
@@ -376,7 +379,8 @@ namespace detail {
 inline constexpr std::span<const TypeConstraint> KNoOperandTypes{};
 inline constexpr std::span<const OperandRole> KNoOperandRoles{};
 
-inline constexpr TypeConstraint KAddOperandTypes[] = {fixedType(TypeKind::Int64), fixedType(TypeKind::Int64)};
+// Both operands have the same integer type, which the verifier checks; the result has that type too.
+inline constexpr TypeConstraint KAddOperandTypes[] = {anyType(), anyType()};
 inline constexpr OperandRole KAddOperandRoles[] = {OperandRole::Borrow, OperandRole::Borrow};
 
 inline constexpr TypeConstraint KReturnOperandTypes[] = {sameAsFunctionResult()};
@@ -396,6 +400,8 @@ inline constexpr OperandRole KPublishFieldOperandRoles[] = {OperandRole::Consume
 
 inline constexpr TypeConstraint KVectorAppendOperandTypes[] = {fixedType(TypeKind::Vector), anyType()};
 inline constexpr OperandRole KVectorAppendOperandRoles[] = {OperandRole::Consume, OperandRole::Consume};
+inline constexpr TypeConstraint KSetInsertOperandTypes[] = {fixedType(TypeKind::Set), anyType()};
+inline constexpr OperandRole KSetInsertOperandRoles[] = {OperandRole::Consume, OperandRole::Consume};
 
 inline constexpr TypeConstraint KEnterBoundOperandTypes[] = {fixedType(TypeKind::ParserState), anyType()};
 inline constexpr OperandRole KEnterBoundOperandRoles[] = {OperandRole::Consume, OperandRole::Borrow};
@@ -449,7 +455,7 @@ inline constexpr ParserOperationContract KSubunitContract{
 
 // One entry per `Opcode` value, in declaration order, so `schemaFor()` can index directly without
 // per-call allocation.
-inline constexpr std::array<OpcodeSchema, 37> KSchemas{{
+inline constexpr std::array<OpcodeSchema, 39> KSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Constant,
         .spelling = "core.constant",
@@ -786,14 +792,22 @@ inline constexpr std::array<OpcodeSchema, 37> KSchemas{{
                  .payload_kind = PayloadKind::Port,
                  .is_terminator = false,
                  .is_pure = true},
-    OpcodeSchema{.opcode = Opcode::LinkerScope,
-                 .spelling = "core.linker_scope",
+    OpcodeSchema{.opcode = Opcode::SetEmpty,
+                 .spelling = "core.set_empty",
                  .operand_types = KNoOperandTypes,
                  .operand_roles = KNoOperandRoles,
-                 .result_type = fixedType(TypeKind::UInt64),
+                 .result_type = fixedType(TypeKind::Set),
                  .payload_kind = PayloadKind::None,
                  .is_terminator = false,
-                 .is_pure = true},
+                 .is_pure = false},
+    OpcodeSchema{.opcode = Opcode::SetInsert,
+                 .spelling = "core.set_insert",
+                 .operand_types = KSetInsertOperandTypes,
+                 .operand_roles = KSetInsertOperandRoles,
+                 .result_type = sameAsOperand(),
+                 .payload_kind = PayloadKind::None,
+                 .is_terminator = false,
+                 .is_pure = false},
 }};
 
 } // namespace detail
@@ -837,6 +851,8 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
         case Opcode::LeaveBound: return {.changes_parser_state = true, .may_fail = true};
         case Opcode::VectorEmpty:
         case Opcode::VectorAppend:
+        case Opcode::SetEmpty:
+        case Opcode::SetInsert:
         case Opcode::UnitCreate: return {.allocates = true};
         case Opcode::PublishField: return {.publishes = true};
         // A foreign function may read and write any state, so it is opaque to every analysis.
@@ -857,8 +873,7 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
         case Opcode::BytesConstant:
         case Opcode::Uint64Constant:
         case Opcode::ForeignConstant:
-        case Opcode::PortConstant:
-        case Opcode::LinkerScope: return {};
+        case Opcode::PortConstant: return {};
         case Opcode::FieldPlace:
         case Opcode::GlobalPlace: return {.reads_places = true};
         case Opcode::Finish:

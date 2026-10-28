@@ -150,6 +150,19 @@ ForeignFunctionId Builder::createForeignFunction(std::string name,
     });
 }
 
+ForeignFunctionId Builder::createTargetForeignFunction(std::string name,
+                                                       std::vector<ForeignParameter> parameters,
+                                                       TypeId result_type,
+                                                       SourceSpanId span) {
+    return _package._foreign_functions.add(ForeignFunction{
+        .name = std::move(name),
+        .target_provided = true,
+        .parameters = std::move(parameters),
+        .result_type = result_type,
+        .span = span,
+    });
+}
+
 void Builder::addParserRoot(TypeDeclId unit, FunctionId function, std::string name) {
     _package._parser_roots.push_back(ParserRoot{.unit = unit, .function = function, .name = std::move(name)});
 }
@@ -268,7 +281,8 @@ InstId Builder::addConstant(BlockId block, int64_t value, SourceSpanId span) {
 }
 
 InstId Builder::addAdd(BlockId block, InstId lhs, InstId rhs, SourceSpanId span) {
-    return addInst(block, Opcode::Add, {lhs, rhs}, _package._int64_type, {}, span);
+    // The operands have one integer type, and the sum has that type.
+    return addInst(block, Opcode::Add, {lhs, rhs}, _package.inst(lhs).result_type, {}, span);
 }
 
 InstId Builder::addReturn(BlockId block, InstId value, SourceSpanId span) {
@@ -339,6 +353,25 @@ InstId Builder::addYield(BlockId block, std::vector<InstId> values, SourceSpanId
 
 InstId Builder::addVectorEmpty(BlockId block, TypeId element, SourceSpanId span) {
     return addInst(block, Opcode::VectorEmpty, {}, vectorType(element), {}, span);
+}
+
+TypeId Builder::setType(TypeId element) {
+    for ( size_t i = 0; i < _package._types.size(); ++i ) {
+        auto id = TypeId{static_cast<uint32_t>(i)};
+        const auto& t = _package._types.get(id);
+        if ( t.kind == TypeKind::Set && t.type_arguments == std::vector<TypeId>{element} )
+            return id;
+    }
+
+    return _package._types.add(Type{.kind = TypeKind::Set, .type_arguments = {element}});
+}
+
+InstId Builder::addSetEmpty(BlockId block, TypeId element, SourceSpanId span) {
+    return addInst(block, Opcode::SetEmpty, {}, setType(element), {}, span);
+}
+
+InstId Builder::addSetInsert(BlockId block, InstId set, InstId value, SourceSpanId span) {
+    return addInst(block, Opcode::SetInsert, {set, value}, _package.inst(set).result_type, {}, span);
 }
 
 InstId Builder::addVectorAppend(BlockId block, InstId vector, InstId value, SourceSpanId span) {
@@ -451,10 +484,6 @@ InstId Builder::addForeignConstant(BlockId block, TypeId type, std::string spell
 
 InstId Builder::addPortConstant(BlockId block, TypeId type, PortLiteral value, SourceSpanId span) {
     return addInst(block, Opcode::PortConstant, {}, type, InstPayload(value), span);
-}
-
-InstId Builder::addLinkerScope(BlockId block, SourceSpanId span) {
-    return addInst(block, Opcode::LinkerScope, {}, uint64Type(), {}, span);
 }
 
 InstId Builder::addInvokeHook(BlockId block, InstId unit_value, FunctionId hook, SourceSpanId span) {

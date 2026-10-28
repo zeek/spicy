@@ -21,9 +21,10 @@ pir::BuildResult pir::build(const hilti::ASTContext& ctx) {
     HILTI_DEBUG(logging::debug::PIR, fmt("found %d root(s)", discovery.roots.size()));
 
     ir::Package package;
+    std::vector<TargetBinding> bindings;
     {
         hilti::util::timing::Collector _("spicy/compiler/pir/build/lower");
-        if ( auto feature = lowerRoots(discovery, package) )
+        if ( auto feature = lowerRoots(discovery, package, bindings) )
             return BuildOutcome(Unsupported{{*feature}});
     }
 
@@ -65,5 +66,5 @@ pir::BuildResult pir::build(const hilti::ASTContext& ctx) {
     HILTI_DEBUG(logging::debug::PIR, "after constant folding:");
     HILTI_DEBUG(logging::debug::PIR, ir::print(package));
 
-    return BuildOutcome(Success{std::move(package)});
+    return BuildOutcome(Success{.package = std::move(package), .bindings = std::move(bindings)});
 }

@@ -215,7 +215,68 @@ void makeInoutRoot(Package& package) {
     builder.addFunctionRoot(fn);
 }
 
+// A public function that returns the value of a zero-argument accessor with the given result type.
+ForeignFunctionId makeAccessorRoot(Package& package, bool unsigned_result = true) {
+    auto builder = package.builder();
+    auto result = unsigned_result ? builder.uint64Type() : builder.int64Type();
+    auto accessor = builder.createTargetForeignFunction("linked_artifact_scope", {}, result);
+    auto fn = builder.createFunction("scope_user", result);
+    auto block = builder.createBlock(package.function(fn).root_region);
+    builder.addReturn(block, builder.addOpaqueOp(block, accessor, {}));
+    builder.addFunctionRoot(fn);
+    return accessor;
+}
+
 } // namespace
+
+TEST_CASE("a foreign accessor with a matching target binding is supported") {
+    Package package;
+    auto accessor = makeAccessorRoot(package);
+
+    REQUIRE(verify(package).empty());
+    CHECK(checkCoverage(package, {{.function = accessor, .kind = TargetBindingKind::LinkedArtifactScope}}).empty());
+}
+
+TEST_CASE("a function that the target provides is unsupported without a binding for it") {
+    Package package;
+    makeAccessorRoot(package);
+
+    REQUIRE(verify(package).empty());
+    CHECK_FALSE(checkCoverage(package).empty());
+}
+
+TEST_CASE("a native function cannot be bound to the target") {
+    Package package;
+    auto builder = package.builder();
+    auto symbol = builder.createForeignFunction("symbol", "::symbol", {}, builder.uint64Type());
+    auto fn = builder.createFunction("native_user", builder.uint64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    builder.addReturn(block, builder.addOpaqueOp(block, symbol, {}));
+    builder.addFunctionRoot(fn);
+
+    REQUIRE(verify(package).empty());
+    CHECK(checkCoverage(package).empty());
+    CHECK_FALSE(checkCoverage(package, {{.function = symbol, .kind = TargetBindingKind::LinkedArtifactScope}}).empty());
+}
+
+TEST_CASE("a target binding that does not match its declaration is unsupported") {
+    Package package;
+    auto accessor = makeAccessorRoot(package, false);
+    REQUIRE(verify(package).empty());
+
+    CHECK_FALSE(
+        checkCoverage(package, {{.function = accessor, .kind = TargetBindingKind::LinkedArtifactScope}}).empty());
+
+    Package good;
+    auto good_accessor = makeAccessorRoot(good);
+    CHECK_FALSE(
+        checkCoverage(good, {{.function = ForeignFunctionId{7}, .kind = TargetBindingKind::LinkedArtifactScope}})
+            .empty());
+    CHECK_FALSE(checkCoverage(good,
+                              {{.function = good_accessor, .kind = TargetBindingKind::LinkedArtifactScope},
+                               {.function = good_accessor, .kind = TargetBindingKind::LinkedArtifactScope}})
+                    .empty());
+}
 
 TEST_CASE("an ordinary function root with a native inout call is supported") {
     Package package;

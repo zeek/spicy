@@ -21,10 +21,14 @@ namespace spicy::detail::pir::backend::hilti {
  * a non-empty result reports every coverage gap found and means the caller must not attempt to
  * lower any part of it.
  *
+ * Each of `bindings` must name a foreign function of `package` whose signature matches what the HILTI target
+ * provides for the binding's kind; a binding that does not is a coverage gap.
+ *
  * This is a target-coverage judgment, not a well-formedness check: `package` is assumed to have
  * already passed the PIR verifier. A coverage gap here is not a verifier failure; it is a signal
  * to fall back to the standard code generator for the complete compilation.
  */
-std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package);
+std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package,
+                                              const std::vector<TargetBinding>& bindings = {});
 
 } // namespace spicy::detail::pir::backend::hilti

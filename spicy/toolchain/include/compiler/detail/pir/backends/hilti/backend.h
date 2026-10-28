@@ -3,6 +3,7 @@
 #pragma once
 
 #include <variant>
+#include <vector>
 
 #include <hilti/ast/builder/builder.h>
 #include <hilti/ast/declarations/module.h>
@@ -25,15 +26,17 @@ namespace spicy::detail::pir::backend::hilti {
 using LoweringResult = std::variant<::hilti::declaration::Module*, Unsupported>;
 
 /**
- * Lowers `package` into one deterministic synthetic HILTI module implementing every parser root
- * directly. Coverage is whole-package and atomic: if any part of `package` falls outside
- * `checkCoverage()`'s accepted subset, this returns `Unsupported` and constructs no declaration
+ * Lowers `package`, whose foreign functions in `bindings` the HILTI target implements itself, into one deterministic
+ * synthetic HILTI module implementing every parser root directly. Coverage is whole-package and atomic: if any part of
+ * `package` falls outside `checkCoverage()`'s accepted subset, this returns `Unsupported` and constructs no declaration
  * reachable from `builder`'s AST context.
  *
  * The returned module is fully built but detached from `builder`'s context; attaching it (and
  * choosing not to run the legacy code generator for the same compilation) is the caller's
  * responsibility.
  */
-LoweringResult lower(::hilti::Builder& builder, const ir::Package& package);
+LoweringResult lower(::hilti::Builder& builder,
+                     const ir::Package& package,
+                     const std::vector<TargetBinding>& bindings = {});
 
 } // namespace spicy::detail::pir::backend::hilti

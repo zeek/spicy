@@ -32,8 +32,12 @@ RootDiscovery discoverRoots(const hilti::ASTContext& ctx);
  * Attempts to lower every discovered root into `package`, in order. Stops
  * and returns the first unsupported feature encountered, if any.
  *
+ * Foreign declarations that only the target can implement are reported in `bindings`.
+ *
  * If there are any unsupported features, the resulting `package` is invalid.
  */
-std::optional<UnsupportedFeature> lowerRoots(const RootDiscovery& discovery, ir::Package& package);
+std::optional<UnsupportedFeature> lowerRoots(const RootDiscovery& discovery,
+                                             ir::Package& package,
+                                             std::vector<TargetBinding>& bindings);
 
 } // namespace spicy::detail::pir

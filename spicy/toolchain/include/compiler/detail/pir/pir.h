@@ -27,9 +27,24 @@ struct UnsupportedFeature {
     hilti::Location location; /**< where the construct appears in the source */
 };
 
+/** What a target adapter supplies for a foreign declaration that has no native symbol of its own. */
+enum class TargetBindingKind {
+    LinkedArtifactScope, /**< the `uint64` that identifies the linked artifact holding the compiled code */
+};
+
+/**
+ * Associates a foreign declaration of the package with an implementation that the target adapter provides. The
+ * declaration stays an ordinary foreign function to the package; only the target decides how to realize it.
+ */
+struct TargetBinding {
+    ir::ForeignFunctionId function;
+    TargetBindingKind kind;
+};
+
 /** PIR construction succeeded and owns a self-contained package with no AST references. */
 struct Success {
     ir::Package package;
+    std::vector<TargetBinding> bindings; /**< for the target adapter; not part of the package */
 };
 
 /**

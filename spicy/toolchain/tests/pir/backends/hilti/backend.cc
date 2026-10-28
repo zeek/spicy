@@ -132,6 +132,47 @@ TEST_CASE("an unsupported package lowers to Unsupported and constructs nothing")
     CHECK_FALSE(std::get<Unsupported>(result).features.empty());
 }
 
+TEST_CASE("a bound accessor lowers to the target's scope expression without a declaration") {
+    Package package;
+    auto pir_builder = package.builder();
+    auto accessor = pir_builder.createTargetForeignFunction("linked_artifact_scope", {}, pir_builder.uint64Type());
+    auto fn = pir_builder.createFunction("scope_user", pir_builder.uint64Type());
+    auto block = pir_builder.createBlock(package.function(fn).root_region);
+    pir_builder.addReturn(block, pir_builder.addOpaqueOp(block, accessor, {}));
+    pir_builder.addFunctionRoot(fn);
+    REQUIRE(verify(package).empty());
+
+    ::hilti::init();
+    spicy::init();
+
+    ::hilti::Options options;
+    auto ctx = std::make_shared<::hilti::Context>(options);
+    ::hilti::Builder builder(ctx->astContext());
+
+    // Nothing but a binding implements a function that the target provides, so the package cannot lower without one.
+    CHECK(std::holds_alternative<Unsupported>(lower(builder, package)));
+
+    auto bound = lower(builder, package, {{.function = accessor, .kind = TargetBindingKind::LinkedArtifactScope}});
+    REQUIRE(std::holds_alternative<::hilti::declaration::Module*>(bound));
+    auto text = std::get<::hilti::declaration::Module*>(bound)->print();
+    CHECK(text.find("foreign_0") == std::string::npos);
+    CHECK(text.find("$scope") != std::string::npos);
+
+    // A binding for a function that is not target-provided, or for no function at all, lowers nothing.
+    CHECK(std::holds_alternative<Unsupported>(
+        lower(builder, package, {{.function = ForeignFunctionId{3}, .kind = TargetBindingKind::LinkedArtifactScope}})));
+
+    Package native;
+    auto native_builder = native.builder();
+    auto symbol = native_builder.createForeignFunction("symbol", "::symbol", {}, native_builder.uint64Type());
+    auto native_fn = native_builder.createFunction("native_user", native_builder.uint64Type());
+    auto native_block = native_builder.createBlock(native.function(native_fn).root_region);
+    native_builder.addReturn(native_block, native_builder.addOpaqueOp(native_block, symbol, {}));
+    native_builder.addFunctionRoot(native_fn);
+    CHECK(std::holds_alternative<Unsupported>(
+        lower(builder, native, {{.function = symbol, .kind = TargetBindingKind::LinkedArtifactScope}})));
+}
+
 // Byte-identical repeated lowering is checked by a separate-process btest fixture instead of a
 // doctest: `hilti::declaration::module::UID` uniquifies its `.unique` name (which the printer
 // includes) against a process-wide counter, so two lowerings of equivalent packages in one

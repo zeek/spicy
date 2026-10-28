@@ -54,6 +54,7 @@ declare public void reject(inout any unit &requires-type-feature="synchronizatio
 public type UnitContext = __library_type("spicy::rt::UnitContext");
 declare public UnitContext createContext(any ctx) &cxxname="spicy::rt::detail::createContext" &have_prototype;
 declare public void setContext(inout any unit, optional<UnitContext> ctx, type type_) &cxxname="spicy::rt::detail::setContext" &have_prototype;
+declare public void rejectUnitContext(optional<UnitContext> ctx) &cxxname="spicy::rt::detail::rejectUnitContext" &have_prototype;
 
 # Type for a parser definition. When making changes, adapt the C++-side
 # spicy::rt::Parser as well.

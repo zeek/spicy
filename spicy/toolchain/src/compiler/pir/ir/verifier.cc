@@ -63,8 +63,8 @@ public:
         else if ( type.declaration.isSet() )
             _emitter.emit(diag::TypeUnexpectedDeclaration, id);
 
-        if ( type.kind == TypeKind::Tuple || type.kind == TypeKind::Vector ) {
-            if ( type.kind == TypeKind::Vector && type.type_arguments.size() != 1 )
+        if ( type.kind == TypeKind::Tuple || type.kind == TypeKind::Vector || type.kind == TypeKind::Set ) {
+            if ( (type.kind == TypeKind::Vector || type.kind == TypeKind::Set) && type.type_arguments.size() != 1 )
                 _emitter.emit(diag::TypeUnexpectedTypeArguments, id);
             for ( size_t a = 0; a < type.type_arguments.size(); ++a ) {
                 if ( ! _package.isValid(type.type_arguments[a]) )
@@ -115,7 +115,8 @@ public:
     void verifyForeignFunction(ForeignFunctionId id, const ForeignFunction& fn) {
         _verifySpan(fn.span, id);
 
-        if ( fn.cxx_name.empty() )
+        // A function has one implementation: a native symbol, or the target adapter.
+        if ( fn.cxx_name.empty() == ! fn.target_provided )
             _emitter.emit(diag::ForeignFunctionMissingBinding, id);
 
         if ( ! _package.isValid(fn.result_type) || typeDiscipline(_package, fn.result_type) == ValueDiscipline::Affine )
@@ -126,8 +127,9 @@ public:
             if ( parameter.argument != ForeignArgument::Value )
                 continue;
 
-            if ( ! _package.isValid(parameter.type) || parameter.type == _package.voidType() ||
-                 typeDiscipline(_package, parameter.type) == ValueDiscipline::Affine )
+            // A by-value parameter takes its argument, so affinity does not restrict it; only a void or missing type
+            // does.
+            if ( ! _package.isValid(parameter.type) || parameter.type == _package.voidType() )
                 _emitter.emit(diag::ForeignFunctionInvalidParameter, id, p);
         }
     }
@@ -792,6 +794,22 @@ private:
                 return;
             }
 
+            case Opcode::Add: {
+                if ( inst.args.size() != 2 || ! _package.isValid(inst.args[0]) || ! _package.isValid(inst.args[1]) )
+                    return;
+
+                auto lhs = _package.inst(inst.args[0]).result_type;
+                auto rhs = _package.inst(inst.args[1]).result_type;
+                bool integer = _package.isValid(lhs) && (_package.type(lhs).kind == TypeKind::Int64 ||
+                                                         _package.type(lhs).kind == TypeKind::UInt64);
+                // The operands share one integer type, the one a constraint on operands would name.
+                if ( lhs != rhs || ! integer )
+                    _emitter.emit(diag::OperandTypeMismatch, inst_id, 1);
+                else if ( inst.result_type != lhs )
+                    _emitter.emit(diag::AddOperandTypeMismatch, inst_id);
+                return;
+            }
+
             case Opcode::Equal: {
                 if ( inst.args.size() != 2 || ! _package.isValid(inst.args[0]) || ! _package.isValid(inst.args[1]) )
                     return;
@@ -1114,6 +1132,7 @@ private:
             case TypeKind::Unit:
             case TypeKind::Tuple:
             case TypeKind::Vector:
+            case TypeKind::Set:
             case TypeKind::Opaque:
             case TypeKind::Place:
             case TypeKind::String: return false;
