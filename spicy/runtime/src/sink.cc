@@ -191,6 +191,7 @@ void Sink::_newData(hilti::rt::Optional<hilti::rt::Bytes> data, uint64_t rseq, u
     if ( _auto_trim && _chunks.empty() && rseq == _cur_rseq ) [[likely]] {
         _debugReassembler("fastpath new data", data, rseq, len);
         _deliver(std::move(data), rseq, rseq + len);
+        _trim_rseq = rseq + len; // same as what `_tryDeliver()` would do
         return;
     }
 
@@ -213,7 +214,7 @@ void Sink::_newData(hilti::rt::Optional<hilti::rt::Bytes> data, uint64_t rseq, u
     }
 
     if ( _chunks.empty() ) {
-        _chunks.emplace_back(std::move(data), rseq, rseq + len);
+        _chunks.emplace_back(std::move(data), rseq, rupper_rseq);
         c = std::next(_chunks.end(), -1);
     }
     else
