@@ -9,6 +9,7 @@
 #include <hilti/ast/ast-context.h>
 #include <hilti/ast/forward.h>
 
+#include <spicy/ast/forward.h>
 #include <spicy/compiler/detail/pir/ir/package.h>
 #include <spicy/compiler/detail/pir/pir.h>
 
@@ -18,9 +19,9 @@ namespace spicy::detail::pir {
 struct RootDiscovery {
     std::vector<hilti::Declaration*> roots;
     std::vector<hilti::declaration::Type*> unit_declarations;
-    std::vector<hilti::ast::TypeIndex> units_with_external_hooks;
     std::optional<UnsupportedFeature> unrepresented_content;
     std::vector<std::string> cxx_includes;                    /**< `%cxx-include` headers of all modules */
+    std::vector<spicy::declaration::UnitHook*> unit_hooks;    /**< external unit hooks; applied to lowered units */
     std::vector<hilti::declaration::GlobalVariable*> globals; /**< module-level variables, all lowered */
     std::vector<std::pair<hilti::declaration::Function*, ir::InitPhase>> initializers; /**< in source order */
 };

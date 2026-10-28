@@ -183,6 +183,17 @@ FunctionId Builder::createFunction(std::string name, TypeId result_type, SourceS
     return createFunction(std::move(name), {}, result_type, span);
 }
 
+FunctionId Builder::createHookFunction(std::string name, TypeId unit, SourceSpanId span) {
+    return _package._functions.add(Function{
+        .name = std::move(name),
+        .result_type = _package._void_type,
+        .root_region = createRegion(),
+        .kind = FunctionKind::Hook,
+        .parameters = {unit},
+        .span = span,
+    });
+}
+
 FunctionId Builder::createFunction(std::string name,
                                    std::vector<TypeId> parameters,
                                    TypeId result_type,
@@ -428,6 +439,15 @@ InstId Builder::addGlobalPlace(BlockId block, GlobalId global, SourceSpanId span
         result_type = placeType(_package.global(global).type);
 
     return addInst(block, Opcode::GlobalPlace, {}, result_type, InstPayload(GlobalPayload{global}), span);
+}
+
+InstId Builder::addInvokeHook(BlockId block, InstId unit_value, FunctionId hook, SourceSpanId span) {
+    return addInst(block,
+                   Opcode::InvokeHook,
+                   {unit_value},
+                   _package._void_type,
+                   InstPayload(FunctionPayload{hook}),
+                   span);
 }
 
 InstId Builder::addLoad(BlockId block, InstId place, SourceSpanId span) {

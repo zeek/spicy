@@ -165,6 +165,12 @@ public:
         else if ( _package.type(fn.result_type).kind == TypeKind::Place )
             _emitter.emit(diag::PlaceEscapes, id);
 
+        if ( fn.kind == FunctionKind::Hook ) {
+            // A hook takes exactly the unit it observes, and that unit is borrowed rather than consumed.
+            if ( fn.parameters.size() != 1 || ! _package.isValid(fn.parameters[0]) ||
+                 _package.type(fn.parameters[0]).kind != TypeKind::Unit )
+                _emitter.emit(diag::NormalFunctionInvalidParameter, id, 0);
+        }
         if ( fn.kind == FunctionKind::Normal ) {
             for ( size_t p = 0; p < fn.parameters.size(); ++p ) {
                 auto parameter = fn.parameters[p];
@@ -181,7 +187,7 @@ public:
             return;
         }
 
-        if ( fn.kind != FunctionKind::Normal ) {
+        if ( fn.kind == FunctionKind::Parser ) {
             _verifyRegion(id, fn.root_region, fn, {});
             return;
         }
@@ -220,7 +226,7 @@ public:
         if ( ! _owned_regions.insert(region_id.index).second )
             _emitter.emit(diag::InvalidStructuredRegion, owner.isSet() ? owner : InstId{});
         const auto& region = _package.region(region_id);
-        bool multi_block_body = ! owner.isSet() && fn.kind == FunctionKind::Normal;
+        bool multi_block_body = ! owner.isSet() && fn.kind != FunctionKind::Parser;
         if ( multi_block_body ? region.blocks.empty() : region.blocks.size() != 1 )
             _emitter.emit(diag::RegionBlockCountMismatch, id, region.blocks.size());
 
@@ -288,7 +294,7 @@ public:
 private:
     // Function kind/signature/parser-unit consistency.
     void _verifyFunctionKind(FunctionId id, const Function& fn) {
-        if ( fn.kind == FunctionKind::Normal ) {
+        if ( fn.kind != FunctionKind::Parser ) {
             if ( fn.parser_unit.isSet() )
                 _emitter.emit(diag::NormalFunctionWithParserUnit, id);
             return;
@@ -801,9 +807,9 @@ private:
                 if ( inst.args.empty() || ! _package.isValid(inst.args[0]) )
                     return;
 
+                // The place takes ownership of its initial value, which is affine for a vector.
                 auto initial = _package.inst(inst.args[0]).result_type;
-                if ( ! _package.isValid(initial) || initial == _package.voidType() ||
-                     typeDiscipline(_package, initial) == ValueDiscipline::Affine ) {
+                if ( ! _package.isValid(initial) || initial == _package.voidType() ) {
                     _emitter.emit(diag::LocalPlaceInvalidInitial, inst_id);
                     return;
                 }
@@ -871,6 +877,25 @@ private:
                 if ( ! _package.isValid(inst.result_type) || _package.type(inst.result_type).kind != TypeKind::Place ||
                      _package.type(inst.result_type).type_arguments != std::vector<TypeId>{field.type} )
                     _emitter.emit(diag::FieldPlaceResultTypeMismatch, inst_id);
+                return;
+            }
+
+            case Opcode::InvokeHook: {
+                const auto* payload = std::get_if<FunctionPayload>(&inst.payload);
+                if ( ! payload )
+                    return;
+
+                if ( ! _package.isValid(payload->function) ) {
+                    _emitter.emit(diag::InvokeHookInvalidPayload, inst_id);
+                    return;
+                }
+
+                const auto& hook = _package.function(payload->function);
+                if ( hook.kind != FunctionKind::Hook || hook.parameters.size() != 1 || inst.args.size() != 1 ||
+                     ! _package.isValid(inst.args[0]) ||
+                     _package.inst(inst.args[0]).result_type != hook.parameters[0] ||
+                     hook.result_type != _package.voidType() || inst.result_type != _package.voidType() )
+                    _emitter.emit(diag::InvokeHookOperandMismatch, inst_id);
                 return;
             }
 

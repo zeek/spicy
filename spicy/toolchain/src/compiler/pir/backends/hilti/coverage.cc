@@ -47,6 +47,18 @@ bool isStorageType(const ir::Package& package, ir::TypeId id) {
     return false;
 }
 
+// Whether a vector can hold values of this type: storage types, and the scalar and foreign values that procedural
+// code produces. Unit fields and other storage remain limited to `isStorageType`.
+bool isVectorElementType(const ir::Package& package, ir::TypeId id) {
+    switch ( package.type(id).kind ) {
+        case ir::TypeKind::Int64:
+        case ir::TypeKind::Bool:
+        case ir::TypeKind::String:
+        case ir::TypeKind::Opaque: return true;
+        default: return isStorageType(package, id);
+    }
+}
+
 void checkRegion(const ir::Package& package,
                  ir::RegionId region,
                  std::vector<UnsupportedFeature>& out,
@@ -87,7 +99,8 @@ void checkRegion(const ir::Package& package,
                     }
                     break;
                 case ir::Opcode::ParseSubunit:
-                case ir::Opcode::ReadBytes: break;
+                case ir::Opcode::ReadBytes:
+                case ir::Opcode::InvokeHook: break;
                 case ir::Opcode::ReadInteger: {
                     const auto* p = std::get_if<ir::ReadIntegerPayload>(&inst.payload);
                     if ( ! p || (p->width != 8 && p->width != 64) || p->signedness != ir::Signedness::Unsigned ||
@@ -144,9 +157,9 @@ bool isProcedureType(const ir::Package& package, ir::TypeId id) {
             const auto& decl = package.typeDecl(type.declaration);
             return decl.opaque && decl.opaque->lifecycle && ! decl.opaque->cxx_name.empty();
         }
+        case ir::TypeKind::Vector: return isProcedureType(package, type.type_arguments[0]);
         case ir::TypeKind::ParserState:
-        case ir::TypeKind::Unit:
-        case ir::TypeKind::Vector: return false;
+        case ir::TypeKind::Unit: return false;
     }
     return false;
 }
@@ -170,7 +183,10 @@ void checkProcedureRegion(const ir::Package& package, ir::RegionId region, std::
                 case ir::Opcode::Return:
                 case ir::Opcode::Call:
                 case ir::Opcode::OpaqueOp:
+                case ir::Opcode::FieldPlace:
                 case ir::Opcode::GlobalPlace:
+                case ir::Opcode::VectorEmpty:
+                case ir::Opcode::VectorAppend:
                 case ir::Opcode::LocalPlace:
                 case ir::Opcode::Load:
                 case ir::Opcode::Store:
@@ -184,7 +200,10 @@ void checkProcedureRegion(const ir::Package& package, ir::RegionId region, std::
                 default: unsupported("not a procedural operation the HILTI backend can lower"); break;
             }
 
-            if ( package.isValid(inst.result_type) && ! isProcedureType(package, inst.result_type) )
+            // A hook takes the unit it observes, which ordinary values cannot be.
+            const bool hook_self = inst.opcode == ir::Opcode::Argument && package.isValid(inst.result_type) &&
+                                   package.type(inst.result_type).kind == ir::TypeKind::Unit;
+            if ( package.isValid(inst.result_type) && ! hook_self && ! isProcedureType(package, inst.result_type) )
                 unsupported("value type is not supported by the HILTI backend yet");
         }
     }
@@ -218,7 +237,7 @@ std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package) {
             case ir::TypeKind::Tuple:
             case ir::TypeKind::Opaque: break;
             case ir::TypeKind::Vector:
-                if ( ! isStorageType(package, type.type_arguments[0]) )
+                if ( ! isVectorElementType(package, type.type_arguments[0]) )
                     report(out, "vector", "vector element type cannot be stored by the HILTI backend");
                 break;
         }

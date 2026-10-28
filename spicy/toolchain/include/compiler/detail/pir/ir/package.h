@@ -56,7 +56,11 @@ struct Region {
     std::vector<BlockId> blocks;
 };
 
-enum class FunctionKind { Normal, Parser };
+/**
+ * `Normal` functions are ordinary procedures. `Parser` functions are parser states that consume input. `Hook`
+ * functions are procedures that take the unit being parsed, which they observe and do not consume.
+ */
+enum class FunctionKind { Normal, Parser, Hook };
 
 struct Function {
     std::string name;

@@ -141,6 +141,20 @@ inline constexpr DiagnosticDefinition GlobalPlaceInvalidPayload{
     .message = "core.global_place's payload does not reference a valid global",
 };
 
+inline constexpr DiagnosticDefinition InvokeHookInvalidPayload{
+    .id = "PIR_INVOKE_HOOK_INVALID_PAYLOAD",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "unit.invoke_hook's payload does not reference a valid hook function",
+};
+
+inline constexpr DiagnosticDefinition InvokeHookOperandMismatch{
+    .id = "PIR_INVOKE_HOOK_OPERAND_MISMATCH",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "unit.invoke_hook must pass exactly the unit its hook takes, and produce no value",
+};
+
 inline constexpr DiagnosticDefinition GlobalPlaceResultTypeMismatch{
     .id = "PIR_GLOBAL_PLACE_RESULT_TYPE_MISMATCH",
     .classification = DiagnosticClassification::Internal,

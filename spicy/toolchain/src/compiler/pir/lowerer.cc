@@ -24,7 +24,9 @@
 #include <hilti/ast/declarations/property.h>
 #include <hilti/ast/declarations/type.h>
 #include <hilti/ast/expressions/assign.h>
+#include <hilti/ast/expressions/coerced.h>
 #include <hilti/ast/expressions/ctor.h>
+#include <hilti/ast/expressions/logical-not.h>
 #include <hilti/ast/expressions/member.h>
 #include <hilti/ast/expressions/name.h>
 #include <hilti/ast/expressions/resolved-operator.h>
@@ -71,7 +73,7 @@ UnsupportedFeature unsupported(const std::string& feature, std::string reason, c
 struct VisitorRoots : public visitor::PreOrder {
     std::vector<hilti::Declaration*> roots;
     std::vector<hilti::declaration::Type*> unit_declarations;
-    std::vector<hilti::ast::TypeIndex> units_with_external_hooks;
+    std::vector<spicy::declaration::UnitHook*> unit_hooks;
     std::optional<UnsupportedFeature> unrepresented_content;
     std::vector<std::string> cxx_includes;
     std::vector<hilti::declaration::GlobalVariable*> globals;
@@ -139,10 +141,10 @@ struct VisitorRoots : public visitor::PreOrder {
             roots.push_back(n);
     }
 
-    // External hooks from the unit itself
+    // External hooks; they apply to a lowered unit whose type they name.
     void operator()(spicy::declaration::UnitHook* n) final {
-        if ( auto index = n->hook()->unitTypeIndex() )
-            units_with_external_hooks.push_back(index);
+        if ( ! skipsImplementation(n) )
+            unit_hooks.push_back(n);
     }
 
     void operator()(hilti::declaration::GlobalVariable* n) final {
@@ -239,11 +241,23 @@ public:
         if ( auto* name = expr->tryAs<hilti::expression::Name>() )
             return _read(name);
 
+        if ( auto* negation = expr->tryAs<hilti::expression::LogicalNot>() ) {
+            auto operand = lower(negation->expression());
+            if ( auto* feature = std::get_if<UnsupportedFeature>(&operand) )
+                return *feature;
+
+            auto span = internSpan(_package, expr->meta().location());
+            auto false_ = _builder.addBoolConstant(_block, false, span);
+            return _builder.addEqual(_block, std::get<ir::InstId>(operand), false_, span);
+        }
+
         if ( auto* op = expr->tryAs<hilti::expression::ResolvedOperator>() ) {
             if ( op->kind() == hilti::operator_::Kind::Call )
                 return _lowerCall(op);
             if ( op->kind() == hilti::operator_::Kind::Equal )
                 return _lowerEqual(op);
+            if ( op->kind() == hilti::operator_::Kind::MemberCall )
+                return _lowerMemberCall(op);
             if ( op->kind() == hilti::operator_::Kind::Member ) {
                 auto place = _fieldPlace(op);
                 if ( auto* feature = std::get_if<UnsupportedFeature>(&place) )
@@ -259,6 +273,57 @@ public:
     std::variant<ir::InstId, UnsupportedFeature> _lowerCtor(hilti::Ctor* ctor, const hilti::Location& loc);
 
 private:
+    // Methods on a local vector. `push_back` appends to the vector in its place, so the place is stored again.
+    // `reserve` only changes capacity, which no value observes, so it leaves no operation behind.
+    std::variant<ir::InstId, UnsupportedFeature> _lowerMemberCall(hilti::expression::ResolvedOperator* op) {
+        auto loc = op->meta().location();
+        auto* member = op->op1() ? op->op1()->tryAs<hilti::expression::Member>() : nullptr;
+        auto* ctor = op->op2() ? op->op2()->tryAs<hilti::expression::Ctor>() : nullptr;
+        auto* tuple = ctor ? ctor->ctor()->tryAs<hilti::ctor::Tuple>() : nullptr;
+        if ( ! member || ! tuple )
+            return _unsupported("unsupported method call", loc);
+
+        const auto& args = tuple->value();
+        auto method = std::string(member->id());
+        if ( method == "push_back" && args.size() == 1 ) {
+            auto place = _place(op->op0());
+            if ( auto* feature = std::get_if<UnsupportedFeature>(&place) )
+                return *feature;
+
+            auto element = lower(args[0]);
+            if ( auto* feature = std::get_if<UnsupportedFeature>(&element) )
+                return *feature;
+
+            // The element is evaluated before the vector is read, so the append sees every earlier effect.
+            auto vector = _load(std::get<ir::InstId>(place), loc);
+            if ( auto* feature = std::get_if<UnsupportedFeature>(&vector) )
+                return *feature;
+
+            auto span = internSpan(_package, loc);
+            auto appended =
+                _builder.addVectorAppend(_block, std::get<ir::InstId>(vector), std::get<ir::InstId>(element), span);
+            return _builder.addStore(_block, std::get<ir::InstId>(place), appended, span);
+        }
+
+        if ( method == "reserve" && args.size() == 1 ) {
+            // The receiver must be a place this lowering addresses. Dropping the capacity operation must not drop
+            // the receiver's evaluation, nor an access that legacy execution would make.
+            auto receiver = _place(op->op0());
+            if ( auto* feature = std::get_if<UnsupportedFeature>(&receiver) )
+                return *feature;
+
+            // A literal capacity has no effects, and no PIR literal of unsigned type exists yet, so it is not lowered.
+            if ( ! args[0]->isA<hilti::expression::Ctor>() ) {
+                auto capacity = lower(args[0]);
+                if ( auto* feature = std::get_if<UnsupportedFeature>(&capacity) )
+                    return *feature;
+            }
+            return _builder.addTuple(_block, {}, internSpan(_package, loc));
+        }
+
+        return _unsupported(fmt("method '%s' is not supported", method), loc);
+    }
+
     // `==` on two values of the same integer or bool type, which the PIR verifier restricts to the same types.
     std::variant<ir::InstId, UnsupportedFeature> _lowerEqual(hilti::expression::ResolvedOperator* op) {
         auto lhs = lower(op->op0());
@@ -433,6 +498,14 @@ public:
 
     // The PIR type of a Spicy type that procedural code can hold, if PIR can represent it yet.
     std::optional<ir::TypeId> valueType(const hilti::UnqualifiedType* type) {
+        if ( const auto* named = type->tryAs<hilti::type::Name>() )
+            return named->resolvedType() ? valueType(named->resolvedType()) : std::nullopt;
+        if ( const auto* vector = type->tryAs<hilti::type::Vector>() ) {
+            auto element = valueType(vector->elementType()->type());
+            if ( ! element || *element == _builder.voidType() )
+                return std::nullopt;
+            return _builder.vectorType(*element);
+        }
         if ( const auto* integer = type->tryAs<hilti::type::SignedInteger>(); integer && integer->width() == 64 )
             return _builder.int64Type();
         if ( const auto* integer = type->tryAs<hilti::type::UnsignedInteger>() ) {
@@ -793,6 +866,19 @@ std::optional<UnsupportedFeature> BodyLowerer::lowerStatement(hilti::Statement* 
 
     if ( auto* decl = stmt->tryAs<hilti::statement::Declaration>() ) {
         auto* local = decl->declaration()->tryAs<hilti::declaration::LocalVariable>();
+        if ( local && ! local->init() ) {
+            // The only default value a local may have is an empty vector.
+            auto declared = _procedures.valueType(local->type()->type());
+            if ( ! declared || _package.type(*declared).kind != ir::TypeKind::Vector )
+                return _unsupported("only local vectors may be declared without an initializer",
+                                    stmt->meta().location());
+
+            auto span = internSpan(_package, stmt->meta().location());
+            auto empty = _builder.addVectorEmpty(_block, _package.type(*declared).type_arguments[0], span);
+            bind(local, Variable{.value = _builder.addLocalPlace(_block, empty, span), .is_place = true});
+            return std::nullopt;
+        }
+
         if ( ! local || ! local->init() )
             return _unsupported("only local variables with an initializer are supported", stmt->meta().location());
 
@@ -920,16 +1006,17 @@ struct UnitSpec {
     std::vector<FieldSpec> fields;
     ir::TypeDeclId declaration;
     ir::FunctionId function;
+    std::vector<ir::FunctionId> hooks; /**< run in order once the unit is complete */
 };
 
 class UnitLowerer {
 public:
     UnitLowerer(const std::vector<hilti::declaration::Type*>& declarations,
-                const std::vector<hilti::ast::TypeIndex>& external_hooks,
+                const std::vector<spicy::declaration::UnitHook*>& hooks,
                 ir::Package& package,
                 ProcedureLowerer& procedures)
         : _declarations(declarations),
-          _external_hooks(external_hooks),
+          _hooks(hooks),
           _package(package),
           _builder(package.builder()),
           _procedures(procedures) {}
@@ -967,6 +1054,11 @@ public:
                                                           _builder.parserStateType(),
                                                           _builder.unitType(spec.declaration),
                                                           internSpan(_package, spec.source->meta().location()));
+        }
+
+        for ( auto& spec : _units ) {
+            if ( auto error = _addHooks(spec) )
+                return error;
         }
 
         for ( auto& spec : _units ) {
@@ -1010,8 +1102,6 @@ private:
 
         if ( unit->mayHaveFilter() )
             return reject("units that may have a filter attached are not supported yet", decl->meta().location());
-        if ( std::ranges::find(_external_hooks, unit->typeIndex()) != _external_hooks.end() )
-            return reject("units with an external hook are not supported yet", decl->meta().location());
         if ( ! unit->parameters().empty() || (unit->attributes() && *unit->attributes()) || unit->contextType() )
             return reject("unit parameters, attributes, and context are not supported", decl->meta().location());
 
@@ -1088,6 +1178,89 @@ private:
         return std::nullopt;
     }
 
+    // Lowers the external `%done`-style hooks of `spec`'s unit into functions, in the order they run: higher
+    // priorities first, and equal priorities in source order.
+    std::optional<UnsupportedFeature> _addHooks(UnitSpec& spec) {
+        struct Pending {
+            const spicy::declaration::UnitHook* source;
+            int64_t priority;
+        };
+
+        std::vector<Pending> pending;
+        for ( const auto* hook : _hooks ) {
+            if ( hook->hook()->unitTypeIndex() != spec.unit->typeIndex() )
+                continue;
+
+            auto feature = fmt("hook of parser unit '%s'", std::string(spec.source->id()));
+            auto reject = [&](std::string why, const hilti::Location& loc) {
+                return unsupported(feature, std::move(why), loc);
+            };
+            auto* decl = hook->hook();
+            if ( decl->unitFieldIndex() )
+                return reject("field hooks are not supported yet", hook->meta().location());
+            if ( std::string(decl->id().local()) != "0x25_done" )
+                return reject("only %done hooks are supported yet", hook->meta().location());
+            if ( decl->hookType() != spicy::declaration::hook::Type::Standard || decl->isDebug() ||
+                 ! decl->ftype()->parameters().empty() || ! decl->ftype()->result()->type()->isA<hilti::type::Void>() )
+                return reject("only standard hooks without parameters are supported yet", hook->meta().location());
+
+            int64_t priority = 0;
+            if ( auto* expr = decl->priority() ) {
+                if ( auto* coerced = expr->tryAs<hilti::expression::Coerced>() )
+                    expr = coerced->expression();
+                auto* ctor = expr->tryAs<hilti::expression::Ctor>();
+                auto* value = ctor ? ctor->ctor() : nullptr;
+                if ( value && value->tryAs<hilti::ctor::Coerced>() )
+                    value = value->as<hilti::ctor::Coerced>()->coercedCtor();
+                if ( auto* literal = value ? value->tryAs<hilti::ctor::SignedInteger>() : nullptr )
+                    priority = literal->value();
+                else if ( auto* unsigned_literal = value ? value->tryAs<hilti::ctor::UnsignedInteger>() : nullptr )
+                    priority = static_cast<int64_t>(unsigned_literal->value());
+                else
+                    return reject("hook priorities must be integer literals", hook->meta().location());
+            }
+
+            pending.push_back({hook, priority});
+        }
+
+        std::ranges::stable_sort(pending, [](const Pending& a, const Pending& b) { return a.priority > b.priority; });
+
+        for ( const auto& [hook, priority] : pending ) {
+            auto lowered = _hook(spec, hook);
+            if ( auto* feature = std::get_if<UnsupportedFeature>(&lowered) )
+                return *feature;
+
+            spec.hooks.push_back(std::get<ir::FunctionId>(lowered));
+        }
+
+        return std::nullopt;
+    }
+
+    // Lowers one hook body into an ordinary function that takes the unit being parsed. The hook observes `self`
+    // and does not consume it, so the parser can keep publishing fields after the hook returns.
+    std::variant<ir::FunctionId, UnsupportedFeature> _hook(const UnitSpec& spec,
+                                                           const spicy::declaration::UnitHook* hook) {
+        auto feature = fmt("hook of parser unit '%s'", std::string(spec.source->id()));
+        auto span = internSpan(_package, hook->meta().location());
+        auto unit = _builder.unitType(spec.declaration);
+        auto id = _builder.createHookFunction(fmt("%s_hook", std::string(spec.source->id().local())), unit, span);
+
+        auto region = _package.function(id).root_region;
+        auto block = _builder.createBlock(region);
+        auto self = _builder.addArgument(id, block, 0, span);
+        BodyLowerer body(_procedures, _package, region, block, feature);
+        std::unordered_map<std::string, ir::DeclId> fields;
+        for ( const auto& field : spec.fields )
+            fields.emplace(std::string(field.source->id().local()), field.declaration);
+        body.setSelf(self, std::move(fields));
+
+        if ( auto error = body.lowerStatements(hook->hook()->body()->statements()) )
+            return *error;
+
+        body.returnVoidIfOpen(span);
+        return id;
+    }
+
     static bool _onlySize(const hilti::AttributeSet* attrs) {
         return attrs && attrs->attributes().size() == 1 && attrs->find(attribute::kind::Size);
     }
@@ -1148,12 +1321,14 @@ private:
             unit_value = _builder.addPublishField(block, unit_value, value, field.declaration, span);
             published.emplace(std::string(field.source->id().local()), field.declaration);
         }
+        for ( auto hook : spec.hooks )
+            _builder.addInvokeHook(block, unit_value, hook, unit_span);
         _builder.addParserFinish(block, state, unit_value, unit_span);
         return std::nullopt;
     }
 
     const std::vector<hilti::declaration::Type*>& _declarations;
-    const std::vector<hilti::ast::TypeIndex>& _external_hooks;
+    const std::vector<spicy::declaration::UnitHook*>& _hooks;
     ir::Package& _package;
     ir::Builder _builder;
     std::vector<UnitSpec> _units;
@@ -1165,10 +1340,10 @@ private:
 
 std::optional<UnsupportedFeature> lowerUnits(const std::vector<hilti::declaration::Type*>& roots,
                                              const std::vector<hilti::declaration::Type*>& unit_declarations,
-                                             const std::vector<hilti::ast::TypeIndex>& units_with_external_hooks,
+                                             const std::vector<spicy::declaration::UnitHook*>& hooks,
                                              ir::Package& package,
                                              ProcedureLowerer& procedures) {
-    return UnitLowerer(unit_declarations, units_with_external_hooks, package, procedures).build(roots);
+    return UnitLowerer(unit_declarations, hooks, package, procedures).build(roots);
 }
 
 } // namespace
@@ -1179,7 +1354,7 @@ RootDiscovery discoverRoots(const hilti::ASTContext& ctx) {
     return RootDiscovery{
         .roots = std::move(v.roots),
         .unit_declarations = std::move(v.unit_declarations),
-        .units_with_external_hooks = std::move(v.units_with_external_hooks),
+        .unit_hooks = std::move(v.unit_hooks),
         .unrepresented_content = std::move(v.unrepresented_content),
         .cxx_includes = std::move(v.cxx_includes),
         .globals = std::move(v.globals),
@@ -1247,11 +1422,7 @@ std::optional<UnsupportedFeature> lowerRoots(const RootDiscovery& discovery, ir:
         package.builder().addInitializer(phase, std::get<ir::FunctionId>(lowered));
     }
 
-    if ( auto feature = lowerUnits(unit_roots,
-                                   discovery.unit_declarations,
-                                   discovery.units_with_external_hooks,
-                                   package,
-                                   procedures) )
+    if ( auto feature = lowerUnits(unit_roots, discovery.unit_declarations, discovery.unit_hooks, package, procedures) )
         return feature;
 
     return std::nullopt;
