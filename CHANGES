@@ -1,3 +1,16 @@
+1.18.0-dev.49 | 2026-10-28 06:45:27 -0400
+
+  * GH-2526: Fix `!info` counting as `!in` operator (Evan Typanski, Corelight)
+
+    Fixes #2526
+
+    This is because of a special-case in the scanner for `!in`, which is
+    kind of why this sort of special-casing operator is a bit iffy. Can't
+    change that now, so this fixes it with lookahead tokens.
+
+    I didn't know if flex supported lookahead tokens in the scanner tbh, so
+    I asked GPT-6.1 sol and it gave me the syntax.
+
 1.18.0-dev.47 | 2026-10-26 17:23:55 -0400
 
   * Fix sink reassembly of gaps overlapping buffered data (suraiya sulthana)

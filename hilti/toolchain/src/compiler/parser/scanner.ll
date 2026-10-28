@@ -119,7 +119,7 @@ int16                 return token::INT16;
 int32                 return token::INT32;
 int64                 return token::INT64;
 int8                  return token::INT8;
-!in                   return token::NOT_IN;
+!in/[^a-zA-Z_0-9]     return token::NOT_IN;
 init                  return token::INIT;
 inout                 return token::INOUT;
 int                   return token::INT;

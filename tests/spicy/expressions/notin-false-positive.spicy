@@ -1,0 +1,14 @@
+# @TEST-DOC: Test only !in becomes the operator, so you can use !in0 or something
+# @TEST-EXEC: ${SPICYC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test;
+
+global info: bool = False;
+global inf: bool = False;
+global infinity: bool = False;
+global in_foo: bool = False;
+global i: bool = False;
+
+if (!info && !inf && !infinity && !in_foo && !i)
+    print "Success!";
