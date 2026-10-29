@@ -21,6 +21,7 @@
 #include <hilti/base/result.h>
 #include <hilti/base/timing.h>
 #include <hilti/compiler/context.h>
+#include <hilti/compiler/driver-stage.h>
 #include <hilti/compiler/unit.h>
 
 namespace hilti {
@@ -84,6 +85,9 @@ struct Options {
  */
 class Driver {
 public:
+    using enum driver::Stage;
+    using Stage = driver::Stage;
+
     /**
      * @param name descriptive name for the tool using the driver, which will
      * be used in usage and error messages.
@@ -292,11 +296,13 @@ protected:
     void usage();
 
     /**
-     * Compiles all registered input files to HILTI code.
+     * Processes all registered input files through the compilation pipeline
+     * up to the given target stage.
      *
-     * @return set if successful; otherwise the result provides an error  message
+     * @param target pipeline stage to reach; defaults to full compilation
+     * @return set if successful; otherwise the result provides an error message
      */
-    Result<Nothing> compileUnits();
+    Result<Nothing> compileUnits(Stage target = Stage::COMPILED);
 
     /**
      * Compiles all registered input files to C++ code.
@@ -476,9 +482,7 @@ protected:
     virtual void hookFinishRuntime() {}
 
 private:
-    // Tracking the state of the compilation pipeline to catch out of order
-    // operation.
-    enum Stage { UNINITIALIZED, INITIALIZED, COMPILED, CODEGENED, LINKED, JITTED } _stage = UNINITIALIZED;
+    Stage _stage = Stage::UNINITIALIZED;
 
     // Backend for adding a new unit.
     void _addUnit(const std::shared_ptr<Unit>& unit);

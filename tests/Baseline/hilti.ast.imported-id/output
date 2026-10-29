@@ -377,8 +377,8 @@
 [debug/compiler]   processing ASTs, round 3
 [debug/compiler]     [HILTI] building scopes
 [debug/compiler]     [HILTI] resolving AST
-[debug/compiler]     computing AST dependencies
 [debug/compiler] [HILTI] validating (post)
+[debug/compiler]   computing AST dependencies
 [debug/compiler] performing global transformations
 [debug/compiler] [HILTI] validating (post)
 [debug/compiler] finalized AST
