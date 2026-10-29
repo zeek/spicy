@@ -503,6 +503,7 @@ inline uint8_t atoi_n(std::string_view input, uint8_t base, Result* result)
     // integer when iterating digits. We pick `uint64_t` since it is large
     // enough to handle any type we need to handle.
     static_assert(max_value <= std::numeric_limits<uint64_t>::max());
+    const auto digits = it;
     uint64_t n = 0;
     for ( ; it != input.end(); ++it ) {
         auto c = *it;
@@ -524,7 +525,8 @@ inline uint8_t atoi_n(std::string_view input, uint8_t base, Result* result)
         n = (n * base) + d;
     }
 
-    if ( it == input.begin() )
+    // A sign without any following digits is not a number.
+    if ( it == digits )
         return 0;
 
     auto s = std::distance(input.begin(), it);
