@@ -1,0 +1,18 @@
+# @TEST-DOC: Validates that we correctly model expressions with a RHS with conditional side effects. Regression test for #2129.
+# @TEST-EXEC: hiltic %INPUT -dj >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+import hilti;
+
+function string f(int<64> i) {
+    local x = "bad";
+    local x2 = (i == 10) || ((x = "good") == "good");
+    return x;
+}
+
+hilti::print(f(10));
+hilti::print(f(11));
+
+}

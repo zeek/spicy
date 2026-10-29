@@ -655,10 +655,11 @@ std::string CFG::dot(bool omit_dataflow) const {
             }();
 
             auto gen = [&]() {
-                auto xs = util::toVector(transfer.gen | std::views::transform([&](const auto& kv) {
-                                             const auto& [decl, node] = kv;
-                                             return util::fmt("%s: %s", escape(decl->id()), escape(node->print()));
-                                         }));
+                auto xs =
+                    util::toVector(transfer.gen | std::views::transform([&](const auto& kv) {
+                                       const auto& [decl, entry] = kv;
+                                       return util::fmt("%s: %s", escape(decl->id()), escape(entry.node->print()));
+                                   }));
                 std::ranges::sort(xs);
                 if ( ! xs.empty() )
                     return util::fmt("gen: [%s]", util::join(xs, ", "));
@@ -757,6 +758,29 @@ std::string CFG::dot(bool omit_dataflow) const {
 }
 
 namespace {
+
+// Returns true if `inner` is inside the conditionally-executed RHS (`op1`) of a
+// `LogicalOr` or `LogicalAnd` ancestor up to (but not including) `root`.
+bool isInShortCircuit(const Node* inner, const Node* root) {
+    const Node* n = inner;
+    while ( n && n != root ) {
+        const Node* parent = n->parent();
+        if ( ! parent )
+            break;
+
+        if ( const auto* lor = parent->tryAs<expression::LogicalOr>() ) {
+            if ( n == lor->op1() )
+                return true;
+        }
+        else if ( const auto* land = parent->tryAs<expression::LogicalAnd>() ) {
+            if ( n == land->op1() )
+                return true;
+        }
+        n = parent;
+    }
+    return false;
+}
+
 struct DataflowVisitor : visitor::PreOrder {
     DataflowVisitor(GraphNode root_) : root(root_) {}
 
@@ -793,7 +817,7 @@ struct DataflowVisitor : visitor::PreOrder {
                     if ( ! decl )
                         break;
 
-                    transfer.gen[decl] = root;
+                    transfer.gen[decl] = {.node = root};
                     break;
                 };
             }
@@ -856,7 +880,7 @@ struct DataflowVisitor : visitor::PreOrder {
                         transfer.write.insert(decl);
 
                         // A LHS use generates a new value.
-                        transfer.gen[decl] = root;
+                        transfer.gen[decl] = {.node = root, .is_conditional = isInShortCircuit(assign_, root.get())};
 
                         // If the assignment is to a member, mark the whole
                         // struct as read to encode that we still depend on the
@@ -998,12 +1022,12 @@ struct DataflowVisitor : visitor::PreOrder {
         }
     }
 
-    void operator()(statement::Declaration* x) override { transfer.gen[x->declaration()] = root; }
+    void operator()(statement::Declaration* x) override { transfer.gen[x->declaration()] = {.node = root}; }
 
-    void operator()(declaration::GlobalVariable* x) override { transfer.gen[x] = root; }
+    void operator()(declaration::GlobalVariable* x) override { transfer.gen[x] = {.node = root}; }
 
     void operator()(declaration::LocalVariable* x) override {
-        transfer.gen[x] = root;
+        transfer.gen[x] = {.node = root};
 
         // Keep locals of struct types with finalizer since it might have side effects.
         //
@@ -1144,9 +1168,12 @@ void CFG::_populateDataflow() {
 
             // Populate the kill set.
 
-            // If we generate an update to a decl, all previous decls get killed and do not
-            // propagate.
+            // If we generate an update to a decl, all previous decls which
+            // were not conditional get killed and do not propagate.
             for ( auto& [decl, g] : transfer.gen ) {
+                if ( g.is_conditional )
+                    continue;
+
                 if ( auto it = transfer.in.find(decl); it != transfer.in.end() ) {
                     const auto& [_, prev] = *it;
 
@@ -1179,7 +1206,7 @@ void CFG::_populateDataflow() {
             std::map<Declaration*, std::set<GraphNode>> new_out;
 
             for ( const auto& [decl, g] : transfer.gen )
-                new_out[decl].insert(g);
+                new_out[decl].insert(g.node);
 
             for ( const auto& [decl, stmt] : transfer.in ) {
                 // Add the incoming statements to the out set.

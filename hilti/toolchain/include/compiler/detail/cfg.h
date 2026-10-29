@@ -148,13 +148,20 @@ struct Transfer {
     /** Set of declarations this node may alias. */
     std::set<Declaration*> maybe_alias;
 
+    /** Entry in the `gen` map. */
+    struct GenDef {
+        GraphNode node;
+        /** True if the assignment may not execute. */
+        bool is_conditional = false;
+    };
+
     /**
      * Declarations this graph node generates updates for.
      *
      * For each updated declaration we return the graph node were this value
-     * was last updated.
+     * was last updated, along with whether the assignment is conditional.
      */
-    std::map<Declaration*, GraphNode> gen;
+    std::map<Declaration*, GenDef> gen;
 
     /** Set of declaration this node reads. */
     std::set<Declaration*> read;
