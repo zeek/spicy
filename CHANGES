@@ -1,3 +1,12 @@
+1.18.0-dev.58 | 2026-10-29 14:02:26 -0400
+
+  * Exclude .md from the license header check (Evan Typanski, Corelight)
+
+  * Add AI policy and `CONTRIBUTING.md` (Evan Typanski, Corelight)
+
+    AI policy is copy-pasted from Zeek. CONTRIBUTING.md is mostly
+    copy-pasted, but with a section on the AI policy.
+
 1.18.0-dev.55 | 2026-10-28 17:01:52 -0400
 
   * Honor big-endian BOM when decoding UTF-16 bytes (suraiya sulthana)
