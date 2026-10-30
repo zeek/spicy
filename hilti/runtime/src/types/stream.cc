@@ -367,26 +367,30 @@ Tuple<bool, UnsafeConstIterator> View::_findBackward(const Bytes& needle, Unsafe
     if ( ! i )
         i = unsafeEnd();
 
-    // If "i" is pointing beyond the currently available bytes, we abort because
-    // we'll have a gap that we don't want to search across. (Note that size()
-    // does the right thing here by returning the number of *available* bytes.)
+    // Reject iterators past delivered data.
     if ( i.offset() > offset() + size() )
         throw InvalidIterator("iterator pointing beyond available data");
 
     if ( i.offset() < offset() )
         throw InvalidIterator("iterator preceding available data");
 
-    // If we don't have enough bytes available to fit the pattern in, we
-    // can stop right away.
-    if ( needle.size() > (i.offset() - offset()) )
+    // Normalize i to a dereferenceable position (closed upper bound).
+    if ( i == unsafeEnd() ) {
+        if ( size() == 0 )
+            return tuple::make(false, UnsafeConstIterator());
+
+        --i;
+    }
+
+    auto avail = i.offset() - offset() + 1;
+
+    if ( needle.size() > avail )
         return tuple::make(false, UnsafeConstIterator());
 
-    i -= (needle.size() - 1).Ref(); // this is safe now, get us 1st position where initial character may match
+    i -= (needle.size() - 1).Ref();
 
     auto first = *needle.unsafeBegin();
 
-    // The following is not the most efficient way to search backwards, but
-    // it'll do for now.
     for ( auto j = i; true; --j ) {
         if ( *j == first ) {
             auto x = j;

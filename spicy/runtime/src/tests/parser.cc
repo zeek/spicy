@@ -515,7 +515,7 @@ TEST_CASE("unitFind") {
     CHECK_EQ(*detail::unitFind(begin, end, s.at(4), "789"_b, hilti::rt::stream::Direction::Forward), s.at(7));
     CHECK_EQ(*detail::unitFind(begin, end, s.at(4), "123"_b, hilti::rt::stream::Direction::Backward), s.at(1));
     CHECK_EQ(*detail::unitFind(begin, end, {}, "1"_b, hilti::rt::stream::Direction::Forward), s.at(1));
-    CHECK_EQ(*detail::unitFind(begin, end, {}, "1"_b, hilti::rt::stream::Direction::Backward), s.at(11));
+    CHECK_EQ(*detail::unitFind(begin, end, {}, "1"_b, hilti::rt::stream::Direction::Backward), s.at(1));
     CHECK(! detail::unitFind(begin, end, s.at(4), "XYZ"_b, hilti::rt::stream::Direction::Backward));
 }
 

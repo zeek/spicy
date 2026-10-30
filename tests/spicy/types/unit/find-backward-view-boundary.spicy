@@ -1,0 +1,16 @@
+# @TEST-DOC: Backward search must not match past the view boundary.
+# @TEST-EXEC: printf '0123456789' | spicy-driver -d %INPUT
+
+module foo;
+
+import spicy;
+
+public type X = unit {
+    a: bytes &size=3;
+
+    on %done {
+        # Since we have `&size=3` our data view is `[0,3)` containing `012`, so
+        # `23` should not match because `3` at offset 3 is outside the view.
+        assert !self.find(b"23", spicy::Direction::Backward);
+    }
+};
