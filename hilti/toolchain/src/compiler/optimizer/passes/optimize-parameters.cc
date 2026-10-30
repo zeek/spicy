@@ -1,6 +1,8 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <hilti/ast/builder/builder.h>
+#include <hilti/ast/expressions/assign.h>
+#include <hilti/ast/visitor.h>
 #include <hilti/base/logger.h>
 #include <hilti/compiler/detail/optimizer/collector-callers.h>
 #include <hilti/compiler/detail/optimizer/optimizer.h>
@@ -28,15 +30,7 @@ struct CollectorParameters : public optimizer::visitor::Collector {
     // Parameters of kind `copy`/`inout` that are promotable to `in`.
     std::set<declaration::Parameter*> promotable_params;
 
-    /**
-     * Determines if the uses of this operator contain any side effects.
-     * Currently, this means a function call that contains another function
-     * call as an argument.
-     *
-     * TODO: Eventually we should be able to just call
-     * cfgCache()->mayHaveSideEffects() on the operator itself, but that
-     * currently doesn't provide the resolution we need.
-     */
+    /** Determines if any call site passes an argument with side effects. */
     bool usesContainSideEffects(const Operator* op) {
         const auto* uses_of_op = collector_callers->uses(op);
         if ( ! uses_of_op )
@@ -59,8 +53,11 @@ struct CollectorParameters : public optimizer::visitor::Collector {
                 continue;
 
             for ( const auto* arg : tup->value() ) {
-                if ( arg->isA<operator_::function::Call>() )
-                    return true;
+                auto nodes = hilti::visitor::range(hilti::visitor::PreOrder(), const_cast<Expression*>(arg));
+                for ( const auto* n : nodes ) {
+                    if ( n->isA<expression::Assign>() || n->isA<operator_::function::Call>() )
+                        return true;
+                }
             }
         }
 
