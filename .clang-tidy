@@ -75,6 +75,7 @@ Checks: '
   -readability-implicit-bool-conversion,
   -readability-use-concise-preprocessor-directives,
   -readability-inconsistent-ifelse-braces,
+  -readability-trailing-comma
   '
 
 HeaderFilterRegex: '(hilti|spicy)/[a-zA-Z-]+/include/([a-zA-Z-]+/)*[a-zA-Z-]+\.h'
