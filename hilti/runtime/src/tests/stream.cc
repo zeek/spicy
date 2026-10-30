@@ -954,6 +954,19 @@ TEST_CASE("View") {
         CHECK_EQ(ncur.data().str(), "BC");
     }
 
+    SUBCASE("advanceToNextData after trimming all input") {
+        auto stream = Stream("ABC"_b);
+        auto view = stream.view();
+        stream.trim(stream.end());
+
+        auto ncur = view.advanceToNextData();
+        CHECK_EQ(ncur.offset(), 3U);
+        CHECK_EQ(ncur.size(), 0U);
+
+        stream.append("D");
+        CHECK_EQ(ncur.data(), "D"_b);
+    }
+
     SUBCASE("dataForPrint") {
         auto s = make_stream({"AAA", "BBB", "CCC"});
         REQUIRE_EQ(s.numberOfChunks(), 3);
@@ -1459,7 +1472,17 @@ TEST_CASE("View") {
             CHECK_EQ(tuple::get<0>(x), true);
             CHECK_EQ(tuple::get<1>(x), v.at(1));
 
-            x = v.find("12345"_b, v.at(5), hilti::rt::stream::Direction::Backward); // too long
+            x = v.find("12345"_b, v.at(5), hilti::rt::stream::Direction::Backward);
+            CHECK_EQ(tuple::get<0>(x), true);
+            CHECK_EQ(tuple::get<1>(x), v.at(1));
+
+            x = v.find("123456"_b, v.at(5), hilti::rt::stream::Direction::Backward); // too long
+            CHECK_EQ(tuple::get<0>(x), false);
+
+            // A needle whose prefix matches the view's trailing bytes must not
+            // be matched using data past the view's end. Here "90" does not
+            // occur inside the view; the '0' following it lies outside.
+            x = v.find("90"_b, hilti::rt::stream::Direction::Backward);
             CHECK_EQ(tuple::get<0>(x), false);
 
             x = v.find("789"_b, hilti::rt::stream::Direction::Backward);
@@ -1468,6 +1491,20 @@ TEST_CASE("View") {
 
             CHECK_THROWS_AS(v.find("789"_b, v.end() + 1, hilti::rt::stream::Direction::Backward), InvalidIterator);
             CHECK_THROWS_AS(v.find("789"_b, v.end() + 100, hilti::rt::stream::Direction::Backward), InvalidIterator);
+
+            // A needle whose prefix matches the final bytes of a view ending at
+            // the stream's end must not read past that end.
+            {
+                Stream s("ABCDE"_b);
+                auto v = s.view();
+                CHECK_EQ(tuple::get<0>(v.find("DEX"_b, hilti::rt::stream::Direction::Backward)), false);
+                CHECK_EQ(tuple::get<0>(v.find("X"_b, hilti::rt::stream::Direction::Backward)), false);
+            }
+
+            {
+                Stream s;
+                CHECK_EQ(tuple::get<0>(s.view().find("A"_b, hilti::rt::stream::Direction::Backward)), false);
+            }
         }
 
         SUBCASE("bytes - expanding view") {

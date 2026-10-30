@@ -57,7 +57,7 @@ have_errors=0
 
 cd "${basedir}" || exit 1
 
-for file in hilti/include/hilti/ast/nodes.decl hilti/src/compiler/visitors/printer.cc hilti/src/compiler/visitors/validator.cc; do
+for file in hilti/src/compiler/visitors/printer.cc hilti/src/compiler/visitors/validator.cc; do
     for x in isCtor:ctor isDeclaration:declaration isExpression:expression isStatement:statement TypeBase:type; do
         base=$(echo ${x} | cut -d : -f 1)
         ns=$(echo ${x} | cut -d : -f 2)
@@ -69,12 +69,10 @@ for n in $(getOperators hilti/include/ast/operators); do
     find_visitor "${n}" hilti/src/compiler/codegen/operators.cc
 done
 
-for file in spicy/include/spicy/ast/nodes.decl spicy/src/compiler/visitors/validator.cc; do
-    for x in isCtor:ctor isDeclaration:declaration isExpression:expression isStatement:statement TypeBase:type; do
-        base=$(echo ${x} | cut -d : -f 1)
-        ns=$(echo ${x} | cut -d : -f 2)
-        checkNodes spicy/include ${base} ${ns} ${file}
-    done
+for x in isCtor:ctor isDeclaration:declaration isExpression:expression isStatement:statement TypeBase:type; do
+    base=$(echo ${x} | cut -d : -f 1)
+    ns=$(echo ${x} | cut -d : -f 2)
+    checkNodes spicy/include ${base} ${ns} spicy/src/compiler/visitors/validator.cc
 done
 
 test "${have_errors}" = 0

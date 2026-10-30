@@ -1,3 +1,94 @@
+1.18.0-dev.61 | 2026-10-30 17:57:09 +0100
+
+  * Update visitor validation script for removed `nodes.decl` (Benjamin Bannier, Corelight)
+
+    That file went away with 28437292f, but we never adjusted the test
+    script.
+
+  * Fix backward stream search reading past the view boundary (Benjamin Bannier, Corelight)
+
+    `_findBackward()` did not account for `unsafeEnd()` being an exclusive,
+    non-dereferenceable position. When the search started from the end of
+    the view, candidates could extend past it, and on a view ending at the
+    stream's end this crashed due to a nullptr dereference, and on a sub-view it
+    silently matched bytes outside the view.
+
+    We step back from `unsafeEnd()` to the last valid byte before computing
+    candidate positions. This bounds all candidates to `[begin, end)` and
+    makes the inner loop's forward walk unable to reach `unsafeEnd()`.
+
+1.18.0-dev.58 | 2026-10-29 14:02:26 -0400
+
+  * Exclude .md from the license header check (Evan Typanski, Corelight)
+
+  * Add AI policy and `CONTRIBUTING.md` (Evan Typanski, Corelight)
+
+    AI policy is copy-pasted from Zeek. CONTRIBUTING.md is mostly
+    copy-pasted, but with a section on the AI policy.
+
+1.18.0-dev.55 | 2026-10-28 17:01:52 -0400
+
+  * Honor big-endian BOM when decoding UTF-16 bytes (suraiya sulthana)
+
+    `Bytes::decode` lets a leading BOM override the byte order of the
+    requested charset, but a BOM only selected `U16Iterator::Detected`,
+    which read code units in host order. A big-endian BOM (`FE FF`) was
+    therefore decoded as little-endian on little-endian hosts. Pick the
+    byte order from the BOM explicitly.
+
+1.18.0-dev.53 | 2026-10-28 17:01:12 -0400
+
+  * Fix sink reassembly of writes overlapping delivered data (suraiya sulthana)
+
+    A write that started before already-delivered data but also carried
+    new bytes could lose data in `Sink::_newData()`:
+
+    - The fast path delivered without advancing `_trim_rseq`, so a later
+      partially-old write was buffered at its original position, never
+      matched `_last_reassem_rseq` in `_tryDeliver()`, and was trimmed
+      without being delivered or reported.
+    - When the old prefix was cut off, the new chunk was still created
+      with `rseq + len` as upper bound. Its end then overshot the data by
+      the trimmed amount, and the next in-sequence write was dropped as
+      old data.
+
+1.18.0-dev.51 | 2026-10-28 09:54:56 -0400
+
+  * GH-2536: Fix synchronization after fully trimmed input (Evan Typanski, Corelight)
+
+    Fixes #2536
+
+    A nested parser can trim all available input, then fail. If the outer
+    parser then attempts to synchronize, where the view starts before that
+    retained range, advancing the cursor will advance from the *original*,
+    not the new one. This means synchronization won't see the new data and
+    cause an invalid iterator.
+
+    Instead, just use the previously computed iterator for that case.
+
+1.18.0-dev.49 | 2026-10-28 06:45:27 -0400
+
+  * GH-2526: Fix `!info` counting as `!in` operator (Evan Typanski, Corelight)
+
+    Fixes #2526
+
+    This is because of a special-case in the scanner for `!in`, which is
+    kind of why this sort of special-casing operator is a bit iffy. Can't
+    change that now, so this fixes it with lookahead tokens.
+
+    I didn't know if flex supported lookahead tokens in the scanner tbh, so
+    I asked GPT-6.1 sol and it gave me the syntax.
+
+1.18.0-dev.47 | 2026-10-26 17:23:55 -0400
+
+  * Fix sink reassembly of gaps overlapping buffered data (suraiya sulthana)
+
+    Sink::_addAndCheck() only split off the non-overlapping parts of a new
+    chunk when it carried data. For a gap starting before a buffered chunk
+    it returned an uninitialized iterator that _newData() then dereferenced,
+    and for a gap extending past a buffered chunk it dropped the remainder,
+    so no gap was reported. Handle gaps the same way as data.
+
 1.18.0-dev.45 | 2026-10-26 14:31:47 +0100
 
   * Fix installation of pre-commit in container images (Benjamin Bannier, Corelight)

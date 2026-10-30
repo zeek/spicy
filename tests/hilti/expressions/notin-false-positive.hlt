@@ -1,0 +1,18 @@
+# @TEST-DOC: Test only !in becomes the operator, so you can use !in0 or something
+# @TEST-EXEC: ${HILTIC} -j %INPUT >output
+# @TEST-EXEC: btest-diff output
+
+module Test {
+
+import hilti;
+
+global bool info = False;
+global bool inf = False;
+global bool infinity = False;
+global bool in_foo = False;
+global bool i = False;
+
+if (!info && !inf && !infinity && !in_foo && !i)
+    hilti::print("Success!");
+
+}
