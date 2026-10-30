@@ -40,7 +40,9 @@ inline constexpr DiagnosticDefinition NormalFunctionInvalidParameter{
     .id = "PIR_NORMAL_FUNCTION_INVALID_PARAMETER",
     .classification = DiagnosticClassification::Internal,
     .severity = DiagnosticSeverity::Error,
-    .message = "parameter %zu of an ordinary function must be a valid, non-void, copyable or place type",
+    .message =
+        "parameter %zu of an ordinary function must have a valid type for its mode: a taken value is not a place, "
+        "and a borrow is a place or an affine value",
 };
 
 inline constexpr DiagnosticDefinition CallTargetNotNormal{
@@ -148,20 +150,6 @@ inline constexpr DiagnosticDefinition AddOperandTypeMismatch{
     .message = "core.add operands and result must have one 64-bit integer type",
 };
 
-inline constexpr DiagnosticDefinition InvokeHookInvalidPayload{
-    .id = "PIR_INVOKE_HOOK_INVALID_PAYLOAD",
-    .classification = DiagnosticClassification::Internal,
-    .severity = DiagnosticSeverity::Error,
-    .message = "unit.invoke_hook's payload does not reference a valid hook function",
-};
-
-inline constexpr DiagnosticDefinition InvokeHookOperandMismatch{
-    .id = "PIR_INVOKE_HOOK_OPERAND_MISMATCH",
-    .classification = DiagnosticClassification::Internal,
-    .severity = DiagnosticSeverity::Error,
-    .message = "unit.invoke_hook must pass exactly the unit its hook takes, and produce no value",
-};
-
 inline constexpr DiagnosticDefinition GlobalPlaceResultTypeMismatch{
     .id = "PIR_GLOBAL_PLACE_RESULT_TYPE_MISMATCH",
     .classification = DiagnosticClassification::Internal,
@@ -174,6 +162,36 @@ inline constexpr DiagnosticDefinition StoreValueTypeMismatch{
     .classification = DiagnosticClassification::Internal,
     .severity = DiagnosticSeverity::Error,
     .message = "core.store value must be the element type of its place",
+};
+
+// --- Borrowed parameters --------------------------------------------------------------------------
+
+inline constexpr DiagnosticDefinition BorrowedValueConsumed{
+    .id = "PIR_BORROWED_VALUE_CONSUMED",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "operand %zu consumes a value that was only borrowed; its owner is the caller",
+};
+
+inline constexpr DiagnosticDefinition BorrowEscapes{
+    .id = "PIR_BORROW_ESCAPES",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "a borrowed value cannot be returned, because the borrow ends with the call",
+};
+
+inline constexpr DiagnosticDefinition BorrowWriteDenied{
+    .id = "PIR_BORROW_WRITE_DENIED",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "operand %zu requires write access, but it derives from a read-only borrow",
+};
+
+inline constexpr DiagnosticDefinition UseAfterConsume{
+    .id = "PIR_USE_AFTER_CONSUME",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "operand %zu uses an affine value after an operation consumed it",
 };
 
 } // namespace spicy::detail::pir::ir::diag

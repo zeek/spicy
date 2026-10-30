@@ -57,17 +57,47 @@ struct Region {
 };
 
 /**
- * `Normal` functions are ordinary procedures. `Parser` functions are parser states that consume input. `Hook`
- * functions are procedures that take the unit being parsed, which they observe and do not consume.
+ * `Normal` functions are ordinary procedures. `Parser` functions are parser states that consume input.
  */
-enum class FunctionKind { Normal, Parser, Hook };
+enum class FunctionKind { Normal, Parser };
+
+/** How a procedure receives an argument. */
+enum class ParameterMode {
+    /**
+     * An independent value. A copyable value is copied; an affine value (a unit, vector, or set) is transferred, so the
+     * caller cannot use it afterward.
+     */
+    Take,
+    /**
+     * Nonescaping read access to the caller's value for the duration of the call. The callee can neither consume the
+     * value nor write through it, and the caller keeps ownership.
+     */
+    Borrow,
+    /** As `Borrow`, and the callee may also write through the value. */
+    BorrowMut,
+};
+
+/**
+ * A formal parameter of a procedure. A borrowed parameter's `type` is the type of the access it receives: the affine
+ * value itself, such as a unit, whose identity the borrow preserves, or the `place<T>` of copyable storage, which
+ * the callee reads and writes in the caller's storage. A `Take` parameter is never a place, so a place never means an
+ * owned value, and `Borrow` and `BorrowMut` parameters do not accept independent copyable values.
+ */
+struct Parameter {
+    TypeId type;
+    ParameterMode mode = ParameterMode::Take;
+
+    Parameter(TypeId t = {}, ParameterMode m = ParameterMode::Take) : type(t), mode(m) {}
+
+    friend constexpr bool operator==(const Parameter&, const Parameter&) = default;
+};
 
 struct Function {
     std::string name;
     TypeId result_type;
     RegionId root_region;
     FunctionKind kind = FunctionKind::Normal;
-    std::vector<TypeId> parameters;
+    std::vector<Parameter> parameters;
     TypeDeclId parser_unit; /**< set only for `FunctionKind::Parser` */
     /** Invalid means absent. */
     SourceSpanId span;
@@ -175,5 +205,15 @@ private:
 
     SourceManager _sources;
 };
+
+/** The affine discipline of an instantiated type: a tuple inherits it from any element that has it. */
+ValueDiscipline typeDiscipline(const Package& package, TypeId id);
+
+/**
+ * How `inst` treats its operand `index`. The role of a call's operand follows the callee's parameter: a taken affine
+ * value is consumed, and a borrowed or copied one is not. Every other opcode has the role its schema gives. Callers
+ * that check ownership use this one query so that they agree.
+ */
+OperandRole operandRole(const Package& package, const Inst& inst, size_t index);
 
 } // namespace spicy::detail::pir::ir

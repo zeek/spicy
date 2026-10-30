@@ -1,0 +1,17 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir 2>&1 >/dev/null | rg "attached PIR-produced" >route
+# @TEST-EXEC: btest-diff route
+
+# @TEST-DOC: Control for the incomplete-unit fallback: a bound that reads an already published field directly stays on
+# the PIR route.
+
+module Test;
+
+type Item = unit {
+    value: uint64;
+};
+
+public type Message = unit {
+    length: uint64;
+    items: Item[] &size=self.length;
+    later: uint64;
+};

@@ -80,13 +80,11 @@ public:
     void addCxxInclude(std::string header);
 
     FunctionId createFunction(std::string name, TypeId result_type, SourceSpanId span = {});
-    /** Creates an ordinary function whose parameters are `parameters`, in order. */
+    /** Creates an ordinary function whose parameters are `parameters`, in order. A bare type is a taken value. */
     FunctionId createFunction(std::string name,
-                              std::vector<TypeId> parameters,
+                              std::vector<Parameter> parameters,
                               TypeId result_type,
                               SourceSpanId span = {});
-    /** Creates a `FunctionKind::Hook` procedure that observes `unit`, a unit value, and returns nothing. */
-    FunctionId createHookFunction(std::string name, TypeId unit, SourceSpanId span = {});
     /** Creates a `FunctionKind::Parser` function whose one parameter is `state_type`. */
     FunctionId createParserFunction(TypeDeclId unit, TypeId state_type, TypeId unit_type, SourceSpanId span = {});
     RegionId createRegion();
@@ -144,8 +142,6 @@ public:
     InstId addReadBytes(BlockId block, InstId state, uint64_t length, SourceSpanId span = {});
     /** Adds `opaque.op` calling `function` with `args`; its result type is the declaration's. */
     InstId addOpaqueOp(BlockId block, ForeignFunctionId function, std::vector<InstId> args, SourceSpanId span = {});
-    /** Adds `unit.invoke_hook` running `hook` on `unit_value`, which the hook borrows. */
-    InstId addInvokeHook(BlockId block, InstId unit_value, FunctionId hook, SourceSpanId span = {});
     /** Adds `core.call` calling `function` with `args`; its result type is the function's. */
     InstId addCall(BlockId block, FunctionId function, std::vector<InstId> args, SourceSpanId span = {});
     /** Adds `core.tuple` of `elements`, in order. */

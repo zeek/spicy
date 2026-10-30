@@ -212,6 +212,7 @@ add_executable(
     spicy-toolchain-tests EXCLUDE_FROM_ALL
     tests/main.cc
     tests/grammar.cc
+    tests/pir/borrow.cc
     tests/pir/diagnostic.cc
     tests/pir/ir-core.cc
     tests/pir/opcode.cc

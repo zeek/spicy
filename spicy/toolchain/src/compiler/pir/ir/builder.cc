@@ -196,19 +196,8 @@ FunctionId Builder::createFunction(std::string name, TypeId result_type, SourceS
     return createFunction(std::move(name), {}, result_type, span);
 }
 
-FunctionId Builder::createHookFunction(std::string name, TypeId unit, SourceSpanId span) {
-    return _package._functions.add(Function{
-        .name = std::move(name),
-        .result_type = _package._void_type,
-        .root_region = createRegion(),
-        .kind = FunctionKind::Hook,
-        .parameters = {unit},
-        .span = span,
-    });
-}
-
 FunctionId Builder::createFunction(std::string name,
-                                   std::vector<TypeId> parameters,
+                                   std::vector<Parameter> parameters,
                                    TypeId result_type,
                                    SourceSpanId span) {
     auto root_region = createRegion();
@@ -300,7 +289,7 @@ InstId Builder::addArgument(FunctionId function, BlockId block, uint32_t index, 
     if ( _package.isValid(function) ) {
         const auto& fn = _package._functions.get(function);
         if ( index < fn.parameters.size() )
-            result_type = fn.parameters[index];
+            result_type = fn.parameters[index].type;
     }
 
     return addInst(block, Opcode::Argument, {}, result_type, InstPayload(ArgumentPayload{index}), span);
@@ -484,15 +473,6 @@ InstId Builder::addForeignConstant(BlockId block, TypeId type, std::string spell
 
 InstId Builder::addPortConstant(BlockId block, TypeId type, PortLiteral value, SourceSpanId span) {
     return addInst(block, Opcode::PortConstant, {}, type, InstPayload(value), span);
-}
-
-InstId Builder::addInvokeHook(BlockId block, InstId unit_value, FunctionId hook, SourceSpanId span) {
-    return addInst(block,
-                   Opcode::InvokeHook,
-                   {unit_value},
-                   _package._void_type,
-                   InstPayload(FunctionPayload{hook}),
-                   span);
 }
 
 InstId Builder::addLoad(BlockId block, InstId place, SourceSpanId span) {

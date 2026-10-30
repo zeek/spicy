@@ -1,0 +1,19 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: A helper that borrows `self` while the unit is still being parsed could read a field that is not yet
+# published, which legacy execution finds unset. The compilation falls back instead.
+
+module Test;
+
+type Item = unit {
+    value: uint64;
+};
+
+public type Message = unit {
+    length: uint64;
+    items: Item[] &size=bound(self);
+    later: uint64;
+};
+
+function bound(m: Message): uint64 { return m.later; }

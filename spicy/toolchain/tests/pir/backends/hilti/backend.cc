@@ -132,6 +132,61 @@ TEST_CASE("an unsupported package lowers to Unsupported and constructs nothing")
     CHECK_FALSE(std::get<Unsupported>(result).features.empty());
 }
 
+TEST_CASE("a borrowed unit keeps its access in the helper's parameter") {
+    auto build = [](ParameterMode mode, bool writes) {
+        Package package;
+        auto builder = package.builder();
+        auto unit = builder.createUnitDecl("Cell");
+        auto field = builder.createFieldDecl(unit, "value", builder.uint8Type());
+        auto unit_type = builder.unitType(unit);
+        auto helper = builder.createFunction("helper", {Parameter(unit_type, mode)}, builder.voidType());
+        auto helper_block = builder.createBlock(package.function(helper).root_region);
+        auto place = builder.addFieldPlace(helper_block, builder.addArgument(helper, helper_block, 0), field);
+        if ( writes )
+            builder.addStore(helper_block, place, builder.addLoad(helper_block, place));
+        else
+            builder.addLoad(helper_block, place);
+        builder.addReturnVoid(helper_block);
+
+        auto parser = builder.createParserFunction(unit, builder.parserStateType(), unit_type);
+        auto block = builder.createBlock(package.function(parser).root_region);
+        auto state0 = builder.addArgument(parser, block, 0);
+        auto read = builder.addReadInteger(block,
+                                           state0,
+                                           ReadIntegerPayload{.width = 8,
+                                                              .signedness = Signedness::Unsigned,
+                                                              .byte_order = ByteOrder::Network});
+        auto state1 = builder.addTupleGet(block, read, 0);
+        auto unit1 = builder.addPublishField(block,
+                                             builder.addUnitCreate(block, unit),
+                                             builder.addTupleGet(block, read, 1),
+                                             field);
+        builder.addCall(block, helper, {unit1});
+        builder.addParserFinish(block, state1, unit1);
+        builder.addParserRoot(unit, parser);
+        REQUIRE(verify(package).empty());
+
+        ::hilti::init();
+        spicy::init();
+        ::hilti::Options options;
+        auto ctx = std::make_shared<::hilti::Context>(options);
+        ::hilti::Builder hilti_builder(ctx->astContext());
+        auto result = lower(hilti_builder, package);
+        REQUIRE(std::holds_alternative<::hilti::declaration::Module*>(result));
+        return std::get<::hilti::declaration::Module*>(result)->print();
+    };
+
+    // The parameter's mode, not the representation of the caller's unit, decides the access. A root unit is held
+    // through a reference, so the call hands over the object that the reference names.
+    auto reading = build(ParameterMode::Borrow, false);
+    CHECK(reading.find("proc_0(Unit_0 arg_0)") != std::string::npos);
+    CHECK(reading.find("proc_0((*v_") != std::string::npos);
+
+    auto writing = build(ParameterMode::BorrowMut, true);
+    CHECK(writing.find("proc_0(inout Unit_0 arg_0)") != std::string::npos);
+    CHECK(writing.find("proc_0((*v_") != std::string::npos);
+}
+
 TEST_CASE("a bound accessor lowers to the target's scope expression without a declaration") {
     Package package;
     auto pir_builder = package.builder();

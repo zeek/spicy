@@ -14,33 +14,6 @@ namespace spicy::detail::pir::ir {
 
 namespace {
 
-// The affine discipline of an actual instantiated type: a `Tuple` inherits affine discipline from
-// any element that itself has it (e.g. `tuple<parser.state, uint8>`), recursively.
-ValueDiscipline typeDiscipline(const Package& package, TypeId id, std::unordered_set<uint32_t>& visiting) {
-    if ( ! package.isValid(id) )
-        return ValueDiscipline::Copyable;
-
-    if ( ! visiting.insert(id.index).second )
-        return ValueDiscipline::Copyable;
-
-    const auto& type = package.type(id);
-    if ( typeKindDiscipline(type.kind) == ValueDiscipline::Affine )
-        return ValueDiscipline::Affine;
-
-    if ( type.kind == TypeKind::Tuple )
-        for ( auto element : type.type_arguments )
-            if ( typeDiscipline(package, element, visiting) == ValueDiscipline::Affine )
-                return ValueDiscipline::Affine;
-
-    visiting.erase(id.index);
-    return ValueDiscipline::Copyable;
-}
-
-ValueDiscipline typeDiscipline(const Package& package, TypeId id) {
-    std::unordered_set<uint32_t> visiting;
-    return typeDiscipline(package, id, visiting);
-}
-
 // Kinda weird, just makes a unique key for tuple instruction + its index
 // so we can check if this tuple instruction gets consumed multiple
 // times from just a "key."
@@ -167,19 +140,10 @@ public:
         else if ( _package.type(fn.result_type).kind == TypeKind::Place )
             _emitter.emit(diag::PlaceEscapes, id);
 
-        if ( fn.kind == FunctionKind::Hook ) {
-            // A hook takes exactly the unit it observes, and that unit is borrowed rather than consumed.
-            if ( fn.parameters.size() != 1 || ! _package.isValid(fn.parameters[0]) ||
-                 _package.type(fn.parameters[0]).kind != TypeKind::Unit )
-                _emitter.emit(diag::NormalFunctionInvalidParameter, id, 0);
-        }
         if ( fn.kind == FunctionKind::Normal ) {
-            for ( size_t p = 0; p < fn.parameters.size(); ++p ) {
-                auto parameter = fn.parameters[p];
-                if ( ! _package.isValid(parameter) || parameter == _package.voidType() ||
-                     typeDiscipline(_package, parameter) == ValueDiscipline::Affine )
+            for ( size_t p = 0; p < fn.parameters.size(); ++p )
+                if ( ! _isValidParameter(fn.parameters[p]) )
                     _emitter.emit(diag::NormalFunctionInvalidParameter, id, p);
-            }
         }
 
         _verifyFunctionKind(id, fn);
@@ -201,6 +165,27 @@ public:
         if ( ! _cfg.blocks.empty() )
             _verifyBodyAffinity();
         _endBody();
+    }
+
+    // Whether a parameter's type suits its mode. A taken value is copyable, or a unit, vector, or set that the callee
+    // owns. A borrow is the access to storage (a place) or to an affine object that the caller keeps; a parser state is
+    // consumed by parser operations only, so it is never borrowed.
+    bool _isValidParameter(const Parameter& parameter) const {
+        if ( ! _package.isValid(parameter.type) || parameter.type == _package.voidType() )
+            return false;
+
+        const auto kind = _package.type(parameter.type).kind;
+        const bool affine = typeDiscipline(_package, parameter.type) == ValueDiscipline::Affine;
+        switch ( parameter.mode ) {
+            case ParameterMode::Take:
+                return kind != TypeKind::Place &&
+                       (! affine || kind == TypeKind::Unit || kind == TypeKind::Vector || kind == TypeKind::Set);
+            case ParameterMode::Borrow:
+            case ParameterMode::BorrowMut:
+                return kind == TypeKind::Place || (affine && kind != TypeKind::ParserState && kind != TypeKind::Tuple);
+        }
+
+        return false;
     }
 
     void _beginBody(FunctionId id, const Function& fn) {
@@ -309,8 +294,9 @@ private:
 
         if ( fn.parameters.size() != 1 )
             _emitter.emit(diag::ParserFunctionParameterCountMismatch, id, fn.parameters.size());
-        else if ( ! _package.isValid(fn.parameters[0]) ||
-                  _package.type(fn.parameters[0]).kind != TypeKind::ParserState )
+        else if ( ! _package.isValid(fn.parameters[0].type) ||
+                  _package.type(fn.parameters[0].type).kind != TypeKind::ParserState ||
+                  fn.parameters[0].mode != ParameterMode::Take )
             _emitter.emit(diag::ParserFunctionParameterTypeMismatch, id);
 
         if ( _package.isValid(fn.result_type) ) {
@@ -550,12 +536,31 @@ private:
                 continue;
             }
 
-            const auto* schema = schemaFor(inst.opcode);
-            if ( ! schema )
+            if ( ! schemaFor(inst.opcode) )
                 continue;
 
-            for ( size_t a = 0; a < inst.args.size() && ! schema->operand_roles.empty(); ++a ) {
-                if ( schema->operand_roles[std::min(a, schema->operand_roles.size() - 1)] != OperandRole::Consume )
+            // The operands are checked against the consumptions that came before them, so a value that this
+            // instruction consumes is not reported against itself.
+            for ( size_t a = 0; a < inst.args.size(); ++a ) {
+                auto arg = inst.args[a];
+                if ( ! _package.isValid(arg) )
+                    continue;
+
+                if ( typeDiscipline(_package, _package.inst(arg).result_type) != ValueDiscipline::Affine ) {
+                    // A place derived from a unit is an access to that unit.
+                    auto owner = _derivedOwner(arg);
+                    if ( owner.isSet() && consumed_by.contains(owner.index) )
+                        _emitter.emit(diag::UseAfterConsume, inst_id, a);
+                    continue;
+                }
+
+                auto role = operandRole(_package, inst, a);
+                if ( role == OperandRole::Borrow && consumed_by.contains(arg.index) )
+                    _emitter.emit(diag::UseAfterConsume, inst_id, a);
+            }
+
+            for ( size_t a = 0; a < inst.args.size(); ++a ) {
+                if ( operandRole(_package, inst, a) != OperandRole::Consume )
                     continue;
 
                 auto arg = inst.args[a];
@@ -695,6 +700,131 @@ private:
 
         _verifyResultType(inst_id, inst, *schema);
         _verifyOpcodeSpecific(function_id, inst_id, inst);
+        _verifyBorrows(function_id, inst_id, inst);
+    }
+
+    // The unit value that a place was derived from by `unit.field_place`, if `id` is such a place. Using the place is
+    // an access to that unit value, so it ends when that value's ownership transfers. A unit value read out of
+    // storage is its own owner here: consuming it ends the access, whatever storage it came from.
+    InstId _derivedOwner(InstId id) const {
+        if ( ! _package.isValid(id) )
+            return {};
+
+        const auto& inst = _package.inst(id);
+        if ( inst.opcode != Opcode::FieldPlace || inst.args.empty() || ! _package.isValid(inst.args[0]) )
+            return {};
+
+        return inst.args[0];
+    }
+
+    // What a value is allowed to do because of where it comes from. A value derived from a borrowed parameter belongs
+    // to the caller: it cannot be consumed or returned, and it can be written only if the borrow allows writing.
+    struct Origin {
+        bool borrowed = false;
+        bool writable = true;
+    };
+
+    Origin _origin(FunctionId function, InstId id, unsigned depth = 0) const {
+        if ( depth > 64 || ! _package.isValid(id) || ! _package.isValid(function) )
+            return {};
+
+        const auto& inst = _package.inst(id);
+        switch ( inst.opcode ) {
+            case Opcode::Argument: {
+                const auto* payload = std::get_if<ArgumentPayload>(&inst.payload);
+                const auto& parameters = _package.function(function).parameters;
+                if ( ! payload || payload->index >= parameters.size() )
+                    return {};
+
+                switch ( parameters[payload->index].mode ) {
+                    case ParameterMode::Take: return {};
+                    case ParameterMode::Borrow: return {.borrowed = true, .writable = false};
+                    case ParameterMode::BorrowMut: return {.borrowed = true, .writable = true};
+                }
+
+                return {};
+            }
+
+            // A field of a borrowed unit is reached through the same borrow.
+            case Opcode::FieldPlace: return inst.args.empty() ? Origin{} : _origin(function, inst.args[0], depth + 1);
+
+            // Reading a copyable value yields an independent value. An affine value read from a place moves out of it,
+            // which only storage the callee may write allows.
+            case Opcode::Load: {
+                if ( inst.args.empty() || typeDiscipline(_package, inst.result_type) != ValueDiscipline::Affine )
+                    return {};
+
+                auto place = _origin(function, inst.args[0], depth + 1);
+                return place.borrowed && ! place.writable ? place : Origin{};
+            }
+
+            default: return {};
+        }
+    }
+
+    // Ownership and access rules that follow from where operands come from. They hold for any function, whatever it
+    // is called.
+    void _verifyBorrows(FunctionId function, InstId inst_id, const Inst& inst) {
+        auto denies_write = [&](size_t operand) {
+            return operand < inst.args.size() && [&] {
+                auto origin = _origin(function, inst.args[operand]);
+                return origin.borrowed && ! origin.writable;
+            }();
+        };
+
+        for ( size_t a = 0; a < inst.args.size(); ++a ) {
+            if ( ! _package.isValid(inst.args[a]) )
+                continue;
+
+            auto type = _package.inst(inst.args[a]).result_type;
+            if ( operandRole(_package, inst, a) == OperandRole::Consume &&
+                 typeDiscipline(_package, type) == ValueDiscipline::Affine && _origin(function, inst.args[a]).borrowed )
+                _emitter.emit(diag::BorrowedValueConsumed, inst_id, a);
+        }
+
+        switch ( inst.opcode ) {
+            case Opcode::Return:
+                if ( ! inst.args.empty() && _package.isValid(inst.args[0]) &&
+                     _origin(function, inst.args[0]).borrowed &&
+                     typeDiscipline(_package, _package.inst(inst.args[0]).result_type) == ValueDiscipline::Affine )
+                    _emitter.emit(diag::BorrowEscapes, inst_id);
+                return;
+
+            case Opcode::Store:
+                if ( denies_write(0) )
+                    _emitter.emit(diag::BorrowWriteDenied, inst_id, size_t{0});
+                return;
+
+            case Opcode::Call: {
+                const auto* payload = std::get_if<FunctionPayload>(&inst.payload);
+                if ( ! payload || ! _package.isValid(payload->function) )
+                    return;
+
+                const auto& callee = _package.function(payload->function);
+                for ( size_t a = 0; a < inst.args.size() && a < callee.parameters.size(); ++a )
+                    if ( callee.parameters[a].mode == ParameterMode::BorrowMut && denies_write(a) )
+                        _emitter.emit(diag::BorrowWriteDenied, inst_id, a);
+                return;
+            }
+
+            case Opcode::OpaqueOp: {
+                // A native `inout` parameter writes through the place it receives.
+                const auto* payload = std::get_if<ForeignFunctionPayload>(&inst.payload);
+                if ( ! payload || ! _package.isValid(payload->function) )
+                    return;
+
+                const auto& foreign = _package.foreignFunction(payload->function);
+                for ( size_t a = 0; a < inst.args.size() && a < foreign.parameters.size(); ++a ) {
+                    const auto& parameter = foreign.parameters[a];
+                    if ( parameter.argument == ForeignArgument::Value && _package.isValid(parameter.type) &&
+                         _package.type(parameter.type).kind == TypeKind::Place && denies_write(a) )
+                        _emitter.emit(diag::BorrowWriteDenied, inst_id, a);
+                }
+                return;
+            }
+
+            default: return;
+        }
     }
 
     // Result/operand construction that depends on payload content or on
@@ -713,7 +843,7 @@ private:
                     return;
 
                 const auto& fn = _package.function(function_id);
-                if ( payload->index < fn.parameters.size() && inst.result_type != fn.parameters[payload->index] )
+                if ( payload->index < fn.parameters.size() && inst.result_type != fn.parameters[payload->index].type )
                     _emitter.emit(diag::ArgumentResultTypeMismatch, inst_id);
                 return;
             }
@@ -765,7 +895,7 @@ private:
                 else {
                     for ( size_t a = 0; a < inst.args.size(); ++a ) {
                         if ( _package.isValid(inst.args[a]) &&
-                             _package.inst(inst.args[a]).result_type != callee.parameters[a] )
+                             _package.inst(inst.args[a]).result_type != callee.parameters[a].type )
                             _emitter.emit(diag::CallArgumentTypeMismatch, inst_id, a);
                     }
                 }
@@ -895,25 +1025,6 @@ private:
                 if ( ! _package.isValid(inst.result_type) || _package.type(inst.result_type).kind != TypeKind::Place ||
                      _package.type(inst.result_type).type_arguments != std::vector<TypeId>{field.type} )
                     _emitter.emit(diag::FieldPlaceResultTypeMismatch, inst_id);
-                return;
-            }
-
-            case Opcode::InvokeHook: {
-                const auto* payload = std::get_if<FunctionPayload>(&inst.payload);
-                if ( ! payload )
-                    return;
-
-                if ( ! _package.isValid(payload->function) ) {
-                    _emitter.emit(diag::InvokeHookInvalidPayload, inst_id);
-                    return;
-                }
-
-                const auto& hook = _package.function(payload->function);
-                if ( hook.kind != FunctionKind::Hook || hook.parameters.size() != 1 || inst.args.size() != 1 ||
-                     ! _package.isValid(inst.args[0]) ||
-                     _package.inst(inst.args[0]).result_type != hook.parameters[0] ||
-                     hook.result_type != _package.voidType() || inst.result_type != _package.voidType() )
-                    _emitter.emit(diag::InvokeHookOperandMismatch, inst_id);
                 return;
             }
 
@@ -1189,12 +1300,25 @@ private:
         };
         std::unordered_map<uint32_t, std::vector<Consumer>> consumed_values;
         std::unordered_map<uint64_t, std::vector<Consumer>> projected_slots;
+        // The operations that only borrow an affine value, with the operand that does so, and where each is in its
+        // block.
+        struct Borrower {
+            InstId inst;
+            size_t block;
+            size_t position;
+            size_t operand;
+        };
+        std::unordered_map<uint32_t, std::vector<Borrower>> borrowed_values;
+        std::unordered_map<uint32_t, std::pair<size_t, size_t>> positions;
 
         for ( size_t block = 0; block < count; ++block ) {
-            for ( auto inst_id : _package.block(_cfg.blocks[block]).insts ) {
+            const auto& block_insts = _package.block(_cfg.blocks[block]).insts;
+            for ( size_t position = 0; position < block_insts.size(); ++position ) {
+                auto inst_id = block_insts[position];
                 if ( ! _package.isValid(inst_id) )
                     continue;
 
+                positions[inst_id.index] = {block, position};
                 const auto& inst = _package.inst(inst_id);
                 if ( inst.opcode == Opcode::TupleGet ) {
                     const auto* payload = std::get_if<TupleGetPayload>(&inst.payload);
@@ -1207,20 +1331,28 @@ private:
                     continue;
                 }
 
-                const auto* schema = schemaFor(inst.opcode);
-                if ( ! schema || schema->operand_roles.empty() )
+                if ( ! schemaFor(inst.opcode) )
                     continue;
 
                 for ( size_t a = 0; a < inst.args.size(); ++a ) {
-                    if ( schema->operand_roles[std::min(a, schema->operand_roles.size() - 1)] != OperandRole::Consume )
-                        continue;
-
                     auto arg = inst.args[a];
                     if ( ! _package.isValid(arg) )
                         continue;
 
-                    if ( typeDiscipline(_package, _package.inst(arg).result_type) == ValueDiscipline::Affine )
+                    if ( typeDiscipline(_package, _package.inst(arg).result_type) != ValueDiscipline::Affine ) {
+                        // A place derived from a unit is an access to that unit.
+                        if ( auto owner = _derivedOwner(arg); owner.isSet() )
+                            borrowed_values[owner.index].push_back(
+                                {.inst = inst_id, .block = block, .position = position, .operand = a});
+                        continue;
+                    }
+
+                    auto role = operandRole(_package, inst, a);
+                    if ( role == OperandRole::Consume )
                         consumed_values[arg.index].push_back({.inst = inst_id, .block = block});
+                    else if ( role == OperandRole::Borrow )
+                        borrowed_values[arg.index].push_back(
+                            {.inst = inst_id, .block = block, .position = position, .operand = a});
                 }
             }
         }
@@ -1241,6 +1373,25 @@ private:
 
         for ( const auto& [_, consumers] : consumed_values )
             check(consumers);
+
+        // A borrow must not follow a consumption on any path.
+        for ( const auto& [value, consumers] : consumed_values ) {
+            auto borrowers = borrowed_values.find(value);
+            if ( borrowers == borrowed_values.end() )
+                continue;
+
+            for ( const auto& borrower : borrowers->second ) {
+                for ( const auto& consumer : consumers ) {
+                    bool after = consumer.block == borrower.block ?
+                                     positions.at(consumer.inst.index).second < borrower.position :
+                                     reaches[consumer.block][borrower.block];
+                    if ( after ) {
+                        _emitter.emit(diag::UseAfterConsume, borrower.inst, borrower.operand);
+                        break;
+                    }
+                }
+            }
+        }
         for ( const auto& [_, consumers] : projected_slots )
             check(consumers);
     }

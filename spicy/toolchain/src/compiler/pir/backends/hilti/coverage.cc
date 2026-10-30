@@ -103,8 +103,7 @@ void checkRegion(const ir::Package& package,
                     }
                     break;
                 case ir::Opcode::ParseSubunit:
-                case ir::Opcode::ReadBytes:
-                case ir::Opcode::InvokeHook: break;
+                case ir::Opcode::ReadBytes: break;
                 case ir::Opcode::ReadInteger: {
                     const auto* p = std::get_if<ir::ReadIntegerPayload>(&inst.payload);
                     if ( ! p || (p->width != 8 && p->width != 64) || p->signedness != ir::Signedness::Unsigned ||
@@ -174,6 +173,24 @@ bool isProcedureType(const ir::Package& package, ir::TypeId id) {
     return false;
 }
 
+// Whether the HILTI backend can pass a parameter of an ordinary function. A taken value is a copyable value. A
+// borrow is the storage of a supported value or a unit, whose object the callee reaches through a reference.
+bool isProcedureParameter(const ir::Package& package, const ir::Parameter& parameter) {
+    const auto& type = package.type(parameter.type);
+    switch ( parameter.mode ) {
+        case ir::ParameterMode::Take:
+            return ir::typeDiscipline(package, parameter.type) == ir::ValueDiscipline::Copyable &&
+                   isProcedureType(package, parameter.type);
+        case ir::ParameterMode::Borrow:
+        case ir::ParameterMode::BorrowMut:
+            if ( type.kind == ir::TypeKind::Place )
+                return isProcedureType(package, type.type_arguments[0]) &&
+                       ir::typeDiscipline(package, type.type_arguments[0]) == ir::ValueDiscipline::Copyable;
+            return type.kind == ir::TypeKind::Unit;
+    }
+    return false;
+}
+
 // Ordinary functions have no structured regions, so their body is a flat list of procedural operations.
 void checkProcedureRegion(const ir::Package& package, ir::RegionId region, std::vector<UnsupportedFeature>& out) {
     for ( auto block_id : package.region(region).blocks ) {
@@ -215,10 +232,9 @@ void checkProcedureRegion(const ir::Package& package, ir::RegionId region, std::
                 default: unsupported("not a procedural operation the HILTI backend can lower"); break;
             }
 
-            // A hook takes the unit it observes, which ordinary values cannot be.
-            const bool hook_self = inst.opcode == ir::Opcode::Argument && package.isValid(inst.result_type) &&
-                                   package.type(inst.result_type).kind == ir::TypeKind::Unit;
-            if ( package.isValid(inst.result_type) && ! hook_self && ! isProcedureType(package, inst.result_type) )
+            // An argument has the type of its parameter, whose support is checked with the function's signature.
+            if ( inst.opcode != ir::Opcode::Argument && package.isValid(inst.result_type) &&
+                 ! isProcedureType(package, inst.result_type) )
                 unsupported("value type is not supported by the HILTI backend yet");
         }
     }
@@ -321,8 +337,16 @@ std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package, const 
         const auto& function = package.function(id);
         if ( function.kind == ir::FunctionKind::Parser )
             checkRegion(package, function.root_region, out, root_functions.contains(id.index) ? 0 : 1);
-        else
+        else {
+            for ( const auto& parameter : function.parameters )
+                if ( ! isProcedureParameter(package, parameter) )
+                    report(out,
+                           "function parameter",
+                           fmt("a parameter of function '%s' has a type or mode the HILTI backend cannot pass yet",
+                               function.name),
+                           toLocation(package, function.span));
             checkProcedureRegion(package, function.root_region, out);
+        }
         auto walk_calls = [&](auto&& region_walk, ir::RegionId region) -> void {
             for ( auto block : package.region(region).blocks )
                 for ( auto inst_id : package.block(block).insts ) {
@@ -341,8 +365,16 @@ std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package, const 
     };
     for ( const auto& root : package.parserRoots() )
         walk(walk, root.function);
-    for ( auto root : package.functionRoots() )
+    for ( auto root : package.functionRoots() ) {
+        // A public function is called from native code, which holds no unit that the generated code could borrow.
+        for ( const auto& parameter : package.function(root).parameters )
+            if ( package.type(parameter.type).kind == ir::TypeKind::Unit )
+                report(out,
+                       "function parameter",
+                       fmt("public function '%s' cannot take a unit", package.function(root).name),
+                       toLocation(package, package.function(root).span));
         walk(walk, root);
+    }
     for ( const auto& initializer : package.initializers() )
         walk(walk, initializer.function);
     for ( size_t i = 0; i < package.globals().size(); ++i )

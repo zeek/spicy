@@ -51,6 +51,7 @@
 #include <hilti/ast/types/integer.h>
 #include <hilti/ast/types/library.h>
 #include <hilti/ast/types/name.h>
+#include <hilti/ast/types/reference.h>
 #include <hilti/ast/types/set.h>
 #include <hilti/ast/types/string.h>
 #include <hilti/ast/types/tuple.h>
@@ -200,6 +201,19 @@ ir::SourceSpanId internSpan(ir::Package& package, const hilti::Location& loc) {
 }
 
 class ProcedureLowerer;
+
+// The PIR identity of a lowered unit and of its fields, by name.
+struct UnitInfo {
+    ir::TypeDeclId declaration;
+    std::unordered_map<std::string, ir::DeclId> fields;
+};
+
+// A unit object that procedural code names: the unit value, and the unit it is a value of.
+struct UnitRef {
+    ir::InstId value;
+    const UnitInfo* info = nullptr;
+    bool is_self = false; /**< the unit being parsed, whose published fields `_fields` lists */
+};
 
 // A Spicy variable seen by procedural code. A place-backed variable reads and writes through `value`;
 // otherwise `value` is the immutable SSA value of a by-value parameter.
@@ -471,18 +485,28 @@ private:
         return ! decl.opaque || ! decl.opaque->lifecycle || ! decl.opaque->lifecycle->copyable;
     }
 
-    // `self.<field>`, addressed through the unit being parsed.
-    std::variant<ir::InstId, UnsupportedFeature> _fieldPlace(hilti::expression::ResolvedOperator* op) {
-        auto* self = op->op0() ? op->op0()->tryAs<hilti::expression::Name>() : nullptr;
-        auto* member = op->op1() ? op->op1()->tryAs<hilti::expression::Member>() : nullptr;
-        if ( ! _self || ! self || self->id() != hilti::ID("self") || ! member )
-            return _unsupported("only published fields of self can be accessed here", op->meta().location());
+    // The unit object that `expr` names: `self`, or a parameter that borrows a unit. A unit has no other form here, so
+    // any other expression of unit type is unsupported rather than copied.
+    std::variant<UnitRef, UnsupportedFeature> _unit(hilti::Expression* expr);
 
-        auto field = _fields.find(std::string(member->id()));
-        if ( field == _fields.end() )
+    // `<unit>.<field>`, addressed through the unit object that the expression names.
+    std::variant<ir::InstId, UnsupportedFeature> _fieldPlace(hilti::expression::ResolvedOperator* op) {
+        auto* member = op->op1() ? op->op1()->tryAs<hilti::expression::Member>() : nullptr;
+        if ( ! member )
+            return _unsupported("only fields of a unit can be accessed here", op->meta().location());
+
+        auto unit = _unit(op->op0());
+        if ( auto* feature = std::get_if<UnsupportedFeature>(&unit) )
+            return *feature;
+
+        const auto& ref = std::get<UnitRef>(unit);
+        // The unit being parsed shows the fields that are published so far, and a borrowed unit is complete.
+        const auto& fields = ref.is_self ? _fields : ref.info->fields;
+        auto field = fields.find(std::string(member->id()));
+        if ( field == fields.end() )
             return _unsupported(fmt("field '%s' is not published yet", std::string(member->id())),
                                 op->meta().location());
-        return _builder.addFieldPlace(_block, *_self, field->second, internSpan(_package, op->meta().location()));
+        return _builder.addFieldPlace(_block, ref.value, field->second, internSpan(_package, op->meta().location()));
     }
 
     // The place an assignment or `inout` argument writes through; only variables and fields have one.
@@ -574,6 +598,29 @@ public:
         return std::nullopt;
     }
 
+    // Gives a lowered unit its identity, which procedures that take the unit refer to.
+    void declareUnit(const type::Unit* unit,
+                     ir::TypeDeclId declaration,
+                     std::unordered_map<std::string, ir::DeclId> fields) {
+        _units.emplace(unit, UnitInfo{.declaration = declaration, .fields = std::move(fields)});
+    }
+
+    // The unit that a type names, if it names a lowered one, directly or through a name or a reference.
+    const UnitInfo* unitInfo(const hilti::UnqualifiedType* type) const {
+        while ( type ) {
+            if ( const auto* name = type->tryAs<hilti::type::Name>() )
+                type = name->resolvedType();
+            else if ( const auto* reference = type->tryAs<hilti::type::ValueReference>() )
+                type = reference->dereferencedType()->type();
+            else
+                break;
+        }
+
+        const auto* unit = type ? type->tryAs<type::Unit>() : nullptr;
+        auto it = unit ? _units.find(unit) : _units.end();
+        return it == _units.end() ? nullptr : &it->second;
+    }
+
     // The PIR type of a Spicy type that procedural code can hold, if PIR can represent it yet.
     std::optional<ir::TypeId> valueType(const hilti::UnqualifiedType* type) {
         if ( const auto* named = type->tryAs<hilti::type::Name>() ) {
@@ -663,7 +710,11 @@ public:
         for ( size_t i = 0; i < signature.declarations.size(); ++i ) {
             auto* param = signature.declarations[i];
             auto arg = _builder.addArgument(id, block, i, internSpan(_package, param->meta().location()));
-            body.bind(param, Variable{.value = arg, .is_place = param->kind() == hilti::parameter::Kind::InOut});
+            // A borrowed unit is the object itself, whatever the access, and not a place that holds one.
+            body.bind(param,
+                      Variable{.value = arg,
+                               .is_place = param->kind() == hilti::parameter::Kind::InOut &&
+                                           ! unitInfo(param->type()->type())});
         }
 
         if ( auto error = body.lowerStatements(fn->body()->statements()) )
@@ -715,7 +766,7 @@ public:
         auto type = _package.global(id).type;
 
         auto init = _builder.createFunction(fmt("%s_init", std::string(decl->id().local())),
-                                            std::vector<ir::TypeId>{},
+                                            std::vector<ir::Parameter>{},
                                             type,
                                             span);
         auto region = _package.function(init).root_region;
@@ -810,7 +861,7 @@ public:
 
 private:
     struct Signature {
-        std::vector<ir::TypeId> types;
+        std::vector<ir::Parameter> types;
         ir::TypeId result;
         std::vector<hilti::declaration::Parameter*> declarations;
     };
@@ -823,14 +874,37 @@ private:
             if ( param->default_() )
                 return unsupported(feature, "default parameter values are not supported", loc);
 
+            // A unit is an object that the callee borrows. It is never copied, nor held by anything but its owner.
+            if ( const auto* unit = unitInfo(param->type()->type()) ) {
+                if ( param->kind() == hilti::parameter::Kind::In || param->kind() == hilti::parameter::Kind::InOut ) {
+                    signature.types.emplace_back(_builder.unitType(unit->declaration),
+                                                 param->kind() == hilti::parameter::Kind::In ?
+                                                     ir::ParameterMode::Borrow :
+                                                     ir::ParameterMode::BorrowMut);
+                    signature.declarations.push_back(param);
+                    continue;
+                }
+
+                return unsupported(feature, "unit parameters can only be borrowed", param->meta().location());
+            }
+
             auto value_type = valueType(param->type()->type());
             if ( ! value_type || *value_type == _builder.voidType() )
                 return unsupported(feature, "parameter type is not supported yet", param->meta().location());
 
             switch ( param->kind() ) {
                 case hilti::parameter::Kind::Copy:
-                case hilti::parameter::Kind::In: signature.types.push_back(*value_type); break;
-                case hilti::parameter::Kind::InOut: signature.types.push_back(_builder.placeType(*value_type)); break;
+                case hilti::parameter::Kind::In:
+                    // A copy of an affine value transfers it, which the backend does not take yet.
+                    if ( typeDiscipline(_package, *value_type) == ir::ValueDiscipline::Affine )
+                        return unsupported(feature,
+                                           "affine parameters are not supported yet",
+                                           param->meta().location());
+                    signature.types.emplace_back(*value_type);
+                    break;
+                case hilti::parameter::Kind::InOut:
+                    signature.types.emplace_back(_builder.placeType(*value_type), ir::ParameterMode::BorrowMut);
+                    break;
                 case hilti::parameter::Kind::Unknown:
                     return unsupported(feature, "parameter kind is not known", param->meta().location());
             }
@@ -872,6 +946,7 @@ private:
     std::unordered_set<const hilti::declaration::GlobalVariable*> _initialized_globals;
     std::unordered_map<const hilti::declaration::Function*, ir::ForeignFunctionId> _foreign;
     std::unordered_map<std::string, ir::TypeId> _opaque_types;
+    std::unordered_map<const type::Unit*, UnitInfo> _units;
     ir::ForeignFunctionId _print;
     ir::ForeignFunctionId _print_tuple;
     ir::ForeignFunctionId _linked_artifact_scope;
@@ -886,6 +961,30 @@ std::variant<Variable, UnsupportedFeature> BodyLowerer::_lookupGlobal(hilti::dec
 
     auto place = _builder.addGlobalPlace(_block, std::get<ir::GlobalId>(id), internSpan(_package, loc));
     return Variable{.value = place, .is_place = true};
+}
+
+std::variant<UnitRef, UnsupportedFeature> BodyLowerer::_unit(hilti::Expression* expr) {
+    while ( auto* coerced = expr->tryAs<hilti::expression::Coerced>() )
+        expr = coerced->expression();
+
+    auto* name = expr->tryAs<hilti::expression::Name>();
+    const auto* info = _procedures.unitInfo(expr->type()->type());
+    if ( ! name || ! info )
+        return _unsupported("a unit can only be used through self or a unit parameter", expr->meta().location());
+
+    if ( name->id() == hilti::ID("self") ) {
+        if ( ! _self )
+            return _unsupported("self is not available here", expr->meta().location());
+        return UnitRef{.value = *_self, .info = info, .is_self = true};
+    }
+
+    auto it = _variables.find(name->resolvedDeclaration());
+    if ( it == _variables.end() || it->second.is_place ||
+         ! _package.isValid(_package.inst(it->second.value).result_type) ||
+         _package.type(_package.inst(it->second.value).result_type).kind != ir::TypeKind::Unit )
+        return _unsupported(fmt("reference to '%s' is not supported", std::string(name->id())),
+                            expr->meta().location());
+    return UnitRef{.value = it->second.value, .info = info};
 }
 
 ir::InstId BodyLowerer::_lowerLinkedArtifactScope(const hilti::Location& loc) {
@@ -1164,6 +1263,21 @@ std::variant<ir::InstId, UnsupportedFeature> BodyLowerer::_lowerCall(hilti::expr
 
     std::vector<ir::InstId> values;
     for ( size_t i = 0; i < args.size(); ++i ) {
+        // A unit parameter borrows the caller's unit object.
+        if ( _procedures.unitInfo(params[i]->type()->type()) ) {
+            auto unit = _unit(args[i]);
+            if ( auto* feature = std::get_if<UnsupportedFeature>(&unit) )
+                return *feature;
+            // A callee may read any field of the unit it borrows, so the unit must be complete. A unit that is still
+            // being parsed has unpublished fields, which legacy execution would find unset.
+            const auto& ref = std::get<UnitRef>(unit);
+            if ( ref.is_self && _fields.size() != ref.info->fields.size() )
+                return _unsupported("a unit that is not fully published cannot be passed to a function",
+                                    args[i]->meta().location());
+            values.push_back(ref.value);
+            continue;
+        }
+
         auto arg = params[i]->kind() == hilti::parameter::Kind::InOut ? _place(args[i]) : lower(args[i]);
         if ( auto* feature = std::get_if<UnsupportedFeature>(&arg) )
             return *feature;
@@ -1217,7 +1331,10 @@ public:
           _builder(package.builder()),
           _procedures(procedures) {}
 
-    std::optional<UnsupportedFeature> build(const std::vector<hilti::declaration::Type*>& roots) {
+    // Discovers the units reachable from `roots` and gives them, and their fields, identities. Procedures that take a
+    // unit refer to those identities, so this runs before any procedure is lowered.
+    std::optional<UnsupportedFeature> declare(const std::vector<hilti::declaration::Type*>& roots) {
+        _roots = roots;
         for ( auto* root : roots )
             _root_units.insert(root->type()->type()->as<type::Unit>());
         for ( auto* root : roots ) {
@@ -1246,11 +1363,23 @@ public:
                                                              field_type,
                                                              internSpan(_package, field.source->meta().location()));
             }
+
+            std::unordered_map<std::string, ir::DeclId> fields;
+            for ( const auto& field : spec.fields )
+                fields.emplace(std::string(field.source->id().local()), field.declaration);
+            _procedures.declareUnit(spec.unit, spec.declaration, std::move(fields));
+        }
+
+        return std::nullopt;
+    }
+
+    // Lowers the parsers and the hooks of the declared units.
+    std::optional<UnsupportedFeature> define() {
+        for ( auto& spec : _units )
             spec.function = _builder.createParserFunction(spec.declaration,
                                                           _builder.parserStateType(),
                                                           _builder.unitType(spec.declaration),
                                                           internSpan(_package, spec.source->meta().location()));
-        }
 
         for ( auto& spec : _units ) {
             if ( auto error = _addHooks(spec) )
@@ -1262,7 +1391,7 @@ public:
                 return error;
         }
 
-        for ( auto* root : roots ) {
+        for ( auto* root : _roots ) {
             const auto& spec = _spec(root->type()->type()->as<type::Unit>());
             _builder.addParserRoot(spec.declaration, spec.function, std::string(spec.unit->typeID().str()));
         }
@@ -1437,14 +1566,17 @@ private:
         return std::nullopt;
     }
 
-    // Lowers one hook body into an ordinary function that takes the unit being parsed. The hook observes `self`
-    // and does not consume it, so the parser can keep publishing fields after the hook returns.
+    // Lowers one hook body into an ordinary function that borrows the unit being parsed. The source lets a hook change
+    // `self`, so the borrow is writable, and the caller keeps the unit, so the parser can finish it after the hook.
     std::variant<ir::FunctionId, UnsupportedFeature> _hook(const UnitSpec& spec,
                                                            const spicy::declaration::UnitHook* hook) {
         auto feature = fmt("hook of parser unit '%s'", std::string(spec.source->id()));
         auto span = internSpan(_package, hook->meta().location());
         auto unit = _builder.unitType(spec.declaration);
-        auto id = _builder.createHookFunction(fmt("%s_hook", std::string(spec.source->id().local())), unit, span);
+        auto id = _builder.createFunction(fmt("%s_hook", std::string(spec.source->id().local())),
+                                          {ir::Parameter(unit, ir::ParameterMode::BorrowMut)},
+                                          _builder.voidType(),
+                                          span);
 
         auto region = _package.function(id).root_region;
         auto block = _builder.createBlock(region);
@@ -1522,8 +1654,9 @@ private:
             unit_value = _builder.addPublishField(block, unit_value, value, field.declaration, span);
             published.emplace(std::string(field.source->id().local()), field.declaration);
         }
+        // The parser chooses where the consumers run and in what order, and calls them like any other procedure.
         for ( auto hook : spec.hooks )
-            _builder.addInvokeHook(block, unit_value, hook, unit_span);
+            _builder.addCall(block, hook, {unit_value}, unit_span);
         _builder.addParserFinish(block, state, unit_value, unit_span);
         return std::nullopt;
     }
@@ -1537,15 +1670,8 @@ private:
     std::unordered_set<type::Unit*> _visiting;
     std::unordered_set<type::Unit*> _root_units;
     ProcedureLowerer& _procedures;
+    std::vector<hilti::declaration::Type*> _roots;
 };
-
-std::optional<UnsupportedFeature> lowerUnits(const std::vector<hilti::declaration::Type*>& roots,
-                                             const std::vector<hilti::declaration::Type*>& unit_declarations,
-                                             const std::vector<spicy::declaration::UnitHook*>& hooks,
-                                             ir::Package& package,
-                                             ProcedureLowerer& procedures) {
-    return UnitLowerer(unit_declarations, hooks, package, procedures).build(roots);
-}
 
 } // namespace
 
@@ -1583,7 +1709,23 @@ std::optional<UnsupportedFeature> lowerRoots(const RootDiscovery& discovery,
             return *feature;
     }
 
+    // Units get their identities before any procedure is lowered, since a procedure may take a unit.
     std::vector<hilti::declaration::Type*> unit_roots;
+    for ( auto* decl : discovery.roots ) {
+        if ( auto* type_decl = decl->tryAs<hilti::declaration::Type>() ) {
+            if ( type_decl->type()->alias() )
+                return unsupported(fmt("public unit alias '%s'", std::string(type_decl->id())),
+                                   "public unit aliases are not supported yet",
+                                   type_decl->meta().location());
+
+            unit_roots.push_back(type_decl);
+        }
+    }
+
+    UnitLowerer units(discovery.unit_declarations, discovery.unit_hooks, package, procedures);
+    if ( auto feature = units.declare(unit_roots) )
+        return feature;
+
     for ( auto* decl : discovery.roots ) {
         if ( auto* fn_decl = decl->tryAs<hilti::declaration::Function>() ) {
             if ( fn_decl->function()->attributes()->find(hilti::attribute::kind::Cxxname) )
@@ -1596,19 +1738,14 @@ std::optional<UnsupportedFeature> lowerRoots(const RootDiscovery& discovery,
             if ( auto* feature = std::get_if<UnsupportedFeature>(&lowered) )
                 return *feature;
 
+            // A unit has no public form in a function's signature: the generated unit is not the legacy one.
+            for ( auto* param : fn_decl->function()->ftype()->parameters() )
+                if ( procedures.unitInfo(param->type()->type()) )
+                    return unsupported(fmt("public function '%s'", std::string(fn_decl->id())),
+                                       "public functions cannot take a unit",
+                                       fn_decl->meta().location());
+
             package.builder().addFunctionRoot(std::get<ir::FunctionId>(lowered));
-            continue;
-        }
-
-        if ( auto* type_decl = decl->tryAs<hilti::declaration::Type>() ) {
-            if ( type_decl->type()->alias() )
-                return unsupported(fmt("public unit alias '%s'", std::string(type_decl->id())),
-                                   "public unit aliases are not supported yet",
-                                   type_decl->meta().location());
-
-            unit_roots.push_back(type_decl);
-
-            continue;
         }
     }
 
@@ -1625,7 +1762,7 @@ std::optional<UnsupportedFeature> lowerRoots(const RootDiscovery& discovery,
         package.builder().addInitializer(phase, std::get<ir::FunctionId>(lowered));
     }
 
-    if ( auto feature = lowerUnits(unit_roots, discovery.unit_declarations, discovery.unit_hooks, package, procedures) )
+    if ( auto feature = units.define() )
         return feature;
 
     bindings = procedures.bindings();
