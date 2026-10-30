@@ -1,0 +1,14 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: An element or capacity that PIR cannot compute makes the whole compilation fall back, since the container
+# operation cannot run without it.
+
+module Test;
+
+public function f(): uint64 {
+    local v: vector<uint64>;
+    local w: vector<uint64>;
+    v.push_back(w[0]);
+    return 0;
+}

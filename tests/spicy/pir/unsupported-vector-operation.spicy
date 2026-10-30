@@ -1,0 +1,14 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: Other operations on a vector are different resolved operations, so they do not become appends or capacity
+# hints, even though their receiver is one that those operations accept.
+
+module Test;
+
+public function f(): uint64 {
+    local v: vector<uint64>;
+    v.push_back(1);
+    v.resize(4);
+    return 0;
+}
