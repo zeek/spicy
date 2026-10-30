@@ -17,6 +17,7 @@ global uint<64> a = 1;
 global uint<64> b = 2;
 global uint<64> c = 3;
 global S s;
+global bool called = False;
 
 function void f(uint<64> x, uint<64> y, inout uint<64> z) {
     z = 42;
@@ -32,8 +33,18 @@ method void S::m_outofline(uint<64> x, uint<64> y, inout uint<64> z) {
     hilti::print(z, True);
 }
 
+function bool side_effect() {
+    return called = True;
+}
+
+function void ignore(bool b) {
+}
+
 f(a, b, c);
 s.m_inline(a, b, c);
 s.m_outofline(a, b, c);
+assert (! called);
+ignore(False || side_effect());
+assert (called);
 
 }
