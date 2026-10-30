@@ -1,0 +1,13 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: An append whose receiver PIR cannot address as a place falls back, instead of being lowered through the
+# resolved append operation alone. Legacy execution evaluates the index and fails on the empty vector.
+
+module Test;
+
+public function f(): uint64 {
+    local v: vector<vector<uint64>>;
+    v[0].push_back(1);
+    return 0;
+}

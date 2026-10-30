@@ -1,0 +1,102 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -P "" -o Foo.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT --strict-public-api -P "" -o Legacy.h
+# @TEST-EXEC: spicyc %INPUT --strict-public-api -j legacy-driver.cc >legacy
+# @TEST-EXEC: cmp output legacy
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -p -D spicy-pir 2>&1 >/dev/null | rg "attached PIR-produced" >route
+# @TEST-EXEC: btest-diff route
+
+# @TEST-DOC: Vector `reserve` and `push_back` and set insertion are recognized by the operations that the frontend
+# resolved. The capacity and element computations have effects, which run once and in source order, whether or not the
+# capacity is retained. The PIR output matches the legacy output, optimized and not.
+
+module Test;
+
+function note(tag: string, n: int64): int64 {
+    print tag, n;
+    return n;
+}
+
+function capacity(tag: string, n: uint64): uint64 {
+    print tag, n;
+    return n;
+}
+
+public function collect(n: int64): vector<int64> {
+    local v: vector<int64>;
+    v.reserve(capacity("capacity", 2));
+    v.push_back(note("first", n));
+    v.reserve(2);
+    v.push_back(note("second", n + 1));
+    return v;
+}
+
+public function members(n: int64): set<int64> {
+    local s: set<int64>;
+    add s[note("member", n)];
+    add s[note("member", n + 1)];
+    add s[note("member", n)];
+    return s;
+}
+
+@TEST-START-FILE driver.cc
+
+#include <iostream>
+
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+#include "Foo.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    auto v = hlt::_r__spicy_pir_backend::collect(10);
+    for ( auto x : v.get<hilti::rt::Vector<hilti::rt::integer::safe<int64_t>>>() )
+        std::cout << "element: " << x << std::endl;
+
+    auto s = hlt::_r__spicy_pir_backend::members(20);
+    auto members = s.get<hilti::rt::Set<hilti::rt::integer::safe<int64_t>>>();
+    std::cout << "members: " << members.size() << std::endl;
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    hilti::rt::init();
+    spicy::rt::init();
+    hilti_main();
+    hilti::rt::done();
+    return 0;
+}
+
+@TEST-END-FILE
+
+@TEST-START-FILE legacy-driver.cc
+
+#include <iostream>
+
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+#include "Legacy.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    auto v = hlt_internal::Test::collect(10);
+    for ( auto x : v )
+        std::cout << "element: " << x << std::endl;
+
+    auto members = hlt_internal::Test::members(20);
+    std::cout << "members: " << members.size() << std::endl;
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    hilti::rt::init();
+    spicy::rt::init();
+    hilti_main();
+    hilti::rt::done();
+    return 0;
+}
+
+@TEST-END-FILE

@@ -36,6 +36,8 @@
 #include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/function.h>
 #include <hilti/ast/operator.h>
+#include <hilti/ast/operators/set.h>
+#include <hilti/ast/operators/vector.h>
 #include <hilti/ast/statements/block.h>
 #include <hilti/ast/statements/comment.h>
 #include <hilti/ast/statements/declaration.h>
@@ -307,10 +309,15 @@ public:
                 return _lowerCall(op);
             if ( op->kind() == hilti::operator_::Kind::Equal )
                 return _lowerEqual(op);
+            // The frontend has resolved each container operation to its own operator, which is what identifies it.
+            if ( auto* push_back = op->tryAs<hilti::operator_::vector::PushBack>() )
+                return _lowerVectorPushBack(push_back);
+            if ( auto* reserve = op->tryAs<hilti::operator_::vector::Reserve>() )
+                return _lowerVectorReserve(reserve);
+            if ( auto* add = op->tryAs<hilti::operator_::set::Add>() )
+                return _lowerSetInsert(add);
             if ( op->kind() == hilti::operator_::Kind::MemberCall )
-                return _lowerMemberCall(op);
-            if ( op->kind() == hilti::operator_::Kind::Add && op->op0()->type()->type()->isA<hilti::type::Set>() )
-                return _lowerSetInsert(op);
+                return _unsupported("unsupported method call", expr->meta().location());
             if ( op->kind() == hilti::operator_::Kind::Member ) {
                 auto place = _fieldPlace(op);
                 if ( auto* feature = std::get_if<UnsupportedFeature>(&place) )
@@ -327,73 +334,96 @@ public:
 
 private:
     // `set += element` on a local set. The insertion is stored back into the set's place, as for `push_back`.
-    std::variant<ir::InstId, UnsupportedFeature> _lowerSetInsert(hilti::expression::ResolvedOperator* op) {
-        auto place = _place(op->op0());
+    std::variant<ir::InstId, UnsupportedFeature> _lowerSetInsert(hilti::operator_::set::Add* op) {
+        return _lowerAppend(op, op->op0(), op->op1(), ir::TypeKind::Set);
+    }
+
+    // `push_back` on a local vector appends to the vector in its place, so the place is stored again.
+    std::variant<ir::InstId, UnsupportedFeature> _lowerVectorPushBack(hilti::operator_::vector::PushBack* op) {
+        auto args = _methodArguments(op);
+        if ( ! args || args->size() != 1 )
+            return _unsupported("unsupported method call", op->meta().location());
+
+        return _lowerAppend(op, op->op0(), (*args)[0], ir::TypeKind::Vector);
+    }
+
+    // `reserve` only changes capacity, which no value observes, so it leaves no operation behind.
+    std::variant<ir::InstId, UnsupportedFeature> _lowerVectorReserve(hilti::operator_::vector::Reserve* op) {
+        auto loc = op->meta().location();
+        auto args = _methodArguments(op);
+        if ( ! args || args->size() != 1 )
+            return _unsupported("unsupported method call", loc);
+
+        // The receiver must be a place this lowering addresses. Dropping the capacity operation must not drop
+        // the receiver's evaluation, nor an access that legacy execution would make.
+        auto receiver = _place(op->op0());
+        if ( auto* feature = std::get_if<UnsupportedFeature>(&receiver) )
+            return *feature;
+
+        // Only a plain integer literal has no effects; any other expression is evaluated, once, in order.
+        if ( ! _isIntegerLiteral((*args)[0]) ) {
+            auto capacity = lower((*args)[0]);
+            if ( auto* feature = std::get_if<UnsupportedFeature>(&capacity) )
+                return *feature;
+        }
+        return _builder.addTuple(_block, {}, internSpan(_package, loc));
+    }
+
+    // Appends `element` to the container that `receiver` names, which must be a place that holds a container of
+    // `kind`. The receiver's place comes first, then the element, so the append sees every earlier effect.
+    std::variant<ir::InstId, UnsupportedFeature> _lowerAppend(hilti::Node* op,
+                                                              hilti::Expression* receiver,
+                                                              hilti::Expression* element,
+                                                              ir::TypeKind kind) {
+        auto loc = op->meta().location();
+        auto place = _place(receiver);
         if ( auto* feature = std::get_if<UnsupportedFeature>(&place) )
             return *feature;
 
-        auto element = lower(op->op1());
-        if ( auto* feature = std::get_if<UnsupportedFeature>(&element) )
+        auto value = lower(element);
+        if ( auto* feature = std::get_if<UnsupportedFeature>(&value) )
             return *feature;
 
-        auto set = _load(std::get<ir::InstId>(place), op->meta().location());
-        if ( auto* feature = std::get_if<UnsupportedFeature>(&set) )
+        // The element is evaluated before the container is read, so the append sees every earlier effect.
+        auto container = _load(std::get<ir::InstId>(place), loc);
+        if ( auto* feature = std::get_if<UnsupportedFeature>(&container) )
             return *feature;
 
-        auto span = internSpan(_package, op->meta().location());
-        auto inserted = _builder.addSetInsert(_block, std::get<ir::InstId>(set), std::get<ir::InstId>(element), span);
-        return _builder.addStore(_block, std::get<ir::InstId>(place), inserted, span);
+        auto container_type = _package.inst(std::get<ir::InstId>(container)).result_type;
+        if ( ! _package.isValid(container_type) || _package.type(container_type).kind != kind ||
+             _package.type(container_type).type_arguments.size() != 1 ||
+             _package.type(container_type).type_arguments[0] != _package.inst(std::get<ir::InstId>(value)).result_type )
+            return _unsupported("the element must have the container's element type", loc);
+
+        auto span = internSpan(_package, loc);
+        auto appended =
+            kind == ir::TypeKind::Vector ?
+                _builder.addVectorAppend(_block, std::get<ir::InstId>(container), std::get<ir::InstId>(value), span) :
+                _builder.addSetInsert(_block, std::get<ir::InstId>(container), std::get<ir::InstId>(value), span);
+        return _builder.addStore(_block, std::get<ir::InstId>(place), appended, span);
     }
 
-    // Methods on a local vector. `push_back` appends to the vector in its place, so the place is stored again.
-    // `reserve` only changes capacity, which no value observes, so it leaves no operation behind.
-    std::variant<ir::InstId, UnsupportedFeature> _lowerMemberCall(hilti::expression::ResolvedOperator* op) {
-        auto loc = op->meta().location();
-        auto* member = op->op1() ? op->op1()->tryAs<hilti::expression::Member>() : nullptr;
+    // The arguments of a method call, which the frontend gathers into a tuple.
+    static std::optional<std::vector<hilti::Expression*>> _methodArguments(hilti::expression::ResolvedOperator* op) {
         auto* ctor = op->op2() ? op->op2()->tryAs<hilti::expression::Ctor>() : nullptr;
         auto* tuple = ctor ? ctor->ctor()->tryAs<hilti::ctor::Tuple>() : nullptr;
-        if ( ! member || ! tuple )
-            return _unsupported("unsupported method call", loc);
+        if ( ! tuple )
+            return std::nullopt;
 
-        const auto& args = tuple->value();
-        auto method = std::string(member->id());
-        if ( method == "push_back" && args.size() == 1 ) {
-            auto place = _place(op->op0());
-            if ( auto* feature = std::get_if<UnsupportedFeature>(&place) )
-                return *feature;
+        std::vector<hilti::Expression*> args;
+        for ( auto* arg : tuple->value() )
+            args.push_back(arg);
+        return args;
+    }
 
-            auto element = lower(args[0]);
-            if ( auto* feature = std::get_if<UnsupportedFeature>(&element) )
-                return *feature;
-
-            // The element is evaluated before the vector is read, so the append sees every earlier effect.
-            auto vector = _load(std::get<ir::InstId>(place), loc);
-            if ( auto* feature = std::get_if<UnsupportedFeature>(&vector) )
-                return *feature;
-
-            auto span = internSpan(_package, loc);
-            auto appended =
-                _builder.addVectorAppend(_block, std::get<ir::InstId>(vector), std::get<ir::InstId>(element), span);
-            return _builder.addStore(_block, std::get<ir::InstId>(place), appended, span);
-        }
-
-        if ( method == "reserve" && args.size() == 1 ) {
-            // The receiver must be a place this lowering addresses. Dropping the capacity operation must not drop
-            // the receiver's evaluation, nor an access that legacy execution would make.
-            auto receiver = _place(op->op0());
-            if ( auto* feature = std::get_if<UnsupportedFeature>(&receiver) )
-                return *feature;
-
-            // A literal capacity has no effects, and no PIR literal of unsigned type exists yet, so it is not lowered.
-            if ( ! args[0]->isA<hilti::expression::Ctor>() ) {
-                auto capacity = lower(args[0]);
-                if ( auto* feature = std::get_if<UnsupportedFeature>(&capacity) )
-                    return *feature;
-            }
-            return _builder.addTuple(_block, {}, internSpan(_package, loc));
-        }
-
-        return _unsupported(fmt("method '%s' is not supported", method), loc);
+    // Whether `expr` is an integer literal, possibly coerced. Other constructors can contain expressions with
+    // effects, such as calls, so they are not assumed to be effect-free.
+    static bool _isIntegerLiteral(hilti::Expression* expr) {
+        auto* ctor_expr = expr->tryAs<hilti::expression::Ctor>();
+        auto* ctor = ctor_expr ? ctor_expr->ctor() : nullptr;
+        if ( auto* coerced = ctor ? ctor->tryAs<hilti::ctor::Coerced>() : nullptr )
+            ctor = coerced->coercedCtor();
+        return ctor && (ctor->isA<hilti::ctor::SignedInteger>() || ctor->isA<hilti::ctor::UnsignedInteger>());
     }
 
     // `==` on two values of the same integer or bool type, which the PIR verifier restricts to the same types.
