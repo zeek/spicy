@@ -6,7 +6,7 @@ function %0 "scaled" (int64) -> int64:
       %5: core.call %1, @function 1 : void
       %6 = core.load %1 : int64
       %7: core.return %6 : void
-function %1 "add_one" (place<int64>) -> void:
+function %1 "add_one" (borrow_mut place<int64>) -> void:
       %3: opaque.op %2, @foreign %0 "bump" : void
       %4: core.return : void
 function root: function %0
@@ -16,7 +16,7 @@ function %0 "scaled" (int64) -> int64:
       %5: core.call %1, @function 1 : void
       %6 = core.load %1 : int64
       %7: core.return %6 : void
-function %1 "add_one" (place<int64>) -> void:
+function %1 "add_one" (borrow_mut place<int64>) -> void:
       %3: opaque.op %2, @foreign %0 "bump" : void
       %4: core.return : void
 function root: function %0

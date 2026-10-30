@@ -278,6 +278,74 @@ TEST_CASE("a target binding that does not match its declaration is unsupported")
                     .empty());
 }
 
+namespace {
+
+// A parser root whose unit is lent to a helper before the parser finishes.
+struct LentUnit {
+    Package package;
+    FunctionId helper;
+};
+
+LentUnit makeLentUnit(ParameterMode mode, bool writes) {
+    LentUnit s;
+    auto builder = s.package.builder();
+    auto unit = builder.createUnitDecl("Cell");
+    auto field = builder.createFieldDecl(unit, "value", builder.uint8Type());
+    auto unit_type = builder.unitType(unit);
+
+    s.helper = builder.createFunction("helper", {Parameter(unit_type, mode)}, builder.voidType());
+    auto helper_block = builder.createBlock(s.package.function(s.helper).root_region);
+    auto cell = builder.addArgument(s.helper, helper_block, 0);
+    auto place = builder.addFieldPlace(helper_block, cell, field);
+    if ( writes )
+        builder.addStore(helper_block, place, builder.addLoad(helper_block, place));
+    else
+        builder.addLoad(helper_block, place);
+    builder.addReturnVoid(helper_block);
+
+    auto parser = builder.createParserFunction(unit, builder.parserStateType(), unit_type);
+    auto block = builder.createBlock(s.package.function(parser).root_region);
+    auto state0 = builder.addArgument(parser, block, 0);
+    auto unit0 = builder.addUnitCreate(block, unit);
+    auto read = builder.addReadInteger(block,
+                                       state0,
+                                       ReadIntegerPayload{.width = 8,
+                                                          .signedness = Signedness::Unsigned,
+                                                          .byte_order = ByteOrder::Network});
+    auto state1 = builder.addTupleGet(block, read, 0);
+    auto unit1 = builder.addPublishField(block, unit0, builder.addTupleGet(block, read, 1), field);
+    builder.addCall(block, s.helper, {unit1});
+    builder.addParserFinish(block, state1, unit1);
+    builder.addParserRoot(unit, parser);
+    return s;
+}
+
+} // namespace
+
+TEST_CASE("a unit lent to a helper, read-only or writable, is supported") {
+    auto reading = makeLentUnit(ParameterMode::Borrow, false);
+    REQUIRE(verify(reading.package).empty());
+    CHECK(checkCoverage(reading.package).empty());
+
+    auto writing = makeLentUnit(ParameterMode::BorrowMut, true);
+    REQUIRE(verify(writing.package).empty());
+    CHECK(checkCoverage(writing.package).empty());
+}
+
+TEST_CASE("a parameter that the HILTI backend cannot pass is unsupported") {
+    Package package;
+    auto builder = package.builder();
+    auto vector = builder.vectorType(builder.int64Type());
+    auto fn = builder.createFunction("takes_vector", {Parameter(vector, ParameterMode::Take)}, builder.voidType());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    builder.addArgument(fn, block, 0);
+    builder.addReturnVoid(block);
+    builder.addFunctionRoot(fn);
+
+    REQUIRE(verify(package).empty());
+    CHECK_FALSE(checkCoverage(package).empty());
+}
+
 TEST_CASE("an ordinary function root with a native inout call is supported") {
     Package package;
     makeInoutRoot(package);

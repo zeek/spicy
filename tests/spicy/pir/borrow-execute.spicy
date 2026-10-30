@@ -1,0 +1,89 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -P "" -o Foo.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT -j legacy-driver.cc >legacy
+# @TEST-EXEC: cmp output legacy
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -p -D spicy-pir 2>&1 >/dev/null | rg "attached PIR-produced" >route
+# @TEST-EXEC: btest-diff route
+
+# @TEST-DOC: Ordinary helpers borrow units with the rules that a `%done` consumer has for `self`. A root unit and a
+# private unit that lives in a vector are each read through a read borrow and written through a writable one, including
+# helpers that forward their borrow. Writes are visible to the next reader, and the PIR output matches the legacy
+# output, optimized and not.
+
+module Test;
+
+type Item = unit {
+    value: uint64;
+};
+
+public type Message = unit {
+    length: uint64;
+    items: Item[] &size=self.length;
+    tail: bytes &size=3;
+};
+
+function describe(m: Message): uint64 { return m.length + 1; }
+function outer(m: Message): uint64 { return describe(m) + 1; }
+function bump(inout m: Message) { m.length = m.length + 10; }
+function bump_through(inout m: Message) { bump(m); }
+function read_item(i: Item): uint64 { return i.value; }
+function set_item(inout i: Item) { i.value = 7; }
+
+on Item::%done priority=5 { print "item", read_item(self); set_item(self); }
+on Item::%done { print "item after", self.value; }
+on Message::%done priority=5 { print "describe", describe(self), outer(self); bump(self); bump_through(self); }
+on Message::%done { print "later", self.length, self.tail; }
+
+@TEST-START-FILE driver.cc
+#include <iostream>
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+#include "Foo.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    std::string input(7, '\0');
+    input += '\x10';
+    input += std::string(7, '\0') + '\x01';
+    input += std::string(7, '\0') + '\x02';
+    input += "END";
+    auto stream = hilti::rt::reference::make_value<hilti::rt::Stream>(hilti::rt::Bytes(input));
+    stream->freeze();
+    hlt::_r__spicy_pir_backend::parse_root_0(stream, {});
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    hilti::rt::init();
+    spicy::rt::init();
+    hilti_main();
+    hilti::rt::done();
+    return 0;
+}
+@TEST-END-FILE
+
+@TEST-START-FILE legacy-driver.cc
+#include <iostream>
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+using namespace hilti::rt::string::literals;
+extern "C" int HILTI_EXPORT hilti_main() {
+    const spicy::rt::Parser* parser = nullptr;
+    for ( const auto* p : spicy::rt::parsers() )
+        if ( p->name == "Test::Message"_hs ) parser = p;
+    if ( ! parser ) return 1;
+    std::string input(7, '\0');
+    input += '\x10';
+    input += std::string(7, '\0') + '\x01';
+    input += std::string(7, '\0') + '\x02';
+    input += "END";
+    auto stream = hilti::rt::reference::make_value<hilti::rt::Stream>(hilti::rt::Bytes(input));
+    stream->freeze();
+    parser->parse1(stream, {}, {});
+    return 0;
+}
+int main() { hilti::rt::init(); spicy::rt::init(); auto result = hilti_main(); hilti::rt::done(); return result; }
+@TEST-END-FILE

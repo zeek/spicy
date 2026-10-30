@@ -1,0 +1,13 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: A local variable cannot hold a unit, so a helper that copies its borrowed unit into one falls back.
+
+module Test;
+
+public type Message = unit {
+    length: uint64;
+};
+
+function f(m: Message): uint64 { local x: Message = m; return x.length; }
+on Message::%done { print f(self); }

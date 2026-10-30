@@ -47,7 +47,6 @@ enum class Opcode {
     Jump,
     Equal,
     GlobalPlace,
-    InvokeHook,
     Uint64Constant,
     ForeignConstant,
     PortConstant,
@@ -414,8 +413,6 @@ inline constexpr OperandRole KPlaceOperandRoles[] = {OperandRole::Borrow};
 
 inline constexpr TypeConstraint KFieldPlaceOperandTypes[] = {anyType()};
 inline constexpr OperandRole KFieldPlaceOperandRoles[] = {OperandRole::Borrow};
-inline constexpr TypeConstraint KInvokeHookOperandTypes[] = {anyType()};
-inline constexpr OperandRole KInvokeHookOperandRoles[] = {OperandRole::Borrow};
 
 inline constexpr TypeConstraint KStoreOperandTypes[] = {anyType(), anyType()};
 inline constexpr OperandRole KStoreOperandRoles[] = {OperandRole::Borrow, OperandRole::Consume};
@@ -759,15 +756,6 @@ inline constexpr std::array<OpcodeSchema, 39> KSchemas{{
                  .payload_kind = PayloadKind::Global,
                  .is_terminator = false,
                  .is_pure = false},
-    OpcodeSchema{.opcode = Opcode::InvokeHook,
-                 .spelling = "unit.invoke_hook",
-                 // Operand 0 is the unit being parsed, borrowed by the hook; the hook is the payload's function.
-                 .operand_types = KInvokeHookOperandTypes,
-                 .operand_roles = KInvokeHookOperandRoles,
-                 .result_type = fixedType(TypeKind::Void),
-                 .payload_kind = PayloadKind::Function,
-                 .is_terminator = false,
-                 .is_pure = false},
     OpcodeSchema{.opcode = Opcode::Uint64Constant,
                  .spelling = "core.uint64_constant",
                  .operand_types = KNoOperandTypes,
@@ -858,7 +846,6 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
         // A foreign function may read and write any state, so it is opaque to every analysis.
         case Opcode::OpaqueOp:
         case Opcode::Call:
-        case Opcode::InvokeHook:
             return {.may_fail = true,
                     .reads_world = true,
                     .writes_world = true,

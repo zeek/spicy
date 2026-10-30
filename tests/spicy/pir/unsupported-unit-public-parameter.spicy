@@ -1,0 +1,12 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: A public function that takes a unit stays on the legacy route, since PIR's unit is not the legacy one.
+
+module Test;
+
+public type Message = unit {
+    length: uint64;
+};
+
+public function f(m: Message): uint64 { return m.length; }

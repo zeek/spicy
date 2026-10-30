@@ -248,19 +248,21 @@ using LocalBuilder = ::hilti::ExtendedBuilderTemplate<::hilti::Builder>;
     return targetType(b, package, id);
 }
 
-// An `inout` parameter is passed by reference, so the caller's place is the storage the callee sees.
+// A borrowed parameter is passed by reference, so the caller's storage or object is what the callee sees. HILTI's `in`
+// is a constant reference and `inout` a mutable one, so the access follows the parameter's mode and never the
+// representation of the argument. A place stands for the storage it names, and a unit for the object, whose
+// struct the callee receives.
 ::hilti::declaration::Parameter* parameterFor(::hilti::Builder& b,
                                               const ir::Package& package,
                                               const std::string& name,
-                                              ir::TypeId id,
+                                              const ir::Parameter& parameter,
                                               const ::hilti::Meta& meta) {
-    const auto& type = package.type(id);
-    if ( type.kind == ir::TypeKind::Place )
-        return b.parameter(::hilti::ID(name),
-                           targetType(b, package, type.type_arguments[0])->type(),
-                           ::hilti::parameter::Kind::InOut,
-                           meta);
-    return b.parameter(::hilti::ID(name), targetType(b, package, id)->type(), ::hilti::parameter::Kind::In, meta);
+    const auto& type = package.type(parameter.type);
+    auto* target = type.kind == ir::TypeKind::Place ? targetType(b, package, type.type_arguments[0])->type() :
+                                                      targetType(b, package, parameter.type)->type();
+    auto kind =
+        parameter.mode == ir::ParameterMode::BorrowMut ? ::hilti::parameter::Kind::InOut : ::hilti::parameter::Kind::In;
+    return b.parameter(::hilti::ID(name), target, kind, meta);
 }
 
 // A formal of a foreign function. `any` and `tuple<*>` formals are the HILTI types the runtime declares, so the
@@ -271,7 +273,16 @@ using LocalBuilder = ::hilti::ExtendedBuilderTemplate<::hilti::Builder>;
                                                      const ir::ForeignParameter& parameter,
                                                      const ::hilti::Meta& meta) {
     switch ( parameter.argument ) {
-        case ir::ForeignArgument::Value: return parameterFor(b, package, name, parameter.type, meta);
+        case ir::ForeignArgument::Value:
+            // A native `inout` takes the caller's place, which a place type states.
+            return parameterFor(b,
+                                package,
+                                name,
+                                ir::Parameter(parameter.type,
+                                              package.type(parameter.type).kind == ir::TypeKind::Place ?
+                                                  ir::ParameterMode::BorrowMut :
+                                                  ir::ParameterMode::Take),
+                                meta);
         case ir::ForeignArgument::TypeInfo:
             return b.parameter(::hilti::ID(name), b.typeAny(), ::hilti::parameter::Kind::In, meta);
         case ir::ForeignArgument::AnyPointer: {
@@ -339,6 +350,13 @@ protected:
         return b.id(::hilti::ID(values_.at(id.index)));
     }
 
+    // The unit that a parser root creates is held through a reference, whereas a callee's parameter receives the unit
+    // itself. Dereferencing hands over the same object, so the callee's access is to the caller's unit, not a copy.
+    ::hilti::Expression* _argument(LocalBuilder& b, ir::InstId id) {
+        auto* value = _value(b, id);
+        return held_by_reference_.contains(id.index) ? b.deref(value) : value;
+    }
+
     // Lowers one procedural operation, returning false for an operation that is not procedural.
     bool _lowerProcedural(LocalBuilder& b, ir::InstId id) {
         const auto& inst = package_.inst(id);
@@ -393,7 +411,7 @@ protected:
                             fmt("foreign_%u", std::get<ir::ForeignFunctionPayload>(inst.payload).function.index));
                 ::hilti::Expressions args;
                 for ( auto arg : inst.args )
-                    args.push_back(_value(b, arg));
+                    args.push_back(_argument(b, arg));
                 auto* call = b.call(callee, args, meta);
                 if ( inst.result_type == package_.voidType() ) {
                     b.addExpression(call);
@@ -519,6 +537,8 @@ protected:
 
     const ir::Package& package_;
     const NameMap& names_;
+    /** Units that are held through a reference rather than by value, by instruction index. */
+    std::unordered_set<uint32_t> held_by_reference_;
     std::unordered_map<uint32_t, std::string> values_;
     std::unordered_map<uint32_t, std::pair<std::string, std::string>> fields_;
 };
@@ -752,8 +772,10 @@ private:
             case ir::Opcode::UnitCreate: {
                 auto name = fmt("v_%u", id.index);
                 auto unit = std::get<ir::UnitPayload>(inst.payload).unit;
-                if ( names_.at(_id.index).root )
+                if ( names_.at(_id.index).root ) {
                     b.addLocal(::hilti::ID(name), b.new_(b.typeName(::hilti::ID(unitName(unit))), meta), meta);
+                    held_by_reference_.insert(id.index);
+                }
                 else
                     b.addLocal(::hilti::ID(name),
                                b.qualifiedType(b.typeName(::hilti::ID(unitName(unit))), ::hilti::Constness::Mutable),
@@ -765,16 +787,12 @@ private:
                 auto field = std::get<ir::FieldPayload>(inst.payload).field;
                 b.addAssign(b.member(_value(b, inst.args[0]), fieldName(field)), _value(b, inst.args[1]), meta);
                 values_[id.index] = values_.at(inst.args[0].index);
+                if ( held_by_reference_.contains(inst.args[0].index) )
+                    held_by_reference_.insert(id.index);
                 return;
             }
             case ir::Opcode::ReadInteger: _lowerRead(b, id, true); return;
             case ir::Opcode::ReadBytes: _lowerRead(b, id, false); return;
-            case ir::Opcode::InvokeHook:
-                b.addExpression(
-                    b.call(moduleLevel(names_.at(std::get<ir::FunctionPayload>(inst.payload).function.index).function),
-                           {_value(b, inst.args[0])},
-                           meta));
-                return;
             case ir::Opcode::EnterBound: {
                 auto* length = _value(b, inst.args[1]);
                 auto overflow = b.addIf(b.greater(length,

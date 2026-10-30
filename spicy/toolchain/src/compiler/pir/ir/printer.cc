@@ -17,6 +17,17 @@ namespace spicy::detail::pir::ir {
 
 namespace {
 
+// A taken parameter prints as its type alone, so that dumps of functions without borrows are unaffected.
+std::string parameterName(const Package& package, const Parameter& parameter) {
+    switch ( parameter.mode ) {
+        case ParameterMode::Take: return typeName(package, parameter.type);
+        case ParameterMode::Borrow: return "borrow " + typeName(package, parameter.type);
+        case ParameterMode::BorrowMut: return "borrow_mut " + typeName(package, parameter.type);
+    }
+
+    return typeName(package, parameter.type);
+}
+
 std::string_view opcodeName(Opcode opcode) {
     if ( const auto* schema = schemaFor(opcode) )
         return schema->spelling;
@@ -285,7 +296,7 @@ std::string print(const Package& package) {
         // canonical dump is unaffected.
         std::string parameters;
         for ( size_t p = 0; p < fn.parameters.size(); ++p )
-            parameters += (p == 0 ? "" : ", ") + typeName(package, fn.parameters[p]);
+            parameters += (p == 0 ? "" : ", ") + parameterName(package, fn.parameters[p]);
 
         // Only append the kind/parser-unit suffix for a `Parser` function, so
         // their exact canonical dump is unaffected.

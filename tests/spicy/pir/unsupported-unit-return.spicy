@@ -1,0 +1,13 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: A helper cannot return a borrowed unit, so such a helper falls back instead of leaking the borrow.
+
+module Test;
+
+public type Message = unit {
+    length: uint64;
+};
+
+function f(m: Message): Message { return m; }
+on Message::%done { f(self); }
