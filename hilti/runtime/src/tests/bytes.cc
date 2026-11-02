@@ -55,6 +55,16 @@ TEST_CASE("decode") {
                          "illegal UTF8 sequence in string",
                          const RuntimeError&);
 
+    // Truncated sequences and encoded surrogates follow the strategy, too.
+    CHECK_EQ("abc\xe2\x82"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::REPLACE),
+             "abc\ufffd\ufffd"_hs);
+    CHECK_EQ("abc\xe2\x82"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::IGNORE), "abc"_hs);
+    CHECK_THROWS_WITH_AS("abc\xe2\x82"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::STRICT),
+                         "illegal UTF8 sequence in string",
+                         const RuntimeError&);
+    CHECK_EQ("\xed\xa0\x80("_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::REPLACE),
+             "\ufffd\ufffd\ufffd("_hs);
+
     CHECK_EQ(Bytes("\0a\0b\0c"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::STRICT), "abc"_hs);
     CHECK_EQ(Bytes("a\0b\0c\0"s).decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), "abc"_hs);
 
@@ -81,6 +91,11 @@ TEST_CASE("decode") {
     CHECK_EQ(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::IGNORE), "ab"_hs);
     CHECK_EQ(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::REPLACE),
              "ab\ufffd"_hs);
+
+    // Lone high surrogate at the end of the input.
+    CHECK_EQ(Bytes("a\0\x3d\xd8"s).decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::REPLACE),
+             "a\ufffd"_hs);
+    CHECK_EQ(Bytes("a\0\x3d\xd8"s).decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::IGNORE), "a"_hs);
 
     CHECK_THROWS_WITH_AS("123"_b.decode(unicode::Charset::Undef),
                          "unknown character set for decoding",

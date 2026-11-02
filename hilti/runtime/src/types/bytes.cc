@@ -120,7 +120,7 @@ String Bytes::decode(unicode::Charset cs, unicode::DecodeErrorStrategy errors) c
                 try {
                     auto cp = utf8::next(p, e);
                     utf8::append(cp, t);
-                } catch ( const utf8::invalid_utf8& ) {
+                } catch ( const utf8::exception& ) {
                     switch ( errors.value() ) {
                         case unicode::DecodeErrorStrategy::IGNORE: break;
                         case unicode::DecodeErrorStrategy::REPLACE: {
@@ -177,7 +177,7 @@ String Bytes::decode(unicode::Charset cs, unicode::DecodeErrorStrategy errors) c
                 try {
                     auto cp = utf8::next16(p, e);
                     utf8::append16(cp, std::back_inserter(t));
-                } catch ( const utf8::invalid_utf16& ) {
+                } catch ( const utf8::exception& ) {
                     switch ( errors.value() ) {
                         case unicode::DecodeErrorStrategy::IGNORE: break;
                         case unicode::DecodeErrorStrategy::REPLACE:
