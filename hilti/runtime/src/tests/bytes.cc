@@ -52,6 +52,14 @@ TEST_CASE("decode") {
     CHECK_THROWS_WITH_AS("\xc3\x28"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::STRICT),
                          "illegal UTF8 sequence in string", const RuntimeError&);
 
+    // Truncated sequences and encoded surrogates follow the strategy, too.
+    CHECK_EQ("abc\xe2\x82"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::REPLACE), "abc\ufffd\ufffd");
+    CHECK_EQ("abc\xe2\x82"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::IGNORE), "abc");
+    CHECK_THROWS_WITH_AS("abc\xe2\x82"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::STRICT),
+                         "illegal UTF8 sequence in string", const RuntimeError&);
+    CHECK_EQ("\xed\xa0\x80("_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::REPLACE),
+             "\ufffd\ufffd\ufffd(");
+
     CHECK_EQ(Bytes("\0a\0b\0c"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::STRICT), "abc");
     CHECK_EQ(Bytes("a\0b\0c\0"s).decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), "abc");
 
@@ -73,11 +81,9 @@ TEST_CASE("decode") {
     CHECK_EQ(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::IGNORE), "ab");
     CHECK_EQ(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::REPLACE), "ab\ufffd");
 
-    // Our UTF16 implementation seems to differ in what it considers invalid encodings, e.g., `\x00\xd8` is rejected by
-    // python-3.1[1-3], but accepted by us.
-    //
-    // TODO(bbannier): Test rejection of invalid UTF16 (but with even length).
-    CHECK_EQ(Bytes("\x00\xd8").decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), "");
+    // Lone high surrogate at the end of the input.
+    CHECK_EQ(Bytes("a\0\x3d\xd8"s).decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::REPLACE), "a\ufffd");
+    CHECK_EQ(Bytes("a\0\x3d\xd8"s).decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::IGNORE), "a");
 
     CHECK_THROWS_WITH_AS("123"_b.decode(unicode::Charset::Undef), "unknown character set for decoding",
                          const RuntimeError&);
