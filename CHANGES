@@ -1,3 +1,15 @@
+1.18.0-dev.63 | 2026-11-02 08:39:51 -0500
+
+  * Remove `readability-trailing-comma` due to FPs (Evan Typanski, Corelight)
+
+    This was added in 23.1. But, it's really annoying locally because it has
+    two false positives:
+
+    1) Default arguments, which should be fixed:
+       https://github.com/llvm/llvm-project/pull/220548
+    2) Multiline block comments, which I reported:
+       https://github.com/llvm/llvm-project/issues/237305
+
 1.18.0-dev.61 | 2026-10-30 17:57:09 +0100
 
   * Update visitor validation script for removed `nodes.decl` (Benjamin Bannier, Corelight)
