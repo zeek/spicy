@@ -108,7 +108,7 @@ struct Mutator : public optimizer::visitor::Mutator {
                     // If an update is read and in the `in` set of a node it is used.
                     auto it = std::ranges::find_if(t.in, [&](const auto& in) {
                         const auto& [decl, stmts] = in;
-                        return stmts.contains(stmt);
+                        return stmts.contains(stmt.node);
                     });
 
                     if ( it != t.in.end() )

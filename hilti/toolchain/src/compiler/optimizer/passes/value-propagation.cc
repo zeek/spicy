@@ -68,13 +68,15 @@ struct Invalidator : optimizer::visitor::Collector {
 };
 
 struct TransferVisitor : optimizer::visitor::Collector {
-    TransferVisitor(Optimizer* optimizer, PropagationMap* reaching_copies)
+    TransferVisitor(Optimizer* optimizer, PropagationMap* reaching_copies, const cfg::Transfer* transfer)
         : optimizer::visitor::Collector(optimizer),
           reaching_copies(reaching_copies),
-          invalidator(optimizer, reaching_copies) {}
+          invalidator(optimizer, reaching_copies),
+          transfer(transfer) {}
 
     PropagationMap* reaching_copies;
     Invalidator invalidator;
+    const cfg::Transfer* transfer;
 
     // Tries to resolve an expression to a known reaching value via the propagation map.
     Expression* resolveValue(Expression* expr) {
@@ -104,6 +106,14 @@ struct TransferVisitor : optimizer::visitor::Collector {
         if ( const auto* name = assign->target()->tryAs<expression::Name>() ) {
             if ( auto* decl = name->resolvedDeclaration() ) {
                 invalidateDependencies(decl, reaching_copies);
+
+                // An assignment inside the RHS of a short-circuit operator may not execute,
+                // so the LHS cannot be treated as a definite new reaching value.
+                if ( transfer && transfer->gen.contains(decl) && transfer->gen.at(decl).is_conditional ) {
+                    (*reaching_copies)[decl].propagate = false;
+                    return;
+                }
+
                 auto* source_expr = resolveValue(assign->source());
                 (*reaching_copies)[decl] = {.expr = source_expr, .propagate = (source_expr != nullptr)};
             }
@@ -243,16 +253,17 @@ struct Mutator : public optimizer::visitor::Mutator {
     std::map<Node*, AnalysisResult> analysis_results;
 
     void transfer(const CFG& cfg, const cfg::GraphNode& n, PropagationMap& new_out) {
+        const auto& dataflow = cfg.dataflow().at(n);
+
         // For copy propagation, we need to make sure the value is in scope.
         if ( n->isA<cfg::End>() ) {
-            const auto& transfer = cfg.dataflow().at(n);
-            for ( auto&& [decl, _] : transfer.kill ) {
+            for ( auto&& [decl, _] : dataflow.kill ) {
                 invalidateDependencies(decl, &new_out);
                 new_out.erase(decl);
             }
         }
 
-        TransferVisitor(optimizer(), &new_out).run(n.get());
+        TransferVisitor(optimizer(), &new_out, &dataflow).run(n.get());
     }
 
     void populateDataflow(AnalysisResult& result, const PropagationMap& init, const declaration::Function* function) {
