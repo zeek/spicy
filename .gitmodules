@@ -5,6 +5,7 @@
 [submodule "3rdparty/json"]
 	path = 3rdparty/json
 	url = https://github.com/nlohmann/json.git
+	branch = master
 	shallow = true
 [submodule "3rdparty/SafeInt"]
 	path = 3rdparty/SafeInt
