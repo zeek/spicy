@@ -1,0 +1,83 @@
+# @TEST-DOC: Validates that short-circuit expressions with conditional side effects are not misoptimized. Regression test for #2129.
+# @TEST-EXEC: hiltic %INPUT -dj
+
+module Test {
+
+import hilti;
+
+# || in declaration initializer.
+function void test_or() {
+    local x = "bad";
+    local x2 = (1 == 10) || ((x = "good") == "good");
+    assert(x == "good");
+
+    local y = "bad";
+    local y2 = (10 == 10) || ((y = "good") == "good");
+    assert(y == "bad");
+}
+
+# && in declaration initializer.
+function void test_and() {
+    local x = "bad";
+    local x2 = (1 != 10) && ((x = "good") == "good");
+    assert(x == "good");
+
+    local y = "bad";
+    local y2 = (10 != 10) && ((y = "good") == "good");
+    assert(y == "bad");
+}
+
+# || in if condition.
+function void test_if_or() {
+    local x = "bad";
+    if ( (1 == 10) || ((x = "good") == "good") ) {}
+    assert(x == "good");
+
+    local y = "bad";
+    if ( (10 == 10) || ((y = "good") == "good") ) {}
+    assert(y == "bad");
+}
+
+# && in if condition.
+function void test_if_and() {
+    local x = "bad";
+    if ( (1 != 10) && ((x = "good") == "good") ) {}
+    assert(x == "good");
+
+    local y = "bad";
+    if ( (10 != 10) && ((y = "good") == "good") ) {}
+    assert(y == "bad");
+}
+
+# || in while condition.
+function void test_while_or() {
+    local x = "bad";
+    while ( (1 == 10) || ((x = "good") == "bad") )
+        break;
+    assert(x == "good");
+
+    local y = "bad";
+    while ( (10 == 10) || ((y = "good") == "bad") )
+        break;
+    assert(y == "bad");
+}
+
+# Nested: (a || b) && c.
+function void test_nested() {
+    local x = "bad";
+    local bool x2 = ((1 == 10) || ((x = "good") == "good")) && True;
+    assert(x == "good");
+
+    local y = "bad";
+    local bool y2 = ((10 == 10) || ((y = "good") == "good")) && True;
+    assert(y == "bad");
+}
+
+test_or();
+test_and();
+test_if_or();
+test_if_and();
+test_while_or();
+test_nested();
+
+}
