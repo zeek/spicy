@@ -61,7 +61,7 @@ public type P1 = struct {
     method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_parse_foo__P1_stage2(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error);
 };
 public type P2 = struct {
-    uint<8> x &optional;
+    uint<8> x &optional &no-emit="private";
     uint<8> y &optional;
     weak_ref<const stream> _t_stream &internal &needed-by-feature="uses_stream";
     iterator<stream> _t_begin &internal &needed-by-feature="uses_random_access";
@@ -71,7 +71,7 @@ public type P2 = struct {
     spicy_rt::SinkState _t_sink &internal &needed-by-feature="supports_sinks";
     strong_ref<spicy_rt::Filters> _t_filters &internal &needed-by-feature="supports_filters";
     optional<hilti::RecoverableFailure> _t_error &always-emit &internal;
-    hook void _t_on_x(uint<8> _t_dd);
+    hook void _t_on_x();
     hook void _t_on_x_error(string _t_except);
     hook void _t_on_y(uint<8> _t_dd);
     hook void _t_on_y_error(string _t_except);
@@ -739,26 +739,32 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::P2::_t_parse_foo__P2_stage2(inout value_ref<stream> _t_data, iterator<stream> _t_begin, copy view<stream> _t_cur, copy bool _t_trim, copy int<64> _t_lah, copy iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error) {
     # "<...>/default-parser-functions.spicy:16:18-21:1"
     local tuple<view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_result();
-    local uint<8> _t_v_x;
+    local uint<8> _t_transient_x;
     try {
-        # "<...>/default-parser-functions.spicy:17:8-17:12"
+        # "<...>/default-parser-functions.spicy:17:5-17:13"
 
-        # Begin parsing production: Variable: x   -> uint<8>
-        spicy_rt::waitForInput(_t_data, _t_cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:17:8-17:12", ::_t_feat%foo@@P2%supports_filters ? (*self)._t_filters : Null);
-        (_t_v_x, _t_cur) = (*unpack<uint<8>>((_t_cur, hilti::ByteOrder::Network)));
+        # Begin parsing production: Skip: x   -> skip: x
+        local uint<64> _t_skip = 1;
 
-        if ( _t_trim ) 
-            (*_t_data).trim(begin(_t_cur));
+        while ( _t_skip > 0 ) {
+            spicy_rt::waitForInput(_t_data, _t_cur, 1, "not enough bytes for skipping", "<...>/default-parser-functions.spicy:17:5-17:13", ::_t_feat%foo@@P2%supports_filters ? (*self)._t_filters : Null);
+            local uint<64> _t_consume = |_t_cur| <= _t_skip ? |_t_cur| : _t_skip;
+            _t_cur = _t_cur.advance(_t_consume);
 
-        # End parsing production: Variable: x   -> uint<8>
+            if ( _t_trim ) 
+                (*_t_data).trim(begin(_t_cur));
 
-        (*self).x = _t_v_x;
+            _t_skip = _t_skip - _t_consume;
+        }
+
+        # End parsing production: Skip: x   -> skip: x
+
         (*self)._t_error = _t_error;
 
         if ( ::_t_feat%foo@@P2%uses_random_access || ::_t_feat%foo@@P2%uses_offset ) 
             (*self)._t_position_update = Null;
 
-        (*self)._t_on_x(_t_v_x);
+        (*self)._t_on_x();
 
         if ( ::_t_feat%foo@@P2%uses_random_access || ::_t_feat%foo@@P2%uses_offset ) 
 
