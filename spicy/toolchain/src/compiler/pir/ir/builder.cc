@@ -163,7 +163,9 @@ ForeignFunctionId Builder::createTargetForeignFunction(std::string name,
     });
 }
 
-void Builder::addParserRoot(TypeDeclId unit, FunctionId function, std::string name,
+void Builder::addParserRoot(TypeDeclId unit,
+                            FunctionId function,
+                            std::string name,
                             std::optional<ContextIdentity> context) {
     _package._parser_roots.push_back(
         ParserRoot{.unit = unit, .function = function, .name = std::move(name), .context = std::move(context)});
@@ -232,7 +234,9 @@ FunctionId Builder::createParserFunction(TypeDeclId unit,
     });
 }
 
-FunctionId Builder::createParserFunctionForTesting(TypeDeclId unit, std::vector<Parameter> parameters, TypeId unit_type) {
+FunctionId Builder::createParserFunctionForTesting(TypeDeclId unit,
+                                                   std::vector<Parameter> parameters,
+                                                   TypeId unit_type) {
     auto root_region = createRegion();
     return _package._functions.add(Function{
         .result_type = unit_type,
@@ -394,6 +398,10 @@ InstId Builder::addEnterBound(BlockId block, InstId state, InstId length, Source
 
 InstId Builder::addLeaveBound(BlockId block, InstId state, SourceSpanId span) {
     return addInst(block, Opcode::LeaveBound, {state}, parserStateType(), {}, span);
+}
+
+InstId Builder::addReleaseInput(BlockId block, InstId state, SourceSpanId span) {
+    return addInst(block, Opcode::ReleaseInput, {state}, parserStateType(), {}, span);
 }
 
 InstId Builder::addRepeatToBound(BlockId block, std::vector<InstId> carried, RegionId body, SourceSpanId span) {

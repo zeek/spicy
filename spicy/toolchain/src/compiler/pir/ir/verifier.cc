@@ -384,6 +384,11 @@ private:
                 bounded_states.insert(inst_id.index);
             else if ( inst.opcode == Opcode::EnterBound )
                 bounded_states.insert(inst_id.index);
+            else if ( inst.opcode == Opcode::ReleaseInput ) {
+                // Releasing input keeps the position and bounds of the state it receives.
+                if ( ! inst.args.empty() && bounded_states.contains(inst.args[0].index) )
+                    bounded_states.insert(inst_id.index);
+            }
             else if ( inst.opcode == Opcode::ReadInteger || inst.opcode == Opcode::ReadBytes ||
                       inst.opcode == Opcode::ParseSubunit ) {
                 if ( ! inst.args.empty() && bounded_states.contains(inst.args[0].index) )

@@ -1515,7 +1515,7 @@ struct UnitSpec {
     ir::FunctionId function;
     std::optional<ir::TypeId> context;      /**< the tuple type of the unit's shared `%context` */
     std::vector<std::string> context_names; /**< the names of the context's elements */
-    std::string context_type_name; /**< the declared name of the context's type, if it has one */
+    std::string context_type_name;          /**< the declared name of the context's type, if it has one */
     std::vector<std::pair<std::string, spicy::declaration::Hook*>> source_hooks; /**< `on %init` and the like */
     std::vector<ir::FunctionId> init_hooks; /**< run in order before the first field */
     std::vector<ir::FunctionId> hooks;      /**< run in order once the unit is complete */
@@ -1974,6 +1974,8 @@ private:
                 value = _builder.addTupleGet(block, repeated, 1, span);
                 state = _builder.addLeaveBound(block, state, span);
             }
+            // Nothing later reads the input before the cursor: values are extracted and `self` holds the fields.
+            state = _builder.addReleaseInput(block, state, span);
             unit_value = _builder.addPublishField(block, unit_value, value, field.declaration, span);
             published.emplace(std::string(field.source->id().local()), field.declaration);
             // Completed-field consumers observe the published field, and `$$` is the value as it was parsed.
