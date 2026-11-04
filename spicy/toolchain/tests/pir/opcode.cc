@@ -462,3 +462,83 @@ TEST_CASE("verifier rejects a field listed more than once in its owner's members
 }
 
 TEST_SUITE_END();
+
+TEST_CASE("a parser function may borrow a context place after its parser state") {
+    Package package;
+    auto builder = package.builder();
+    auto unit = builder.createUnitDecl("U");
+    auto context = builder.tupleType({builder.uint64Type(), builder.uint8Type()});
+    auto fn = builder.createParserFunction(unit, builder.parserStateType(), builder.unitType(unit), {}, context);
+    const auto& parameters = package.function(fn).parameters;
+
+    REQUIRE(parameters.size() == 2);
+    CHECK(parameters[1].mode == ParameterMode::BorrowMut);
+    CHECK(parameters[1].type == builder.placeType(context));
+
+    auto block = builder.createBlock(package.function(fn).root_region);
+    builder.addArgument(fn, block, 0);
+    builder.addArgument(fn, block, 1);
+
+    auto diags = verify(package);
+    CHECK(std::ranges::none_of(diags, [](auto& d) {
+        return d.definition == diag::ParserFunctionParameterCountMismatch ||
+               d.definition == diag::ParserFunctionParameterTypeMismatch ||
+               d.definition == diag::ParserFunctionContextParameterMismatch;
+    }));
+}
+
+TEST_CASE("a parser function's context borrow must be a place that holds a tuple") {
+    // Each case builds its own package, since type identities belong to one package.
+    auto verified = [](auto make_second) {
+        Package package;
+        auto builder = package.builder();
+        auto unit = builder.createUnitDecl("U");
+        auto fn =
+            builder.createParserFunctionForTesting(unit,
+                                                   {Parameter(builder.parserStateType()), make_second(builder, unit)},
+                                                   builder.unitType(unit));
+        auto block = builder.createBlock(package.function(fn).root_region);
+        builder.addArgument(fn, block, 0);
+        builder.addArgument(fn, block, 1);
+        return verify(package);
+    };
+    auto rejected = [](const auto& diags) {
+        return std::ranges::any_of(diags, [](auto& d) {
+            return d.definition == diag::ParserFunctionContextParameterMismatch;
+        });
+    };
+
+    // A borrowed unit is an acceptable borrow for an ordinary function, but not for a context.
+    CHECK(rejected(verified([](auto& b, auto unit) { return Parameter(b.unitType(unit), ParameterMode::BorrowMut); })));
+    // So is a place of something that is not a tuple, or a borrow that cannot write.
+    CHECK(rejected(
+        verified([](auto& b, auto) { return Parameter(b.placeType(b.uint64Type()), ParameterMode::BorrowMut); })));
+    CHECK(rejected(verified(
+        [](auto& b, auto) { return Parameter(b.placeType(b.tupleType({b.uint64Type()})), ParameterMode::Borrow); })));
+    CHECK(! rejected(verified([](auto& b, auto) {
+        return Parameter(b.placeType(b.tupleType({b.uint64Type()})), ParameterMode::BorrowMut);
+    })));
+}
+
+TEST_CASE("a parser root names exactly the elements of its context tuple") {
+    auto verified = [](std::vector<std::string> names) {
+        Package package;
+        auto builder = package.builder();
+        auto unit = builder.createUnitDecl("U");
+        auto fn = builder.createParserFunction(unit,
+                                               builder.parserStateType(),
+                                               builder.unitType(unit),
+                                               {},
+                                               builder.tupleType({builder.uint64Type()}));
+        auto block = builder.createBlock(package.function(fn).root_region);
+        builder.addArgument(fn, block, 0);
+        builder.addArgument(fn, block, 1);
+        builder.addParserRoot(unit, fn, "U", ContextIdentity{.name = "C", .elements = std::move(names)});
+        return std::ranges::any_of(verify(package),
+                                   [](auto& d) { return d.definition == diag::ParserRootContextMismatch; });
+    };
+
+    CHECK(! verified({"n"}));
+    CHECK(verified({}));
+    CHECK(verified({"n", "m"}));
+}

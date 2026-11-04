@@ -225,6 +225,7 @@ void checkProcedureRegion(const ir::Package& package, ir::RegionId region, std::
                 case ir::Opcode::Load:
                 case ir::Opcode::Store:
                 case ir::Opcode::Tuple:
+                case ir::Opcode::TupleGet:
                 case ir::Opcode::BoolConstant:
                 case ir::Opcode::StringConstant:
                 case ir::Opcode::BytesConstant:

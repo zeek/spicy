@@ -1,0 +1,119 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT -j driver.cc >legacy
+# @TEST-EXEC: cmp output legacy
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -p -D spicy-pir 2>&1 >/dev/null | rg "attached PIR-produced" >route
+# @TEST-EXEC: btest-diff route
+
+# @TEST-DOC: Shares a `%context` between the parsers of two directions through PIR. One parser updates a tuple of integers and the other observes the update. A suspended parser resumes with the instance it started with, even though the other direction changed it meanwhile, and a parser run without a context gets an instance of its own, so unrelated parses do not share state. The output must match the legacy build, optimized and not.
+
+module Test;
+
+type Connection = tuple<seen: uint64, last: uint8>;
+
+public type Request = unit {
+    %context = Connection;
+
+    first: uint8 {
+        self.context().last = $$;
+        self.context().seen = self.context().seen + 1;
+        print "request first", $$, self.context().seen, self.context().last;
+    }
+
+    second: uint8 {
+        print "request second", $$, self.context().seen, self.context().last;
+    }
+
+    on %done {
+        self.context().seen = self.context().seen + 100;
+    }
+};
+
+public type Reply = unit {
+    %context = Connection;
+
+    code: uint8 {
+        print "reply", $$, self.context().seen, self.context().last;
+        self.context().last = 0;
+    }
+
+    on %done {
+        self.context().seen = self.context().seen + 10;
+    }
+};
+
+@TEST-START-FILE driver.cc
+
+#include <iostream>
+#include <string>
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+using namespace hilti::rt::string::literals;
+
+static const spicy::rt::Parser* find(const char* name) {
+    for ( const auto* p : spicy::rt::parsers() )
+        if ( p->name == hilti::rt::String(name) )
+            return p;
+    return nullptr;
+}
+
+static auto stream(const std::string& data, bool freeze) {
+    auto s = hilti::rt::reference::make_value<hilti::rt::Stream>(hilti::rt::Bytes(data));
+    if ( freeze )
+        s->freeze();
+    return s;
+}
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    const auto* request = find("Test::Request");
+    const auto* reply = find("Test::Reply");
+    if ( ! request || ! reply )
+        return 1;
+
+    auto context = request->createContext();
+    std::cout << "context " << (context ? "created" : "missing") << std::endl;
+
+    // The request is suspended after its first byte while the other direction runs.
+    auto request_input = stream("A", false);
+    auto pending = request->parse1(request_input, {}, context);
+    std::cout << "request " << (pending ? "done" : "suspended") << std::endl;
+
+    auto reply_input = stream("R", true);
+    reply->parse1(reply_input, {}, context);
+
+    request_input->append(hilti::rt::Bytes(std::string("B")));
+    request_input->freeze();
+    pending.resume();
+    std::cout << "request " << (pending ? "done" : "suspended") << std::endl;
+
+    // Both directions see the total of all updates.
+    auto again_input = stream("CD", true);
+    request->parse1(again_input, {}, context);
+    auto again_reply = stream("S", true);
+    reply->parse1(again_reply, {}, context);
+
+    // Without a context, each parse starts from a fresh instance.
+    auto alone_one = stream("EF", true);
+    request->parse1(alone_one, {}, {});
+    auto alone_two = stream("GH", true);
+    request->parse1(alone_two, {}, {});
+
+    // A second connection has an instance of its own.
+    auto other = request->createContext();
+    auto other_input = stream("IJ", true);
+    request->parse1(other_input, {}, other);
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    hilti::rt::init();
+    spicy::rt::init();
+    auto result = hilti_main();
+    hilti::rt::done();
+    return result;
+}
+
+@TEST-END-FILE

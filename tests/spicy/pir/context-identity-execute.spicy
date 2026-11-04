@@ -1,0 +1,89 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT -j driver.cc >legacy
+# @TEST-EXEC: cmp output legacy
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -p -D spicy-pir 2>&1 >/dev/null | rg "attached PIR-produced" >route
+# @TEST-EXEC: btest-diff route
+
+# @TEST-DOC: The runtime tells contexts apart by their declared type. A context is shared by parsers that declare the same type, and a parser that declares another type refuses it, even if both are tuples of the same shape. Contexts declared inline as tuples are the same type if their elements are the same. The output must match the legacy build, optimized and not.
+
+module Test;
+
+type Connection = tuple<seen: uint64, last: uint8>;
+type Other = tuple<counter: uint64, code: uint8>;
+
+public type Request = unit {
+    %context = Connection;
+    first: uint8 { self.context().seen = self.context().seen + 1; print "request", self.context().seen; }
+};
+
+public type Peer = unit {
+    %context = Connection;
+    first: uint8 { self.context().seen = self.context().seen + 10; print "peer", self.context().seen; }
+};
+
+public type Stranger = unit {
+    %context = Other;
+    first: uint8 { print "stranger", self.context().counter; }
+};
+
+public type InlineOne = unit {
+    %context = tuple<n: uint64>;
+    first: uint8 { self.context().n = self.context().n + 1; print "inline one", self.context().n; }
+};
+
+public type InlineTwo = unit {
+    %context = tuple<n: uint64>;
+    first: uint8 { self.context().n = self.context().n + 1; print "inline two", self.context().n; }
+};
+
+@TEST-START-FILE driver.cc
+
+#include <iostream>
+#include <string>
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+static const spicy::rt::Parser* find(const char* name) {
+    for ( const auto* p : spicy::rt::parsers() )
+        if ( p->name == hilti::rt::String(name) )
+            return p;
+    return nullptr;
+}
+
+static void run(const char* label, const spicy::rt::Parser* parser, const hilti::rt::Optional<spicy::rt::UnitContext>& context) {
+    std::cout << label << ":" << std::endl;
+    auto data = hilti::rt::reference::make_value<hilti::rt::Stream>(hilti::rt::Bytes(std::string("X")));
+    data->freeze();
+    try {
+        parser->parse1(data, {}, context);
+    } catch ( const std::exception& e ) {
+        std::cout << "exception " << hilti::rt::demangle(typeid(e).name()) << std::endl;
+    }
+}
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    auto context = find("Test::Request")->createContext();
+    run("request", find("Test::Request"), context);
+    run("peer", find("Test::Peer"), context);
+    run("stranger", find("Test::Stranger"), context);
+    run("request again", find("Test::Request"), context);
+
+    auto inline_context = find("Test::InlineOne")->createContext();
+    run("inline one", find("Test::InlineOne"), inline_context);
+    run("inline two", find("Test::InlineTwo"), inline_context);
+    run("inline against named", find("Test::Request"), inline_context);
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    hilti::rt::init();
+    spicy::rt::init();
+    auto result = hilti_main();
+    hilti::rt::done();
+    return result;
+}
+
+@TEST-END-FILE

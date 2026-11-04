@@ -163,8 +163,10 @@ ForeignFunctionId Builder::createTargetForeignFunction(std::string name,
     });
 }
 
-void Builder::addParserRoot(TypeDeclId unit, FunctionId function, std::string name) {
-    _package._parser_roots.push_back(ParserRoot{.unit = unit, .function = function, .name = std::move(name)});
+void Builder::addParserRoot(TypeDeclId unit, FunctionId function, std::string name,
+                            std::optional<ContextIdentity> context) {
+    _package._parser_roots.push_back(
+        ParserRoot{.unit = unit, .function = function, .name = std::move(name), .context = std::move(context)});
 }
 
 void Builder::addFunctionRoot(FunctionId function) { _package._function_roots.push_back(function); }
@@ -210,15 +212,34 @@ FunctionId Builder::createFunction(std::string name,
     });
 }
 
-FunctionId Builder::createParserFunction(TypeDeclId unit, TypeId state_type, TypeId unit_type, SourceSpanId span) {
+FunctionId Builder::createParserFunction(TypeDeclId unit,
+                                         TypeId state_type,
+                                         TypeId unit_type,
+                                         SourceSpanId span,
+                                         std::optional<TypeId> context) {
+    std::vector<Parameter> parameters = {Parameter(state_type)};
+    if ( context )
+        parameters.emplace_back(placeType(*context), ParameterMode::BorrowMut);
+
     auto root_region = createRegion();
     return _package._functions.add(Function{
         .result_type = unit_type,
         .root_region = root_region,
         .kind = FunctionKind::Parser,
-        .parameters = {state_type},
+        .parameters = std::move(parameters),
         .parser_unit = unit,
         .span = span,
+    });
+}
+
+FunctionId Builder::createParserFunctionForTesting(TypeDeclId unit, std::vector<Parameter> parameters, TypeId unit_type) {
+    auto root_region = createRegion();
+    return _package._functions.add(Function{
+        .result_type = unit_type,
+        .root_region = root_region,
+        .kind = FunctionKind::Parser,
+        .parameters = std::move(parameters),
+        .parser_unit = unit,
     });
 }
 
