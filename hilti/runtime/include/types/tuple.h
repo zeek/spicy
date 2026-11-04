@@ -10,6 +10,7 @@
 
 #include <hilti/rt/configuration.h>
 #include <hilti/rt/extension-points.h>
+#include <hilti/rt/fmt.h>
 #include <hilti/rt/util.h>
 
 namespace hilti::rt {
@@ -380,6 +381,15 @@ void print(const Tuple<Ts...>& x, bool newline = true) {
         cout << '\n';
     else
         cout.flush();
+}
+
+/** Formats the elements of a tuple into `format`, as the string modulo operator does for a tuple constructor. */
+template<typename Result = String, typename Format, typename... Ts>
+Result fmt(const Format& format, const Tuple<Ts...>& x) {
+    auto formatted = [&]<std::size_t... Is>(std::index_sequence<Is...> /*unused*/) {
+        return rt::fmt(std::string_view(format), tuple::get<Is>(x)...);
+    }(std::index_sequence_for<Ts...>{});
+    return Result(std::string_view(formatted));
 }
 
 } // namespace tuple

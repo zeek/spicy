@@ -1131,6 +1131,12 @@ void lowerParserEntry(::hilti::Builder& builder,
         fb.equal(fb.member(fb.id(::hilti::ID("result")), "kind"), fb.id(::hilti::ID("OutcomeKind::Success")), meta);
     auto returned = fb.addIf(success, meta);
     returned->addReturn(returned->member(returned->id(::hilti::ID("result")), "cursor"), meta);
+    // Input that holds a gap is reported as the runtime reports missing data, and every other ending is a parse error.
+    auto gap = fb.addIf(fb.equal(fb.member(fb.id(::hilti::ID("result")), "kind"),
+                                 fb.id(::hilti::ID("OutcomeKind::Gap")),
+                                 meta),
+                        meta);
+    gap->addThrow(gap->exception(gap->typeName("hilti::MissingData"), "gap in input", meta), meta);
     fb.addThrow(fb.exception(fb.typeName("spicy_rt::ParseError"), "parsing did not complete", meta), meta);
     decls.push_back(builder.function(::hilti::ID(parse1),
                                      view_type,

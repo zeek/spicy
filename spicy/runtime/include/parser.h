@@ -460,8 +460,8 @@ public:
 
 namespace detail {
 
-// Rejects a context that a parser cannot use. Parsers compiled by the experimental Parser IR do not support contexts
-// yet.
+// Rejects a context that a parser cannot use. A parser compiled by the experimental Parser IR that declares no
+// `%context` refuses one that the runtime hands to it.
 inline void rejectUnitContext(const hilti::rt::Optional<UnitContext>& ctx) {
     if ( ctx )
         throw ParseError("unit contexts are not supported by this parser");

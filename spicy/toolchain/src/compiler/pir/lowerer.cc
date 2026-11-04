@@ -37,6 +37,7 @@
 #include <hilti/ast/function.h>
 #include <hilti/ast/operator.h>
 #include <hilti/ast/operators/set.h>
+#include <hilti/ast/operators/string.h>
 #include <hilti/ast/operators/vector.h>
 #include <hilti/ast/statements/block.h>
 #include <hilti/ast/statements/comment.h>
@@ -335,6 +336,8 @@ public:
                 return _lowerVectorReserve(reserve);
             if ( auto* add = op->tryAs<hilti::operator_::set::Add>() )
                 return _lowerSetInsert(add);
+            if ( op->isA<hilti::operator_::string::Modulo>() )
+                return _lowerFormat(op);
             if ( op->kind() == hilti::operator_::Kind::MemberCall )
                 return _unsupported("unsupported method call", expr->meta().location());
             if ( op->kind() == hilti::operator_::Kind::Member ) {
@@ -455,6 +458,9 @@ private:
             ctor = coerced->coercedCtor();
         return ctor && (ctor->isA<hilti::ctor::SignedInteger>() || ctor->isA<hilti::ctor::UnsignedInteger>());
     }
+
+    // `"..." % (a, b)`: the runtime formats the values of a tuple constructor into the string.
+    std::variant<ir::InstId, UnsupportedFeature> _lowerFormat(hilti::expression::ResolvedOperator* op);
 
     // `==` on two values of the same integer or bool type, which the PIR verifier restricts to the same types.
     std::variant<ir::InstId, UnsupportedFeature> _lowerEqual(hilti::expression::ResolvedOperator* op) {
@@ -970,6 +976,22 @@ public:
 
     const std::vector<TargetBinding>& bindings() const { return _bindings; }
 
+    // The runtime's formatting of a tuple of values into a format string.
+    ir::ForeignFunctionId formatter() {
+        if ( ! _format.isSet() ) {
+            std::vector<ir::ForeignParameter> parameters;
+            parameters.emplace_back(_builder.stringType());
+            parameters.emplace_back(ir::TypeId(), ir::ForeignArgument::AnyTuple);
+            _format = _builder.createForeignFunction("formatTuple",
+                                                     "hilti::rt::tuple::fmt",
+                                                     std::move(parameters),
+                                                     _builder.stringType(),
+                                                     ir::SourceSpanId(),
+                                                     true);
+        }
+        return _format;
+    }
+
     // The runtime's `hilti::print` (one value) or `hilti::printTuple` (several values) with a newline.
     ir::ForeignFunctionId printer(bool tuple) {
         auto& slot = tuple ? _print_tuple : _print;
@@ -1078,6 +1100,7 @@ private:
     std::unordered_map<const type::Unit*, UnitInfo> _units;
     ir::ForeignFunctionId _print;
     ir::ForeignFunctionId _print_tuple;
+    ir::ForeignFunctionId _format;
     ir::ForeignFunctionId _linked_artifact_scope;
     std::vector<TargetBinding> _bindings;
 };
@@ -1390,6 +1413,30 @@ std::optional<UnsupportedFeature> BodyLowerer::lowerStatement(hilti::Statement* 
 
     return _unsupported("only return, print, local declarations, assignments, and calls are supported",
                         stmt->meta().location());
+}
+
+std::variant<ir::InstId, UnsupportedFeature> BodyLowerer::_lowerFormat(hilti::expression::ResolvedOperator* op) {
+    auto loc = op->meta().location();
+    auto* ctor = op->op1()->tryAs<hilti::expression::Ctor>();
+    auto* tuple = ctor ? ctor->ctor()->tryAs<hilti::ctor::Tuple>() : nullptr;
+    if ( ! tuple )
+        return _unsupported("only a tuple constructor can supply the values of a format string", loc);
+
+    auto format = lower(op->op0());
+    if ( auto* feature = std::get_if<UnsupportedFeature>(&format) )
+        return *feature;
+
+    std::vector<ir::InstId> values;
+    for ( auto* element : tuple->value() ) {
+        auto value = lower(element);
+        if ( auto* feature = std::get_if<UnsupportedFeature>(&value) )
+            return *feature;
+        values.push_back(std::get<ir::InstId>(value));
+    }
+
+    auto span = internSpan(_package, loc);
+    auto arguments = _builder.addTuple(_block, std::move(values), span);
+    return _builder.addOpaqueOp(_block, _procedures.formatter(), {std::get<ir::InstId>(format), arguments}, span);
 }
 
 std::variant<ir::InstId, UnsupportedFeature> BodyLowerer::_lowerCall(hilti::expression::ResolvedOperator* op) {
