@@ -503,7 +503,7 @@ inline uint8_t atoi_n(std::string_view input, uint8_t base, Result* result)
     // integer when iterating digits. We pick `uint64_t` since it is large
     // enough to handle any type we need to handle.
     static_assert(max_value <= std::numeric_limits<uint64_t>::max());
-    const auto* const digits = it;
+    const auto digits = it;
     uint64_t n = 0;
     for ( ; it != input.end(); ++it ) {
         auto c = *it;
