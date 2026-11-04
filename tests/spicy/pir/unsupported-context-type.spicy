@@ -1,0 +1,13 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: A context that is not a tuple of named integers falls back.
+
+module Test;
+
+type Names = tuple<names: vector<bytes>>;
+
+public type Holder = unit {
+    %context = Names;
+    value: uint8;
+};

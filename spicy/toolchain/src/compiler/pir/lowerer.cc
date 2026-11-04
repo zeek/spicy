@@ -63,8 +63,10 @@
 
 #include <spicy/ast/declarations/hook.h>
 #include <spicy/ast/declarations/unit-hook.h>
+#include <spicy/ast/operators/unit.h>
 #include <spicy/ast/statements/print.h>
 #include <spicy/ast/types/unit-items/field.h>
+#include <spicy/ast/types/unit-items/property.h>
 #include <spicy/ast/types/unit-items/unit-hook.h>
 #include <spicy/ast/types/unit.h>
 #include <spicy/ast/visitor.h>
@@ -243,6 +245,13 @@ public:
 
     void bind(const hilti::Declaration* decl, Variable variable) { _variables.emplace(decl, variable); }
 
+    // Makes `place` the `%context` instance that `self.context()` names. Its members are the named elements of the
+    // tuple that `names` lists.
+    void setContext(ir::InstId place, std::vector<std::string> names) {
+        _context = place;
+        _context_names = std::move(names);
+    }
+
     // Makes `self` the unit being parsed, whose fields are the given published declarations by name.
     void setSelf(ir::InstId unit, std::unordered_map<std::string, ir::DeclId> fields) {
         _self = unit;
@@ -329,6 +338,17 @@ public:
             if ( op->kind() == hilti::operator_::Kind::MemberCall )
                 return _unsupported("unsupported method call", expr->meta().location());
             if ( op->kind() == hilti::operator_::Kind::Member ) {
+                if ( auto element = _contextElement(op) ) {
+                    if ( auto* feature = std::get_if<UnsupportedFeature>(&*element) )
+                        return *feature;
+                    return _builder.addTupleGet(_block,
+                                                _builder.addLoad(_block,
+                                                                 std::get<ContextElement>(*element).place,
+                                                                 internSpan(_package, expr->meta().location())),
+                                                std::get<ContextElement>(*element).index,
+                                                internSpan(_package, expr->meta().location()));
+                }
+
                 auto place = _fieldPlace(op);
                 if ( auto* feature = std::get_if<UnsupportedFeature>(&place) )
                     return *feature;
@@ -529,6 +549,73 @@ private:
     // any other expression of unit type is unsupported rather than copied.
     std::variant<UnitRef, UnsupportedFeature> _unit(hilti::Expression* expr);
 
+    // One named element of the context's tuple.
+    struct ContextElement {
+        ir::InstId place;
+        uint32_t index = 0;
+    };
+
+    // Whether `expr` is `self.context()`, the place of the unit's `%context` instance.
+    bool _isContextCall(hilti::Expression* expr) {
+        while ( auto* coerced = expr->tryAs<hilti::expression::Coerced>() )
+            expr = coerced->expression();
+
+        auto* op = expr->tryAs<hilti::expression::ResolvedOperator>();
+        if ( ! op ||
+             ! (op->isA<spicy::operator_::unit::ContextConst>() || op->isA<spicy::operator_::unit::ContextNonConst>()) )
+            return false;
+
+        auto* self = op->op0()->tryAs<hilti::expression::Name>();
+        return self && self->id() == hilti::ID("self");
+    }
+
+    // `self.context().<element>`, which names an element of the context. Nothing if `op` is not that form.
+    std::optional<std::variant<ContextElement, UnsupportedFeature>> _contextElement(
+        hilti::expression::ResolvedOperator* op) {
+        auto* member = op->op1() ? op->op1()->tryAs<hilti::expression::Member>() : nullptr;
+        if ( ! member )
+            return std::nullopt;
+
+        auto* base = op->op0();
+        while ( true ) {
+            if ( auto* coerced = base->tryAs<hilti::expression::Coerced>() )
+                base = coerced->expression();
+            else if ( auto* inner = base->tryAs<hilti::expression::ResolvedOperator>();
+                      inner && inner->kind() == hilti::operator_::Kind::Deref )
+                base = inner->op0();
+            else
+                break;
+        }
+
+        if ( ! _isContextCall(base) )
+            return std::nullopt;
+        if ( ! _context )
+            return _unsupported("the context is not available here", op->meta().location());
+
+        for ( uint32_t i = 0; i < _context_names.size(); ++i )
+            if ( _context_names[i] == std::string(member->id()) )
+                return ContextElement{.place = *_context, .index = i};
+        return _unsupported(fmt("context element '%s' is not supported", std::string(member->id())),
+                            op->meta().location());
+    }
+
+    // Stores `value` in element `target` of the context. The tuple is rebuilt from its other elements.
+    std::optional<UnsupportedFeature> _storeContextElement(const ContextElement& target,
+                                                           ir::InstId value,
+                                                           const hilti::Location& loc) {
+        auto span = internSpan(_package, loc);
+        auto tuple = _builder.addLoad(_block, target.place, span);
+        const auto& type = _package.type(_package.inst(tuple).result_type);
+        if ( type.type_arguments[target.index] != _package.inst(value).result_type )
+            return _unsupported("the value must have the type of the context element", loc);
+
+        std::vector<ir::InstId> elements;
+        for ( uint32_t i = 0; i < type.type_arguments.size(); ++i )
+            elements.push_back(i == target.index ? value : _builder.addTupleGet(_block, tuple, i, span));
+        _builder.addStore(_block, target.place, _builder.addTuple(_block, std::move(elements), span), span);
+        return std::nullopt;
+    }
+
     // `<unit>.<field>`, addressed through the unit object that the expression names.
     std::variant<ir::InstId, UnsupportedFeature> _fieldPlace(hilti::expression::ResolvedOperator* op) {
         auto* member = op->op1() ? op->op1()->tryAs<hilti::expression::Member>() : nullptr;
@@ -622,6 +709,8 @@ private:
     std::unordered_map<const hilti::Declaration*, Variable> _variables;
     std::unordered_set<const hilti::Declaration*> _moved; /**< non-copyable variables already read */
     std::optional<ir::InstId> _self;
+    std::optional<ir::InstId> _context; /**< the place that holds the unit's `%context` instance */
+    std::vector<std::string> _context_names;
     std::unordered_map<std::string, ir::DeclId> _fields;
 };
 
@@ -1257,6 +1346,22 @@ std::optional<UnsupportedFeature> BodyLowerer::lowerStatement(hilti::Statement* 
     if ( auto* expr_stmt = stmt->tryAs<hilti::statement::Expression>() ) {
         auto* expr = expr_stmt->expression();
         if ( auto* assign = expr->tryAs<hilti::expression::Assign>() ) {
+            if ( auto* target_op = assign->target()->tryAs<hilti::expression::ResolvedOperator>();
+                 target_op && target_op->kind() == hilti::operator_::Kind::Member ) {
+                if ( auto element = _contextElement(target_op) ) {
+                    if ( auto* feature = std::get_if<UnsupportedFeature>(&*element) )
+                        return *feature;
+
+                    auto source = lower(assign->source());
+                    if ( auto* feature = std::get_if<UnsupportedFeature>(&source) )
+                        return *feature;
+
+                    return _storeContextElement(std::get<ContextElement>(*element),
+                                                std::get<ir::InstId>(source),
+                                                stmt->meta().location());
+                }
+            }
+
             auto target = _place(assign->target());
             if ( auto* feature = std::get_if<UnsupportedFeature>(&target) )
                 return *feature;
@@ -1361,6 +1466,9 @@ struct UnitSpec {
     std::vector<FieldSpec> fields;
     ir::TypeDeclId declaration;
     ir::FunctionId function;
+    std::optional<ir::TypeId> context;      /**< the tuple type of the unit's shared `%context` */
+    std::vector<std::string> context_names; /**< the names of the context's elements */
+    std::string context_type_name; /**< the declared name of the context's type, if it has one */
     std::vector<std::pair<std::string, spicy::declaration::Hook*>> source_hooks; /**< `on %init` and the like */
     std::vector<ir::FunctionId> init_hooks; /**< run in order before the first field */
     std::vector<ir::FunctionId> hooks;      /**< run in order once the unit is complete */
@@ -1427,7 +1535,8 @@ public:
             spec.function = _builder.createParserFunction(spec.declaration,
                                                           _builder.parserStateType(),
                                                           _builder.unitType(spec.declaration),
-                                                          internSpan(_package, spec.source->meta().location()));
+                                                          internSpan(_package, spec.source->meta().location()),
+                                                          spec.context);
 
         for ( auto& spec : _units ) {
             if ( auto error = _addHooks(spec) )
@@ -1441,7 +1550,10 @@ public:
 
         for ( auto* root : _roots ) {
             const auto& spec = _spec(root->type()->type()->as<type::Unit>());
-            _builder.addParserRoot(spec.declaration, spec.function, std::string(spec.unit->typeID().str()));
+            std::optional<ir::ContextIdentity> context;
+            if ( spec.context )
+                context = ir::ContextIdentity{.name = spec.context_type_name, .elements = spec.context_names};
+            _builder.addParserRoot(spec.declaration, spec.function, std::string(spec.unit->typeID().str()), context);
         }
         return std::nullopt;
     }
@@ -1480,15 +1592,49 @@ private:
             if ( ! unit->propertyItems(property).empty() )
                 return reject(fmt("unit property '%s' is not supported yet", property), decl->meta().location());
         }
-        if ( ! unit->parameters().empty() || (unit->attributes() && *unit->attributes()) || unit->contextType() )
-            return reject("unit parameters, attributes, and context are not supported", decl->meta().location());
+        if ( ! unit->parameters().empty() || (unit->attributes() && *unit->attributes()) )
+            return reject("unit parameters and attributes are not supported", decl->meta().location());
 
         UnitSpec spec{.source = decl, .unit = unit};
+        if ( auto* context = unit->contextType() ) {
+            // The runtime shares one context instance among the parsers of a connection, which only a root can receive.
+            if ( ! _root_units.contains(unit) )
+                return reject("only a public unit can have a context", decl->meta().location());
+
+            const auto* tuple = context->tryAs<hilti::type::Tuple>();
+            if ( const auto* named = context->tryAs<hilti::type::Name>(); named && named->resolvedType() )
+                tuple = named->resolvedType()->tryAs<hilti::type::Tuple>();
+            if ( ! tuple || tuple->elements().empty() )
+                return reject("only a tuple of named integers can be a context", decl->meta().location());
+
+            for ( const auto* element : tuple->elements() ) {
+                const auto* element_type = element->type()->type();
+                const auto* unsigned_type = element_type->tryAs<hilti::type::UnsignedInteger>();
+                const auto* signed_type = element_type->tryAs<hilti::type::SignedInteger>();
+                const bool supported =
+                    (unsigned_type && (unsigned_type->width() == 8 || unsigned_type->width() == 64)) ||
+                    (signed_type && signed_type->width() == 64);
+                if ( ! element->id() || ! supported )
+                    return reject("only a tuple of named integers can be a context", decl->meta().location());
+                spec.context_names.push_back(std::string(element->id()));
+            }
+
+            spec.context_type_name = std::string(tuple->typeID());
+            auto type = _procedures.valueType(tuple);
+            if ( ! type )
+                return reject("unsupported context type", decl->meta().location());
+            spec.context = *type;
+        }
         for ( auto* item : unit->items() ) {
             if ( auto* unit_hook = item->tryAs<type::unit::item::UnitHook>() ) {
                 spec.source_hooks.emplace_back(std::string(unit_hook->id().local()), unit_hook->hook());
                 continue;
             }
+
+            // The context declaration is already known from the unit's type.
+            if ( auto* property = item->tryAs<type::unit::item::Property>();
+                 property && property->id() == hilti::ID("%context") )
+                continue;
 
             auto* field = item->tryAs<type::unit::item::Field>();
             if ( ! field )
@@ -1685,6 +1831,8 @@ private:
         bool has_value = field && (field->form == FieldForm::Integer || field->form == FieldForm::Bytes);
         if ( has_value )
             params.emplace_back(field->type, ir::ParameterMode::Take);
+        if ( spec.context )
+            params.emplace_back(_builder.placeType(*spec.context), ir::ParameterMode::BorrowMut);
 
         auto id = _builder.createFunction(fmt("%s_hook", std::string(spec.source->id().local())),
                                           std::move(params),
@@ -1701,6 +1849,8 @@ private:
         body.setSelf(self, std::move(fields));
         if ( has_value && hook->dd() )
             body.bind(hook->dd(), Variable{.value = _builder.addArgument(id, block, 1, span)});
+        if ( spec.context )
+            body.setContext(_builder.addArgument(id, block, has_value ? 2 : 1, span), spec.context_names);
 
         if ( auto error = body.lowerStatements(hook->body()->statements()) )
             return *error;
@@ -1717,9 +1867,16 @@ private:
         auto unit_span = internSpan(_package, spec.source->meta().location());
         auto block = _builder.createBlock(_package.function(spec.function).root_region);
         auto state = _builder.addArgument(spec.function, block, 0, unit_span);
+        std::optional<ir::InstId> context;
+        if ( spec.context )
+            context = _builder.addArgument(spec.function, block, 1, unit_span);
         auto unit_value = _builder.addUnitCreate(block, spec.declaration, unit_span);
-        for ( auto hook : spec.init_hooks )
-            _builder.addCall(block, hook, {unit_value}, unit_span);
+        for ( auto hook : spec.init_hooks ) {
+            std::vector<ir::InstId> args = {unit_value};
+            if ( context )
+                args.push_back(*context);
+            _builder.addCall(block, hook, args, unit_span);
+        }
         // The fields published so far, which a later `&size` may read through `self`.
         std::unordered_map<std::string, ir::DeclId> published;
         for ( const auto& field : spec.fields ) {
@@ -1742,6 +1899,8 @@ private:
                 // A bound is an expression, so it never adds blocks and needs no region.
                 BodyLowerer bound(_procedures, _package, ir::RegionId(), block, feature);
                 bound.setSelf(unit_value, published);
+                if ( context )
+                    bound.setContext(*context, spec.context_names);
                 auto length = bound.lower(field.bound);
                 if ( auto* unsupported_feature = std::get_if<UnsupportedFeature>(&length) )
                     return *unsupported_feature;
@@ -1775,12 +1934,18 @@ private:
                 std::vector<ir::InstId> args = {unit_value};
                 if ( field.form != FieldForm::Vector )
                     args.push_back(value);
+                if ( context )
+                    args.push_back(*context);
                 _builder.addCall(block, hook, args, span);
             }
         }
         // The parser chooses where the consumers run and in what order, and calls them like any other procedure.
-        for ( auto hook : spec.hooks )
-            _builder.addCall(block, hook, {unit_value}, unit_span);
+        for ( auto hook : spec.hooks ) {
+            std::vector<ir::InstId> args = {unit_value};
+            if ( context )
+                args.push_back(*context);
+            _builder.addCall(block, hook, args, unit_span);
+        }
         _builder.addParserFinish(block, state, unit_value, unit_span);
         return std::nullopt;
     }

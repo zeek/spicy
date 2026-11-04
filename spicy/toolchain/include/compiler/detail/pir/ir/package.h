@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <optional>
 #include <string>
 #include <type_traits>
 #include <vector>
@@ -103,11 +104,22 @@ struct Function {
     SourceSpanId span;
 };
 
+/**
+ * What the runtime needs to tell contexts apart: the runtime compares the type information of a context that it hands
+ * from one parser to another, so a context keeps the identity that its source declared even though PIR computes with
+ * a structural tuple.
+ */
+struct ContextIdentity {
+    std::string name;                  /**< the declared type's qualified name; empty for an unnamed tuple */
+    std::vector<std::string> elements; /**< the names of the tuple's elements, in order */
+};
+
 /** One selected, fully lowered parser implementation, in source order. */
 struct ParserRoot {
     TypeDeclId unit;
     FunctionId function;
     std::string name; /**< the parser's exported, qualified name */
+    std::optional<ContextIdentity> context; /**< set exactly when the parser function takes a context */
 };
 
 /**

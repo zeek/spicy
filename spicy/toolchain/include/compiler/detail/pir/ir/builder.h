@@ -60,6 +60,7 @@ public:
                                             bool have_prototype = false);
 
     /** Adds unchecked declaration content for verifier tests: does not append to `owner`'s fields. */
+    FunctionId createParserFunctionForTesting(TypeDeclId unit, std::vector<Parameter> parameters, TypeId unit_type);
     DeclId createFieldDeclForTesting(TypeDeclId owner, std::string name, TypeId type, SourceSpanId span = {});
     /** Appends `field` to `owner`'s fields list again, for verifier tests of duplicate membership. */
     void appendFieldForTesting(TypeDeclId owner, DeclId field);
@@ -73,7 +74,8 @@ public:
     /** Appends a module-level function to run at the given initialization phase. */
     void addInitializer(InitPhase phase, FunctionId function);
     /** Appends a selected parser implementation; call only once the function is complete. */
-    void addParserRoot(TypeDeclId unit, FunctionId function, std::string name = {});
+    void addParserRoot(TypeDeclId unit, FunctionId function, std::string name = {},
+                       std::optional<ContextIdentity> context = {});
     /** Appends a selected public ordinary function; call only once the function is complete. */
     void addFunctionRoot(FunctionId function);
     /** Records a native header to include; repeated headers are ignored. */
@@ -86,7 +88,15 @@ public:
                               TypeId result_type,
                               SourceSpanId span = {});
     /** Creates a `FunctionKind::Parser` function whose one parameter is `state_type`. */
-    FunctionId createParserFunction(TypeDeclId unit, TypeId state_type, TypeId unit_type, SourceSpanId span = {});
+    /**
+     * Creates a parser function. A parser that shares a `%context` instance with other parsers also takes a writable
+     * borrow of the place that holds it, whose value type is `context`.
+     */
+    FunctionId createParserFunction(TypeDeclId unit,
+                                    TypeId state_type,
+                                    TypeId unit_type,
+                                    SourceSpanId span = {},
+                                    std::optional<TypeId> context = {});
     RegionId createRegion();
     BlockId createBlock(RegionId region);
 

@@ -276,6 +276,17 @@ public:
 
         if ( fn.parser_unit != root.unit )
             _emitter.emit(diag::ParserRootUnitMismatch, root.function);
+
+        if ( root.context.has_value() != (fn.parameters.size() == 2) )
+            _emitter.emit(diag::ParserRootContextMismatch, root.function);
+        else if ( root.context && _package.isValid(fn.parameters[1].type) &&
+                  _package.type(fn.parameters[1].type).kind == TypeKind::Place &&
+                  _package.type(fn.parameters[1].type).type_arguments.size() == 1 ) {
+            // Every element of the context's tuple has a name, and nothing else does.
+            const auto& tuple = _package.type(_package.type(fn.parameters[1].type).type_arguments[0]);
+            if ( tuple.kind == TypeKind::Tuple && tuple.type_arguments.size() != root.context->elements.size() )
+                _emitter.emit(diag::ParserRootContextMismatch, root.function);
+        }
     }
 
 private:
@@ -292,12 +303,18 @@ private:
             return;
         }
 
-        if ( fn.parameters.size() != 1 )
+        if ( fn.parameters.empty() || fn.parameters.size() > 2 )
             _emitter.emit(diag::ParserFunctionParameterCountMismatch, id, fn.parameters.size());
         else if ( ! _package.isValid(fn.parameters[0].type) ||
                   _package.type(fn.parameters[0].type).kind != TypeKind::ParserState ||
                   fn.parameters[0].mode != ParameterMode::Take )
             _emitter.emit(diag::ParserFunctionParameterTypeMismatch, id);
+        else if ( fn.parameters.size() == 2 &&
+                  (fn.parameters[1].mode != ParameterMode::BorrowMut || ! _package.isValid(fn.parameters[1].type) ||
+                   _package.type(fn.parameters[1].type).kind != TypeKind::Place ||
+                   _package.type(fn.parameters[1].type).type_arguments.size() != 1 ||
+                   _package.type(_package.type(fn.parameters[1].type).type_arguments[0]).kind != TypeKind::Tuple) )
+            _emitter.emit(diag::ParserFunctionContextParameterMismatch, id);
 
         if ( _package.isValid(fn.result_type) ) {
             const auto& result = _package.type(fn.result_type);

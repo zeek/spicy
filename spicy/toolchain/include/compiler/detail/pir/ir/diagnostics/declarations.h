@@ -135,7 +135,22 @@ inline constexpr DiagnosticDefinition ParserFunctionParameterCountMismatch{
     .id = "PIR_PARSER_FUNCTION_PARAMETER_COUNT_MISMATCH",
     .classification = DiagnosticClassification::Internal,
     .severity = DiagnosticSeverity::Error,
-    .message = "a parser function must have exactly one parameter, has %zu",
+    .message = "a parser function must have a parser state and at most a context borrow as parameters, has %zu",
+};
+
+inline constexpr DiagnosticDefinition ParserRootContextMismatch{
+    .id = "PIR_PARSER_ROOT_CONTEXT_MISMATCH",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message =
+        "a parser root describes a context exactly when its function takes one, with a name for each tuple element",
+};
+
+inline constexpr DiagnosticDefinition ParserFunctionContextParameterMismatch{
+    .id = "PIR_PARSER_FUNCTION_CONTEXT_PARAMETER_MISMATCH",
+    .classification = DiagnosticClassification::Internal,
+    .severity = DiagnosticSeverity::Error,
+    .message = "a parser function's second parameter must be a writable borrow of a place that holds a tuple",
 };
 
 inline constexpr DiagnosticDefinition ParserFunctionParameterTypeMismatch{

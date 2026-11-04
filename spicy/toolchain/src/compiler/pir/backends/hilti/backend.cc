@@ -53,6 +53,7 @@ struct ParserEntryNames {
     std::string parse1;
     std::string parser;
     std::string registration;
+    std::string context_new;
 };
 
 // Names of the package's functions, plus the module-level names the backend generates for globals and parser entries.
@@ -61,6 +62,14 @@ struct NameMap : std::unordered_map<uint32_t, FunctionNames> {
     std::vector<ParserEntryNames> parser_entries; /**< by parser root index */
     /** Foreign functions that the target realizes itself, by function index. They get no declaration. */
     std::unordered_map<uint32_t, TargetBindingKind> bound;
+    /**
+     * The module-level types that give contexts their identity, and the root that defines each. The runtime compares
+     * the type information of a context that it passes between parsers, so parsers share a type exactly when their
+     * contexts share a declared name, or share element names and types if they have none.
+     */
+    std::vector<std::string> context_types;
+    std::vector<size_t> context_type_roots;
+    std::unordered_map<uint32_t, size_t> root_context_type; /**< by root function index */
 };
 
 // Public functions keep their source names where possible. Roots from different source modules may share a local name,
@@ -127,7 +136,25 @@ NameMap makeNames(const ir::Package& package, const std::vector<TargetBinding>& 
     for ( size_t i = 0; i < package.parserRoots().size(); ++i )
         names.parser_entries.push_back(ParserEntryNames{.parse1 = unique(fmt("parse1_%zu", i)),
                                                         .parser = unique(fmt("parser_%zu", i)),
-                                                        .registration = unique(fmt("register_parser_%zu", i))});
+                                                        .registration = unique(fmt("register_parser_%zu", i)),
+                                                        .context_new = unique(fmt("context_new_%zu", i))});
+    std::unordered_map<std::string, size_t> context_keys;
+    for ( size_t i = 0; i < package.parserRoots().size(); ++i ) {
+        const auto& root = package.parserRoots()[i];
+        if ( ! root.context )
+            continue;
+
+        auto key = root.context->name.empty() ?
+                       fmt("tuple:%s:%u", ::hilti::util::join(root.context->elements, ","),
+                           package.type(package.function(root.function).parameters[1].type).type_arguments[0].index) :
+                       "name:" + root.context->name;
+        auto [it, inserted] = context_keys.emplace(key, names.context_types.size());
+        if ( inserted ) {
+            names.context_types.push_back(unique(fmt("Context_%zu", names.context_types.size())));
+            names.context_type_roots.push_back(i);
+        }
+        names.root_context_type.emplace(root.function.index, it->second);
+    }
     return names;
 }
 
@@ -486,6 +513,17 @@ protected:
                 values_[id.index] = std::move(name);
                 return true;
             }
+            case ir::Opcode::TupleGet: {
+                auto name = fmt("v_%u", id.index);
+                b.addLocal(::hilti::ID(name),
+                           targetType(b, package_, inst.result_type),
+                           b.index(_value(b, inst.args[0]),
+                                   b.integer(std::get<ir::TupleGetPayload>(inst.payload).index),
+                                   meta),
+                           meta);
+                values_[id.index] = std::move(name);
+                return true;
+            }
             case ir::Opcode::Uint8Constant:
             case ir::Opcode::Uint64Constant: {
                 auto name = fmt("v_%u", id.index);
@@ -574,6 +612,14 @@ public:
                              ::hilti::parameter::Kind::In,
                              meta));
         }
+
+        // A parser that shares a context receives it by reference, so every parser of the connection updates one
+        // object.
+        if ( fn.parameters.size() == 2 )
+            params.push_back(_b.parameter(::hilti::ID("context"),
+                                          _b.typeName(::hilti::ID(names_.context_types[names_.root_context_type.at(_id.index)])),
+                                          ::hilti::parameter::Kind::InOut,
+                                          meta));
 
         auto* body = _b.statementBlock(meta);
         LocalBuilder fb(_b.context(), body);
@@ -763,7 +809,10 @@ private:
             case ir::Opcode::Argument:
             case ir::Opcode::RegionArgument:
                 if ( ! values_.contains(id.index) )
-                    values_[id.index] = "cursor";
+                    values_[id.index] =
+                        inst.opcode == ir::Opcode::Argument && std::get<ir::ArgumentPayload>(inst.payload).index == 1 ?
+                            "context" :
+                            "cursor";
                 return;
             case ir::Opcode::TupleGet: {
                 auto index = std::get<ir::TupleGetPayload>(inst.payload).index;
@@ -1055,13 +1104,29 @@ void lowerParserEntry(::hilti::Builder& builder,
     };
     auto* body = builder.statementBlock(meta);
     LocalBuilder fb(builder.context(), body);
-    // Unit contexts are not supported yet, so the adapter refuses one.
-    fb.addExpression(fb.call("spicy_rt::rejectUnitContext", {fb.id(::hilti::ID("unit_context"))}, meta));
-    fb.addLocal(::hilti::ID("result"),
-                fb.call(moduleLevel(names_root.function),
-                        {fb.id(::hilti::ID("data")), fb.id(::hilti::ID("initial_cursor"))},
-                        meta),
-                meta);
+    // A parser with a context shares one instance with the other parsers of the connection: the runtime hands over the
+    // instance that the connection's first parser created, and a parser run without one makes its own.
+    const auto& root_function = package.function(root.function);
+    const bool has_context = root_function.parameters.size() == 2;
+    ::hilti::Expressions arguments = {fb.id(::hilti::ID("data")), fb.id(::hilti::ID("initial_cursor"))};
+    ::hilti::QualifiedType* context_value = nullptr;
+    if ( has_context ) {
+        context_value = builder.qualifiedType(
+            builder.typeName(::hilti::ID(names.context_types[names.root_context_type.at(root.function.index)])),
+            ::hilti::Constness::Mutable);
+        fb.addLocal(::hilti::ID("context_ref"), fb.strongReference(context_value), meta);
+        auto* unit_context_id = fb.id(::hilti::ID("unit_context"));
+        auto* created = fb.call("spicy_rt::createContext", {fb.new_(context_value->type(), meta)}, meta);
+        fb.addExpression(fb.call("spicy_rt::setContext",
+                                 {fb.id(::hilti::ID("context_ref")),
+                                  fb.ternary(unit_context_id, fb.deref(unit_context_id), created),
+                                  fb.typeinfo(context_value)},
+                                 meta));
+        arguments.push_back(fb.deref(fb.id(::hilti::ID("context_ref"))));
+    }
+    else
+        fb.addExpression(fb.call("spicy_rt::rejectUnitContext", {fb.id(::hilti::ID("unit_context"))}, meta));
+    fb.addLocal(::hilti::ID("result"), fb.call(moduleLevel(names_root.function), arguments, meta), meta);
     auto* success =
         fb.equal(fb.member(fb.id(::hilti::ID("result")), "kind"), fb.id(::hilti::ID("OutcomeKind::Success")), meta);
     auto returned = fb.addIf(success, meta);
@@ -1076,6 +1141,22 @@ void lowerParserEntry(::hilti::Builder& builder,
                                      ::hilti::type::function::CallingConvention::Extern,
                                      {},
                                      meta));
+
+    if ( has_context ) {
+        auto* context_body = builder.statementBlock(meta);
+        LocalBuilder cb(builder.context(), context_body);
+        cb.addReturn(cb.call("spicy_rt::createContext", {cb.new_(context_value->type(), meta)}, meta), meta);
+        decls.push_back(builder.function(::hilti::ID(entry.context_new),
+                                         builder.qualifiedType(builder.typeName("spicy_rt::UnitContext"),
+                                                               ::hilti::Constness::Mutable),
+                                         {},
+                                         context_body,
+                                         ::hilti::type::function::Flavor::Function,
+                                         ::hilti::declaration::Linkage::Public,
+                                         ::hilti::type::function::CallingConvention::ExternNoSuspend,
+                                         {},
+                                         meta));
+    }
 
     // The record is what the runtime reads: the parser's exported name, its adapter, and its unit's type information.
     auto* none = builder.null(meta);
@@ -1098,7 +1179,10 @@ void lowerParserEntry(::hilti::Builder& builder,
                          builder.ctorStructField(::hilti::ID("parse1"), builder.id(::hilti::ID(parse1))),
                          builder.ctorStructField(::hilti::ID("parse2"), none),
                          builder.ctorStructField(::hilti::ID("parse3"), none),
-                         builder.ctorStructField(::hilti::ID("context_new"), none),
+                         builder.ctorStructField(::hilti::ID("context_new"),
+                                                 has_context ? static_cast<::hilti::Expression*>(
+                                                                   builder.id(::hilti::ID(entry.context_new))) :
+                                                               none),
                          builder.ctorStructField(::hilti::ID("type_"), builder.id(::hilti::ID(unitName(root.unit)))),
                          builder.ctorStructField(::hilti::ID("description"), builder.stringMutable("", meta)),
                          builder.ctorStructField(::hilti::ID("mime_types"), mime),
@@ -1155,6 +1239,21 @@ LoweringResult lower(::hilti::Builder& builder,
     decls.push_back(builder.declarationType(::hilti::ID("OutcomeKind"),
                                             builder.qualifiedType(outcome, ::hilti::Constness::Const),
                                             ::hilti::declaration::Linkage::Public));
+    // A context's type is declared under its source name, with its element names, so that its type information is the
+    // one the runtime compares. PIR computes with the structural tuple.
+    for ( size_t i = 0; i < names.context_types.size(); ++i ) {
+        const auto& root = package.parserRoots()[names.context_type_roots[i]];
+        auto tuple_type = package.type(package.function(root.function).parameters[1].type).type_arguments[0];
+        ::hilti::type::tuple::Elements elements;
+        for ( size_t j = 0; j < root.context->elements.size(); ++j )
+            elements.push_back(builder.typeTupleElement(::hilti::ID(root.context->elements[j]),
+                                                        targetType(builder, package,
+                                                                   package.type(tuple_type).type_arguments[j])));
+        decls.push_back(builder.declarationType(::hilti::ID(names.context_types[i]),
+                                                builder.qualifiedType(builder.typeTuple(elements),
+                                                                      ::hilti::Constness::Const),
+                                                ::hilti::declaration::Linkage::Public));
+    }
     for ( size_t i = 0; i < package.typeDecls().size(); ++i )
         decls.push_back(lowerUnitType(builder, package, ir::TypeDeclId{static_cast<uint32_t>(i)}));
     for ( size_t i = 0; i < package.functions().size(); ++i ) {
