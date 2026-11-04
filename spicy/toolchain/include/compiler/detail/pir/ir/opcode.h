@@ -48,6 +48,7 @@ enum class Opcode {
     Equal,
     GlobalPlace,
     Uint64Constant,
+    Uint8Constant,
     ForeignConstant,
     PortConstant,
     SetEmpty,
@@ -764,6 +765,14 @@ inline constexpr std::array<OpcodeSchema, 39> KSchemas{{
                  .payload_kind = PayloadKind::Uint64Literal,
                  .is_terminator = false,
                  .is_pure = true},
+    OpcodeSchema{.opcode = Opcode::Uint8Constant,
+                 .spelling = "core.uint8_constant",
+                 .operand_types = KNoOperandTypes,
+                 .operand_roles = KNoOperandRoles,
+                 .result_type = fixedType(TypeKind::UInt8),
+                 .payload_kind = PayloadKind::Uint64Literal,
+                 .is_terminator = false,
+                 .is_pure = true},
     OpcodeSchema{.opcode = Opcode::ForeignConstant,
                  .spelling = "core.foreign_constant",
                  .operand_types = KNoOperandTypes,
@@ -859,6 +868,7 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
         case Opcode::StringConstant:
         case Opcode::BytesConstant:
         case Opcode::Uint64Constant:
+        case Opcode::Uint8Constant:
         case Opcode::ForeignConstant:
         case Opcode::PortConstant: return {};
         case Opcode::FieldPlace:

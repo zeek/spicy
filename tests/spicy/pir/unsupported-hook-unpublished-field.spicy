@@ -1,0 +1,14 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: A field hook cannot read a field that is not parsed yet, since the legacy parser reports an unset field there, so the whole compilation falls back.
+
+module Test;
+
+public type Pair = unit {
+    first: uint8 {
+        print self.second;
+    }
+
+    second: uint8;
+};

@@ -1,0 +1,17 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: The value of a container field is not available to hooks yet, so a hook that uses `$$` on a vector falls back.
+
+module Test;
+
+type Item = unit {
+    value: uint8;
+};
+
+public type Holder = unit {
+    length: uint64;
+    items: Item[] &size=self.length {
+        print $$;
+    }
+};

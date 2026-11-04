@@ -1,0 +1,116 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT -j driver.cc >legacy
+# @TEST-EXEC: cmp output legacy
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -p -D spicy-pir 2>&1 >/dev/null | rg "attached PIR-produced" >route
+# @TEST-EXEC: btest-diff route
+
+# @TEST-DOC: Runs hooks at every supported point of a differently shaped parser through PIR: `%init`, field hooks written inside the unit and outside of it, `%done`, priorities, and `$$`. A hook that changes a field is seen by the next hook and by the bound of a later field. The input is delivered in two chunks at every offset, so every consumer runs once, in order, and only when its field is complete. The output must match the legacy build.
+
+module Test;
+
+type Cell = unit {
+    v: uint8 {
+        print "cell", $$, self.v;
+        if ( $$ != 121 )
+            print "not y";
+    }
+
+    on %done { print "cell done", self.v; }
+};
+
+public type Frame = unit {
+    on %init { print "init"; }
+
+    kind: uint8 {
+        print "kind", $$, self.kind;
+    }
+
+    count: uint64 {
+        print "count", $$, self.count;
+        self.count = self.count + 1;
+    }
+
+    cells: Cell[] &size=self.count {
+        print "cells";
+    }
+
+    label: bytes &size=2 {
+        print "label", $$;
+    }
+
+    on %done { print "done", self.kind, self.count, self.label; }
+    on %done priority=3 { print "done early", self.count; }
+};
+
+on Frame::kind priority=5 { print "kind early", $$; }
+on Frame::count priority=-1 { print "count late", self.count, $$; }
+on Frame::count priority=1 { print "count changed", self.count; self.count = self.count + 1; }
+on Frame::label { print "label", $$, self.kind; }
+on Frame::%init priority=-2 { print "init late"; }
+on Frame::%done priority=-5 { print "done late", self.count, self.label; }
+
+@TEST-START-FILE driver.cc
+
+#include <iostream>
+#include <string>
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+using namespace hilti::rt::string::literals;
+
+static std::string be(uint64_t n) {
+    std::string x(8, '\0');
+    for ( int i = 7; i >= 0; --i ) { x[i] = static_cast<char>(n & 255); n >>= 8; }
+    return x;
+}
+
+static void parse(const spicy::rt::Parser* parser, const std::string& input, size_t split) {
+    std::cout << "== split " << split << std::endl;
+    auto data = hilti::rt::reference::make_value<hilti::rt::Stream>();
+    data->append(hilti::rt::Bytes(input.substr(0, split)));
+    try {
+        auto r = parser->parse1(data, {}, {});
+        if ( ! r ) {
+            data->append(hilti::rt::Bytes(input.substr(split)));
+            data->freeze();
+            r.resume();
+        }
+        std::cout << "cursor " << r.get<hilti::rt::stream::View>().offset() << std::endl;
+    }
+    catch ( const std::exception& e ) {
+        std::cout << "failed" << std::endl;
+    }
+}
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    const spicy::rt::Parser* parser = nullptr;
+    for ( const auto* p : spicy::rt::parsers() )
+        if ( p->name == "Test::Frame"_hs )
+            parser = p;
+    if ( ! parser )
+        return 1;
+
+    // Kind, a count of one (three after the two hooks that add one), then the cells and a label. The count of three leaves a cell short.
+    auto input = std::string("K") + be(1) + "xyz";
+    input += "ab";
+    for ( size_t split = 1; split < input.size(); ++split )
+        parse(parser, input, split);
+
+    // A count that leaves a cell missing.
+    auto short_input = std::string("K") + be(1) + "a";
+    parse(parser, short_input, 4);
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    hilti::rt::init();
+    spicy::rt::init();
+    auto result = hilti_main();
+    hilti::rt::done();
+    return result;
+}
+
+@TEST-END-FILE

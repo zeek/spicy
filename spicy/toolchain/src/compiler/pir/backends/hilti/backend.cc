@@ -486,6 +486,7 @@ protected:
                 values_[id.index] = std::move(name);
                 return true;
             }
+            case ir::Opcode::Uint8Constant:
             case ir::Opcode::Uint64Constant: {
                 auto name = fmt("v_%u", id.index);
                 b.addLocal(::hilti::ID(name),
