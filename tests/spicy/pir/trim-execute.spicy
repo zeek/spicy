@@ -1,0 +1,120 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT -j driver.cc >legacy
+# @TEST-EXEC: cmp output legacy
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -p -D spicy-pir 2>&1 >/dev/null | rg "attached PIR-produced" >route
+# @TEST-EXEC: btest-diff route
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -p -D spicy-pir 2>&1 >/dev/null | rg -c "parser.release_input" >releases
+# @TEST-EXEC: btest-diff releases
+
+# @TEST-DOC: Parses a message with a byte-bounded vector that is fed in chunks, and reads the stream's retained input after every delivery. The beginning of the retained input advances while parsing, so the stream does not hold the whole connection, and it ends at the consumed position. Values extracted earlier (the header bytes and the length) are still correct at the end, and a gap inside the vector still reports the legacy gap. The output must match the legacy build, optimized and not.
+
+module Test;
+
+type Item = unit {
+    first: uint8;
+    second: uint8;
+};
+
+public type Frame = unit {
+    head: bytes &size=4;
+    count: uint64;
+    items: Item[] &size=self.count;
+    tail: bytes &size=3;
+};
+
+on Frame::%done { print "done", self.head, self.count, self.tail; }
+
+@TEST-START-FILE driver.cc
+
+#include <algorithm>
+#include <iostream>
+#include <string>
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+using namespace hilti::rt::string::literals;
+
+static std::string be(uint64_t n) {
+    std::string x(8, '\0');
+    for ( int i = 7; i >= 0; --i ) { x[i] = static_cast<char>(n & 255); n >>= 8; }
+    return x;
+}
+
+// Feeds `input` in pieces of `chunk` bytes. The parser is resumed after each piece, and the stream's retained input is
+// read directly: the offset it begins at and the number of bytes it still holds.
+static void run(const spicy::rt::Parser* parser, const std::string& name, const std::string& input, size_t chunk,
+                bool trace) {
+    auto data = hilti::rt::reference::make_value<hilti::rt::Stream>();
+    hilti::rt::Resumable resumable;
+    size_t max_retained = 0;
+    size_t moves = 0;
+    hilti::rt::stream::Offset last_begin(0);
+    bool first = true;
+    size_t fed = 0;
+
+    while ( fed < input.size() ) {
+        auto piece = input.substr(fed, chunk);
+        fed += piece.size();
+        data->append(hilti::rt::Bytes(piece));
+
+        if ( first ) {
+            resumable = parser->parse1(data, {}, {});
+            first = false;
+        }
+        else if ( ! resumable )
+            resumable.resume();
+
+        auto begin = data->begin().offset();
+        auto retained = static_cast<size_t>(data->size());
+        max_retained = std::max(max_retained, retained);
+        if ( begin != last_begin )
+            ++moves;
+        last_begin = begin;
+
+        if ( trace )
+            std::cout << name << " fed=" << fed << " begin=" << begin << " retained=" << retained << std::endl;
+    }
+
+    std::cout << name << ": " << (resumable ? "done" : "suspended") << " total=" << input.size()
+              << " final-begin=" << data->begin().offset() << " max-retained=" << max_retained
+              << " advanced=" << (moves > 0 ? "yes" : "no") << std::endl;
+}
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    const spicy::rt::Parser* parser = nullptr;
+    for ( const auto* p : spicy::rt::parsers() )
+        if ( p->name == "Test::Frame"_hs )
+            parser = p;
+    if ( ! parser )
+        return 1;
+
+    // A short message, traced after every byte.
+    run(parser, "short", "HEAD" + be(4) + "abcd" + "END", 1, true);
+
+    // Many items fed in small chunks: the retained input stays small while the connection grows.
+    std::string items;
+    for ( int i = 0; i < 300; ++i )
+        items += std::string{static_cast<char>('a' + i % 26), static_cast<char>('A' + i % 26)};
+
+    auto message = "HEAD" + be(items.size()) + items + "END";
+    run(parser, "chunk-1", message, 1, false);
+    run(parser, "chunk-7", message, 7, false);
+    run(parser, "chunk-64", message, 64, false);
+
+    // The whole message in one piece is trimmed as it is parsed.
+    run(parser, "whole", message, message.size(), false);
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    hilti::rt::init();
+    spicy::rt::init();
+    auto result = hilti_main();
+    hilti::rt::done();
+    return result;
+}
+
+@TEST-END-FILE

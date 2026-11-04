@@ -145,7 +145,8 @@ NameMap makeNames(const ir::Package& package, const std::vector<TargetBinding>& 
             continue;
 
         auto key = root.context->name.empty() ?
-                       fmt("tuple:%s:%u", ::hilti::util::join(root.context->elements, ","),
+                       fmt("tuple:%s:%u",
+                           ::hilti::util::join(root.context->elements, ","),
                            package.type(package.function(root.function).parameters[1].type).type_arguments[0].index) :
                        "name:" + root.context->name;
         auto [it, inserted] = context_keys.emplace(key, names.context_types.size());
@@ -616,10 +617,11 @@ public:
         // A parser that shares a context receives it by reference, so every parser of the connection updates one
         // object.
         if ( fn.parameters.size() == 2 )
-            params.push_back(_b.parameter(::hilti::ID("context"),
-                                          _b.typeName(::hilti::ID(names_.context_types[names_.root_context_type.at(_id.index)])),
-                                          ::hilti::parameter::Kind::InOut,
-                                          meta));
+            params.push_back(
+                _b.parameter(::hilti::ID("context"),
+                             _b.typeName(::hilti::ID(names_.context_types[names_.root_context_type.at(_id.index)])),
+                             ::hilti::parameter::Kind::InOut,
+                             meta));
 
         auto* body = _b.statementBlock(meta);
         LocalBuilder fb(_b.context(), body);
@@ -725,14 +727,24 @@ private:
         auto* scan_clause = _b.statementTryCatch(scan_catch_param, scan_catch_body, meta);
         scan->block()->_add(scan->context(),
                             _b.statementTry(scan_body, ::hilti::statement::try_::Catches{scan_clause}, meta));
+        // The stream's view starts where retained input does, which is past offset zero once input is released, so
+        // the probe's absolute offset is taken relative to it.
+        cb.addLocal(::hilti::ID("retained"),
+                    cb.qualifiedType(cb.typeStreamView(), ::hilti::Constness::Mutable),
+                    cb.cast(cb.deref(cb.id(::hilti::ID("data"))),
+                            cb.qualifiedType(cb.typeStreamView(), ::hilti::Constness::Mutable)),
+                    meta);
         cb.addLocal(::hilti::ID("full_probe"),
-                    cb.memberCall(cb.cast(cb.deref(cb.id(::hilti::ID("data"))),
-                                          cb.qualifiedType(cb.typeStreamView(), ::hilti::Constness::Mutable)),
+                    cb.memberCall(cb.id(::hilti::ID("retained")),
                                   "advance",
-                                  {cb.memberCall(cb.id(::hilti::ID("gap_probe")),
-                                                 "offset",
-                                                 ::hilti::Expressions{},
-                                                 meta)},
+                                  {cb.difference(cb.memberCall(cb.id(::hilti::ID("gap_probe")),
+                                                               "offset",
+                                                               ::hilti::Expressions{},
+                                                               meta),
+                                                 cb.memberCall(cb.id(::hilti::ID("retained")),
+                                                               "offset",
+                                                               ::hilti::Expressions{},
+                                                               meta))},
                                   meta),
                     meta);
         cb.addLocal(::hilti::ID("after_gap"),
@@ -881,6 +893,13 @@ private:
                                          meta),
                             meta);
                 b.addAssign(b.id(::hilti::ID("bound_end")), b.null(), meta);
+                values_[id.index] = "cursor";
+                return;
+            }
+            case ir::Opcode::ReleaseInput: {
+                // The stream drops its chunks before the cursor. Views and extracted values keep their own storage.
+                b.addExpression(
+                    b.memberCall(b.id(::hilti::ID("data")), "trim", {b.begin(b.id(::hilti::ID("cursor")))}, meta));
                 values_[id.index] = "cursor";
                 return;
             }
@@ -1111,9 +1130,10 @@ void lowerParserEntry(::hilti::Builder& builder,
     ::hilti::Expressions arguments = {fb.id(::hilti::ID("data")), fb.id(::hilti::ID("initial_cursor"))};
     ::hilti::QualifiedType* context_value = nullptr;
     if ( has_context ) {
-        context_value = builder.qualifiedType(
-            builder.typeName(::hilti::ID(names.context_types[names.root_context_type.at(root.function.index)])),
-            ::hilti::Constness::Mutable);
+        context_value =
+            builder.qualifiedType(builder.typeName(::hilti::ID(
+                                      names.context_types[names.root_context_type.at(root.function.index)])),
+                                  ::hilti::Constness::Mutable);
         fb.addLocal(::hilti::ID("context_ref"), fb.strongReference(context_value), meta);
         auto* unit_context_id = fb.id(::hilti::ID("unit_context"));
         auto* created = fb.call("spicy_rt::createContext", {fb.new_(context_value->type(), meta)}, meta);
@@ -1252,13 +1272,13 @@ LoweringResult lower(::hilti::Builder& builder,
         auto tuple_type = package.type(package.function(root.function).parameters[1].type).type_arguments[0];
         ::hilti::type::tuple::Elements elements;
         for ( size_t j = 0; j < root.context->elements.size(); ++j )
-            elements.push_back(builder.typeTupleElement(::hilti::ID(root.context->elements[j]),
-                                                        targetType(builder, package,
-                                                                   package.type(tuple_type).type_arguments[j])));
-        decls.push_back(builder.declarationType(::hilti::ID(names.context_types[i]),
-                                                builder.qualifiedType(builder.typeTuple(elements),
-                                                                      ::hilti::Constness::Const),
-                                                ::hilti::declaration::Linkage::Public));
+            elements.push_back(
+                builder.typeTupleElement(::hilti::ID(root.context->elements[j]),
+                                         targetType(builder, package, package.type(tuple_type).type_arguments[j])));
+        decls.push_back(
+            builder.declarationType(::hilti::ID(names.context_types[i]),
+                                    builder.qualifiedType(builder.typeTuple(elements), ::hilti::Constness::Const),
+                                    ::hilti::declaration::Linkage::Public));
     }
     for ( size_t i = 0; i < package.typeDecls().size(); ++i )
         decls.push_back(lowerUnitType(builder, package, ir::TypeDeclId{static_cast<uint32_t>(i)}));

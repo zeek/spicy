@@ -53,6 +53,7 @@ enum class Opcode {
     PortConstant,
     SetEmpty,
     SetInsert,
+    ReleaseInput,
 };
 
 enum class TypeKind {
@@ -453,7 +454,7 @@ inline constexpr ParserOperationContract KSubunitContract{
 
 // One entry per `Opcode` value, in declaration order, so `schemaFor()` can index directly without
 // per-call allocation.
-inline constexpr std::array<OpcodeSchema, 39> KSchemas{{
+inline constexpr std::array<OpcodeSchema, 40> KSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Constant,
         .spelling = "core.constant",
@@ -805,6 +806,14 @@ inline constexpr std::array<OpcodeSchema, 39> KSchemas{{
                  .payload_kind = PayloadKind::None,
                  .is_terminator = false,
                  .is_pure = false},
+    OpcodeSchema{.opcode = Opcode::ReleaseInput,
+                 .spelling = "parser.release_input",
+                 .operand_types = KParseStateOperandTypes,
+                 .operand_roles = KParseStateOperandRoles,
+                 .result_type = fixedType(TypeKind::ParserState),
+                 .payload_kind = PayloadKind::None,
+                 .is_terminator = false,
+                 .is_pure = false},
 }};
 
 } // namespace detail
@@ -821,6 +830,8 @@ constexpr const OpcodeSchema* schemaFor(Opcode opcode) {
 /** The effects used by passes that must preserve parser outcomes and publication order. */
 struct OperationEffects {
     bool reads_input = false;
+    /** Lets the host drop retained input before the cursor. Later parser operations cannot read it again. */
+    bool releases_input = false;
     bool changes_parser_state = false;
     bool allocates = false;
     bool publishes = false;
@@ -846,6 +857,7 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
                     .may_fail = true};
         case Opcode::EnterBound:
         case Opcode::LeaveBound: return {.changes_parser_state = true, .may_fail = true};
+        case Opcode::ReleaseInput: return {.releases_input = true, .changes_parser_state = true};
         case Opcode::VectorEmpty:
         case Opcode::VectorAppend:
         case Opcode::SetEmpty:

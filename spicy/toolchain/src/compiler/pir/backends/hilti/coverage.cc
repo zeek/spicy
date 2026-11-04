@@ -96,6 +96,7 @@ void checkRegion(const ir::Package& package,
                 case ir::Opcode::VectorAppend:
                 case ir::Opcode::EnterBound:
                 case ir::Opcode::LeaveBound:
+                case ir::Opcode::ReleaseInput:
                 case ir::Opcode::RepeatToBound:
                     for ( size_t i = 1; i < inst.args.size(); ++i ) {
                         if ( ! isStorageType(package, package.inst(inst.args[i]).result_type) )

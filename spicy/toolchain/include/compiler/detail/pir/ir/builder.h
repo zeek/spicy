@@ -74,7 +74,9 @@ public:
     /** Appends a module-level function to run at the given initialization phase. */
     void addInitializer(InitPhase phase, FunctionId function);
     /** Appends a selected parser implementation; call only once the function is complete. */
-    void addParserRoot(TypeDeclId unit, FunctionId function, std::string name = {},
+    void addParserRoot(TypeDeclId unit,
+                       FunctionId function,
+                       std::string name = {},
                        std::optional<ContextIdentity> context = {});
     /** Appends a selected public ordinary function; call only once the function is complete. */
     void addFunctionRoot(FunctionId function);
@@ -147,6 +149,13 @@ public:
     InstId addSetInsert(BlockId block, InstId set, InstId value, SourceSpanId span = {});
     InstId addEnterBound(BlockId block, InstId state, InstId length, SourceSpanId span = {});
     InstId addLeaveBound(BlockId block, InstId state, SourceSpanId span = {});
+
+    /**
+     * Declares that input before the parser's current position is no longer needed, so the host may drop it. The
+     * result is the state after the release; the position does not change. Values already extracted from the input
+     * stay valid.
+     */
+    InstId addReleaseInput(BlockId block, InstId state, SourceSpanId span = {});
     InstId addRepeatToBound(BlockId block, std::vector<InstId> carried, RegionId body, SourceSpanId span = {});
     InstId addParseSubunit(BlockId block, InstId state, FunctionId child, SourceSpanId span = {});
     InstId addReadBytes(BlockId block, InstId state, uint64_t length, SourceSpanId span = {});

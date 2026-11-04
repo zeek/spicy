@@ -1172,3 +1172,121 @@ TEST_CASE("two arms that both reach the same two returning blocks are not struct
     auto cfg = buildCfg(package, region);
     CHECK_FALSE(isStructured(cfg, branchJoins(cfg)));
 }
+
+namespace {
+
+// A parser that has read one byte and is about to publish it.
+struct ReleaseSample {
+    Package package;
+    TypeDeclId unit;
+    DeclId field;
+    FunctionId fn;
+    BlockId block;
+    InstId state;
+    InstId next;
+    InstId value;
+};
+
+ReleaseSample makeReleaseSample() {
+    ReleaseSample s;
+    auto builder = s.package.builder();
+    s.unit = builder.createUnitDecl("Root");
+    s.field = builder.createFieldDecl(s.unit, "value", builder.uint8Type());
+    s.fn = builder.createParserFunction(s.unit, builder.parserStateType(), builder.unitType(s.unit));
+    s.block = builder.createBlock(s.package.function(s.fn).root_region);
+    s.state = builder.addArgument(s.fn, s.block, 0);
+    auto read = builder.addReadInteger(s.block,
+                                       s.state,
+                                       ReadIntegerPayload{
+                                           .width = 8,
+                                           .signedness = Signedness::Unsigned,
+                                           .byte_order = ByteOrder::Network,
+                                       });
+    s.next = builder.addTupleGet(s.block, read, 0);
+    s.value = builder.addTupleGet(s.block, read, 1);
+    builder.addParserRoot(s.unit, s.fn);
+    return s;
+}
+
+} // namespace
+
+TEST_CASE("releasing input yields the next parser state") {
+    auto s = makeReleaseSample();
+    auto builder = s.package.builder();
+    auto released = builder.addReleaseInput(s.block, s.next);
+    auto root = builder.addUnitCreate(s.block, s.unit);
+    auto completed = builder.addPublishField(s.block, root, s.value, s.field);
+    builder.addParserFinish(s.block, released, completed);
+
+    CHECK(s.package.inst(released).opcode == Opcode::ReleaseInput);
+    CHECK(s.package.type(s.package.inst(released).result_type).kind == TypeKind::ParserState);
+    CHECK(verify(s.package).empty());
+}
+
+TEST_CASE("verifier rejects reading from a parser state after it was released") {
+    auto s = makeReleaseSample();
+    auto builder = s.package.builder();
+    builder.addReleaseInput(s.block, s.next);
+    auto root = builder.addUnitCreate(s.block, s.unit);
+    auto completed = builder.addPublishField(s.block, root, s.value, s.field);
+    builder.addParserFinish(s.block, s.next, completed);
+
+    CHECK(hasDiagnostic(verify(s.package), diag::ParserStateReused));
+}
+
+TEST_CASE("verifier rejects releasing input of something that is not a parser state") {
+    auto s = makeReleaseSample();
+    auto builder = s.package.builder();
+    auto released = builder.addReleaseInput(s.block, s.value);
+    auto root = builder.addUnitCreate(s.block, s.unit);
+    auto completed = builder.addPublishField(s.block, root, s.value, s.field);
+    builder.addParserFinish(s.block, released, completed);
+
+    CHECK(hasDiagnostic(verify(s.package), diag::OperandTypeMismatch));
+}
+
+TEST_CASE("releasing input keeps the state's byte bound") {
+    Package package;
+    auto builder = package.builder();
+    auto unit = builder.createUnitDecl("Root");
+    auto field = builder.createFieldDecl(unit, "value", builder.uint8Type());
+    auto fn = builder.createParserFunction(unit, builder.parserStateType(), builder.unitType(unit));
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto state = builder.addArgument(fn, block, 0);
+    auto length = builder.addReadInteger(block,
+                                         state,
+                                         ReadIntegerPayload{
+                                             .width = 64,
+                                             .signedness = Signedness::Unsigned,
+                                             .byte_order = ByteOrder::Network,
+                                         });
+    auto bounded =
+        builder.addEnterBound(block, builder.addTupleGet(block, length, 0), builder.addTupleGet(block, length, 1));
+    auto released = builder.addReleaseInput(block, bounded);
+    auto read = builder.addReadInteger(block,
+                                       released,
+                                       ReadIntegerPayload{
+                                           .width = 8,
+                                           .signedness = Signedness::Unsigned,
+                                           .byte_order = ByteOrder::Network,
+                                       });
+    auto unbounded = builder.addLeaveBound(block, builder.addTupleGet(block, read, 0));
+    auto root = builder.addUnitCreate(block, unit);
+    auto completed = builder.addPublishField(block, root, builder.addTupleGet(block, read, 1), field);
+    builder.addParserFinish(block, unbounded, completed);
+    builder.addParserRoot(unit, fn);
+
+    CHECK(verify(package).empty());
+}
+
+TEST_CASE("leaving a bound needs a state that is still bounded after a release") {
+    auto s = makeReleaseSample();
+    auto builder = s.package.builder();
+    auto released = builder.addReleaseInput(s.block, s.next);
+    auto unbounded = builder.addLeaveBound(s.block, released);
+    auto root = builder.addUnitCreate(s.block, s.unit);
+    auto completed = builder.addPublishField(s.block, root, s.value, s.field);
+    builder.addParserFinish(s.block, unbounded, completed);
+
+    CHECK(hasDiagnostic(verify(s.package), diag::InvalidParserOperation));
+}
