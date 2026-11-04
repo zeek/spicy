@@ -11,6 +11,6 @@ public type OneByte = unit {
     value: uint8;
 };
 
-on OneByte::%init {
+on OneByte::%finally {
     print "hi";
 }

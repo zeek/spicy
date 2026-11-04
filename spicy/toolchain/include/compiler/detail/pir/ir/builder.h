@@ -151,6 +151,7 @@ public:
     InstId addBytesConstant(BlockId block, std::string value, SourceSpanId span = {});
     /** Adds `core.uint64_constant` holding `value`. */
     InstId addUint64Constant(BlockId block, uint64_t value, SourceSpanId span = {});
+    InstId addUint8Constant(BlockId block, uint8_t value, SourceSpanId span = {});
     /** Adds `core.foreign_constant` naming a native constant `spelling` of the opaque type `type`. */
     InstId addForeignConstant(BlockId block, TypeId type, std::string spelling, SourceSpanId span = {});
     /** Adds `core.port_constant` holding a port of type `type`, which is the opaque native port type. */

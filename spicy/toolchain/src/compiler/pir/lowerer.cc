@@ -65,6 +65,7 @@
 #include <spicy/ast/declarations/unit-hook.h>
 #include <spicy/ast/statements/print.h>
 #include <spicy/ast/types/unit-items/field.h>
+#include <spicy/ast/types/unit-items/unit-hook.h>
 #include <spicy/ast/types/unit.h>
 #include <spicy/ast/visitor.h>
 #include <spicy/compiler/detail/pir/ir/builder.h>
@@ -309,6 +310,15 @@ public:
                 return _lowerCall(op);
             if ( op->kind() == hilti::operator_::Kind::Equal )
                 return _lowerEqual(op);
+            if ( op->kind() == hilti::operator_::Kind::Unequal ) {
+                auto equal = _lowerEqual(op);
+                if ( auto* feature = std::get_if<UnsupportedFeature>(&equal) )
+                    return *feature;
+
+                auto span = internSpan(_package, expr->meta().location());
+                auto false_ = _builder.addBoolConstant(_block, false, span);
+                return _builder.addEqual(_block, std::get<ir::InstId>(equal), false_, span);
+            }
             // The frontend has resolved each container operation to its own operator, which is what identifies it.
             if ( auto* push_back = op->tryAs<hilti::operator_::vector::PushBack>() )
                 return _lowerVectorPushBack(push_back);
@@ -1041,8 +1051,10 @@ std::variant<ir::InstId, UnsupportedFeature> BodyLowerer::_lowerCtor(hilti::Ctor
     }
 
     if ( auto* literal = ctor->tryAs<hilti::ctor::UnsignedInteger>() ) {
+        if ( literal->width() == 8 )
+            return _builder.addUint8Constant(_block, static_cast<uint8_t>(literal->value()), internSpan(_package, loc));
         if ( literal->width() != 64 )
-            return _unsupported("only unsigned 64-bit integer literals are supported", loc);
+            return _unsupported("only unsigned 8-bit and 64-bit integer literals are supported", loc);
         return _builder.addUint64Constant(_block, literal->value(), internSpan(_package, loc));
     }
 
@@ -1338,6 +1350,9 @@ struct FieldSpec {
     hilti::Expression* bound = nullptr; /**< a vector's `&size` */
     type::Unit* child = nullptr;
     ir::DeclId declaration;
+    ir::TypeId type;
+    std::vector<spicy::declaration::Hook*> source_hooks; /**< hooks written inside the field */
+    std::vector<ir::FunctionId> hooks;                   /**< run in order once the field is published */
 };
 
 struct UnitSpec {
@@ -1346,7 +1361,9 @@ struct UnitSpec {
     std::vector<FieldSpec> fields;
     ir::TypeDeclId declaration;
     ir::FunctionId function;
-    std::vector<ir::FunctionId> hooks; /**< run in order once the unit is complete */
+    std::vector<std::pair<std::string, spicy::declaration::Hook*>> source_hooks; /**< `on %init` and the like */
+    std::vector<ir::FunctionId> init_hooks; /**< run in order before the first field */
+    std::vector<ir::FunctionId> hooks;      /**< run in order once the unit is complete */
 };
 
 class UnitLowerer {
@@ -1388,6 +1405,7 @@ public:
                         field_type = _builder.vectorType(_builder.unitType(_spec(field.child).declaration));
                         break;
                 }
+                field.type = field_type;
                 field.declaration = _builder.createFieldDecl(spec.declaration,
                                                              std::string(field.source->id().local()),
                                                              field_type,
@@ -1467,16 +1485,22 @@ private:
 
         UnitSpec spec{.source = decl, .unit = unit};
         for ( auto* item : unit->items() ) {
+            if ( auto* unit_hook = item->tryAs<type::unit::item::UnitHook>() ) {
+                spec.source_hooks.emplace_back(std::string(unit_hook->id().local()), unit_hook->hook());
+                continue;
+            }
+
             auto* field = item->tryAs<type::unit::item::Field>();
             if ( ! field )
                 return reject("only plain fields are supported", item->meta().location());
             auto field_loc = field->meta().location();
             if ( field->isAnonymous() || field->isSkip() || field->isTransient() || field->isForwarding() ||
-                 field->condition() || field->ctor() || ! field->arguments().empty() || ! field->sinks().empty() ||
-                 ! field->hooks().empty() )
-                return reject("field modifiers, constructors, and hooks are not supported", field_loc);
+                 field->condition() || field->ctor() || ! field->arguments().empty() || ! field->sinks().empty() )
+                return reject("field modifiers and constructors are not supported", field_loc);
 
             FieldSpec f{.source = field};
+            for ( auto* hook : field->hooks() )
+                f.source_hooks.push_back(hook);
             auto* parse_type = field->parseType() ? field->parseType()->type() : nullptr;
             auto* item_type = field->itemType() ? field->itemType()->type() : nullptr;
             auto* attrs = field->attributes();
@@ -1538,31 +1562,30 @@ private:
         return std::nullopt;
     }
 
-    // Lowers the external `%done`-style hooks of `spec`'s unit into functions, in the order they run: higher
-    // priorities first, and equal priorities in source order.
+    // A hook with the priority that orders it among the hooks of the same point.
+    struct PendingHook {
+        spicy::declaration::Hook* decl;
+        int64_t priority;
+    };
+
+    // Lowers the hooks of `spec`'s unit, the ones written inside the unit and the external ones, into functions.
+    // Hooks at one point run with higher priorities first, and equal priorities in the order they were written,
+    // inside the unit before external ones.
     std::optional<UnsupportedFeature> _addHooks(UnitSpec& spec) {
-        struct Pending {
-            const spicy::declaration::UnitHook* source;
-            int64_t priority;
+        auto feature = fmt("hook of parser unit '%s'", std::string(spec.source->id()));
+        auto reject = [&](std::string why, const hilti::Location& loc) {
+            return unsupported(feature, std::move(why), loc);
         };
 
-        std::vector<Pending> pending;
-        for ( const auto* hook : _hooks ) {
-            if ( hook->hook()->unitTypeIndex() != spec.unit->typeIndex() )
-                continue;
+        std::vector<PendingHook> init;
+        std::vector<PendingHook> done;
+        std::vector<std::vector<PendingHook>> fields(spec.fields.size());
 
-            auto feature = fmt("hook of parser unit '%s'", std::string(spec.source->id()));
-            auto reject = [&](std::string why, const hilti::Location& loc) {
-                return unsupported(feature, std::move(why), loc);
-            };
-            auto* decl = hook->hook();
-            if ( decl->unitFieldIndex() )
-                return reject("field hooks are not supported yet", hook->meta().location());
-            if ( std::string(decl->id().local()) != "0x25_done" )
-                return reject("only %done hooks are supported yet", hook->meta().location());
+        auto add = [&](std::vector<PendingHook>& points,
+                       spicy::declaration::Hook* decl) -> std::optional<UnsupportedFeature> {
             if ( decl->hookType() != spicy::declaration::hook::Type::Standard || decl->isDebug() ||
                  ! decl->ftype()->parameters().empty() || ! decl->ftype()->result()->type()->isA<hilti::type::Void>() )
-                return reject("only standard hooks without parameters are supported yet", hook->meta().location());
+                return reject("only standard hooks without parameters are supported yet", decl->meta().location());
 
             int64_t priority = 0;
             if ( auto* expr = decl->priority() ) {
@@ -1577,34 +1600,94 @@ private:
                 else if ( auto* unsigned_literal = value ? value->tryAs<hilti::ctor::UnsignedInteger>() : nullptr )
                     priority = static_cast<int64_t>(unsigned_literal->value());
                 else
-                    return reject("hook priorities must be integer literals", hook->meta().location());
+                    return reject("hook priorities must be integer literals", decl->meta().location());
             }
 
-            pending.push_back({hook, priority});
+            points.push_back({decl, priority});
+            return std::nullopt;
+        };
+
+        auto point = [&](const std::string& target,
+                         const hilti::Location& loc) -> std::variant<std::vector<PendingHook>*, UnsupportedFeature> {
+            if ( target == "0x25_init" )
+                return &init;
+            if ( target == "0x25_done" )
+                return &done;
+            for ( size_t i = 0; i < spec.fields.size(); ++i )
+                if ( target == std::string(spec.fields[i].source->id().local()) )
+                    return &fields[i];
+            return reject(fmt("hooks on '%s' are not supported yet", target), loc);
+        };
+
+        // The unit items come first, in the order in which they were written.
+        for ( const auto& [target, decl] : spec.source_hooks ) {
+            auto where = point(target, decl->meta().location());
+            if ( auto* error = std::get_if<UnsupportedFeature>(&where) )
+                return *error;
+            if ( auto error = add(*std::get<std::vector<PendingHook>*>(where), decl) )
+                return error;
         }
 
-        std::ranges::stable_sort(pending, [](const Pending& a, const Pending& b) { return a.priority > b.priority; });
-
-        for ( const auto& [hook, priority] : pending ) {
-            auto lowered = _hook(spec, hook);
-            if ( auto* feature = std::get_if<UnsupportedFeature>(&lowered) )
-                return *feature;
-
-            spec.hooks.push_back(std::get<ir::FunctionId>(lowered));
+        for ( size_t i = 0; i < spec.fields.size(); ++i ) {
+            for ( auto* decl : spec.fields[i].source_hooks )
+                if ( auto error = add(fields[i], decl) )
+                    return error;
         }
 
-        return std::nullopt;
+        for ( const auto* hook : _hooks ) {
+            if ( hook->hook()->unitTypeIndex() != spec.unit->typeIndex() )
+                continue;
+
+            auto where = point(std::string(hook->hook()->id().local()), hook->meta().location());
+            if ( auto* error = std::get_if<UnsupportedFeature>(&where) )
+                return *error;
+            if ( auto error = add(*std::get<std::vector<PendingHook>*>(where), hook->hook()) )
+                return error;
+        }
+
+        // The hooks of one point see the first `published` fields of the unit.
+        auto lower = [&](std::vector<PendingHook>& pending,
+                         size_t published,
+                         std::vector<ir::FunctionId>& ids,
+                         const FieldSpec* field) -> std::optional<UnsupportedFeature> {
+            std::ranges::stable_sort(pending, [](const auto& a, const auto& b) { return a.priority > b.priority; });
+            for ( const auto& hook : pending ) {
+                auto lowered = _hook(spec, hook.decl, published, field);
+                if ( auto* error = std::get_if<UnsupportedFeature>(&lowered) )
+                    return *error;
+
+                ids.push_back(std::get<ir::FunctionId>(lowered));
+            }
+            return std::nullopt;
+        };
+
+        if ( auto error = lower(init, 0, spec.init_hooks, nullptr) )
+            return error;
+        for ( size_t i = 0; i < spec.fields.size(); ++i ) {
+            if ( auto error = lower(fields[i], i + 1, spec.fields[i].hooks, &spec.fields[i]) )
+                return error;
+        }
+        return lower(done, spec.fields.size(), spec.hooks, nullptr);
     }
 
     // Lowers one hook body into an ordinary function that borrows the unit being parsed. The source lets a hook change
     // `self`, so the borrow is writable, and the caller keeps the unit, so the parser can finish it after the hook.
+    // The hook sees the first `published` fields. A hook on an integer or bytes field also takes the field's value
+    // as `$$`.
     std::variant<ir::FunctionId, UnsupportedFeature> _hook(const UnitSpec& spec,
-                                                           const spicy::declaration::UnitHook* hook) {
+                                                           spicy::declaration::Hook* hook,
+                                                           size_t published,
+                                                           const FieldSpec* field) {
         auto feature = fmt("hook of parser unit '%s'", std::string(spec.source->id()));
         auto span = internSpan(_package, hook->meta().location());
         auto unit = _builder.unitType(spec.declaration);
+        std::vector<ir::Parameter> params = {ir::Parameter(unit, ir::ParameterMode::BorrowMut)};
+        bool has_value = field && (field->form == FieldForm::Integer || field->form == FieldForm::Bytes);
+        if ( has_value )
+            params.emplace_back(field->type, ir::ParameterMode::Take);
+
         auto id = _builder.createFunction(fmt("%s_hook", std::string(spec.source->id().local())),
-                                          {ir::Parameter(unit, ir::ParameterMode::BorrowMut)},
+                                          std::move(params),
                                           _builder.voidType(),
                                           span);
 
@@ -1613,11 +1696,13 @@ private:
         auto self = _builder.addArgument(id, block, 0, span);
         BodyLowerer body(_procedures, _package, region, block, feature);
         std::unordered_map<std::string, ir::DeclId> fields;
-        for ( const auto& field : spec.fields )
-            fields.emplace(std::string(field.source->id().local()), field.declaration);
+        for ( size_t i = 0; i < published; ++i )
+            fields.emplace(std::string(spec.fields[i].source->id().local()), spec.fields[i].declaration);
         body.setSelf(self, std::move(fields));
+        if ( has_value && hook->dd() )
+            body.bind(hook->dd(), Variable{.value = _builder.addArgument(id, block, 1, span)});
 
-        if ( auto error = body.lowerStatements(hook->hook()->body()->statements()) )
+        if ( auto error = body.lowerStatements(hook->body()->statements()) )
             return *error;
 
         body.returnVoidIfOpen(span);
@@ -1633,6 +1718,8 @@ private:
         auto block = _builder.createBlock(_package.function(spec.function).root_region);
         auto state = _builder.addArgument(spec.function, block, 0, unit_span);
         auto unit_value = _builder.addUnitCreate(block, spec.declaration, unit_span);
+        for ( auto hook : spec.init_hooks )
+            _builder.addCall(block, hook, {unit_value}, unit_span);
         // The fields published so far, which a later `&size` may read through `self`.
         std::unordered_map<std::string, ir::DeclId> published;
         for ( const auto& field : spec.fields ) {
@@ -1683,6 +1770,13 @@ private:
             }
             unit_value = _builder.addPublishField(block, unit_value, value, field.declaration, span);
             published.emplace(std::string(field.source->id().local()), field.declaration);
+            // Completed-field consumers observe the published field, and `$$` is the value as it was parsed.
+            for ( auto hook : field.hooks ) {
+                std::vector<ir::InstId> args = {unit_value};
+                if ( field.form != FieldForm::Vector )
+                    args.push_back(value);
+                _builder.addCall(block, hook, args, span);
+            }
         }
         // The parser chooses where the consumers run and in what order, and calls them like any other procedure.
         for ( auto hook : spec.hooks )

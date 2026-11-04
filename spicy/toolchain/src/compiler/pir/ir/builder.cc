@@ -463,6 +463,10 @@ InstId Builder::addGlobalPlace(BlockId block, GlobalId global, SourceSpanId span
     return addInst(block, Opcode::GlobalPlace, {}, result_type, InstPayload(GlobalPayload{global}), span);
 }
 
+InstId Builder::addUint8Constant(BlockId block, uint8_t value, SourceSpanId span) {
+    return addInst(block, Opcode::Uint8Constant, {}, uint8Type(), InstPayload(Uint64Literal{value}), span);
+}
+
 InstId Builder::addUint64Constant(BlockId block, uint64_t value, SourceSpanId span) {
     return addInst(block, Opcode::Uint64Constant, {}, uint64Type(), InstPayload(Uint64Literal{value}), span);
 }
