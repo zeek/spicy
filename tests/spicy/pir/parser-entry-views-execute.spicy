@@ -1,0 +1,139 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT -j driver.cc >legacy
+# @TEST-EXEC: cmp output legacy
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -p -D spicy-pir 2>&1 >/dev/null | rg "attached PIR-produced" >route
+# @TEST-EXEC: btest-diff route
+
+# @TEST-DOC: Drives a public parser through its runtime entry as the runtime does, over the views, deliveries, and failures that the entry must handle. It starts at a nonzero offset of the input and returns where it stopped, which leaves trailing input alone. It runs once per delivery split of the input and consumes the same total, and it runs again on a fresh unit afterwards, so no state carries over. Truncated input, a gap, and a byte bound that is too small for its items each fail with the same category as the legacy parser, and none of them runs the completion hook. The output must match the legacy build, optimized and not.
+
+module Test;
+
+type Item = unit {
+    first: uint8;
+    second: uint8;
+};
+
+public type Message = unit {
+    length: uint64;
+    items: Item[] &size=self.length;
+    tail: bytes &size=3;
+};
+
+on Message::%done { print "done", self.length, self.tail; }
+
+@TEST-START-FILE driver.cc
+
+#include <iostream>
+#include <string>
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+using namespace hilti::rt::string::literals;
+
+static std::string be(uint64_t n) {
+    std::string x(8, '\0');
+    for ( int i = 7; i >= 0; --i ) { x[i] = static_cast<char>(n & 255); n >>= 8; }
+    return x;
+}
+
+// Runs the parser over `data` after delivering the given pieces, then a possible gap, and reports how it ended.
+static void run(const spicy::rt::Parser* parser, const char* name, const std::vector<std::string>& pieces,
+                size_t gap, size_t start, bool freeze) {
+    std::cout << name << ":";
+    auto data = hilti::rt::reference::make_value<hilti::rt::Stream>();
+    try {
+        hilti::rt::Optional<hilti::rt::stream::View> view;
+        auto first = true;
+        hilti::rt::Resumable resumable;
+        for ( const auto& piece : pieces ) {
+            data->append(hilti::rt::Bytes(piece));
+            if ( first ) {
+                if ( start )
+                    view = data->view().advance(hilti::rt::stream::Offset(start));
+                resumable = parser->parse1(data, view, {});
+                first = false;
+                std::cout << " delivered=" << piece.size();
+            }
+            else if ( ! resumable ) {
+                std::cout << " delivered=" << piece.size();
+                resumable.resume();
+            }
+        }
+
+        if ( gap ) {
+            data->append(nullptr, gap);
+            if ( ! resumable ) {
+                std::cout << " gap=" << gap;
+                resumable.resume();
+            }
+        }
+
+        if ( freeze ) {
+            data->freeze();
+            if ( ! resumable )
+                resumable.resume();
+        }
+
+        if ( resumable )
+            std::cout << " cursor=" << resumable.get<hilti::rt::stream::View>().offset();
+        else
+            std::cout << " suspended";
+    } catch ( const spicy::rt::MissingData& ) {
+        std::cout << " MissingData";
+    } catch ( const spicy::rt::ParseError& ) {
+        std::cout << " ParseError";
+    } catch ( const std::exception& e ) {
+        std::cout << " other " << hilti::rt::demangle(typeid(e).name());
+    }
+    std::cout << std::endl;
+}
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    const spicy::rt::Parser* parser = nullptr;
+    for ( const auto* p : spicy::rt::parsers() )
+        if ( p->name == "Test::Message"_hs )
+            parser = p;
+    if ( ! parser )
+        return 1;
+
+    // Two items of two bytes, then the tail; the trailing bytes belong to whatever follows.
+    auto message = be(4) + "abcd" + "END";
+    auto input = message + "ZZ";
+
+    run(parser, "whole", {input}, 0, 0, true);
+    run(parser, "offset", {"xxxxx" + input}, 0, 5, true);
+
+    // Delivered in two pieces at every split, so that each part of the message suspends the parser.
+    for ( size_t split = 1; split < input.size(); ++split )
+        run(parser, ("split" + std::to_string(split)).c_str(), {input.substr(0, split), input.substr(split)}, 0, 0, true);
+
+    // Again, so that no state carries over from the earlier runs.
+    run(parser, "again", {input}, 0, 0, true);
+
+    // The input ends inside the tail, inside an item, and before the bound is satisfied.
+    run(parser, "short-tail", {message.substr(0, message.size() - 1)}, 0, 0, true);
+    run(parser, "short-item", {message.substr(0, 8 + 3)}, 0, 0, true);
+    run(parser, "short-bound", {be(40) + "abcd"}, 0, 0, true);
+    run(parser, "empty", {""}, 0, 0, true);
+
+    // A gap where the first item's data should be.
+    run(parser, "gap-item", {be(4)}, 4, 0, true);
+    run(parser, "gap-length", {be(4).substr(0, 3)}, 5, 0, true);
+
+    // The bound holds three bytes, which the second two-byte item overruns.
+    run(parser, "bound-too-small", {be(3) + "abcdEND"}, 0, 0, true);
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    hilti::rt::init();
+    spicy::rt::init();
+    auto result = hilti_main();
+    hilti::rt::done();
+    return result;
+}
+
+@TEST-END-FILE
