@@ -393,7 +393,7 @@ protected:
             case ir::Opcode::Argument:
                 values_[id.index] = fmt("arg_%u", std::get<ir::ArgumentPayload>(inst.payload).index);
                 return true;
-            case ir::Opcode::Constant: {
+            case ir::Opcode::Int64Constant: {
                 auto name = fmt("v_%u", id.index);
                 b.addLocal(::hilti::ID(name),
                            targetType(b, package_, inst.result_type),

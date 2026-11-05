@@ -32,8 +32,8 @@ struct ExpectedSchema {
 };
 
 constexpr ExpectedSchema ExpectedSchemas[] = {
-    {.opcode = Opcode::Constant,
-     .spelling = "core.constant",
+    {.opcode = Opcode::Int64Constant,
+     .spelling = "core.int64_constant",
      .payload_kind = PayloadKind::Int64Literal,
      .is_pure = true},
     {.opcode = Opcode::Add, .spelling = "core.add", .operand_count = 2},
@@ -114,7 +114,7 @@ TEST_CASE("core.tuple_get on an invalid index is rejected by the verifier withou
     auto fn = builder.createFunction("f", builder.int64Type());
     auto block = builder.createBlock(package.function(fn).root_region);
     auto tuple_ty = builder.tupleType({builder.int64Type()});
-    auto tuple_val = builder.addInstForTesting(block, Opcode::Constant, {}, tuple_ty, InstPayload(Int64Literal{0}));
+    auto tuple_val = builder.addInstForTesting(block, Opcode::Int64Constant, {}, tuple_ty, InstPayload(Int64Literal{0}));
     auto get = builder.addInstForTesting(block,
                                          Opcode::TupleGet,
                                          {tuple_val},

@@ -44,8 +44,8 @@ const char* expected_initial =
     "function %0 \"main\" -> int64:\n"
     "  region %0:\n"
     "    block %0:\n"
-    "      %0 = core.constant 40 : int64\n"
-    "      %1 = core.constant 2 : int64\n"
+    "      %0 = core.int64_constant 40 : int64\n"
+    "      %1 = core.int64_constant 2 : int64\n"
     "      %2 = core.add %0, %1 : int64\n"
     "      %3: core.return %2 : void\n";
 
@@ -55,9 +55,9 @@ const char* expected_folded =
     "function %0 \"main\" -> int64:\n"
     "  region %0:\n"
     "    block %0:\n"
-    "      %0 = core.constant 40 : int64\n"
-    "      %1 = core.constant 2 : int64\n"
-    "      %2 = core.constant 42 : int64\n"
+    "      %0 = core.int64_constant 40 : int64\n"
+    "      %1 = core.int64_constant 2 : int64\n"
+    "      %2 = core.int64_constant 42 : int64\n"
     "      %3: core.return %2 : void\n";
 
 } // namespace
@@ -154,7 +154,7 @@ TEST_CASE("verifier rejects an operand type mismatch") {
     auto block = builder.createBlock(package.function(fn).root_region);
     auto c = builder.addConstant(block, 1);
     auto bad_void =
-        builder.addInstForTesting(block, Opcode::Constant, {}, builder.voidType(), InstPayload(Int64Literal{0}));
+        builder.addInstForTesting(block, Opcode::Int64Constant, {}, builder.voidType(), InstPayload(Int64Literal{0}));
     auto add = builder.addAdd(block, c, bad_void);
     builder.addReturn(block, add);
 
@@ -167,7 +167,7 @@ TEST_CASE("verifier rejects a return value that doesn't match the function's res
     auto builder = package.builder();
     auto fn = builder.createFunction("bad", builder.int64Type());
     auto block = builder.createBlock(package.function(fn).root_region);
-    auto c = builder.addInstForTesting(block, Opcode::Constant, {}, builder.voidType(), InstPayload(Int64Literal{0}));
+    auto c = builder.addInstForTesting(block, Opcode::Int64Constant, {}, builder.voidType(), InstPayload(Int64Literal{0}));
     builder.addReturn(block, c);
 
     auto diags = verify(package);
@@ -628,7 +628,7 @@ TEST_CASE("verifier rejects a store whose value differs from the place's element
     auto block = builder.createBlock(package.function(fn).root_region);
     auto place = builder.addLocalPlace(block, builder.addConstant(block, 1));
     auto byte =
-        builder.addInstForTesting(block, Opcode::Constant, {}, builder.uint8Type(), InstPayload(Int64Literal{2}));
+        builder.addInstForTesting(block, Opcode::Int64Constant, {}, builder.uint8Type(), InstPayload(Int64Literal{2}));
     builder.addStore(block, place, byte);
     builder.addReturn(block, builder.addLoad(block, place));
 
@@ -683,7 +683,7 @@ TEST_CASE("verifier rejects a place stored in a tuple or returned from a functio
 
     auto fn = builder.createFunction("returns_place", place);
     auto block = builder.createBlock(package.function(fn).root_region);
-    builder.addInstForTesting(block, Opcode::Constant, {}, place, InstPayload(Int64Literal{0}));
+    builder.addInstForTesting(block, Opcode::Int64Constant, {}, place, InstPayload(Int64Literal{0}));
     builder.addInstForTesting(block, Opcode::Return, {}, place);
 
     auto diags = verify(package);
@@ -696,7 +696,7 @@ TEST_CASE("verifier rejects a local place initialized with a void value") {
     auto fn = builder.createFunction("bad", builder.int64Type());
     auto block = builder.createBlock(package.function(fn).root_region);
     auto void_value =
-        builder.addInstForTesting(block, Opcode::Constant, {}, builder.voidType(), InstPayload(Int64Literal{0}));
+        builder.addInstForTesting(block, Opcode::Int64Constant, {}, builder.voidType(), InstPayload(Int64Literal{0}));
     builder.addLocalPlace(block, void_value);
     builder.addReturn(block, builder.addConstant(block, 0));
 

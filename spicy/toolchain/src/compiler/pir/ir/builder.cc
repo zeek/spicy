@@ -291,7 +291,7 @@ InstId Builder::addInstForTesting(BlockId block,
 }
 
 InstId Builder::addConstant(BlockId block, int64_t value, SourceSpanId span) {
-    return addInst(block, Opcode::Constant, {}, _package._int64_type, InstPayload(Int64Literal{value}), span);
+    return addInst(block, Opcode::Int64Constant, {}, _package._int64_type, InstPayload(Int64Literal{value}), span);
 }
 
 InstId Builder::addAdd(BlockId block, InstId lhs, InstId rhs, SourceSpanId span) {
