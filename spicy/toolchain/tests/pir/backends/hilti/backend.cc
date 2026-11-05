@@ -6,7 +6,9 @@
 
 #include <hilti/ast/ast-context.h>
 #include <hilti/ast/builder/builder.h>
+#include <hilti/ast/declarations/function.h>
 #include <hilti/ast/declarations/module.h>
+#include <hilti/ast/statements/declaration.h>
 #include <hilti/ast/types/struct.h>
 #include <hilti/compiler/context.h>
 #include <hilti/compiler/init.h>
@@ -113,6 +115,19 @@ TEST_CASE("the canonical one-byte package lowers to a detached module") {
     REQUIRE(function != declarations.end());
     CHECK_EQ((*function)->meta().location().file(), "one-byte.spicy");
     CHECK_EQ((*function)->meta().location().from(), 3);
+
+    // Read temporaries must keep the field's location on the enclosing statement too. Otherwise the statement
+    // inherits the unit's location and adds a redundant unit-to-field transition to each read.
+    size_t reads = 0;
+    for ( auto* statement : (*function)->as<::hilti::declaration::Function>()->function()->body()->statements() ) {
+        auto* declaration = statement->tryAs<::hilti::statement::Declaration>();
+        if ( ! declaration || declaration->declaration()->meta().location().from() != 4 )
+            continue;
+
+        ++reads;
+        CHECK_EQ(statement->meta().location(), declaration->declaration()->meta().location());
+    }
+    CHECK_EQ(reads, 1U);
 }
 
 TEST_CASE("an unsupported package lowers to Unsupported and constructs nothing") {
