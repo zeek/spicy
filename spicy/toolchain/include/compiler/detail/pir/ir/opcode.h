@@ -15,7 +15,6 @@
 namespace spicy::detail::pir::ir {
 
 enum class Opcode {
-    Constant,
     Add,
     Return,
     Argument,
@@ -47,6 +46,7 @@ enum class Opcode {
     Jump,
     Equal,
     GlobalPlace,
+    Int64Constant,
     Uint64Constant,
     Uint8Constant,
     ForeignConstant,
@@ -456,17 +456,6 @@ inline constexpr ParserOperationContract KSubunitContract{
 // per-call allocation.
 inline constexpr std::array<OpcodeSchema, 40> KSchemas{{
     OpcodeSchema{
-        .opcode = Opcode::Constant,
-        .spelling = "core.constant",
-        .operand_types = KNoOperandTypes,
-        .operand_roles = KNoOperandRoles,
-        .result_type = fixedType(TypeKind::Int64),
-        .payload_kind = PayloadKind::Int64Literal,
-        .is_terminator = false,
-        .is_pure = true,
-        .parser_contract = std::nullopt,
-    },
-    OpcodeSchema{
         .opcode = Opcode::Add,
         .spelling = "core.add",
         .operand_types = KAddOperandTypes,
@@ -758,6 +747,17 @@ inline constexpr std::array<OpcodeSchema, 40> KSchemas{{
                  .payload_kind = PayloadKind::Global,
                  .is_terminator = false,
                  .is_pure = false},
+    OpcodeSchema{
+        .opcode = Opcode::Int64Constant,
+        .spelling = "core.int64_constant",
+        .operand_types = KNoOperandTypes,
+        .operand_roles = KNoOperandRoles,
+        .result_type = fixedType(TypeKind::Int64),
+        .payload_kind = PayloadKind::Int64Literal,
+        .is_terminator = false,
+        .is_pure = true,
+        .parser_contract = std::nullopt,
+    },
     OpcodeSchema{.opcode = Opcode::Uint64Constant,
                  .spelling = "core.uint64_constant",
                  .operand_types = KNoOperandTypes,
@@ -889,7 +889,7 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
         case Opcode::Yield:
         case Opcode::Return:
         case Opcode::Add:
-        case Opcode::Constant:
+        case Opcode::Int64Constant:
         case Opcode::Argument:
         case Opcode::RegionArgument:
         case Opcode::TupleGet:
