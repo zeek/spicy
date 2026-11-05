@@ -12,4 +12,5 @@ Developer's Manual
    testing
    debugging
    coding-style
+   pir/index
    doxygen
