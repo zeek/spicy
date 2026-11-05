@@ -14,45 +14,193 @@
 
 namespace spicy::detail::pir::ir {
 
+/**
+ * @defgroup pir_opcodes PIR opcodes
+ *
+ * PIR instruction semantics
+ */
+
+/**
+ * A PIR instruction's operation
+ *
+ * @ingroup pir_opcodes
+ */
 enum class Opcode {
+    /**
+     * Adds two of the same integer type. Result is the type of the first.
+     *
+     * Currently only applies to int64 and uint64.
+     */
     Add,
+    /**
+     * Returns from a function. The operand must have the same type as function return.
+     */
     Return,
+    /**
+     * Gets the argument at the provided position. Same type as the resulting value.
+     */
     Argument,
+    /**
+     * Gets the tuple value at the provided position. Same type as that tuple position's value.
+     */
     TupleGet,
+    /**
+     * Parses an integer from the provided parser state. Returns a tuple with the updated
+     * parser state and the parsed value.
+     */
     ReadInteger,
+    /**
+     * Finishes parsing for the unit and returns the parsed value. This is an alternative
+     * to a simple function return, but for parse functions.
+     */
     Finish,
+    /**
+     * Initializes a unit for parsing.
+     */
     UnitCreate,
+    /**
+     * Marks the field as done parsing and returns the updated unit value. This is the
+     * point where the field will get stored and is its fully parsed value.
+     */
     PublishField,
+    /**
+     * Retrieves an argument to a nested region. Same as Argument, but for the region.
+     */
     RegionArgument,
+    /**
+     * Supplies the value(s) of a nested region. Must return what the owning operation
+     * expects.
+     */
     Yield,
+    /**
+     * Creates an empty vector of the specified type.
+     */
     VectorEmpty,
+    /**
+     * Appends an element to the supplied vector. It consumes the collection and returns
+     * the updated collection.
+     */
     VectorAppend,
+    /**
+     * Enters a bounded region, where the parser state is bounded to a certain byte
+     * length. The returned bounded parser state is used for various other bounded
+     * operations.
+     */
     EnterBound,
+    /**
+     * Leaves a bounded region, which was entered via EnterBound. Must consume the full
+     * bounded parser state.
+     */
     LeaveBound,
+    /**
+     * Repeats until a bound is reached. Returns a tuple containing the parser state and
+     * the carried value.
+     */
     RepeatToBound,
+    /**
+     * Parses a unit from within some other unit. Returns a tuple with the updated parser
+     * state and the parsed value.
+     */
     ParseSubunit,
+    /**
+     * Parses bytes. Returns a tuple with the updated parser state and the parsed value.
+     */
     ReadBytes,
+    /**
+     * Invokes a foreign function (via its payload). Operands are call arguments. Result
+     * type matches the declared result.
+     *
+     * PIR does not inspect opaque calls and their implementation. These may potentially
+     * read or write external state.
+     */
     OpaqueOp,
+    /**
+     * A simple call for a user-defined function. Operands are call operands.
+     */
     Call,
+    /**
+     * A local storage location. This distinguishes SSA values from the legitimate user-defined variables.
+     */
     LocalPlace,
+    /**
+     * Retrieves the value from a place.
+     */
     Load,
+    /**
+     * Stores the value into a place.
+     */
     Store,
+    /**
+     * Creates a tuple with the provided operands.
+     */
     Tuple,
+    /**
+     * Creates a boolean.
+     */
     BoolConstant,
+    /**
+     * Creates a string.
+     */
     StringConstant,
+    /**
+     * Creates a bytes constant.
+     */
     BytesConstant,
+    /**
+     * Storage of a field.
+     */
     FieldPlace,
+    /**
+     * If-then-else. First operand is the condition. The payload contains two blocks for
+     * the then/else results.
+     */
     Branch,
+    /**
+     * An unconditional jump. Used, for example, in an if statement to jump to
+     * the next block.
+     */
     Jump,
+    /**
+     * Checks for equality.
+     */
     Equal,
+    /**
+     * A reference to a global variable.
+     */
     GlobalPlace,
+    /**
+     * An int64 constant.
+     */
     Int64Constant,
+    /**
+     * A uint64 constant.
+     */
     Uint64Constant,
+    /**
+     * A uint8 constant.
+     */
     Uint8Constant,
+    /**
+     * A constant for foreign values, such as hilti::Protocol.
+     */
     ForeignConstant,
+    /**
+     * A port constant.
+     */
     PortConstant,
+    /**
+     * Produces an empty set.
+     */
     SetEmpty,
+    /**
+     * Inserts an element into a set. Consumes the collection and returns the updated
+     * set.
+     */
     SetInsert,
+    /**
+     * Tells the runtime that it is done with input before the current cursor. Returns
+     * new parser state.
+     */
     ReleaseInput,
 };
 
