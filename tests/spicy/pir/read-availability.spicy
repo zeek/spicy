@@ -1,0 +1,102 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -P "" -o Foo.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -p -D spicy-pir 2>&1 >/dev/null | rg "attached PIR-produced" >route
+# @TEST-EXEC: btest-diff route
+# @TEST-DOC: Reads of different widths preserve bounds, failure cursors, gap metadata, and suspension whether input is already available or arrives byte by byte. Bytes beyond a bound must not satisfy a read inside it.
+
+module Test;
+
+type Item = unit {
+    first: uint8;
+    second: uint64;
+    body: bytes &size=3;
+    empty: bytes &size=0;
+};
+
+public type Frame = unit {
+    length: uint64;
+    items: Item[] &size=self.length;
+    tail: bytes &size=3;
+};
+
+@TEST-START-FILE driver.cc
+#include <iostream>
+#include <string>
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+#include "Foo.h"
+
+using Result = hlt_internal::_r__spicy_pir_backend::ParseResult_0;
+
+static std::string be(uint64_t n) {
+    std::string x(8, '\0');
+    for ( int i = 7; i >= 0; --i ) { x[i] = static_cast<char>(n & 255); n >>= 8; }
+    return x;
+}
+
+static void show(const std::string& name, const Result& x) {
+    std::cout << name << " " << x.kind << " cursor=" << x.cursor.offset()
+              << " gap=" << x.gap_offset << "," << x.gap_length;
+    if ( x.unit ) {
+        std::cout << " length=" << (*x.unit)->field_4 << " tail=" << (*x.unit)->field_6;
+        for ( const auto& item : (*x.unit)->field_5 )
+            std::cout << " item=" << item.field_0 << "," << item.field_1 << ","
+                      << item.field_2 << ",empty=" << item.field_3.size();
+    }
+    std::cout << '\n';
+}
+
+static void frozen(const std::string& name, const std::string& input, int gap = -1) {
+    auto data = hilti::rt::reference::make_value<hilti::rt::Stream>();
+    if ( gap < 0 )
+        data->append(hilti::rt::Bytes(input));
+    else {
+        data->append(hilti::rt::Bytes(input.substr(0, gap)));
+        data->append(nullptr, 1);
+        data->append(hilti::rt::Bytes(input.substr(gap + 1)));
+    }
+    data->freeze();
+    show(name, hlt::_r__spicy_pir_backend::parse_root_0(data, {}).get<Result>());
+}
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    const auto item = std::string("A") + be(42) + "XYZ";
+    const auto input = be(item.size()) + item + "END";
+    frozen("valid", input);
+    for ( size_t length = 0; length <= 25; ++length )
+        frozen("bound-" + std::to_string(length), be(length) + item + item + "END");
+    for ( size_t length = 0; length < input.size(); ++length )
+        frozen("eod-" + std::to_string(length), input.substr(0, length));
+    for ( size_t gap = 0; gap < input.size(); ++gap )
+        frozen("gap-" + std::to_string(gap), input, gap);
+
+    // An impossible read must fail immediately, even if the stream could still grow.
+    for ( auto [length, available] : {std::pair{1, 1}, std::pair{10, 9}} ) {
+        auto data = hilti::rt::reference::make_value<hilti::rt::Stream>(
+            hilti::rt::Bytes(be(length) + item.substr(0, available)));
+        auto result = hlt::_r__spicy_pir_backend::parse_root_0(data, {});
+        if ( ! result ) return 1;
+        show("live-bound-" + std::to_string(length), result.get<Result>());
+    }
+
+    auto data = hilti::rt::reference::make_value<hilti::rt::Stream>();
+    auto result = hlt::_r__spicy_pir_backend::parse_root_0(data, {});
+    for ( size_t i = 0; i < input.size(); ++i ) {
+        if ( result ) return 1;
+        data->append(hilti::rt::Bytes(input.substr(i, 1)));
+        result.resume();
+        std::cout << "feed-" << i + 1 << " " << (result ? "done" : "waiting") << '\n';
+    }
+    show("chunked", result.get<Result>());
+    return 0;
+}
+
+int main() {
+    hilti::rt::init(); spicy::rt::init();
+    auto result = hilti_main();
+    hilti::rt::done(); return result;
+}
+@TEST-END-FILE

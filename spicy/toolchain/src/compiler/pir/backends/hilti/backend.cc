@@ -692,14 +692,18 @@ private:
     }
 
     void _wait(LocalBuilder& b, uint64_t bytes, const ::hilti::Meta& meta) {
-        _checkBound(b, bytes, meta);
+        // Keep the common case in generated code, just like the runtime's inline waitForInput wrapper.
+        auto slow = b.addIf(b.greater(b.integer(bytes), b.size(b.id(::hilti::ID("cursor")))), meta);
+        // EnterBound limits the cursor, and subunits inherit that limited view. Available bytes therefore also
+        // satisfy the bound. On insufficient input, check the bound before waiting to preserve failure outcomes.
+        _checkBound(*slow, bytes, meta);
         auto* call = b.call(::hilti::ID("spicy_rt::waitForInputOrEod"),
                             {b.id(::hilti::ID("data")),
                              b.id(::hilti::ID("cursor")),
                              b.integer(bytes),
                              b.id(::hilti::ID("filters_"))},
                             meta);
-        auto eod = b.addIf(b.not_(call), meta);
+        auto eod = slow->addIf(b.not_(call), meta);
         _return(*eod, "UnexpectedEod", nullptr, meta);
     }
 
@@ -784,7 +788,10 @@ private:
         auto* value_type = integer ? b.qualifiedType(b.typeUnsignedInteger(static_cast<unsigned>(bytes * 8)),
                                                      ::hilti::Constness::Mutable) :
                                      b.qualifiedType(b.typeBytes(), ::hilti::Constness::Mutable);
-        b.addLocal(::hilti::ID(value_name), value_type, meta);
+        // Keep the field location on the statement as well as its declaration, so this temporary does not
+        // introduce a whole-unit location update between the availability check and the read.
+        auto* declaration = b.declarationLocalVariable(::hilti::ID(value_name), value_type, {}, meta);
+        b.block()->_add(b.context(), b.statementDeclaration(declaration, meta));
         auto* try_body = _b.statementBlock(meta);
         LocalBuilder tb(_b.context(), try_body);
         if ( integer ) {
@@ -924,7 +931,7 @@ private:
                                              _member(*failed, name, "gap_length"),
                                              meta),
                                   meta);
-                b.addAssign(b.id(::hilti::ID("cursor")), _member(b, name, "cursor"), meta);
+                b.addAssign(b.id(::hilti::ID("cursor")), b.move(_member(b, name, "cursor")), meta);
                 auto unit_value = fmt("v_%u_unit", id.index);
                 b.addLocal(::hilti::ID(unit_value), b.deref(_member(b, name, "unit")), meta);
                 _tuples[id.index] = {"cursor", unit_value};
