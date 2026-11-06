@@ -8,3 +8,4 @@ Parser IR
    :maxdepth: 2
 
    architecture
+   development
