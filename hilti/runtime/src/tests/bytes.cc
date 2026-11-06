@@ -439,6 +439,9 @@ TEST_CASE("toInt") {
         else
             CHECK_EQ("100"_b.toInt(ByteOrder::Big), 3223600);
 
+        CHECK_EQ("\xff"_b.toInt(Enum(ByteOrder::Host)), -1);
+        CHECK_EQ("\xff\xff\xff\xff\xff\xff\xff\xff"_b.toInt(Enum(ByteOrder::Host)), -1);
+
         CHECK_THROWS_WITH_AS(""_b.toInt(Enum(ByteOrder::Big)),
                              "not enough bytes for conversion to integer",
                              const InvalidValue&);
@@ -467,6 +470,8 @@ TEST_CASE("toUInt") {
         CHECK_EQ("100"_b.toUInt(Enum(ByteOrder::Network)), 3223600U);
         CHECK_EQ("100"_b.toUInt(Enum(ByteOrder::Little)), 3158065U);
         CHECK_EQ("100"_b.toUInt(Enum(ByteOrder::Host)), 3158065U);
+        CHECK_EQ("\xff"_b.toUInt(Enum(ByteOrder::Host)), 255U);
+        CHECK_EQ("\xff\xff\xff\xff\xff\xff\xff\xff"_b.toUInt(Enum(ByteOrder::Host)), UINT64_MAX);
 
         CHECK_THROWS_WITH_AS(""_b.toUInt(Enum(ByteOrder::Big)),
                              "not enough bytes for conversion to integer",
