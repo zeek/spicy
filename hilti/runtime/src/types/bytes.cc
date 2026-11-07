@@ -285,7 +285,7 @@ integer::safe<int64_t> Bytes::toInt(ByteOrder byte_order) const {
 integer::safe<uint64_t> Bytes::toUInt(ByteOrder byte_order) const {
     switch ( byte_order.value() ) {
         case ByteOrder::Undef: throw InvalidArgument("cannot convert value to undefined byte order");
-        case ByteOrder::Host: return toInt(systemByteOrder());
+        case ByteOrder::Host: return toUInt(systemByteOrder());
         case ByteOrder::Little: [[fallthrough]];
         case ByteOrder::Network: [[fallthrough]];
         case ByteOrder::Big: break;
