@@ -115,12 +115,18 @@ target_link_libraries(
     spicy-rt-tests
     PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>
 )
-target_link_libraries(spicy-rt-tests PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt> doctest)
+target_link_libraries(
+    spicy-rt-tests
+    PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt> doctest::doctest
+)
 target_link_libraries(
     spicy-rt-tests
     PRIVATE $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects>
 )
-target_link_libraries(spicy-rt-tests PRIVATE $<IF:$<CONFIG:Debug>,spicy-rt-debug,spicy-rt> doctest)
+target_link_libraries(
+    spicy-rt-tests
+    PRIVATE $<IF:$<CONFIG:Debug>,spicy-rt-debug,spicy-rt> doctest::doctest
+)
 add_test(NAME spicy-rt-tests COMMAND ${PROJECT_BINARY_DIR}/bin/spicy-rt-tests)
 
 if(SPICY_ENABLE_BENCHMARKS)

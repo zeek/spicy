@@ -356,7 +356,7 @@ add_executable(
     tests/graph.cc
 )
 hilti_link_executable_in_tree(hilti-toolchain-tests PRIVATE)
-target_link_libraries(hilti-toolchain-tests PRIVATE doctest)
+target_link_libraries(hilti-toolchain-tests PRIVATE doctest::doctest)
 if(NOT MSVC)
     target_compile_options(hilti-toolchain-tests PRIVATE "-Wall")
 endif()
