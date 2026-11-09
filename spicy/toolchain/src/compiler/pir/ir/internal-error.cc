@@ -7,7 +7,7 @@
 
 #include <hilti/base/util.h>
 
-#include <spicy/compiler/detail/pir/ir/diagnostic.h>
+#include <spicy/compiler/detail/pir/ir/internal-error.h>
 #include <spicy/compiler/detail/pir/ir/printer.h>
 
 using hilti::util::fmt;
@@ -15,16 +15,6 @@ using hilti::util::fmt;
 namespace spicy::detail::pir::ir {
 
 namespace {
-
-std::string_view severityWord(DiagnosticSeverity severity) {
-    switch ( severity ) {
-        case DiagnosticSeverity::Error: return "error";
-        case DiagnosticSeverity::Warning: return "warning";
-        case DiagnosticSeverity::Note: return "note";
-    }
-
-    return "error";
-}
 
 /** Absent when `span` itself is unset; otherwise always renders, even for a malformed reference. */
 std::optional<std::string> renderLocation(const Package& package, SourceSpanId span) {
@@ -114,11 +104,11 @@ std::string renderEntity(const Package& package, const DiagnosticEntity& entity)
 
 void renderOne(std::string& out,
                const Package& package,
-               const DiagnosticDefinition& def,
+               std::string_view kind,
+               const std::string& tag,
                const std::string& message,
                const DiagnosticSite& site) {
-    const char* prefix = def.classification == DiagnosticClassification::Internal ? "internal compiler " : "";
-    out += fmt("%s%s[%s]\n", prefix, severityWord(def.severity), def.id);
+    out += fmt("internal compiler %s[%s]\n", kind, tag);
 
     if ( auto entity = renderEntity(package, site.entity); ! entity.empty() )
         out += fmt("  at %s\n", entity);
@@ -131,14 +121,14 @@ void renderOne(std::string& out,
 
 } // namespace
 
-std::string render(const Package& package, const std::vector<Diagnostic>& diagnostics) {
+std::string render(const Package& package, const std::vector<InternalError>& errors) {
     std::string out;
 
-    for ( const auto& d : diagnostics ) {
-        renderOne(out, package, d.definition, d.message, d.primary);
+    for ( const auto& e : errors ) {
+        renderOne(out, package, "error", e.tag, e.message, e.site);
 
-        for ( const auto& note : d.notes )
-            renderOne(out, package, note.definition, note.message, note.site);
+        for ( const auto& note : e.notes )
+            renderOne(out, package, "note", note.tag, note.message, note.site);
     }
 
     return out;

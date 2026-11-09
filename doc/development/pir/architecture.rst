@@ -292,29 +292,30 @@ Diagnostics
 The diagnostics engine is revamped for PIR. The main motivation is so that more semantic
 analyses can be added in the future, which could help with warnings (which are rare
 in Spicy, mainly because they could be noisy and there's no suppression mechanism).
-Here's an example diagnostic:
+User diagnostics have stable IDs in a catalog. Suppress warnings with ``-W no-<id>``.
+Errors cannot be suppressed. For example:
 
 .. code:: cpp
 
-   inline constexpr DiagnosticDefinition TypeMissingDeclaration{
-       .id = "PIR_TYPE_MISSING_DECLARATION",
-       .classification = DiagnosticClassification::Internal,
-       .severity = DiagnosticSeverity::Error,
-       .message = "unit type does not reference a valid type declaration",
+   inline constexpr DiagnosticDefinition UnusedField{
+       .id = "unused-field",
+       .severity = DiagnosticSeverity::Warning,
+       .message = "field '%s' is parsed but never used; consider making it 'skip'",
    };
 
-Then, it's used as follows:
+An analysis reports the diagnostic at the affected field:
 
 .. code:: cpp
 
-   _emitter.emit(diag::TypeMissingDeclaration, id);
+   emitter.emit(diag::UnusedField, field, name);
 
-The main drawback here is that diagnostics now span multiple places. However, it also
-gives an index for any diagnostics that PIR emits. Any reused diagnostics may have their
-messages changed at the same time.
+Verifier failures are internal compiler errors. They cannot be suppressed and have no
+catalog entries. Each check supplies a short tag so tests can identify it without
+matching the message:
 
-Since all diagnostics go through a custom emitter, this may change to add source code
-snippets, more formatting support, suppression, and more.
+.. code:: cpp
+
+   _emitter.emit("type-missing-declaration", "unit type does not reference a valid type declaration", id);
 
 CFG and SSA
 -----------

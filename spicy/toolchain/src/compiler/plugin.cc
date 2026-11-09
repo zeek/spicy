@@ -117,7 +117,7 @@ hilti::Plugin spicy::detail::createSpicyPlugin() {
 
                 if ( const auto* error = std::get_if<pir::Error>(&*result) ) {
                     // A malformed PIR package is a hard failure; do not run the legacy generator.
-                    hilti::logger().error(pir::ir::render(error->package, error->diagnostics));
+                    hilti::logger().error(pir::ir::render(error->package, error->errors));
                     return false;
                 }
 

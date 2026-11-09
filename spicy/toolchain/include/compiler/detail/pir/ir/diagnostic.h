@@ -9,13 +9,7 @@
 #include <hilti/base/util.h>
 
 #include <spicy/compiler/detail/pir/ir/diagnostic-definition.h>
-#include <spicy/compiler/detail/pir/ir/diagnostics/core.h>
-#include <spicy/compiler/detail/pir/ir/diagnostics/declarations.h>
 #include <spicy/compiler/detail/pir/ir/diagnostics/fields.h>
-#include <spicy/compiler/detail/pir/ir/diagnostics/foreign.h>
-#include <spicy/compiler/detail/pir/ir/diagnostics/parser.h>
-#include <spicy/compiler/detail/pir/ir/diagnostics/procedural.h>
-#include <spicy/compiler/detail/pir/ir/diagnostics/source.h>
 #include <spicy/compiler/detail/pir/ir/package.h>
 #include <spicy/compiler/detail/pir/ir/source.h>
 
@@ -151,8 +145,5 @@ private:
     const Package& _package;
     std::vector<Diagnostic>& _sink;
 };
-
-/** Renders diagnostics deterministically; tolerant of malformed source/entity references. */
-std::string render(const Package& package, const std::vector<Diagnostic>& diagnostics);
 
 } // namespace spicy::detail::pir::ir

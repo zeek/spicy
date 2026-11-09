@@ -10,21 +10,18 @@ namespace spicy::detail::pir::ir::diag {
 
 inline constexpr DiagnosticDefinition UnusedField{
     .id = "unused-field",
-    .classification = DiagnosticClassification::User,
     .severity = DiagnosticSeverity::Warning,
     .message = "field '%s' is parsed but never used; consider making it 'skip'",
 };
 
 inline constexpr DiagnosticDefinition FieldReadBeforeParsed{
     .id = "field-read-before-parsed",
-    .classification = DiagnosticClassification::User,
     .severity = DiagnosticSeverity::Error,
     .message = "field '%s' may be read before it is set",
 };
 
 inline constexpr DiagnosticDefinition FieldParsedHere{
     .id = "field-parsed-here",
-    .classification = DiagnosticClassification::User,
     .severity = DiagnosticSeverity::Note,
     .message = "'%s' is parsed here",
 };

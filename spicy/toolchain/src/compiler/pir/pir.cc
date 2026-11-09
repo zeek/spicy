@@ -1,7 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <algorithm>
-#include <cassert>
 #include <string_view>
 
 #include <hilti/ast/ast-context.h>
@@ -38,14 +37,14 @@ pir::BuildResult pir::build(const hilti::ASTContext& ctx) {
                     package.functions().size(),
                     package.instructions().size()));
 
-    std::vector<ir::Diagnostic> diags;
+    std::vector<ir::InternalError> errors;
     {
         hilti::util::timing::Collector _("spicy/compiler/pir/build/verify");
-        diags = ir::verify(package);
+        errors = ir::verify(package);
     }
 
-    if ( ! diags.empty() )
-        return BuildOutcome(Error{.package = std::move(package), .diagnostics = std::move(diags)});
+    if ( ! errors.empty() )
+        return BuildOutcome(Error{.package = std::move(package), .errors = std::move(errors)});
 
     // Check for user mistakes before optimization changes the package.
     std::vector<ir::Diagnostic> user_diags;
@@ -71,11 +70,11 @@ pir::BuildResult pir::build(const hilti::ASTContext& ctx) {
     // TODO: Should this verification be only debug or something?
     {
         hilti::util::timing::Collector _("spicy/compiler/pir/build/verify");
-        diags = ir::verify(package);
+        errors = ir::verify(package);
     }
 
-    if ( ! diags.empty() )
-        return BuildOutcome(Error{.package = std::move(package), .diagnostics = std::move(diags)});
+    if ( ! errors.empty() )
+        return BuildOutcome(Error{.package = std::move(package), .errors = std::move(errors)});
 
     HILTI_DEBUG(logging::debug::PIR, "after constant folding:");
     HILTI_DEBUG(logging::debug::PIR, ir::print(package));
@@ -106,7 +105,6 @@ bool pir::report(const ir::Package& package,
     bool errors = false;
     for ( const auto& d : diagnostics ) {
         const auto& def = d.definition;
-        assert(def.classification == ir::DiagnosticClassification::User);
         if ( def.severity == ir::DiagnosticSeverity::Warning &&
              std::ranges::find(suppressed, std::string_view(def.id)) != suppressed.end() )
             continue;

@@ -4,12 +4,12 @@
 
 #include <vector>
 
-#include <spicy/compiler/detail/pir/ir/diagnostic.h>
+#include <spicy/compiler/detail/pir/ir/internal-error.h>
 #include <spicy/compiler/detail/pir/ir/package.h>
 
 namespace spicy::detail::pir::ir {
 
-/** Returns all structural and typing errors in `package`. */
-std::vector<Diagnostic> verify(const Package& package);
+/** Returns internal compiler errors for invalid structure or types in `package`. */
+std::vector<InternalError> verify(const Package& package);
 
 } // namespace spicy::detail::pir::ir

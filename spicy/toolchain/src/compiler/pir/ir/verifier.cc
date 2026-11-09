@@ -21,37 +21,48 @@ uint64_t slotKey(InstId tuple_inst, uint32_t index) { return (static_cast<uint64
 
 class Verifier {
 public:
-    Verifier(const Package& package, std::vector<Diagnostic>& diags) : _package(package), _emitter(package, diags) {}
+    Verifier(const Package& package, std::vector<InternalError>& errors)
+        : _package(package), _emitter(package, errors) {}
 
     void verifyType(TypeId id, const Type& type) {
         if ( type.kind == TypeKind::Unit ) {
             if ( ! _package.isValid(type.declaration) )
-                _emitter.emit(diag::TypeMissingDeclaration, id);
+                _emitter.emit("type-missing-declaration", "unit type does not reference a valid type declaration", id);
         }
         else if ( type.kind == TypeKind::Opaque ) {
             if ( ! _package.isValid(type.declaration) ||
                  _package.typeDecl(type.declaration).kind != TypeDeclKind::Opaque )
-                _emitter.emit(diag::TypeOpaqueMissingDeclaration, id);
+                _emitter.emit("type-opaque-missing-declaration",
+                              "opaque type does not reference an opaque type declaration",
+                              id);
         }
         else if ( type.declaration.isSet() )
-            _emitter.emit(diag::TypeUnexpectedDeclaration, id);
+            _emitter.emit("type-unexpected-declaration", "only a unit type may carry a type declaration", id);
 
         if ( type.kind == TypeKind::Tuple || type.kind == TypeKind::Vector || type.kind == TypeKind::Set ) {
             if ( (type.kind == TypeKind::Vector || type.kind == TypeKind::Set) && type.type_arguments.size() != 1 )
-                _emitter.emit(diag::TypeUnexpectedTypeArguments, id);
+                _emitter.emit("type-unexpected-type-arguments", "only a tuple type may carry type arguments", id);
             for ( size_t a = 0; a < type.type_arguments.size(); ++a ) {
                 if ( ! _package.isValid(type.type_arguments[a]) )
-                    _emitter.emit(diag::TypeInvalidTypeArgument, id, a);
+                    _emitter.emit("type-invalid-type-argument",
+                                  "tuple type argument %zu is not a valid type ID",
+                                  id,
+                                  a);
                 else if ( _package.type(type.type_arguments[a]).kind == TypeKind::Place )
-                    _emitter.emit(diag::PlaceEscapes, id);
+                    _emitter
+                        .emit("place-escapes",
+                              "a place may only be a parameter or an operand, not a function result, field, or element",
+                              id);
             }
         }
         else if ( type.kind == TypeKind::Place ) {
             if ( type.type_arguments.size() != 1 || ! _package.isValid(type.type_arguments[0]) )
-                _emitter.emit(diag::PlaceMissingElement, id);
+                _emitter.emit("place-missing-element",
+                              "place type must carry exactly one valid element type argument",
+                              id);
         }
         else if ( ! type.type_arguments.empty() )
-            _emitter.emit(diag::TypeUnexpectedTypeArguments, id);
+            _emitter.emit("type-unexpected-type-arguments", "only a tuple type may carry type arguments", id);
     }
 
     void verifyTypeDecl(TypeDeclId id, const TypeDecl& decl) {
@@ -59,29 +70,39 @@ public:
 
         if ( decl.kind == TypeDeclKind::Opaque ) {
             if ( ! decl.opaque )
-                _emitter.emit(diag::TypeDeclOpaqueInfoMismatch, id);
+                _emitter.emit("type-decl-opaque-info-mismatch",
+                              "native binding information must be present exactly for opaque type declarations",
+                              id);
             else if ( decl.opaque->cxx_name.empty() || ! decl.opaque->lifecycle )
-                _emitter.emit(diag::OpaqueDeclarationIncomplete, id);
+                _emitter.emit("opaque-declaration-incomplete",
+                              "opaque type declaration must name its native type and declare its lifecycle",
+                              id);
         }
         else if ( decl.opaque )
-            _emitter.emit(diag::TypeDeclOpaqueInfoMismatch, id);
+            _emitter.emit("type-decl-opaque-info-mismatch",
+                          "native binding information must be present exactly for opaque type declarations",
+                          id);
 
         for ( auto field_id : decl.fields ) {
             if ( ! _package.isValid(field_id) ) {
-                _emitter.emit(diag::InvalidFieldDeclarationId, id);
+                _emitter.emit("invalid-field-declaration-id", "unit declaration references an invalid field ID", id);
                 continue;
             }
 
             const auto& field = _package.declaration(field_id);
             if ( field.owner != id )
-                _emitter.emit(diag::FieldOwnerMismatch, field_id);
+                _emitter.emit("field-owner-mismatch",
+                              "field's cached owner does not match the unit declaring it",
+                              field_id);
 
             _verifySpan(field.span, field_id);
 
             if ( ! _package.isValid(field.type) )
-                _emitter.emit(diag::InvalidFieldType, field_id);
+                _emitter.emit("invalid-field-type", "field does not reference a valid type ID", field_id);
             else if ( _package.type(field.type).kind == TypeKind::Place )
-                _emitter.emit(diag::PlaceEscapes, field_id);
+                _emitter.emit("place-escapes",
+                              "a place may only be a parameter or an operand, not a function result, field, or element",
+                              field_id);
         }
     }
 
@@ -90,10 +111,14 @@ public:
 
         // A function has one implementation: a native symbol, or the target adapter.
         if ( fn.cxx_name.empty() == ! fn.target_provided )
-            _emitter.emit(diag::ForeignFunctionMissingBinding, id);
+            _emitter.emit("foreign-function-missing-binding",
+                          "foreign function must either name its native symbol or be provided by the target",
+                          id);
 
         if ( ! _package.isValid(fn.result_type) || typeDiscipline(_package, fn.result_type) == ValueDiscipline::Affine )
-            _emitter.emit(diag::ForeignFunctionInvalidResult, id);
+            _emitter.emit("foreign-function-invalid-result",
+                          "foreign function result must be a valid type that a native call returns by value",
+                          id);
 
         for ( size_t p = 0; p < fn.parameters.size(); ++p ) {
             const auto& parameter = fn.parameters[p];
@@ -103,7 +128,10 @@ public:
             // A by-value parameter takes its argument, so affinity does not restrict it; only a void or missing type
             // does.
             if ( ! _package.isValid(parameter.type) || parameter.type == _package.voidType() )
-                _emitter.emit(diag::ForeignFunctionInvalidParameter, id, p);
+                _emitter.emit("foreign-function-invalid-parameter",
+                              "foreign function parameter %zu must be a valid type that a native call accepts by value",
+                              id,
+                              p);
         }
     }
 
@@ -136,20 +164,26 @@ public:
         _verifySpan(fn.span, id);
 
         if ( ! _package.isValid(fn.result_type) )
-            _emitter.emit(diag::InvalidFunctionResultType, id);
+            _emitter.emit("invalid-function-result-type", "function's result type is not a valid type ID", id);
         else if ( _package.type(fn.result_type).kind == TypeKind::Place )
-            _emitter.emit(diag::PlaceEscapes, id);
+            _emitter.emit("place-escapes",
+                          "a place may only be a parameter or an operand, not a function result, field, or element",
+                          id);
 
         if ( fn.kind == FunctionKind::Normal ) {
             for ( size_t p = 0; p < fn.parameters.size(); ++p )
                 if ( ! _isValidParameter(fn.parameters[p]) )
-                    _emitter.emit(diag::NormalFunctionInvalidParameter, id, p);
+                    _emitter.emit("normal-function-invalid-parameter",
+                                  "parameter %zu of an ordinary function must have a valid type for its mode: a taken "
+                                  "value is not a place, and a borrow is a place or an affine value",
+                                  id,
+                                  p);
         }
 
         _verifyFunctionKind(id, fn);
 
         if ( ! _package.isValid(fn.root_region) ) {
-            _emitter.emit(diag::InvalidRootRegion, id);
+            _emitter.emit("invalid-root-region", "function's root region is not a valid region ID", id);
             return;
         }
 
@@ -195,7 +229,9 @@ public:
             return;
 
         if ( ! isAcyclic(_cfg) )
-            _emitter.emit(diag::ControlFlowCycle, id);
+            _emitter.emit("control-flow-cycle",
+                          "function's control flow contains a cycle, which PIR does not support yet",
+                          id);
         _idom = immediateDominators(_cfg.successors, 0);
     }
 
@@ -207,19 +243,27 @@ public:
 
     void _verifyRegion(FunctionId id, RegionId region_id, const Function& fn, InstId owner) {
         if ( ! _active_regions.insert(region_id.index).second ) {
-            _emitter.emit(diag::InvalidStructuredRegion, owner.isSet() ? owner : InstId{});
+            _emitter.emit("invalid-structured-region",
+                          "structured parser operation must own exactly one valid body region",
+                          owner.isSet() ? owner : InstId{});
             return;
         }
         if ( ! _owned_regions.insert(region_id.index).second )
-            _emitter.emit(diag::InvalidStructuredRegion, owner.isSet() ? owner : InstId{});
+            _emitter.emit("invalid-structured-region",
+                          "structured parser operation must own exactly one valid body region",
+                          owner.isSet() ? owner : InstId{});
         const auto& region = _package.region(region_id);
         bool multi_block_body = ! owner.isSet() && fn.kind != FunctionKind::Parser;
         if ( multi_block_body ? region.blocks.empty() : region.blocks.size() != 1 )
-            _emitter.emit(diag::RegionBlockCountMismatch, id, region.blocks.size());
+            _emitter.emit(
+                "region-block-count-mismatch",
+                "function's region must contain exactly one block (an ordinary function needs at least one), has %zu",
+                id,
+                region.blocks.size());
 
         for ( auto block_id : region.blocks ) {
             if ( ! _package.isValid(block_id) ) {
-                _emitter.emit(diag::InvalidBlockId, id);
+                _emitter.emit("invalid-block-id", "region references an invalid block ID", id);
                 continue;
             }
 
@@ -243,7 +287,9 @@ public:
             const auto& decl = _package.declaration(id);
 
             if ( ! _package.isValid(decl.owner) ) {
-                _emitter.emit(diag::DeclarationInvalidOwner, id);
+                _emitter.emit("declaration-invalid-owner",
+                              "declaration's owner is not a valid type declaration ID",
+                              id);
                 continue;
             }
 
@@ -251,41 +297,55 @@ public:
             auto count = it != membership_count.end() ? it->second : 0;
 
             if ( count == 0 )
-                _emitter.emit(diag::DeclarationNotInOwnerMembership, id);
+                _emitter.emit("declaration-not-in-owner-membership",
+                              "declaration does not appear in its owner's membership vector",
+                              id);
             else if ( count > 1 )
-                _emitter.emit(diag::DeclarationDuplicateOwnerMembership, id);
+                _emitter.emit("declaration-duplicate-owner-membership",
+                              "declaration appears more than once in its owner's membership vector",
+                              id);
         }
     }
 
     void verifyParserRoot(const ParserRoot& root) {
         if ( ! _package.isValid(root.unit) ) {
-            _emitter.emit(diag::InvalidParserRootUnit, noSite());
+            _emitter.emit("invalid-parser-root-unit", "parser root references an invalid unit declaration", noSite());
             return;
         }
 
         if ( ! _package.isValid(root.function) ) {
-            _emitter.emit(diag::InvalidParserRootFunction, root.unit);
+            _emitter.emit("invalid-parser-root-function", "parser root references an invalid function", root.unit);
             return;
         }
 
         const auto& fn = _package.function(root.function);
         if ( fn.kind != FunctionKind::Parser ) {
-            _emitter.emit(diag::ParserRootFunctionKindMismatch, root.function);
+            _emitter.emit("parser-root-function-kind-mismatch",
+                          "parser root's function is not a parser function",
+                          root.function);
             return;
         }
 
         if ( fn.parser_unit != root.unit )
-            _emitter.emit(diag::ParserRootUnitMismatch, root.function);
+            _emitter.emit("parser-root-unit-mismatch",
+                          "parser root's unit does not match its function's parser unit",
+                          root.function);
 
         if ( root.context.has_value() != (fn.parameters.size() == 2) )
-            _emitter.emit(diag::ParserRootContextMismatch, root.function);
+            _emitter.emit("parser-root-context-mismatch",
+                          "a parser root describes a context exactly when its function takes one, with a name for each "
+                          "tuple element",
+                          root.function);
         else if ( root.context && _package.isValid(fn.parameters[1].type) &&
                   _package.type(fn.parameters[1].type).kind == TypeKind::Place &&
                   _package.type(fn.parameters[1].type).type_arguments.size() == 1 ) {
             // Every element of the context's tuple has a name, and nothing else does.
             const auto& tuple = _package.type(_package.type(fn.parameters[1].type).type_arguments[0]);
             if ( tuple.kind == TypeKind::Tuple && tuple.type_arguments.size() != root.context->elements.size() )
-                _emitter.emit(diag::ParserRootContextMismatch, root.function);
+                _emitter.emit("parser-root-context-mismatch",
+                              "a parser root describes a context exactly when its function takes one, with a name for "
+                              "each tuple element",
+                              root.function);
         }
     }
 
@@ -294,32 +354,47 @@ private:
     void _verifyFunctionKind(FunctionId id, const Function& fn) {
         if ( fn.kind != FunctionKind::Parser ) {
             if ( fn.parser_unit.isSet() )
-                _emitter.emit(diag::NormalFunctionWithParserUnit, id);
+                _emitter.emit("normal-function-with-parser-unit",
+                              "an ordinary function must not reference a parser unit",
+                              id);
             return;
         }
 
         if ( ! _package.isValid(fn.parser_unit) ) {
-            _emitter.emit(diag::ParserFunctionMissingParserUnit, id);
+            _emitter.emit("parser-function-missing-parser-unit",
+                          "a parser function must reference a valid parser unit",
+                          id);
             return;
         }
 
         if ( fn.parameters.empty() || fn.parameters.size() > 2 )
-            _emitter.emit(diag::ParserFunctionParameterCountMismatch, id, fn.parameters.size());
+            _emitter
+                .emit("parser-function-parameter-count-mismatch",
+                      "a parser function must have a parser state and at most a context borrow as parameters, has %zu",
+                      id,
+                      fn.parameters.size());
         else if ( ! _package.isValid(fn.parameters[0].type) ||
                   _package.type(fn.parameters[0].type).kind != TypeKind::ParserState ||
                   fn.parameters[0].mode != ParameterMode::Take )
-            _emitter.emit(diag::ParserFunctionParameterTypeMismatch, id);
+            _emitter.emit("parser-function-parameter-type-mismatch",
+                          "a parser function's parameter must be parser.state",
+                          id);
         else if ( fn.parameters.size() == 2 &&
                   (fn.parameters[1].mode != ParameterMode::BorrowMut || ! _package.isValid(fn.parameters[1].type) ||
                    _package.type(fn.parameters[1].type).kind != TypeKind::Place ||
                    _package.type(fn.parameters[1].type).type_arguments.size() != 1 ||
                    _package.type(_package.type(fn.parameters[1].type).type_arguments[0]).kind != TypeKind::Tuple) )
-            _emitter.emit(diag::ParserFunctionContextParameterMismatch, id);
+            _emitter
+                .emit("parser-function-context-parameter-mismatch",
+                      "a parser function's second parameter must be a writable borrow of a place that holds a tuple",
+                      id);
 
         if ( _package.isValid(fn.result_type) ) {
             const auto& result = _package.type(fn.result_type);
             if ( result.kind != TypeKind::Unit || result.declaration != fn.parser_unit )
-                _emitter.emit(diag::ParserFunctionResultTypeMismatch, id);
+                _emitter.emit("parser-function-result-type-mismatch",
+                              "a parser function's result type must be its parser unit's nominal type",
+                              id);
         }
     }
     bool _satisfies(const TypeConstraint& constraint, TypeId type_id, TypeId function_result_type) const {
@@ -341,26 +416,26 @@ private:
 
         const auto& sources = _package.sourceManager();
         if ( ! sources.isValid(span) ) {
-            _emitter.emit(diag::InvalidSourceSpanId, site);
+            _emitter.emit("invalid-source-span-id", "reference to an invalid source span ID", site);
             return;
         }
 
         const auto& s = sources.span(span);
         if ( ! sources.isValid(s.file) )
-            _emitter.emit(diag::InvalidSourceFileId, site);
+            _emitter.emit("invalid-source-file-id", "source span references an invalid source file ID", site);
 
         if ( s.begin_line >= 0 && s.end_line >= 0 && s.begin_line == s.end_line && s.begin_column >= 0 &&
              s.end_column >= 0 && s.end_column < s.begin_column )
-            _emitter.emit(diag::MalformedSourceSpanRange, site, "column");
+            _emitter.emit("malformed-source-span-range", "source span has a reversed %s range", site, "column");
 
         if ( s.begin_line >= 0 && s.end_line >= 0 && s.end_line < s.begin_line )
-            _emitter.emit(diag::MalformedSourceSpanRange, site, "line");
+            _emitter.emit("malformed-source-span-range", "source span has a reversed %s range", site, "line");
     }
 
     void _verifyBlock(FunctionId function_id, BlockId block_id, const Function& fn, InstId owner) {
         const auto& block = _package.block(block_id);
         if ( block.insts.empty() ) {
-            _emitter.emit(diag::EmptyBlock, block_id);
+            _emitter.emit("empty-block", "block has no instructions and therefore no terminator", block_id);
             return;
         }
 
@@ -371,7 +446,7 @@ private:
         for ( size_t i = 0; i < block.insts.size(); ++i ) {
             auto inst_id = block.insts[i];
             if ( ! _package.isValid(inst_id) ) {
-                _emitter.emit(diag::InvalidInstructionId, block_id, i);
+                _emitter.emit("invalid-instruction-id", "instruction at position %zu has an invalid ID", block_id, i);
                 continue;
             }
 
@@ -401,19 +476,27 @@ private:
                 bounded_states.insert(inst_id.index);
             if ( inst.opcode == Opcode::LeaveBound &&
                  (inst.args.empty() || ! bounded_states.contains(inst.args[0].index)) )
-                _emitter.emit(diag::InvalidParserOperation, inst_id);
+                _emitter.emit("invalid-parser-operation",
+                              "parser operation has inconsistent types, payload, or region signature",
+                              inst_id);
             if ( inst.opcode == Opcode::RepeatToBound ) {
                 if ( inst.args.empty() || ! bounded_states.contains(inst.args[0].index) )
-                    _emitter.emit(diag::RepeatRequiresBound, inst_id);
+                    _emitter.emit("repeat-requires-bound",
+                                  "parser.repeat_to_bound requires an active byte bound on its input state",
+                                  inst_id);
                 else
                     bounded_tuples.insert(inst_id.index);
                 if ( inst.regions.size() != 1 || ! _package.isValid(inst.regions[0]) )
-                    _emitter.emit(diag::InvalidStructuredRegion, inst_id);
+                    _emitter.emit("invalid-structured-region",
+                                  "structured parser operation must own exactly one valid body region",
+                                  inst_id);
                 else
                     _verifyRegion(function_id, inst.regions[0], fn, inst_id);
             }
             else if ( ! inst.regions.empty() )
-                _emitter.emit(diag::InvalidStructuredRegion, inst_id);
+                _emitter.emit("invalid-structured-region",
+                              "structured parser operation must own exactly one valid body region",
+                              inst_id);
         }
 
         if ( owner.isSet() )
@@ -428,11 +511,15 @@ private:
                     continue;
                 const auto& inst = _package.inst(inst_id);
                 if ( inst.opcode == Opcode::RegionArgument )
-                    _emitter.emit(diag::InvalidRegionArgument, inst_id);
+                    _emitter.emit("invalid-region-argument",
+                                  "region argument is not a leading argument with the expected type and index",
+                                  inst_id);
                 else if ( inst.opcode == Opcode::Yield )
-                    _emitter.emit(diag::InvalidYield, inst_id);
+                    _emitter.emit("invalid-yield", "region yield does not match its owner's carried values", inst_id);
                 else if ( inst.opcode == Opcode::Argument && ! entry )
-                    _emitter.emit(diag::ArgumentNotLeading, inst_id);
+                    _emitter.emit("argument-not-leading",
+                                  "core.argument must appear before any non-argument instruction in the entry block",
+                                  inst_id);
             }
         }
         // An ordinary function's body checks parser-state affinity across all of its blocks at once.
@@ -446,7 +533,9 @@ private:
         const auto& owner = _package.inst(owner_id);
         const auto& block = _package.block(block_id);
         if ( block.insts.size() < owner.args.size() + 1 ) {
-            _emitter.emit(diag::InvalidStructuredRegion, owner_id);
+            _emitter.emit("invalid-structured-region",
+                          "structured parser operation must own exactly one valid body region",
+                          owner_id);
             return;
         }
 
@@ -458,13 +547,17 @@ private:
             const auto* payload = std::get_if<ArgumentPayload>(&arg.payload);
             if ( arg.opcode != Opcode::RegionArgument || ! payload || payload->index != i ||
                  arg.result_type != _package.inst(owner.args[i]).result_type )
-                _emitter.emit(diag::InvalidRegionArgument, id);
+                _emitter.emit("invalid-region-argument",
+                              "region argument is not a leading argument with the expected type and index",
+                              id);
         }
 
         for ( size_t i = owner.args.size(); i < block.insts.size(); ++i ) {
             auto id = block.insts[i];
             if ( _package.isValid(id) && _package.inst(id).opcode == Opcode::RegionArgument )
-                _emitter.emit(diag::InvalidRegionArgument, id);
+                _emitter.emit("invalid-region-argument",
+                              "region argument is not a leading argument with the expected type and index",
+                              id);
         }
 
         auto terminator = block.insts.back();
@@ -472,18 +565,18 @@ private:
             return;
         const auto& yielded = _package.inst(terminator);
         if ( yielded.opcode != Opcode::Yield || yielded.args.size() != owner.args.size() ) {
-            _emitter.emit(diag::InvalidYield, terminator);
+            _emitter.emit("invalid-yield", "region yield does not match its owner's carried values", terminator);
             return;
         }
         for ( size_t i = 0; i < yielded.args.size(); ++i )
             if ( _package.isValid(yielded.args[i]) && _package.isValid(owner.args[i]) &&
                  _package.inst(yielded.args[i]).result_type != _package.inst(owner.args[i]).result_type )
-                _emitter.emit(diag::InvalidYield, terminator);
+                _emitter.emit("invalid-yield", "region yield does not match its owner's carried values", terminator);
 
         // The owner's result is treated as bounded, so the body must yield a state that still carries the bound.
         if ( ! yielded.args.empty() && _package.isValid(yielded.args[0]) &&
              ! bounded_states.contains(yielded.args[0].index) )
-            _emitter.emit(diag::InvalidYield, terminator);
+            _emitter.emit("invalid-yield", "region yield does not match its owner's carried values", terminator);
     }
 
     // Every `core.argument` in the entry block appears before any non-argument
@@ -506,7 +599,9 @@ private:
             }
 
             if ( prefix_ended ) {
-                _emitter.emit(diag::ArgumentNotLeading, inst_id);
+                _emitter.emit("argument-not-leading",
+                              "core.argument must appear before any non-argument instruction in the entry block",
+                              inst_id);
                 continue;
             }
 
@@ -515,17 +610,27 @@ private:
                 continue; // reported generically as a payload-shape mismatch already
 
             if ( payload->index >= fn.parameters.size() ) {
-                _emitter.emit(diag::ArgumentIndexOutOfRange, inst_id, payload->index, fn.parameters.size());
+                _emitter.emit("argument-index-out-of-range",
+                              "core.argument index %u is out of range for %zu parameter(s)",
+                              inst_id,
+                              payload->index,
+                              fn.parameters.size());
                 continue;
             }
 
             if ( ! seen_indices.insert(payload->index).second )
-                _emitter.emit(diag::ArgumentIndexDuplicate, inst_id, payload->index);
+                _emitter.emit("argument-index-duplicate",
+                              "core.argument index %u is bound more than once",
+                              inst_id,
+                              payload->index);
         }
 
         for ( size_t i = 0; i < fn.parameters.size(); ++i )
             if ( ! seen_indices.contains(static_cast<uint32_t>(i)) )
-                _emitter.emit(diag::ArgumentIndexMissing, function_id, i);
+                _emitter.emit("argument-index-missing",
+                              "function parameter %zu has no core.argument binding it",
+                              function_id,
+                              i);
     }
 
     // Parser-state affinity. This only applies to the parser state, or tuples
@@ -554,7 +659,9 @@ private:
 
                 auto [it, inserted] = projected_by.try_emplace(slotKey(inst.args[0], payload->index), inst_id);
                 if ( ! inserted )
-                    _emitter.emit(diag::ParserStateReused, inst_id);
+                    _emitter.emit("parser-state-reused",
+                                  "parser state value is consumed by more than one state-transforming operation",
+                                  inst_id);
                 continue;
             }
 
@@ -572,13 +679,19 @@ private:
                     // A place derived from a unit is an access to that unit.
                     auto owner = _derivedOwner(arg);
                     if ( owner.isSet() && consumed_by.contains(owner.index) )
-                        _emitter.emit(diag::UseAfterConsume, inst_id, a);
+                        _emitter.emit("use-after-consume",
+                                      "operand %zu uses an affine value after an operation consumed it",
+                                      inst_id,
+                                      a);
                     continue;
                 }
 
                 auto role = operandRole(_package, inst, a);
                 if ( role == OperandRole::Borrow && consumed_by.contains(arg.index) )
-                    _emitter.emit(diag::UseAfterConsume, inst_id, a);
+                    _emitter.emit("use-after-consume",
+                                  "operand %zu uses an affine value after an operation consumed it",
+                                  inst_id,
+                                  a);
             }
 
             for ( size_t a = 0; a < inst.args.size(); ++a ) {
@@ -595,7 +708,9 @@ private:
 
                 auto [it, inserted] = consumed_by.try_emplace(arg.index, inst_id);
                 if ( ! inserted )
-                    _emitter.emit(diag::ParserStateReused, inst_id);
+                    _emitter.emit("parser-state-reused",
+                                  "parser state value is consumed by more than one state-transforming operation",
+                                  inst_id);
             }
         }
     }
@@ -638,14 +753,16 @@ private:
 
                 auto* chain = find_chain(inst.args[0]);
                 if ( ! chain ) {
-                    _emitter.emit(diag::UnitStateStaleOrUnknownOperand, inst_id);
+                    _emitter.emit("unit-state-stale-or-unknown-operand",
+                                  "operand does not reference a live unit-state value created earlier in this function",
+                                  inst_id);
                     continue;
                 }
 
                 const auto* payload = std::get_if<FieldPayload>(&inst.payload);
                 if ( payload && _package.isValid(payload->field) ) {
                     if ( ! chain->published.insert(payload->field.index).second )
-                        _emitter.emit(diag::DuplicateFieldPublication, inst_id);
+                        _emitter.emit("duplicate-field-publication", "field is published more than once", inst_id);
                 }
 
                 chain->head = inst_id;
@@ -658,14 +775,18 @@ private:
 
                 auto* chain = find_chain(inst.args[1]);
                 if ( ! chain ) {
-                    _emitter.emit(diag::UnitStateStaleOrUnknownOperand, inst_id);
+                    _emitter.emit("unit-state-stale-or-unknown-operand",
+                                  "operand does not reference a live unit-state value created earlier in this function",
+                                  inst_id);
                     continue;
                 }
 
                 if ( _package.isValid(fn.parser_unit) ) {
                     for ( auto field_id : _package.typeDecl(fn.parser_unit).fields )
                         if ( ! chain->published.contains(field_id.index) )
-                            _emitter.emit(diag::MissingFieldPublication, inst_id);
+                            _emitter.emit("missing-field-publication",
+                                          "parser.finish completes a unit that has not published all of its fields",
+                                          inst_id);
                 }
             }
         }
@@ -682,33 +803,45 @@ private:
         _verifySpan(inst.span, inst_id);
 
         if ( inst.parent != block_id )
-            _emitter.emit(diag::CachedParentMismatch, inst_id, inst.parent.index, block_id.index);
+            _emitter.emit("cached-parent-mismatch",
+                          "instruction's cached parent block (%%%u) does not match its containing block (%%%u)",
+                          inst_id,
+                          inst.parent.index,
+                          block_id.index);
 
         const auto* schema = schemaFor(inst.opcode);
         if ( ! schema ) {
-            _emitter.emit(diag::UnrecognizedOpcode, inst_id);
+            _emitter.emit("unrecognized-opcode", "unrecognized opcode", inst_id);
             return;
         }
 
         if ( schema->is_terminator && ! is_last_in_block )
-            _emitter.emit(diag::TerminatorNotLast, inst_id);
+            _emitter.emit("terminator-not-last", "terminator is not the last instruction in its block", inst_id);
 
         if ( ! schema->is_terminator && is_last_in_block )
-            _emitter.emit(diag::MissingTerminator, block_id);
+            _emitter.emit("missing-terminator", "block does not end in a terminator", block_id);
 
         // A void return has no operand; a value-returning one has exactly one, checked against its function below.
         bool void_return = inst.opcode == Opcode::Return && inst.args.empty();
         if ( ! void_return && (schema->variadic ? inst.args.size() < schema->operandCount() :
                                                   inst.args.size() != schema->operandCount()) )
-            _emitter.emit(diag::OperandCountMismatch, inst_id, schema->operandCount(), inst.args.size());
+            _emitter.emit("operand-count-mismatch",
+                          "expected %zu operand(s), got %zu",
+                          inst_id,
+                          schema->operandCount(),
+                          inst.args.size());
         if ( void_return && function_result_type != _package.voidType() )
-            _emitter.emit(diag::OperandCountMismatch, inst_id, schema->operandCount(), 0);
+            _emitter.emit("operand-count-mismatch",
+                          "expected %zu operand(s), got %zu",
+                          inst_id,
+                          schema->operandCount(),
+                          0);
 
         if ( ! payloadMatchesKind(inst.payload, schema->payload_kind) ) {
             if ( schema->payload_kind == PayloadKind::None )
-                _emitter.emit(diag::UnexpectedPayload, inst_id);
+                _emitter.emit("unexpected-payload", "unexpected integer payload", inst_id);
             else
-                _emitter.emit(diag::MissingPayload, inst_id);
+                _emitter.emit("missing-payload", "missing required integer payload", inst_id);
         }
 
         // Opcodes without operand type constraints (such as calls) still need their operands checked for validity,
@@ -801,7 +934,10 @@ private:
             auto type = _package.inst(inst.args[a]).result_type;
             if ( operandRole(_package, inst, a) == OperandRole::Consume &&
                  typeDiscipline(_package, type) == ValueDiscipline::Affine && _origin(function, inst.args[a]).borrowed )
-                _emitter.emit(diag::BorrowedValueConsumed, inst_id, a);
+                _emitter.emit("borrowed-value-consumed",
+                              "operand %zu consumes a value that was only borrowed; its owner is the caller",
+                              inst_id,
+                              a);
         }
 
         switch ( inst.opcode ) {
@@ -809,12 +945,17 @@ private:
                 if ( ! inst.args.empty() && _package.isValid(inst.args[0]) &&
                      _origin(function, inst.args[0]).borrowed &&
                      typeDiscipline(_package, _package.inst(inst.args[0]).result_type) == ValueDiscipline::Affine )
-                    _emitter.emit(diag::BorrowEscapes, inst_id);
+                    _emitter.emit("borrow-escapes",
+                                  "a borrowed value cannot be returned, because the borrow ends with the call",
+                                  inst_id);
                 return;
 
             case Opcode::Store:
                 if ( denies_write(0) )
-                    _emitter.emit(diag::BorrowWriteDenied, inst_id, size_t{0});
+                    _emitter.emit("borrow-write-denied",
+                                  "operand %zu requires write access, but it derives from a read-only borrow",
+                                  inst_id,
+                                  size_t{0});
                 return;
 
             case Opcode::Call: {
@@ -825,7 +966,10 @@ private:
                 const auto& callee = _package.function(payload->function);
                 for ( size_t a = 0; a < inst.args.size() && a < callee.parameters.size(); ++a )
                     if ( callee.parameters[a].mode == ParameterMode::BorrowMut && denies_write(a) )
-                        _emitter.emit(diag::BorrowWriteDenied, inst_id, a);
+                        _emitter.emit("borrow-write-denied",
+                                      "operand %zu requires write access, but it derives from a read-only borrow",
+                                      inst_id,
+                                      a);
                 return;
             }
 
@@ -840,7 +984,10 @@ private:
                     const auto& parameter = foreign.parameters[a];
                     if ( parameter.argument == ForeignArgument::Value && _package.isValid(parameter.type) &&
                          _package.type(parameter.type).kind == TypeKind::Place && denies_write(a) )
-                        _emitter.emit(diag::BorrowWriteDenied, inst_id, a);
+                        _emitter.emit("borrow-write-denied",
+                                      "operand %zu requires write access, but it derives from a read-only borrow",
+                                      inst_id,
+                                      a);
                 }
                 return;
             }
@@ -855,7 +1002,9 @@ private:
         switch ( inst.opcode ) {
             case Opcode::Finish: {
                 if ( _package.isValid(function_id) && _package.function(function_id).kind != FunctionKind::Parser )
-                    _emitter.emit(diag::FinishInNormalFunction, inst_id);
+                    _emitter.emit("finish-in-normal-function",
+                                  "parser.finish may only terminate a parser function",
+                                  inst_id);
                 return;
             }
 
@@ -866,7 +1015,9 @@ private:
 
                 const auto& fn = _package.function(function_id);
                 if ( payload->index < fn.parameters.size() && inst.result_type != fn.parameters[payload->index].type )
-                    _emitter.emit(diag::ArgumentResultTypeMismatch, inst_id);
+                    _emitter.emit("argument-result-type-mismatch",
+                                  "core.argument's result type does not match its function's parameter type",
+                                  inst_id);
                 return;
             }
 
@@ -881,12 +1032,15 @@ private:
 
                 const auto& operand_type = _package.type(operand_inst.result_type);
                 if ( operand_type.kind != TypeKind::Tuple ) {
-                    _emitter.emit(diag::TupleGetOperandNotTuple, inst_id);
+                    _emitter.emit("tuple-get-operand-not-tuple",
+                                  "core.tuple_get's operand is not a tuple type",
+                                  inst_id);
                     return;
                 }
 
                 if ( payload->index >= operand_type.type_arguments.size() ) {
-                    _emitter.emit(diag::TupleGetIndexOutOfRange,
+                    _emitter.emit("tuple-get-index-out-of-range",
+                                  "core.tuple_get index %u is out of range for a %zu-element tuple",
                                   inst_id,
                                   payload->index,
                                   operand_type.type_arguments.size());
@@ -894,7 +1048,9 @@ private:
                 }
 
                 if ( inst.result_type != operand_type.type_arguments[payload->index] )
-                    _emitter.emit(diag::TupleGetResultTypeMismatch, inst_id);
+                    _emitter.emit("tuple-get-result-type-mismatch",
+                                  "core.tuple_get's result type does not match the selected tuple element",
+                                  inst_id);
                 return;
             }
 
@@ -904,26 +1060,37 @@ private:
                     return;
 
                 if ( ! _package.isValid(payload->function) ) {
-                    _emitter.emit(diag::CallInvalidPayload, inst_id);
+                    _emitter.emit("call-invalid-payload",
+                                  "core.call's payload does not reference a valid function",
+                                  inst_id);
                     return;
                 }
 
                 const auto& callee = _package.function(payload->function);
                 if ( callee.kind != FunctionKind::Normal )
-                    _emitter.emit(diag::CallTargetNotNormal, inst_id);
+                    _emitter.emit("call-target-not-normal", "core.call must target an ordinary function", inst_id);
 
                 if ( inst.args.size() != callee.parameters.size() )
-                    _emitter.emit(diag::CallArgumentCountMismatch, inst_id, callee.parameters.size(), inst.args.size());
+                    _emitter.emit("call-argument-count-mismatch",
+                                  "core.call passes %zu argument(s) to a function with %zu parameter(s)",
+                                  inst_id,
+                                  callee.parameters.size(),
+                                  inst.args.size());
                 else {
                     for ( size_t a = 0; a < inst.args.size(); ++a ) {
                         if ( _package.isValid(inst.args[a]) &&
                              _package.inst(inst.args[a]).result_type != callee.parameters[a].type )
-                            _emitter.emit(diag::CallArgumentTypeMismatch, inst_id, a);
+                            _emitter.emit("call-argument-type-mismatch",
+                                          "core.call argument %zu does not have its parameter's type",
+                                          inst_id,
+                                          a);
                     }
                 }
 
                 if ( inst.result_type != callee.result_type )
-                    _emitter.emit(diag::CallResultTypeMismatch, inst_id);
+                    _emitter.emit("call-result-type-mismatch",
+                                  "core.call result type does not match its function's result type",
+                                  inst_id);
                 return;
             }
 
@@ -956,9 +1123,14 @@ private:
                                                          _package.type(lhs).kind == TypeKind::UInt64);
                 // The operands share one integer type, the one a constraint on operands would name.
                 if ( lhs != rhs || ! integer )
-                    _emitter.emit(diag::OperandTypeMismatch, inst_id, 1);
+                    _emitter.emit("operand-type-mismatch",
+                                  "operand %zu does not satisfy its required type",
+                                  inst_id,
+                                  1);
                 else if ( inst.result_type != lhs )
-                    _emitter.emit(diag::AddOperandTypeMismatch, inst_id);
+                    _emitter.emit("add-operand-type-mismatch",
+                                  "core.add operands and result must have one 64-bit integer type",
+                                  inst_id);
                 return;
             }
 
@@ -969,7 +1141,10 @@ private:
                 auto lhs = _package.inst(inst.args[0]).result_type;
                 auto rhs = _package.inst(inst.args[1]).result_type;
                 if ( lhs != rhs || ! _package.isValid(lhs) || ! _isComparable(_package.type(lhs).kind) )
-                    _emitter.emit(diag::EqualOperandTypeMismatch, inst_id);
+                    _emitter
+                        .emit("equal-operand-type-mismatch",
+                              "core.equal operands must have the same comparable type (int64, uint8, uint64, or bool)",
+                              inst_id);
                 return;
             }
 
@@ -980,13 +1155,17 @@ private:
                 // The place takes ownership of its initial value, which is affine for a vector.
                 auto initial = _package.inst(inst.args[0]).result_type;
                 if ( ! _package.isValid(initial) || initial == _package.voidType() ) {
-                    _emitter.emit(diag::LocalPlaceInvalidInitial, inst_id);
+                    _emitter.emit("local-place-invalid-initial",
+                                  "core.local_place's initial value must be a valid, non-void, copyable value",
+                                  inst_id);
                     return;
                 }
 
                 if ( ! _package.isValid(inst.result_type) || _package.type(inst.result_type).kind != TypeKind::Place ||
                      _package.type(inst.result_type).type_arguments != std::vector<TypeId>{initial} )
-                    _emitter.emit(diag::LocalPlaceResultTypeMismatch, inst_id);
+                    _emitter.emit("local-place-result-type-mismatch",
+                                  "core.local_place result must be a place of its initial value's type",
+                                  inst_id);
                 return;
             }
 
@@ -996,32 +1175,42 @@ private:
 
                 auto place = _package.inst(inst.args[0]).result_type;
                 if ( ! _package.isValid(place) || _package.type(place).kind != TypeKind::Place ) {
-                    _emitter.emit(diag::PlaceOperandMismatch, inst_id, "core.load");
+                    _emitter.emit("place-operand-mismatch", "%s requires a place operand", inst_id, "core.load");
                     return;
                 }
 
                 if ( inst.result_type != _package.type(place).type_arguments[0] )
-                    _emitter.emit(diag::LoadResultTypeMismatch, inst_id);
+                    _emitter.emit("load-result-type-mismatch",
+                                  "core.load result must be the element type of its place",
+                                  inst_id);
                 else if ( _isNonCopyableOpaque(inst.result_type) )
-                    _emitter.emit(diag::OpaqueLoadRequiresCopyable, inst_id);
+                    _emitter.emit("opaque-load-requires-copyable",
+                                  "core.load copies an opaque value whose native type does not declare copy behavior",
+                                  inst_id);
                 return;
             }
 
             case Opcode::Tuple: {
                 if ( ! _package.isValid(inst.result_type) || _package.type(inst.result_type).kind != TypeKind::Tuple ) {
-                    _emitter.emit(diag::TupleResultTypeMismatch, inst_id);
+                    _emitter.emit("tuple-result-type-mismatch",
+                                  "core.tuple result must be the tuple of its operands' types, in order",
+                                  inst_id);
                     return;
                 }
 
                 const auto& elements = _package.type(inst.result_type).type_arguments;
                 if ( elements.size() != inst.args.size() ) {
-                    _emitter.emit(diag::TupleResultTypeMismatch, inst_id);
+                    _emitter.emit("tuple-result-type-mismatch",
+                                  "core.tuple result must be the tuple of its operands' types, in order",
+                                  inst_id);
                     return;
                 }
 
                 for ( size_t a = 0; a < inst.args.size(); ++a )
                     if ( _package.isValid(inst.args[a]) && _package.inst(inst.args[a]).result_type != elements[a] )
-                        _emitter.emit(diag::TupleResultTypeMismatch, inst_id);
+                        _emitter.emit("tuple-result-type-mismatch",
+                                      "core.tuple result must be the tuple of its operands' types, in order",
+                                      inst_id);
                 return;
             }
 
@@ -1031,7 +1220,9 @@ private:
                     return;
 
                 if ( ! _package.isValid(payload->field) ) {
-                    _emitter.emit(diag::FieldPlaceInvalidPayload, inst_id);
+                    _emitter.emit("field-place-invalid-payload",
+                                  "unit.field_place's payload does not reference a valid field",
+                                  inst_id);
                     return;
                 }
 
@@ -1042,11 +1233,15 @@ private:
                 auto unit = _package.inst(inst.args[0]).result_type;
                 if ( ! _package.isValid(unit) || _package.type(unit).kind != TypeKind::Unit ||
                      _package.type(unit).declaration != field.owner )
-                    _emitter.emit(diag::FieldPlaceUnitMismatch, inst_id);
+                    _emitter.emit("field-place-unit-mismatch",
+                                  "unit.field_place's operand is not a value of the unit that declares its field",
+                                  inst_id);
 
                 if ( ! _package.isValid(inst.result_type) || _package.type(inst.result_type).kind != TypeKind::Place ||
                      _package.type(inst.result_type).type_arguments != std::vector<TypeId>{field.type} )
-                    _emitter.emit(diag::FieldPlaceResultTypeMismatch, inst_id);
+                    _emitter.emit("field-place-result-type-mismatch",
+                                  "unit.field_place result must be a place of its field's type",
+                                  inst_id);
                 return;
             }
 
@@ -1056,14 +1251,18 @@ private:
                     return;
 
                 if ( ! _package.isValid(payload->global) ) {
-                    _emitter.emit(diag::GlobalPlaceInvalidPayload, inst_id);
+                    _emitter.emit("global-place-invalid-payload",
+                                  "core.global_place's payload does not reference a valid global",
+                                  inst_id);
                     return;
                 }
 
                 const auto& global = _package.global(payload->global);
                 if ( ! _package.isValid(inst.result_type) || _package.type(inst.result_type).kind != TypeKind::Place ||
                      _package.type(inst.result_type).type_arguments != std::vector<TypeId>{global.type} )
-                    _emitter.emit(diag::GlobalPlaceResultTypeMismatch, inst_id);
+                    _emitter.emit("global-place-result-type-mismatch",
+                                  "core.global_place result must be a place of its global's type",
+                                  inst_id);
                 return;
             }
 
@@ -1073,12 +1272,14 @@ private:
 
                 auto place = _package.inst(inst.args[0]).result_type;
                 if ( ! _package.isValid(place) || _package.type(place).kind != TypeKind::Place ) {
-                    _emitter.emit(diag::PlaceOperandMismatch, inst_id, "core.store");
+                    _emitter.emit("place-operand-mismatch", "%s requires a place operand", inst_id, "core.store");
                     return;
                 }
 
                 if ( _package.inst(inst.args[1]).result_type != _package.type(place).type_arguments[0] )
-                    _emitter.emit(diag::StoreValueTypeMismatch, inst_id);
+                    _emitter.emit("store-value-type-mismatch",
+                                  "core.store value must be the element type of its place",
+                                  inst_id);
                 return;
             }
 
@@ -1088,25 +1289,36 @@ private:
                     return;
 
                 if ( ! _package.isValid(payload->function) ) {
-                    _emitter.emit(diag::OpaqueOpInvalidPayload, inst_id);
+                    _emitter.emit("opaque-op-invalid-payload",
+                                  "opaque.op's payload does not reference a valid foreign function",
+                                  inst_id);
                     return;
                 }
 
                 const auto& fn = _package.foreignFunction(payload->function);
                 if ( inst.args.size() != fn.parameters.size() )
-                    _emitter.emit(diag::OpaqueOpArgumentCountMismatch, inst_id, fn.parameters.size(), inst.args.size());
+                    _emitter.emit("opaque-op-argument-count-mismatch",
+                                  "opaque.op passes %zu argument(s) to a foreign function with %zu parameter(s)",
+                                  inst_id,
+                                  fn.parameters.size(),
+                                  inst.args.size());
                 else {
                     for ( size_t a = 0; a < inst.args.size(); ++a ) {
                         if ( ! _package.isValid(inst.args[a]) )
                             continue;
 
                         if ( ! _acceptsArgument(fn.parameters[a], _package.inst(inst.args[a]).result_type) )
-                            _emitter.emit(diag::OpaqueOpArgumentTypeMismatch, inst_id, a);
+                            _emitter.emit("opaque-op-argument-type-mismatch",
+                                          "opaque.op argument %zu does not have its foreign parameter's type",
+                                          inst_id,
+                                          a);
                     }
                 }
 
                 if ( inst.result_type != fn.result_type )
-                    _emitter.emit(diag::OpaqueOpResultTypeMismatch, inst_id);
+                    _emitter.emit("opaque-op-result-type-mismatch",
+                                  "opaque.op result type does not match its foreign function's result type",
+                                  inst_id);
                 return;
             }
 
@@ -1116,13 +1328,17 @@ private:
                     return;
 
                 if ( ! _package.isValid(payload->unit) ) {
-                    _emitter.emit(diag::UnitCreateInvalidPayload, inst_id);
+                    _emitter.emit("unit-create-invalid-payload",
+                                  "unit.create's payload does not reference a valid unit declaration",
+                                  inst_id);
                     return;
                 }
 
                 if ( ! _package.isValid(inst.result_type) || _package.type(inst.result_type).kind != TypeKind::Unit ||
                      _package.type(inst.result_type).declaration != payload->unit )
-                    _emitter.emit(diag::UnitCreateResultTypeMismatch, inst_id);
+                    _emitter.emit("unit-create-result-type-mismatch",
+                                  "unit.create's result type does not match its payload's unit declaration",
+                                  inst_id);
                 return;
             }
 
@@ -1133,7 +1349,9 @@ private:
 
                 if ( (payload->width != 8 && payload->width != 64) || payload->signedness != Signedness::Unsigned ||
                      payload->byte_order != ByteOrder::Network )
-                    _emitter.emit(diag::ReadIntegerUnsupportedPayload, inst_id);
+                    _emitter.emit("read-integer-unsupported-payload",
+                                  "parser.read_integer only supports unsigned width-8 or width-64 network-order reads",
+                                  inst_id);
 
                 bool result_ok = _package.isValid(inst.result_type);
                 if ( result_ok ) {
@@ -1147,7 +1365,10 @@ private:
                 }
 
                 if ( ! result_ok )
-                    _emitter.emit(diag::ReadIntegerResultTypeMismatch, inst_id);
+                    _emitter.emit("read-integer-result-type-mismatch",
+                                  "parser.read_integer's result type must be tuple<parser.state, uint8 or uint64> "
+                                  "matching its width",
+                                  inst_id);
                 return;
             }
 
@@ -1157,7 +1378,9 @@ private:
                     return;
 
                 if ( ! _package.isValid(payload->field) ) {
-                    _emitter.emit(diag::PublishFieldInvalidPayload, inst_id);
+                    _emitter.emit("publish-field-invalid-payload",
+                                  "unit.publish_field's payload does not reference a valid field declaration",
+                                  inst_id);
                     return;
                 }
 
@@ -1169,21 +1392,29 @@ private:
                 const auto& unit_operand = _package.inst(inst.args[0]);
                 if ( ! _package.isValid(unit_operand.result_type) ||
                      _package.type(unit_operand.result_type).kind != TypeKind::Unit ) {
-                    _emitter.emit(diag::PublishFieldOperandNotUnit, inst_id);
+                    _emitter.emit("publish-field-operand-not-unit",
+                                  "unit.publish_field's first operand is not a unit type",
+                                  inst_id);
                     return;
                 }
 
                 if ( _package.type(unit_operand.result_type).declaration != field.owner )
-                    _emitter.emit(diag::PublishFieldOwnerMismatch, inst_id);
+                    _emitter.emit("publish-field-owner-mismatch",
+                                  "unit.publish_field's field is not owned by its unit operand's declaration",
+                                  inst_id);
 
                 if ( _package.isValid(inst.args[1]) && _package.inst(inst.args[1]).result_type != field.type )
-                    _emitter.emit(diag::PublishFieldValueTypeMismatch, inst_id);
+                    _emitter.emit("publish-field-value-type-mismatch",
+                                  "unit.publish_field's value operand does not match the field's declared type",
+                                  inst_id);
                 return;
             }
 
             case Opcode::VectorEmpty:
                 if ( ! _package.isValid(inst.result_type) || _package.type(inst.result_type).kind != TypeKind::Vector )
-                    _emitter.emit(diag::InvalidParserOperation, inst_id);
+                    _emitter.emit("invalid-parser-operation",
+                                  "parser operation has inconsistent types, payload, or region signature",
+                                  inst_id);
                 return;
 
             case Opcode::VectorAppend:
@@ -1192,7 +1423,9 @@ private:
                     if ( ! _package.isValid(vector_type) || _package.type(vector_type).kind != TypeKind::Vector ||
                          _package.type(vector_type).type_arguments.size() != 1 ||
                          _package.type(vector_type).type_arguments[0] != _package.inst(inst.args[1]).result_type )
-                        _emitter.emit(diag::InvalidParserOperation, inst_id);
+                        _emitter.emit("invalid-parser-operation",
+                                      "parser operation has inconsistent types, payload, or region signature",
+                                      inst_id);
                 }
                 return;
 
@@ -1201,7 +1434,9 @@ private:
                     auto length_type = _package.inst(inst.args[1]).result_type;
                     if ( ! _package.isValid(length_type) || (_package.type(length_type).kind != TypeKind::UInt8 &&
                                                              _package.type(length_type).kind != TypeKind::UInt64) )
-                        _emitter.emit(diag::InvalidParserOperation, inst_id);
+                        _emitter.emit("invalid-parser-operation",
+                                      "parser operation has inconsistent types, payload, or region signature",
+                                      inst_id);
                 }
                 return;
 
@@ -1211,13 +1446,17 @@ private:
                      _package.type(_package.inst(inst.args[0]).result_type).kind != TypeKind::ParserState ||
                      ! _package.isValid(inst.result_type) || _package.type(inst.result_type).kind != TypeKind::Tuple ||
                      _package.type(inst.result_type).type_arguments.size() != inst.args.size() ) {
-                    _emitter.emit(diag::InvalidParserOperation, inst_id);
+                    _emitter.emit("invalid-parser-operation",
+                                  "parser operation has inconsistent types, payload, or region signature",
+                                  inst_id);
                     return;
                 }
                 for ( size_t i = 0; i < inst.args.size(); ++i )
                     if ( _package.isValid(inst.args[i]) &&
                          _package.type(inst.result_type).type_arguments[i] != _package.inst(inst.args[i]).result_type )
-                        _emitter.emit(diag::InvalidParserOperation, inst_id);
+                        _emitter.emit("invalid-parser-operation",
+                                      "parser operation has inconsistent types, payload, or region signature",
+                                      inst_id);
                 return;
             }
 
@@ -1226,7 +1465,9 @@ private:
                 if ( ! payload || ! _package.isValid(payload->function) ||
                      _package.function(payload->function).kind != FunctionKind::Parser ||
                      ! _package.isValid(inst.result_type) ) {
-                    _emitter.emit(diag::InvalidParserOperation, inst_id);
+                    _emitter.emit("invalid-parser-operation",
+                                  "parser operation has inconsistent types, payload, or region signature",
+                                  inst_id);
                     return;
                 }
                 const auto& result = _package.type(inst.result_type);
@@ -1234,7 +1475,9 @@ private:
                      ! _package.isValid(result.type_arguments[0]) ||
                      _package.type(result.type_arguments[0]).kind != TypeKind::ParserState ||
                      result.type_arguments[1] != _package.function(payload->function).result_type )
-                    _emitter.emit(diag::InvalidParserOperation, inst_id);
+                    _emitter.emit("invalid-parser-operation",
+                                  "parser operation has inconsistent types, payload, or region signature",
+                                  inst_id);
                 return;
             }
 
@@ -1245,7 +1488,9 @@ private:
                      ! _package.isValid(_package.type(inst.result_type).type_arguments[1]) ||
                      _package.type(_package.type(inst.result_type).type_arguments[0]).kind != TypeKind::ParserState ||
                      _package.type(_package.type(inst.result_type).type_arguments[1]).kind != TypeKind::Bytes )
-                    _emitter.emit(diag::InvalidParserOperation, inst_id);
+                    _emitter.emit("invalid-parser-operation",
+                                  "parser operation has inconsistent types, payload, or region signature",
+                                  inst_id);
                 return;
 
             default: return;
@@ -1277,12 +1522,16 @@ private:
     // A branch or jump may only target blocks of the same ordinary function body.
     void _verifySuccessor(InstId inst_id, const Inst& inst, BlockId target) {
         if ( ! _in_body || ! _cfg.contains(inst.parent) ) {
-            _emitter.emit(diag::ControlFlowOutsideFunctionBody, inst_id);
+            _emitter.emit("control-flow-outside-function-body",
+                          "branches and jumps are only allowed in the root region of an ordinary function",
+                          inst_id);
             return;
         }
 
         if ( ! _package.isValid(target) || ! _cfg.contains(target) )
-            _emitter.emit(diag::InvalidSuccessor, inst_id);
+            _emitter.emit("invalid-successor",
+                          "terminator's successor is not a block of the same function body",
+                          inst_id);
     }
 
     // Whether a value defined in `def` is available in `use` by dominance. Blocks outside the body are never
@@ -1386,7 +1635,9 @@ private:
                     const auto& b = consumers[later];
                     bool same_path = a.block == b.block || reaches[a.block][b.block] || reaches[b.block][a.block];
                     if ( same_path ) {
-                        _emitter.emit(diag::ParserStateReused, b.inst);
+                        _emitter.emit("parser-state-reused",
+                                      "parser state value is consumed by more than one state-transforming operation",
+                                      b.inst);
                         break;
                     }
                 }
@@ -1408,7 +1659,10 @@ private:
                                      positions.at(consumer.inst.index).second < borrower.position :
                                      reaches[consumer.block][borrower.block];
                     if ( after ) {
-                        _emitter.emit(diag::UseAfterConsume, borrower.inst, borrower.operand);
+                        _emitter.emit("use-after-consume",
+                                      "operand %zu uses an affine value after an operation consumed it",
+                                      borrower.inst,
+                                      borrower.operand);
                         break;
                     }
                 }
@@ -1427,7 +1681,7 @@ private:
                         const std::unordered_set<uint32_t>& defined,
                         TypeId function_result_type) {
         if ( ! _package.isValid(arg) ) {
-            _emitter.emit(diag::InvalidOperandId, user, operand_index);
+            _emitter.emit("invalid-operand-id", "operand %zu is not a valid instruction ID", user, operand_index);
             return;
         }
 
@@ -1435,28 +1689,43 @@ private:
 
         if ( arg_inst.parent != block_id ) {
             if ( ! _availableFrom(arg_inst.parent, block_id) ) {
-                _emitter.emit(diag::OperandNotSameBlock, user, operand_index);
+                _emitter.emit("operand-not-same-block",
+                              "operand %zu is not defined in the same block",
+                              user,
+                              operand_index);
                 return;
             }
         }
         else if ( ! defined.contains(arg.index) ) {
-            _emitter.emit(diag::OperandUsedBeforeDefinition, user, operand_index);
+            _emitter.emit("operand-used-before-definition",
+                          "operand %zu is used before it is defined",
+                          user,
+                          operand_index);
             return;
         }
 
         if ( arg_inst.result_type == _package.voidType() )
-            _emitter.emit(diag::VoidOperandUsed, user, operand_index);
+            _emitter.emit("void-operand-used", "operand %zu has void type and cannot be used", user, operand_index);
 
         if ( constraint && ! _satisfies(*constraint, arg_inst.result_type, function_result_type) ) {
             if ( constraint->kind == TypeConstraintKind::SameAsFunctionResult )
                 _emitter
-                    .emit(diag::ReturnTypeMismatch,
+                    .emit("return-type-mismatch",
+                          "returned value has type %s, expected %s",
                           user,
                           typeName(_package, arg_inst.result_type),
                           typeName(_package, function_result_type))
-                    .note(diag::FunctionDeclaredHere, function_id, typeName(_package, function_result_type));
+                    .note("function-declared-here",
+                          "function declared with result type %s",
+                          function_id,
+                          typeName(_package, function_result_type));
             else
-                _emitter.emit(diag::OperandTypeMismatch, user, operand_index).note(diag::OperandDefinedHere, arg);
+                _emitter
+                    .emit("operand-type-mismatch",
+                          "operand %zu does not satisfy its required type",
+                          user,
+                          operand_index)
+                    .note("operand-defined-here", "operand defined here", arg);
         }
     }
 
@@ -1466,7 +1735,9 @@ private:
 
             case TypeConstraintKind::Fixed:
                 if ( ! _satisfies(schema.result_type, inst.result_type, TypeId{}) )
-                    _emitter.emit(diag::ResultTypeMismatch, inst_id);
+                    _emitter.emit("result-type-mismatch",
+                                  "instruction's result type does not satisfy its required type",
+                                  inst_id);
                 return;
 
             case TypeConstraintKind::SameAsOperand: {
@@ -1478,7 +1749,9 @@ private:
                     return;
 
                 if ( inst.result_type != _package.inst(operand).result_type )
-                    _emitter.emit(diag::ResultTypeMismatch, inst_id);
+                    _emitter.emit("result-type-mismatch",
+                                  "instruction's result type does not satisfy its required type",
+                                  inst_id);
                 return;
             }
 
@@ -1487,7 +1760,7 @@ private:
     }
 
     const Package& _package;
-    DiagnosticEmitter _emitter;
+    InternalErrorEmitter _emitter;
     std::unordered_set<uint32_t> _active_regions;
     std::unordered_set<uint32_t> _owned_regions;
     // The CFG and dominator tree of the ordinary function body being verified, if any.
@@ -1498,10 +1771,10 @@ private:
 
 } // namespace
 
-std::vector<Diagnostic> verify(const Package& package) {
-    std::vector<Diagnostic> diags;
-    Verifier verifier(package, diags);
-    DiagnosticEmitter emitter(package, diags);
+std::vector<InternalError> verify(const Package& package) {
+    std::vector<InternalError> errors;
+    Verifier verifier(package, errors);
+    InternalErrorEmitter emitter(package, errors);
 
     for ( size_t i = 0; i < package.types().size(); ++i ) {
         auto id = TypeId{static_cast<uint32_t>(i)};
@@ -1528,35 +1801,46 @@ std::vector<Diagnostic> verify(const Package& package) {
     std::unordered_set<uint32_t> parser_root_units;
     for ( const auto& root : package.parserRoots() ) {
         if ( root.unit.isSet() && ! parser_root_units.insert(root.unit.index).second )
-            emitter.emit(diag::DuplicateParserRootUnit, root.unit);
+            emitter.emit("duplicate-parser-root-unit",
+                         "unit declaration is the target of more than one parser root",
+                         root.unit);
 
         verifier.verifyParserRoot(root);
     }
 
     for ( auto root : package.functionRoots() ) {
         if ( ! package.isValid(root) )
-            emitter.emit(diag::InvalidFunctionRoot, noSite());
+            emitter.emit("invalid-function-root", "function root does not reference a valid function", noSite());
         else if ( package.function(root).kind != FunctionKind::Normal )
-            emitter.emit(diag::FunctionRootNotNormal, root);
+            emitter.emit("function-root-not-normal", "function root must be an ordinary function", root);
     }
 
     auto reach = computeReachableIds(package);
 
     for ( auto id : reach.duplicate_regions )
-        emitter.emit(diag::DuplicateRegionOwnership, id);
+        emitter.emit("duplicate-region-ownership", "region is owned by more than one function", id);
     for ( auto id : reach.duplicate_blocks )
-        emitter.emit(diag::DuplicateBlockOwnership, id);
+        emitter.emit("duplicate-block-ownership", "block belongs to more than one function's region", id);
     for ( auto id : reach.duplicate_insts )
-        emitter.emit(diag::DuplicateInstructionOwnership, id);
+        emitter.emit("duplicate-instruction-ownership", "instruction belongs to more than one block", id);
 
     if ( reach.regions.size() != package.regions().size() )
-        emitter.emit(diag::OrphanRegions, noSite(), package.regions().size() - reach.regions.size());
+        emitter.emit("orphan-regions",
+                     "package contains %zu unattached region(s)",
+                     noSite(),
+                     package.regions().size() - reach.regions.size());
     if ( reach.blocks.size() != package.blocks().size() )
-        emitter.emit(diag::OrphanBlocks, noSite(), package.blocks().size() - reach.blocks.size());
+        emitter.emit("orphan-blocks",
+                     "package contains %zu unattached block(s)",
+                     noSite(),
+                     package.blocks().size() - reach.blocks.size());
     if ( reach.insts.size() != package.instructions().size() )
-        emitter.emit(diag::OrphanInstructions, noSite(), package.instructions().size() - reach.insts.size());
+        emitter.emit("orphan-instructions",
+                     "package contains %zu unattached instruction(s)",
+                     noSite(),
+                     package.instructions().size() - reach.insts.size());
 
-    return diags;
+    return errors;
 }
 
 } // namespace spicy::detail::pir::ir

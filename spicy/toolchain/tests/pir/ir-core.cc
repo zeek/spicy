@@ -17,8 +17,8 @@ using namespace spicy::detail::pir::passes;
 
 namespace {
 
-bool hasDiagnostic(const std::vector<Diagnostic>& diags, const DiagnosticDefinition& def) {
-    return std::ranges::any_of(diags, [&def](const Diagnostic& d) { return d.definition == def; });
+bool hasInternalError(const std::vector<InternalError>& errors, std::string_view tag) {
+    return std::ranges::any_of(errors, [tag](const InternalError& e) { return e.tag == tag; });
 }
 
 struct Sample {
@@ -128,7 +128,7 @@ TEST_CASE("constant folding safely skips a core.add with too few operands") {
     auto add = builder.addInstForTesting(block, Opcode::Add, {c}, builder.int64Type());
     builder.addReturn(block, add);
 
-    CHECK(hasDiagnostic(verify(package), diag::OperandCountMismatch));
+    CHECK(hasInternalError(verify(package), "operand-count-mismatch"));
     CHECK_FALSE(foldConstants(package, fn));
     CHECK_EQ(package.inst(add).opcode, Opcode::Add);
 }
@@ -144,7 +144,7 @@ TEST_CASE("verifier rejects an invalid operand ID") {
     builder.addReturn(block, add);
 
     auto diags = verify(package);
-    CHECK(hasDiagnostic(diags, diag::InvalidOperandId));
+    CHECK(hasInternalError(diags, "invalid-operand-id"));
 }
 
 TEST_CASE("verifier rejects an operand type mismatch") {
@@ -159,7 +159,7 @@ TEST_CASE("verifier rejects an operand type mismatch") {
     builder.addReturn(block, add);
 
     auto diags = verify(package);
-    CHECK(hasDiagnostic(diags, diag::OperandTypeMismatch));
+    CHECK(hasInternalError(diags, "operand-type-mismatch"));
 }
 
 TEST_CASE("verifier rejects a return value that doesn't match the function's result type") {
@@ -167,11 +167,12 @@ TEST_CASE("verifier rejects a return value that doesn't match the function's res
     auto builder = package.builder();
     auto fn = builder.createFunction("bad", builder.int64Type());
     auto block = builder.createBlock(package.function(fn).root_region);
-    auto c = builder.addInstForTesting(block, Opcode::Int64Constant, {}, builder.voidType(), InstPayload(Int64Literal{0}));
+    auto c =
+        builder.addInstForTesting(block, Opcode::Int64Constant, {}, builder.voidType(), InstPayload(Int64Literal{0}));
     builder.addReturn(block, c);
 
     auto diags = verify(package);
-    CHECK(hasDiagnostic(diags, diag::ReturnTypeMismatch));
+    CHECK(hasInternalError(diags, "return-type-mismatch"));
 }
 
 TEST_CASE("verifier rejects an unattached region and differentiates it from an empty package") {
@@ -181,7 +182,7 @@ TEST_CASE("verifier rejects an unattached region and differentiates it from an e
     auto sample = makeSample();
     sample.package.builder().createRegion();
     auto diags = verify(sample.package);
-    CHECK(hasDiagnostic(diags, diag::OrphanRegions));
+    CHECK(hasInternalError(diags, "orphan-regions"));
 
     CHECK_NE(print(sample.package), print(empty.package));
 }
@@ -196,7 +197,7 @@ TEST_CASE("verifier rejects a parser function whose region has more than one blo
     builder.createBlock(region);
 
     auto diags = verify(package);
-    CHECK(hasDiagnostic(diags, diag::RegionBlockCountMismatch));
+    CHECK(hasInternalError(diags, "region-block-count-mismatch"));
 }
 
 TEST_CASE("verifier rejects an ordinary function whose region has no block") {
@@ -205,7 +206,7 @@ TEST_CASE("verifier rejects an ordinary function whose region has no block") {
     builder.createFunction("bad", builder.int64Type());
 
     auto diags = verify(package);
-    CHECK(hasDiagnostic(diags, diag::RegionBlockCountMismatch));
+    CHECK(hasInternalError(diags, "region-block-count-mismatch"));
 }
 
 TEST_CASE("verifier rejects an unrecognized opcode") {
@@ -218,7 +219,7 @@ TEST_CASE("verifier rejects an unrecognized opcode") {
     builder.addReturn(block, c);
 
     auto diags = verify(package);
-    CHECK(hasDiagnostic(diags, diag::UnrecognizedOpcode));
+    CHECK(hasInternalError(diags, "unrecognized-opcode"));
 }
 
 TEST_CASE("verifier rejects an instruction after the block terminator") {
@@ -231,7 +232,7 @@ TEST_CASE("verifier rejects an instruction after the block terminator") {
     builder.addConstant(block, 2);
 
     auto diags = verify(package);
-    CHECK(hasDiagnostic(diags, diag::TerminatorNotLast));
+    CHECK(hasInternalError(diags, "terminator-not-last"));
 }
 
 TEST_CASE("parser repetition requires a byte-bounded state") {
@@ -256,10 +257,10 @@ TEST_CASE("parser repetition requires a byte-bounded state") {
     builder.addParserFinish(block, next_state, completed);
     builder.addParserRoot(unit, fn);
 
-    CHECK(hasDiagnostic(verify(package), diag::RepeatRequiresBound));
+    CHECK(hasInternalError(verify(package), "repeat-requires-bound"));
 
     package.replaceInst(yield, Opcode::Yield, {body_state, body_state});
-    CHECK(hasDiagnostic(verify(package), diag::InvalidYield));
+    CHECK(hasInternalError(verify(package), "invalid-yield"));
 }
 
 TEST_CASE("parser repetition rejects a body that yields a state after leaving its bound") {
@@ -301,7 +302,7 @@ TEST_CASE("parser repetition rejects a body that yields a state after leaving it
     builder.addParserFinish(block, next_state, completed);
     builder.addParserRoot(unit, fn);
 
-    CHECK(hasDiagnostic(verify(package), diag::InvalidYield));
+    CHECK(hasInternalError(verify(package), "invalid-yield"));
 }
 
 TEST_CASE("parser repetition rejects region arguments beyond its carried values") {
@@ -327,7 +328,7 @@ TEST_CASE("parser repetition rejects region arguments beyond its carried values"
     builder.addParserFinish(block, next_state, completed);
     builder.addParserRoot(unit, fn);
 
-    CHECK(hasDiagnostic(verify(package), diag::InvalidRegionArgument));
+    CHECK(hasInternalError(verify(package), "invalid-region-argument"));
 }
 
 TEST_CASE("uint8 and parser.state intern deterministically and are stable across repeated requests") {
@@ -410,7 +411,7 @@ TEST_CASE("verifier rejects an invalid type declaration on a unit type without a
     package.builder().unitType(unit_decl_placeholder);
 
     auto diags = verify(package);
-    CHECK(hasDiagnostic(diags, diag::TypeMissingDeclaration));
+    CHECK(hasInternalError(diags, "type-missing-declaration"));
 }
 
 TEST_CASE("verifier rejects an invalid tuple element type without asserting") {
@@ -418,7 +419,7 @@ TEST_CASE("verifier rejects an invalid tuple element type without asserting") {
     package.builder().tupleType({TypeId{999}});
 
     auto diags = verify(package);
-    CHECK(hasDiagnostic(diags, diag::TypeInvalidTypeArgument));
+    CHECK(hasInternalError(diags, "type-invalid-type-argument"));
 }
 
 TEST_CASE("verifier rejects a field with an invalid owner or type without asserting") {
@@ -428,7 +429,7 @@ TEST_CASE("verifier rejects a field with an invalid owner or type without assert
     builder.createFieldDecl(unit_decl, "value", TypeId{999});
 
     auto diags = verify(package);
-    CHECK(hasDiagnostic(diags, diag::InvalidFieldType));
+    CHECK(hasInternalError(diags, "invalid-field-type"));
 }
 
 TEST_SUITE_END();
@@ -506,7 +507,7 @@ TEST_CASE("verifier rejects an opaque argument of a distinct opaque type") {
     auto result = builder.addOpaqueOp(block, consume, {value});
     builder.addReturn(block, result);
 
-    CHECK(hasDiagnostic(verify(package), diag::OpaqueOpArgumentTypeMismatch));
+    CHECK(hasInternalError(verify(package), "opaque-op-argument-type-mismatch"));
 }
 
 TEST_CASE("verifier rejects a foreign call with the wrong argument count") {
@@ -519,7 +520,7 @@ TEST_CASE("verifier rejects a foreign call with the wrong argument count") {
     auto result = builder.addOpaqueOp(block, consume, {});
     builder.addReturn(block, result);
 
-    CHECK(hasDiagnostic(verify(package), diag::OpaqueOpArgumentCountMismatch));
+    CHECK(hasInternalError(verify(package), "opaque-op-argument-count-mismatch"));
 }
 
 TEST_CASE("verifier rejects a foreign call whose result type differs from its declaration") {
@@ -537,7 +538,7 @@ TEST_CASE("verifier rejects a foreign call whose result type differs from its de
                                           InstPayload(ForeignFunctionPayload{make}));
     builder.addReturn(block, call);
 
-    CHECK(hasDiagnostic(verify(package), diag::OpaqueOpResultTypeMismatch));
+    CHECK(hasInternalError(verify(package), "opaque-op-result-type-mismatch"));
 }
 
 TEST_CASE("verifier rejects an opaque op that references no foreign function") {
@@ -553,7 +554,7 @@ TEST_CASE("verifier rejects an opaque op that references no foreign function") {
                                           InstPayload(ForeignFunctionPayload{ForeignFunctionId{999}}));
     builder.addReturn(block, call);
 
-    CHECK(hasDiagnostic(verify(package), diag::OpaqueOpInvalidPayload));
+    CHECK(hasInternalError(verify(package), "opaque-op-invalid-payload"));
 }
 
 TEST_CASE("verifier rejects an opaque declaration without a native name or lifecycle") {
@@ -562,7 +563,7 @@ TEST_CASE("verifier rejects an opaque declaration without a native name or lifec
     builder.createOpaqueTypeDecl("Unnamed", OpaqueTypeInfo{.lifecycle = OpaqueLifecycle{}});
     builder.createOpaqueTypeDecl("Undeclared", OpaqueTypeInfo{.cxx_name = "::Undeclared"});
 
-    CHECK(hasDiagnostic(verify(package), diag::OpaqueDeclarationIncomplete));
+    CHECK(hasInternalError(verify(package), "opaque-declaration-incomplete"));
 }
 
 TEST_CASE("verifier rejects a foreign function without a binding or with a void parameter") {
@@ -572,8 +573,8 @@ TEST_CASE("verifier rejects a foreign function without a binding or with a void 
     builder.createForeignFunction("void", "::void_arg", {builder.voidType()}, builder.int64Type());
 
     auto diags = verify(package);
-    CHECK(hasDiagnostic(diags, diag::ForeignFunctionMissingBinding));
-    CHECK(hasDiagnostic(diags, diag::ForeignFunctionInvalidParameter));
+    CHECK(hasInternalError(diags, "foreign-function-missing-binding"));
+    CHECK(hasInternalError(diags, "foreign-function-invalid-parameter"));
 }
 
 TEST_CASE("verifier accepts a foreign function that takes an affine value by value") {
@@ -583,7 +584,7 @@ TEST_CASE("verifier accepts a foreign function that takes an affine value by val
     builder.createForeignFunction("take", "::take", {vector}, builder.int64Type());
 
     auto diags = verify(package);
-    CHECK_FALSE(hasDiagnostic(diags, diag::ForeignFunctionInvalidParameter));
+    CHECK_FALSE(hasInternalError(diags, "foreign-function-invalid-parameter"));
 }
 
 TEST_CASE("places intern structurally by element type") {
@@ -632,7 +633,7 @@ TEST_CASE("verifier rejects a store whose value differs from the place's element
     builder.addStore(block, place, byte);
     builder.addReturn(block, builder.addLoad(block, place));
 
-    CHECK(hasDiagnostic(verify(package), diag::StoreValueTypeMismatch));
+    CHECK(hasInternalError(verify(package), "store-value-type-mismatch"));
 }
 
 TEST_CASE("verifier rejects a load and a store whose operand is not a place") {
@@ -645,7 +646,7 @@ TEST_CASE("verifier rejects a load and a store whose operand is not a place") {
     builder.addStore(block, not_a_place, loaded);
     builder.addReturn(block, loaded);
 
-    CHECK(hasDiagnostic(verify(package), diag::PlaceOperandMismatch));
+    CHECK(hasInternalError(verify(package), "place-operand-mismatch"));
 }
 
 TEST_CASE("verifier rejects a call to a parser function") {
@@ -658,7 +659,7 @@ TEST_CASE("verifier rejects a call to a parser function") {
     auto block = builder.createBlock(package.function(fn).root_region);
     builder.addReturn(block, builder.addCall(block, parser, {}));
 
-    CHECK(hasDiagnostic(verify(package), diag::CallTargetNotNormal));
+    CHECK(hasInternalError(verify(package), "call-target-not-normal"));
 }
 
 TEST_CASE("verifier rejects a call with the wrong argument count") {
@@ -672,7 +673,7 @@ TEST_CASE("verifier rejects a call with the wrong argument count") {
     auto block = builder.createBlock(package.function(fn).root_region);
     builder.addReturn(block, builder.addCall(block, callee, {}));
 
-    CHECK(hasDiagnostic(verify(package), diag::CallArgumentCountMismatch));
+    CHECK(hasInternalError(verify(package), "call-argument-count-mismatch"));
 }
 
 TEST_CASE("verifier rejects a place stored in a tuple or returned from a function") {
@@ -687,7 +688,7 @@ TEST_CASE("verifier rejects a place stored in a tuple or returned from a functio
     builder.addInstForTesting(block, Opcode::Return, {}, place);
 
     auto diags = verify(package);
-    CHECK(hasDiagnostic(diags, diag::PlaceEscapes));
+    CHECK(hasInternalError(diags, "place-escapes"));
 }
 
 TEST_CASE("verifier rejects a local place initialized with a void value") {
@@ -700,7 +701,7 @@ TEST_CASE("verifier rejects a local place initialized with a void value") {
     builder.addLocalPlace(block, void_value);
     builder.addReturn(block, builder.addConstant(block, 0));
 
-    CHECK(hasDiagnostic(verify(package), diag::LocalPlaceInvalidInitial));
+    CHECK(hasInternalError(verify(package), "local-place-invalid-initial"));
 }
 
 TEST_CASE("verifier rejects a function root that is not an ordinary function") {
@@ -709,14 +710,14 @@ TEST_CASE("verifier rejects a function root that is not an ordinary function") {
     auto unit = builder.createUnitDecl("Unit");
     builder.addFunctionRoot(builder.createParserFunction(unit, builder.parserStateType(), builder.unitType(unit)));
 
-    CHECK(hasDiagnostic(verify(package), diag::FunctionRootNotNormal));
+    CHECK(hasInternalError(verify(package), "function-root-not-normal"));
 }
 
 TEST_CASE("verifier rejects a function root that references no function") {
     Package package;
     package.builder().addFunctionRoot(FunctionId{999});
 
-    CHECK(hasDiagnostic(verify(package), diag::InvalidFunctionRoot));
+    CHECK(hasInternalError(verify(package), "invalid-function-root"));
 }
 
 TEST_CASE("bool, string, bytes, and tuple values verify and print") {
@@ -747,7 +748,7 @@ TEST_CASE("verifier rejects a tuple whose result does not match its operands") {
     builder.addInstForTesting(block, Opcode::Tuple, {value}, builder.tupleType({builder.uint8Type()}));
     builder.addReturnVoid(block);
 
-    CHECK(hasDiagnostic(verify(package), diag::TupleResultTypeMismatch));
+    CHECK(hasInternalError(verify(package), "tuple-result-type-mismatch"));
 }
 
 namespace {
@@ -788,7 +789,7 @@ TEST_CASE("a native any formal accepts any copyable operand, and a tuple formal 
     bad_builder.addOpaqueOp(bad_block, tuple_only, {bad_builder.addConstant(bad_block, 1)});
     bad_builder.addReturnVoid(bad_block);
 
-    CHECK(hasDiagnostic(verify(bad), diag::OpaqueOpArgumentTypeMismatch));
+    CHECK(hasInternalError(verify(bad), "opaque-op-argument-type-mismatch"));
 }
 
 TEST_CASE("verifier rejects a load that copies an opaque value not declared copyable") {
@@ -806,7 +807,7 @@ TEST_CASE("verifier rejects a load that copies an opaque value not declared copy
     builder.addLoad(block, place);
     builder.addReturnVoid(block);
 
-    CHECK(hasDiagnostic(verify(package), diag::OpaqueLoadRequiresCopyable));
+    CHECK(hasInternalError(verify(package), "opaque-load-requires-copyable"));
 }
 
 TEST_CASE("verifier checks call operands even though calls declare no operand types") {
@@ -820,12 +821,12 @@ TEST_CASE("verifier checks call operands even though calls declare no operand ty
     auto invalid = builder.createFunction("invalid", builder.int64Type());
     auto invalid_block = builder.createBlock(package.function(invalid).root_region);
     builder.addReturn(invalid_block, builder.addCall(invalid_block, callee, {InstId{9999}}));
-    CHECK(hasDiagnostic(verify(package), diag::InvalidOperandId));
+    CHECK(hasInternalError(verify(package), "invalid-operand-id"));
 
     auto foreign = builder.createFunction("foreign", builder.int64Type());
     auto foreign_block = builder.createBlock(package.function(foreign).root_region);
     builder.addReturn(foreign_block, builder.addCall(foreign_block, callee, {callee_arg}));
-    CHECK(hasDiagnostic(verify(package), diag::OperandNotSameBlock));
+    CHECK(hasInternalError(verify(package), "operand-not-same-block"));
 
     Package cyclic;
     auto cyclic_builder = cyclic.builder();
@@ -840,7 +841,7 @@ TEST_CASE("verifier checks call operands even though calls declare no operand ty
     auto call = cyclic_builder.addCall(block, cyclic_callee, {constant});
     cyclic.replaceInst(constant, Opcode::Call, {call}, FunctionPayload{cyclic_callee});
     cyclic_builder.addReturn(block, call);
-    CHECK(hasDiagnostic(verify(cyclic), diag::OperandUsedBeforeDefinition));
+    CHECK(hasInternalError(verify(cyclic), "operand-used-before-definition"));
 }
 
 TEST_CASE("a field place addresses a field of the unit that declares it") {
@@ -872,7 +873,7 @@ TEST_CASE("verifier rejects a field place on a unit that does not declare the fi
     builder.addFieldPlace(block, unit_value, field);
     builder.addReturnVoid(block);
 
-    CHECK(hasDiagnostic(verify(package), diag::FieldPlaceUnitMismatch));
+    CHECK(hasInternalError(verify(package), "field-place-unit-mismatch"));
 }
 
 TEST_CASE("verifier rejects a field place with an invalid field or a result that is not a place of the field") {
@@ -897,8 +898,8 @@ TEST_CASE("verifier rejects a field place with an invalid field or a result that
     builder.addReturnVoid(block);
 
     auto diags = verify(package);
-    CHECK(hasDiagnostic(diags, diag::FieldPlaceResultTypeMismatch));
-    CHECK(hasDiagnostic(diags, diag::FieldPlaceInvalidPayload));
+    CHECK(hasInternalError(diags, "field-place-result-type-mismatch"));
+    CHECK(hasInternalError(diags, "field-place-invalid-payload"));
 }
 
 TEST_CASE("an ordinary function may branch, and a value defined before the branch is used after the join") {
@@ -956,7 +957,7 @@ TEST_CASE("verifier rejects a branch on a condition that is not a bool") {
     builder.addReturn(then_block, builder.addConstant(then_block, 1));
     builder.addReturn(else_block, builder.addConstant(else_block, 2));
 
-    CHECK(hasDiagnostic(verify(package), diag::OperandTypeMismatch));
+    CHECK(hasInternalError(verify(package), "operand-type-mismatch"));
 }
 
 TEST_CASE("verifier rejects a successor that belongs to another function body") {
@@ -970,7 +971,7 @@ TEST_CASE("verifier rejects a successor that belongs to another function body") 
     auto entry = builder.createBlock(package.function(fn).root_region);
     builder.addJump(entry, other_block);
 
-    CHECK(hasDiagnostic(verify(package), diag::InvalidSuccessor));
+    CHECK(hasInternalError(verify(package), "invalid-successor"));
 }
 
 TEST_CASE("verifier rejects a cycle in an ordinary function's control flow") {
@@ -983,7 +984,7 @@ TEST_CASE("verifier rejects a cycle in an ordinary function's control flow") {
     builder.addJump(first, second);
     builder.addJump(second, first);
 
-    CHECK(hasDiagnostic(verify(package), diag::ControlFlowCycle));
+    CHECK(hasInternalError(verify(package), "control-flow-cycle"));
 }
 
 TEST_CASE("verifier rejects a value used in a block that its defining block does not dominate") {
@@ -1002,7 +1003,7 @@ TEST_CASE("verifier rejects a value used in a block that its defining block does
     builder.addJump(else_block, join);
     builder.addReturn(join, only_on_then);
 
-    CHECK(hasDiagnostic(verify(package), diag::OperandNotSameBlock));
+    CHECK(hasInternalError(verify(package), "operand-not-same-block"));
 }
 
 TEST_CASE("core.equal compares two integers or two bools of one type and yields a bool") {
@@ -1027,7 +1028,7 @@ TEST_CASE("verifier rejects core.equal on operands of different or non-comparabl
     builder.addEqual(block, builder.addBytesConstant(block, "a"), builder.addBytesConstant(block, "a"));
     builder.addReturn(block, builder.addConstant(block, 0));
 
-    CHECK(hasDiagnostic(verify(package), diag::EqualOperandTypeMismatch));
+    CHECK(hasInternalError(verify(package), "equal-operand-type-mismatch"));
 }
 
 TEST_CASE("verifier rejects a branch or jump in a parser function") {
@@ -1039,7 +1040,7 @@ TEST_CASE("verifier rejects a branch or jump in a parser function") {
     auto first = builder.createBlock(region);
     builder.addJump(first, first);
 
-    CHECK(hasDiagnostic(verify(package), diag::ControlFlowOutsideFunctionBody));
+    CHECK(hasInternalError(verify(package), "control-flow-outside-function-body"));
 }
 
 TEST_CASE("an affine value consumed on each of two exclusive arms is consumed once per path") {
@@ -1079,7 +1080,7 @@ TEST_CASE("verifier rejects an affine value consumed on a path that reaches a se
     builder.addVectorAppend(join, vector, builder.addConstant(join, 2));
     builder.addReturnVoid(join);
 
-    CHECK(hasDiagnostic(verify(package), diag::ParserStateReused));
+    CHECK(hasInternalError(verify(package), "parser-state-reused"));
 }
 
 TEST_CASE("the dominator tree and post-dominators of a diamond") {
@@ -1231,7 +1232,7 @@ TEST_CASE("verifier rejects reading from a parser state after it was released") 
     auto completed = builder.addPublishField(s.block, root, s.value, s.field);
     builder.addParserFinish(s.block, s.next, completed);
 
-    CHECK(hasDiagnostic(verify(s.package), diag::ParserStateReused));
+    CHECK(hasInternalError(verify(s.package), "parser-state-reused"));
 }
 
 TEST_CASE("verifier rejects releasing input of something that is not a parser state") {
@@ -1242,7 +1243,7 @@ TEST_CASE("verifier rejects releasing input of something that is not a parser st
     auto completed = builder.addPublishField(s.block, root, s.value, s.field);
     builder.addParserFinish(s.block, released, completed);
 
-    CHECK(hasDiagnostic(verify(s.package), diag::OperandTypeMismatch));
+    CHECK(hasInternalError(verify(s.package), "operand-type-mismatch"));
 }
 
 TEST_CASE("releasing input keeps the state's byte bound") {
@@ -1288,5 +1289,5 @@ TEST_CASE("leaving a bound needs a state that is still bounded after a release")
     auto completed = builder.addPublishField(s.block, root, s.value, s.field);
     builder.addParserFinish(s.block, unbounded, completed);
 
-    CHECK(hasDiagnostic(verify(s.package), diag::InvalidParserOperation));
+    CHECK(hasInternalError(verify(s.package), "invalid-parser-operation"));
 }

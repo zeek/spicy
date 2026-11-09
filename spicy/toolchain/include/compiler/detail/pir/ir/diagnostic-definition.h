@@ -9,15 +9,11 @@ namespace spicy::detail::pir::ir {
 enum class DiagnosticSeverity { Error, Warning, Note };
 
 /**
- * Internal is an internal compiler error (ie some compiler invariant).
- * User can reasonably occur within user code.
+ * A user diagnostic's stable ID, severity, and message format.
+ * Internal compiler errors use `InternalError` instead.
  */
-enum class DiagnosticClassification { Internal, User };
-
-/** A catalog entry fixing one diagnostic's stable ID, classification, severity, and message format. */
 struct DiagnosticDefinition {
     const char* id;
-    DiagnosticClassification classification;
     DiagnosticSeverity severity;
     const char* message;
 };

@@ -12,6 +12,7 @@
 #include <hilti/base/result.h>
 
 #include <spicy/compiler/detail/pir/ir/diagnostic.h>
+#include <spicy/compiler/detail/pir/ir/internal-error.h>
 #include <spicy/compiler/detail/pir/ir/package.h>
 
 namespace spicy::logging::debug {
@@ -57,14 +58,12 @@ struct Unsupported {
 };
 
 /**
- * PIR construction produced a malformed package. This is a hard failure: the
- * caller must render `diagnostics` and not proceed with code generation. The
- * package is retained only so diagnostics can render its package-relative
- * sites; it must not be treated as validated IR.
+ * Malformed PIR. Report `errors` and stop compilation.
+ * Keep `package` only to resolve error locations.
  */
 struct Error {
     ir::Package package;
-    std::vector<ir::Diagnostic> diagnostics;
+    std::vector<ir::InternalError> errors;
 };
 
 /**

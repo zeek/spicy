@@ -12,8 +12,8 @@ using namespace spicy::detail::pir::ir;
 
 namespace {
 
-bool hasDiagnostic(const std::vector<Diagnostic>& diags, const DiagnosticDefinition& def) {
-    return std::ranges::any_of(diags, [&def](const Diagnostic& d) { return d.definition == def; });
+bool hasInternalError(const std::vector<InternalError>& errors, std::string_view tag) {
+    return std::ranges::any_of(errors, [tag](const InternalError& e) { return e.tag == tag; });
 }
 
 } // namespace
@@ -64,9 +64,9 @@ TEST_SUITE("pir::ir::SourceManager") {
         CHECK_FALSE(package.inst(c).span.isSet());
 
         auto diags = verify(package);
-        CHECK_FALSE(hasDiagnostic(diags, diag::InvalidSourceSpanId));
-        CHECK_FALSE(hasDiagnostic(diags, diag::InvalidSourceFileId));
-        CHECK_FALSE(hasDiagnostic(diags, diag::MalformedSourceSpanRange));
+        CHECK_FALSE(hasInternalError(diags, "invalid-source-span-id"));
+        CHECK_FALSE(hasInternalError(diags, "invalid-source-file-id"));
+        CHECK_FALSE(hasInternalError(diags, "malformed-source-span-range"));
     }
 
     TEST_CASE("verification rejects an invalid source span ID without asserting") {
@@ -78,7 +78,7 @@ TEST_SUITE("pir::ir::SourceManager") {
         builder.addReturn(block, c);
 
         auto diags = verify(package);
-        CHECK(hasDiagnostic(diags, diag::InvalidSourceSpanId));
+        CHECK(hasInternalError(diags, "invalid-source-span-id"));
     }
 
     TEST_CASE("verification rejects an invalid source file ID without asserting") {
@@ -92,7 +92,7 @@ TEST_SUITE("pir::ir::SourceManager") {
         builder.addReturn(block, c);
 
         auto diags = verify(package);
-        CHECK(hasDiagnostic(diags, diag::InvalidSourceFileId));
+        CHECK(hasInternalError(diags, "invalid-source-file-id"));
     }
 
     TEST_CASE("verification rejects a reversed known range without asserting") {
@@ -108,6 +108,6 @@ TEST_SUITE("pir::ir::SourceManager") {
         builder.addReturn(block, c);
 
         auto diags = verify(package);
-        CHECK(hasDiagnostic(diags, diag::MalformedSourceSpanRange));
+        CHECK(hasInternalError(diags, "malformed-source-span-range"));
     }
 }

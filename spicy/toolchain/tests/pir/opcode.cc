@@ -114,7 +114,8 @@ TEST_CASE("core.tuple_get on an invalid index is rejected by the verifier withou
     auto fn = builder.createFunction("f", builder.int64Type());
     auto block = builder.createBlock(package.function(fn).root_region);
     auto tuple_ty = builder.tupleType({builder.int64Type()});
-    auto tuple_val = builder.addInstForTesting(block, Opcode::Int64Constant, {}, tuple_ty, InstPayload(Int64Literal{0}));
+    auto tuple_val =
+        builder.addInstForTesting(block, Opcode::Int64Constant, {}, tuple_ty, InstPayload(Int64Literal{0}));
     auto get = builder.addInstForTesting(block,
                                          Opcode::TupleGet,
                                          {tuple_val},
@@ -224,7 +225,7 @@ TEST_CASE("verifier rejects reusing the pre-read parser state after parser.read_
     (void)state1;
 
     auto diags = verify(p.package);
-    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::ParserStateReused; }));
+    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "parser-state-reused"; }));
 }
 
 TEST_CASE("verifier rejects consuming the projected successor state twice") {
@@ -240,7 +241,7 @@ TEST_CASE("verifier rejects consuming the projected successor state twice") {
     builder.addParserFinish(p.block, state1, unit1);
 
     auto diags = verify(p.package);
-    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::ParserStateReused; }));
+    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "parser-state-reused"; }));
 }
 
 TEST_CASE("verifier rejects a read with a non-state operand") {
@@ -257,7 +258,7 @@ TEST_CASE("verifier rejects a read with a non-state operand") {
     builder.addReturn(block, read);
 
     auto diags = verify(package);
-    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::OperandTypeMismatch; }));
+    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "operand-type-mismatch"; }));
 }
 
 TEST_CASE("verifier rejects a read with an unsupported payload") {
@@ -265,7 +266,7 @@ TEST_CASE("verifier rejects a read with an unsupported payload") {
     p.package.builder().addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 16});
 
     auto diags = verify(p.package);
-    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::ReadIntegerUnsupportedPayload; }));
+    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "read-integer-unsupported-payload"; }));
 }
 
 TEST_CASE("verifier rejects a read whose declared result is not tuple<parser.state, uint8>") {
@@ -288,7 +289,7 @@ TEST_CASE("verifier rejects a read whose declared result is not tuple<parser.sta
     (void)fn;
 
     auto diags = verify(package);
-    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::ReadIntegerResultTypeMismatch; }));
+    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "read-integer-result-type-mismatch"; }));
 }
 
 TEST_CASE("parser.finish rejects a normal function") {
@@ -306,7 +307,7 @@ TEST_CASE("parser.finish rejects a normal function") {
     builder.addParserFinish(block, state, unit_val);
 
     auto diags = verify(package);
-    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::FinishInNormalFunction; }));
+    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "finish-in-normal-function"; }));
 }
 
 TEST_CASE("parser.finish rejects a unit from a different declaration than the function's parser unit") {
@@ -319,7 +320,7 @@ TEST_CASE("parser.finish rejects a unit from a different declaration than the fu
     builder.addParserFinish(p.block, state1, other_val);
 
     auto diags = verify(p.package);
-    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::ReturnTypeMismatch; }));
+    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "return-type-mismatch"; }));
 }
 
 TEST_CASE("field publication rejects a mismatched field owner") {
@@ -335,7 +336,7 @@ TEST_CASE("field publication rejects a mismatched field owner") {
     builder.addParserFinish(p.block, state1, unit1);
 
     auto diags = verify(p.package);
-    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::PublishFieldOwnerMismatch; }));
+    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "publish-field-owner-mismatch"; }));
 }
 
 TEST_CASE("field publication rejects a value operand with the wrong type") {
@@ -348,7 +349,7 @@ TEST_CASE("field publication rejects a value operand with the wrong type") {
     builder.addParserFinish(p.block, state1, unit1);
 
     auto diags = verify(p.package);
-    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::PublishFieldValueTypeMismatch; }));
+    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "publish-field-value-type-mismatch"; }));
 }
 
 TEST_CASE("field publication rejects a duplicate publication of the same field") {
@@ -362,7 +363,7 @@ TEST_CASE("field publication rejects a duplicate publication of the same field")
     builder.addParserFinish(p.block, state1, unit2);
 
     auto diags = verify(p.package);
-    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::DuplicateFieldPublication; }));
+    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "duplicate-field-publication"; }));
 }
 
 TEST_CASE("field publication rejects a missing publication") {
@@ -374,7 +375,7 @@ TEST_CASE("field publication rejects a missing publication") {
     builder.addParserFinish(p.block, state1, p.unit0);
 
     auto diags = verify(p.package);
-    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::MissingFieldPublication; }));
+    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "missing-field-publication"; }));
 }
 
 TEST_CASE("field publication rejects stale unit-state reuse and finishing the wrong unit version") {
@@ -389,7 +390,7 @@ TEST_CASE("field publication rejects stale unit-state reuse and finishing the wr
     (void)unit1;
 
     auto diags = verify(p.package);
-    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::UnitStateStaleOrUnknownOperand; }));
+    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "unit-state-stale-or-unknown-operand"; }));
 }
 
 TEST_CASE("verifier rejects two tuple_get projections of the same read's parser-state element") {
@@ -408,7 +409,7 @@ TEST_CASE("verifier rejects two tuple_get projections of the same read's parser-
     (void)state_a;
 
     auto diags = verify(p.package);
-    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::ParserStateReused; }));
+    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "parser-state-reused"; }));
 }
 
 TEST_CASE("verifier rejects a duplicate parser root targeting the same unit") {
@@ -423,7 +424,7 @@ TEST_CASE("verifier rejects a duplicate parser root targeting the same unit") {
     builder.addParserRoot(p.unit_decl, p.fn);
 
     auto diags = verify(p.package);
-    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::DuplicateParserRootUnit; }));
+    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "duplicate-parser-root-unit"; }));
 }
 
 TEST_CASE("verifier rejects a field declaration with an invalid owner without asserting") {
@@ -433,7 +434,7 @@ TEST_CASE("verifier rejects a field declaration with an invalid owner without as
     (void)field;
 
     auto diags = verify(package);
-    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::DeclarationInvalidOwner; }));
+    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "declaration-invalid-owner"; }));
 }
 
 TEST_CASE("verifier rejects a field that is not listed in its owner's membership vector") {
@@ -445,7 +446,7 @@ TEST_CASE("verifier rejects a field that is not listed in its owner's membership
     builder.createFieldDeclForTesting(unit_decl, "x", builder.uint8Type());
 
     auto diags = verify(package);
-    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::DeclarationNotInOwnerMembership; }));
+    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "declaration-not-in-owner-membership"; }));
 }
 
 TEST_CASE("verifier rejects a field listed more than once in its owner's membership vector") {
@@ -457,8 +458,7 @@ TEST_CASE("verifier rejects a field listed more than once in its owner's members
     builder.appendFieldForTesting(unit_decl, field);
 
     auto diags = verify(package);
-    CHECK(
-        std::ranges::any_of(diags, [](auto& d) { return d.definition == diag::DeclarationDuplicateOwnerMembership; }));
+    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "declaration-duplicate-owner-membership"; }));
 }
 
 TEST_SUITE_END();
@@ -481,9 +481,9 @@ TEST_CASE("a parser function may borrow a context place after its parser state")
 
     auto diags = verify(package);
     CHECK(std::ranges::none_of(diags, [](auto& d) {
-        return d.definition == diag::ParserFunctionParameterCountMismatch ||
-               d.definition == diag::ParserFunctionParameterTypeMismatch ||
-               d.definition == diag::ParserFunctionContextParameterMismatch;
+        return d.tag == "parser-function-parameter-count-mismatch" ||
+               d.tag == "parser-function-parameter-type-mismatch" ||
+               d.tag == "parser-function-context-parameter-mismatch";
     }));
 }
 
@@ -503,9 +503,8 @@ TEST_CASE("a parser function's context borrow must be a place that holds a tuple
         return verify(package);
     };
     auto rejected = [](const auto& diags) {
-        return std::ranges::any_of(diags, [](auto& d) {
-            return d.definition == diag::ParserFunctionContextParameterMismatch;
-        });
+        return std::ranges::any_of(diags,
+                                   [](auto& d) { return d.tag == "parser-function-context-parameter-mismatch"; });
     };
 
     // A borrowed unit is an acceptable borrow for an ordinary function, but not for a context.
@@ -534,8 +533,7 @@ TEST_CASE("a parser root names exactly the elements of its context tuple") {
         builder.addArgument(fn, block, 0);
         builder.addArgument(fn, block, 1);
         builder.addParserRoot(unit, fn, "U", ContextIdentity{.name = "C", .elements = std::move(names)});
-        return std::ranges::any_of(verify(package),
-                                   [](auto& d) { return d.definition == diag::ParserRootContextMismatch; });
+        return std::ranges::any_of(verify(package), [](auto& d) { return d.tag == "parser-root-context-mismatch"; });
     };
 
     CHECK(! verified({"n"}));

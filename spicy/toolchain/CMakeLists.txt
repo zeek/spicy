@@ -59,7 +59,7 @@ set(SOURCES_COMPILER
     src/compiler/pir/analyses/field-use.cc
     src/compiler/pir/ir/builder.cc
     src/compiler/pir/ir/cfg.cc
-    src/compiler/pir/ir/diagnostic.cc
+    src/compiler/pir/ir/internal-error.cc
     src/compiler/pir/ir/package.cc
     src/compiler/pir/ir/printer.cc
     src/compiler/pir/ir/reachability.cc

@@ -13,8 +13,8 @@ using namespace spicy::detail::pir::ir;
 
 namespace {
 
-bool hasDiagnostic(const std::vector<Diagnostic>& diags, const DiagnosticDefinition& def) {
-    return std::ranges::any_of(diags, [&def](const Diagnostic& d) { return d.definition == def; });
+bool hasInternalError(const std::vector<InternalError>& errors, std::string_view tag) {
+    return std::ranges::any_of(errors, [tag](const InternalError& e) { return e.tag == tag; });
 }
 
 // A package with one unit of two integer fields, and the helpers that read, write, and consume it.
@@ -121,7 +121,7 @@ TEST_CASE("a writable borrow can be forwarded as a read borrow, but a read borro
     auto up_cell = builder.addArgument(forward_up, up_block, 0);
     builder.addCall(up_block, write, {up_cell});
     builder.addReturnVoid(up_block);
-    CHECK(hasDiagnostic(verify(s.package), diag::BorrowWriteDenied));
+    CHECK(hasInternalError(verify(s.package), "borrow-write-denied"));
 }
 
 TEST_CASE("an assignment through a field place derived from a read borrow is rejected") {
@@ -134,7 +134,7 @@ TEST_CASE("an assignment through a field place derived from a read borrow is rej
     builder.addStore(block, builder.addFieldPlace(block, cell, s.second), builder.addUint64Constant(block, 1));
     builder.addReturnVoid(block);
 
-    CHECK(hasDiagnostic(verify(s.package), diag::BorrowWriteDenied));
+    CHECK(hasInternalError(verify(s.package), "borrow-write-denied"));
 }
 
 TEST_CASE("a scalar borrowed through a place follows the same write permission") {
@@ -157,7 +157,7 @@ TEST_CASE("a scalar borrowed through a place follows the same write permission")
     auto bad_place = builder.addArgument(bad, bad_block, 0);
     builder.addCall(bad_block, set, {bad_place});
     builder.addReturnVoid(bad_block);
-    CHECK(hasDiagnostic(verify(package), diag::BorrowWriteDenied));
+    CHECK(hasInternalError(verify(package), "borrow-write-denied"));
 }
 
 TEST_CASE("a caller can lend its local storage, and sees the callee's write") {
@@ -189,7 +189,7 @@ TEST_CASE("a borrowed unit cannot be consumed, returned, or forwarded to an owni
     auto forward_block = builder.createBlock(s.package.function(forward).root_region);
     builder.addCall(forward_block, take, {builder.addArgument(forward, forward_block, 0)});
     builder.addReturnVoid(forward_block);
-    CHECK(hasDiagnostic(verify(s.package), diag::BorrowedValueConsumed));
+    CHECK(hasInternalError(verify(s.package), "borrowed-value-consumed"));
 
     Cells returned;
     auto returned_builder = returned.package.builder();
@@ -198,7 +198,7 @@ TEST_CASE("a borrowed unit cannot be consumed, returned, or forwarded to an owni
                                                 returned.unit_type);
     auto leak_block = returned_builder.createBlock(returned.package.function(leak).root_region);
     returned_builder.addReturn(leak_block, returned_builder.addArgument(leak, leak_block, 0));
-    CHECK(hasDiagnostic(verify(returned.package), diag::BorrowEscapes));
+    CHECK(hasInternalError(verify(returned.package), "borrow-escapes"));
 
     Cells published;
     auto published_builder = published.package.builder();
@@ -212,7 +212,7 @@ TEST_CASE("a borrowed unit cannot be consumed, returned, or forwarded to an owni
                                       published_builder.addUint64Constant(publish_block, 1),
                                       published.first);
     published_builder.addReturnVoid(publish_block);
-    CHECK(hasDiagnostic(verify(published.package), diag::BorrowedValueConsumed));
+    CHECK(hasInternalError(verify(published.package), "borrowed-value-consumed"));
 }
 
 TEST_CASE("a taken unit transfers ownership, so the caller cannot use it afterward") {
@@ -235,7 +235,7 @@ TEST_CASE("a taken unit transfers ownership, so the caller cannot use it afterwa
     builder.addCall(reused_block, take, {reused_cell});
     builder.addCall(reused_block, take, {reused_cell});
     builder.addReturnVoid(reused_block);
-    CHECK(hasDiagnostic(verify(s.package), diag::ParserStateReused));
+    CHECK(hasInternalError(verify(s.package), "parser-state-reused"));
 }
 
 TEST_CASE("a taken vector is consumed by the call, like any other affine value") {
@@ -260,7 +260,7 @@ TEST_CASE("a taken vector is consumed by the call, like any other affine value")
     builder.addCall(twice_block, take, {both});
     builder.addCall(twice_block, take, {both});
     builder.addReturnVoid(twice_block);
-    CHECK(hasDiagnostic(verify(package), diag::ParserStateReused));
+    CHECK(hasInternalError(verify(package), "parser-state-reused"));
 }
 
 TEST_CASE("a borrow reached after its owner was consumed is rejected") {
@@ -276,7 +276,7 @@ TEST_CASE("a borrow reached after its owner was consumed is rejected") {
     builder.addCall(block, read, {cell});
     builder.addReturnVoid(block);
 
-    CHECK(hasDiagnostic(verify(s.package), diag::UseAfterConsume));
+    CHECK(hasInternalError(verify(s.package), "use-after-consume"));
 }
 
 TEST_CASE("a borrow after a consumption on some path is rejected, and one on another path is not") {
@@ -315,7 +315,7 @@ TEST_CASE("a borrow after a consumption on some path is rejected, and one on ano
     build(true);
     CHECK(verify(s.package).empty());
     build(false);
-    CHECK(hasDiagnostic(verify(s.package), diag::UseAfterConsume));
+    CHECK(hasInternalError(verify(s.package), "use-after-consume"));
 }
 
 TEST_CASE("a place derived from a unit cannot be used after the unit's ownership transfers") {
@@ -340,7 +340,7 @@ TEST_CASE("a place derived from a unit cannot be used after the unit's ownership
     builder.addLoad(late_block, late_place);
     builder.addReturnVoid(late_block);
     auto diags = verify(s.package);
-    CHECK(hasDiagnostic(diags, diag::UseAfterConsume));
+    CHECK(hasInternalError(diags, "use-after-consume"));
 }
 
 TEST_CASE("a derived place is rejected after a consumption on some path, and accepted on another path") {
@@ -379,7 +379,7 @@ TEST_CASE("a derived place is rejected after a consumption on some path, and acc
     build(true);
     CHECK(verify(s.package).empty());
     build(false);
-    CHECK(hasDiagnostic(verify(s.package), diag::UseAfterConsume));
+    CHECK(hasInternalError(verify(s.package), "use-after-consume"));
 }
 
 TEST_CASE("a place derived from a unit read out of storage ends with that unit's ownership") {
@@ -405,7 +405,7 @@ TEST_CASE("a place derived from a unit read out of storage ends with that unit's
     builder.addCall(late_block, take, {late_loaded});
     builder.addLoad(late_block, late_place);
     builder.addReturnVoid(late_block);
-    CHECK(hasDiagnostic(verify(s.package), diag::UseAfterConsume));
+    CHECK(hasInternalError(verify(s.package), "use-after-consume"));
 }
 
 TEST_CASE("a place derived from a loaded unit is rejected after a consumption on some path only") {
@@ -446,7 +446,7 @@ TEST_CASE("a place derived from a loaded unit is rejected after a consumption on
     build(true);
     CHECK(verify(s.package).empty());
     build(false);
-    CHECK(hasDiagnostic(verify(s.package), diag::UseAfterConsume));
+    CHECK(hasInternalError(verify(s.package), "use-after-consume"));
 }
 
 TEST_CASE("a borrowing call does not reset or bypass a unit's publication chain") {
@@ -491,7 +491,7 @@ TEST_CASE("a borrowing call does not reset or bypass a unit's publication chain"
     auto incomplete_cell = incomplete_builder.addUnitCreate(incomplete_block, incomplete.unit);
     incomplete_builder.addCall(incomplete_block, incomplete_read, {incomplete_cell});
     incomplete_builder.addParserFinish(incomplete_block, incomplete_state, incomplete_cell);
-    CHECK(hasDiagnostic(verify(incomplete.package), diag::MissingFieldPublication));
+    CHECK(hasInternalError(verify(incomplete.package), "missing-field-publication"));
 }
 
 TEST_CASE("a parameter's type must suit its mode") {
@@ -506,7 +506,7 @@ TEST_CASE("a parameter's type must suit its mode") {
         auto block = builder.createBlock(package.function(fn).root_region);
         builder.addArgument(fn, block, 0);
         builder.addReturnVoid(block);
-        return hasDiagnostic(verify(package), diag::NormalFunctionInvalidParameter);
+        return hasInternalError(verify(package), "normal-function-invalid-parameter");
     };
 
     // A borrow of storage or of an object, and a taken unit, vector, or set, suit their modes.
@@ -523,7 +523,7 @@ TEST_CASE("a parameter's type must suit its mode") {
         auto block = other_builder.createBlock(other.function(fn).root_region);
         other_builder.addArgument(fn, block, 0);
         other_builder.addReturnVoid(block);
-        return hasDiagnostic(verify(other), diag::NormalFunctionInvalidParameter);
+        return hasInternalError(verify(other), "normal-function-invalid-parameter");
     };
     CHECK(invalid(Parameter(other_builder.placeType(other_builder.int64Type()), ParameterMode::Take)));
     CHECK(invalid(Parameter(other_builder.int64Type(), ParameterMode::Borrow)));
@@ -545,8 +545,8 @@ TEST_CASE("a call must pass the type and count of each parameter") {
     builder.addReturnVoid(block);
 
     auto diags = verify(s.package);
-    CHECK(hasDiagnostic(diags, diag::CallArgumentTypeMismatch));
-    CHECK(hasDiagnostic(diags, diag::CallArgumentCountMismatch));
+    CHECK(hasInternalError(diags, "call-argument-type-mismatch"));
+    CHECK(hasInternalError(diags, "call-argument-count-mismatch"));
 }
 
 TEST_CASE("a call stays an ordered effect that reads and writes places") {
