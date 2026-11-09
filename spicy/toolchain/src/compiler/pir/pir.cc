@@ -51,7 +51,9 @@ pir::BuildResult pir::build(const hilti::ASTContext& ctx) {
     std::vector<ir::Diagnostic> user_diags;
     {
         hilti::util::timing::Collector _("spicy/compiler/pir/build/analyze");
-        user_diags = analyses::checkUnusedFields(package);
+        user_diags = analyses::checkFieldReads(package);
+        auto unused = analyses::checkUnusedFields(package);
+        user_diags.insert(user_diags.end(), unused.begin(), unused.end());
     }
 
     HILTI_DEBUG(logging::debug::PIR, "before constant folding:");

@@ -1,0 +1,34 @@
+# @TEST-EXEC-FAIL: spicyc %INPUT -p --experimental-pir >/dev/null 2>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-EXEC-FAIL: spicyc %INPUT -p --experimental-pir -W no-field-read-before-parsed >/dev/null 2>suppressed
+# @TEST-EXEC: cmp output suppressed
+
+# @TEST-DOC: Rejects reads before a field is set, including in hooks, branches, and `&size`. Errors cannot be suppressed.
+
+module Test;
+
+type Item = unit {
+    x: uint8;
+};
+
+public type Pair = unit {
+    first: uint8 {
+        print self.second;
+
+        if ( $$ == 1 ) {
+            self.third = 5;
+            print self.fourth;
+        }
+
+        print self.third;
+    }
+
+    second: uint8;
+    third: uint8;
+    fourth: uint8;
+    items: Item[] &size=self.length;
+    length: uint64;
+
+    on %init { print self.first; }
+};

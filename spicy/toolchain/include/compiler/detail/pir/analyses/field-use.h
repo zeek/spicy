@@ -19,4 +19,14 @@ namespace spicy::detail::pir::analyses {
  */
 std::vector<ir::Diagnostic> checkUnusedFields(const ir::Package& package);
 
+/**
+ * Reports field reads that may run before parsing or assignment sets the field.
+ * Checks each parser and its direct hook calls. Other calls are assumed to write any unit or field passed to them.
+ * Checks all CFG paths without evaluating branch conditions.
+ *
+ * @param package a verified package
+ * @return one `field-read-before-parsed` error per such read, with a note at the field
+ */
+std::vector<ir::Diagnostic> checkFieldReads(const ir::Package& package);
+
 } // namespace spicy::detail::pir::analyses

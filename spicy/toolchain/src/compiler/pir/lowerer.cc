@@ -218,7 +218,7 @@ struct UnitInfo {
 struct UnitRef {
     ir::InstId value;
     const UnitInfo* info = nullptr;
-    bool is_self = false; /**< the unit being parsed, whose published fields `_fields` lists */
+    bool is_self = false; /**< true for the unit being parsed */
 };
 
 // A Spicy variable seen by procedural code. A place-backed variable reads and writes through `value`;
@@ -253,10 +253,11 @@ public:
         _context_names = std::move(names);
     }
 
-    // Makes `self` the unit being parsed, whose fields are the given published declarations by name.
-    void setSelf(ir::InstId unit, std::unordered_map<std::string, ir::DeclId> fields) {
+    // Sets `self` and its fields. `complete` means all fields have been parsed.
+    void setSelf(ir::InstId unit, std::unordered_map<std::string, ir::DeclId> fields, bool complete) {
         _self = unit;
         _fields = std::move(fields);
+        _self_complete = complete;
     }
 
     std::optional<UnsupportedFeature> lowerStatement(hilti::Statement* stmt);
@@ -633,12 +634,11 @@ private:
             return *feature;
 
         const auto& ref = std::get<UnitRef>(unit);
-        // The unit being parsed shows the fields that are published so far, and a borrowed unit is complete.
+        // `self` may address unparsed fields. The field-read analysis rejects reads of unset ones.
         const auto& fields = ref.is_self ? _fields : ref.info->fields;
         auto field = fields.find(std::string(member->id()));
         if ( field == fields.end() )
-            return _unsupported(fmt("field '%s' is not published yet", std::string(member->id())),
-                                op->meta().location());
+            return _unsupported(fmt("field '%s' is not known", std::string(member->id())), op->meta().location());
         return _builder.addFieldPlace(_block, ref.value, field->second, internSpan(_package, op->meta().location()));
     }
 
@@ -718,6 +718,7 @@ private:
     std::optional<ir::InstId> _context; /**< the place that holds the unit's `%context` instance */
     std::vector<std::string> _context_names;
     std::unordered_map<std::string, ir::DeclId> _fields;
+    bool _self_complete = false;
 };
 
 // Lowers ordinary functions, and the foreign functions they call, once each. A function's identity
@@ -1465,7 +1466,7 @@ std::variant<ir::InstId, UnsupportedFeature> BodyLowerer::_lowerCall(hilti::expr
             // A callee may read any field of the unit it borrows, so the unit must be complete. A unit that is still
             // being parsed has unpublished fields, which legacy execution would find unset.
             const auto& ref = std::get<UnitRef>(unit);
-            if ( ref.is_self && _fields.size() != ref.info->fields.size() )
+            if ( ref.is_self && ! _self_complete )
                 return _unsupported("a unit that is not fully published cannot be passed to a function",
                                     args[i]->meta().location());
             values.push_back(ref.value);
@@ -1838,7 +1839,7 @@ private:
                 return error;
         }
 
-        // The hooks of one point see the first `published` fields of the unit.
+        // At this hook point, the first `published` fields have been parsed.
         auto lower = [&](std::vector<PendingHook>& pending,
                          size_t published,
                          std::vector<ir::FunctionId>& ids,
@@ -1863,10 +1864,8 @@ private:
         return lower(done, spec.fields.size(), spec.hooks, nullptr);
     }
 
-    // Lowers one hook body into an ordinary function that borrows the unit being parsed. The source lets a hook change
-    // `self`, so the borrow is writable, and the caller keeps the unit, so the parser can finish it after the hook.
-    // The hook sees the first `published` fields. A hook on an integer or bytes field also takes the field's value
-    // as `$$`.
+    // Lowers a hook with a writable borrow of `self`. All fields are addressable, but only the first `published`
+    // fields have been parsed. Integer and bytes hooks also receive the parsed value as `$$`.
     std::variant<ir::FunctionId, UnsupportedFeature> _hook(const UnitSpec& spec,
                                                            spicy::declaration::Hook* hook,
                                                            size_t published,
@@ -1891,9 +1890,9 @@ private:
         auto self = _builder.addArgument(id, block, 0, span);
         BodyLowerer body(_procedures, _package, region, block, feature);
         std::unordered_map<std::string, ir::DeclId> fields;
-        for ( size_t i = 0; i < published; ++i )
-            fields.emplace(std::string(spec.fields[i].source->id().local()), spec.fields[i].declaration);
-        body.setSelf(self, std::move(fields));
+        for ( const auto& f : spec.fields )
+            fields.emplace(std::string(f.source->id().local()), f.declaration);
+        body.setSelf(self, std::move(fields), published == spec.fields.size());
         if ( has_value && hook->dd() )
             body.bind(hook->dd(), Variable{.value = _builder.addArgument(id, block, 1, span)});
         if ( spec.context )
@@ -1924,8 +1923,10 @@ private:
                 args.push_back(*context);
             _builder.addCall(block, hook, args, unit_span);
         }
-        // The fields published so far, which a later `&size` may read through `self`.
-        std::unordered_map<std::string, ir::DeclId> published;
+        // `&size` may address any field.
+        std::unordered_map<std::string, ir::DeclId> fields;
+        for ( const auto& f : spec.fields )
+            fields.emplace(std::string(f.source->id().local()), f.declaration);
         for ( const auto& field : spec.fields ) {
             auto span = internSpan(_package, field.source->meta().location());
             ir::InstId value;
@@ -1945,7 +1946,7 @@ private:
                 auto feature = fmt("parser unit '%s'", std::string(spec.source->id()));
                 // A bound is an expression, so it never adds blocks and needs no region.
                 BodyLowerer bound(_procedures, _package, ir::RegionId(), block, feature);
-                bound.setSelf(unit_value, published);
+                bound.setSelf(unit_value, fields, false);
                 if ( context )
                     bound.setContext(*context, spec.context_names);
                 auto length = bound.lower(field.bound);
@@ -1977,7 +1978,6 @@ private:
             // Nothing later reads the input before the cursor: values are extracted and `self` holds the fields.
             state = _builder.addReleaseInput(block, state, span);
             unit_value = _builder.addPublishField(block, unit_value, value, field.declaration, span);
-            published.emplace(std::string(field.source->id().local()), field.declaration);
             // Completed-field consumers observe the published field, and `$$` is the value as it was parsed.
             for ( auto hook : field.hooks ) {
                 std::vector<ir::InstId> args = {unit_value};

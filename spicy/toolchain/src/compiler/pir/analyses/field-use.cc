@@ -1,11 +1,15 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <algorithm>
+#include <optional>
+#include <set>
 #include <unordered_set>
 #include <variant>
 
 #include <hilti/base/util.h>
 
 #include <spicy/compiler/detail/pir/analyses/field-use.h>
+#include <spicy/compiler/detail/pir/ir/cfg.h>
 
 using namespace spicy::detail::pir;
 using namespace spicy::detail::pir::ir;
@@ -79,6 +83,182 @@ std::vector<Diagnostic> analyses::checkUnusedFields(const Package& package) {
                              field,
                              hilti::util::fmt("%s::%s", unit.name, package.declaration(field).name));
         }
+    }
+
+    return diags;
+}
+
+namespace {
+
+// Fields set on every path to this point, indexed by `DeclId`.
+using FieldSet = std::set<uint32_t>;
+
+FieldSet intersect(const FieldSet& a, const FieldSet& b) {
+    FieldSet out;
+    std::ranges::set_intersection(a, b, std::inserter(out, out.begin()));
+    return out;
+}
+
+// Tracks fields of `self` through a parser and its direct hook calls.
+// Other calls may write any unit or field passed to them.
+class ReadChecker {
+public:
+    ReadChecker(const Package& package, std::vector<Diagnostic>& diags) : _package(package), _emitter(package, diags) {}
+
+    // The parser creates `self` with all fields unset.
+    void checkParser(FunctionId function) {
+        Selves selves;
+        for ( auto block : _package.region(_package.function(function).root_region).blocks )
+            for ( auto id : _package.block(block).insts )
+                if ( _package.inst(id).opcode == Opcode::UnitCreate )
+                    selves.insert(id.index);
+
+        _flow(function, selves, {}, true);
+    }
+
+private:
+    // IDs for `self`, including each `publish_field` result.
+    using Selves = std::unordered_set<uint32_t>;
+
+    // Returns the field if `place` addresses a field of `self`.
+    std::optional<DeclId> _selfField(InstId place, const Selves& selves) const {
+        const auto& inst = _package.inst(place);
+        if ( inst.opcode != Opcode::FieldPlace || inst.args.empty() || ! selves.contains(inst.args[0].index) )
+            return std::nullopt;
+
+        return std::get<FieldPayload>(inst.payload).field;
+    }
+
+    FieldSet _allFields(InstId self) const {
+        FieldSet out;
+        const auto& type = _package.type(_package.inst(self).result_type);
+        for ( auto field : _package.typeDecl(type.declaration).fields )
+            out.insert(field.index);
+        return out;
+    }
+
+    // Checks a hook whose parameter `index` is `self`. Returns fields set on every return path.
+    FieldSet _hook(FunctionId hook, size_t index, const FieldSet& entry, bool report) {
+        Selves selves;
+        for ( auto block : _package.region(_package.function(hook).root_region).blocks )
+            for ( auto id : _package.block(block).insts ) {
+                const auto& inst = _package.inst(id);
+                if ( inst.opcode == Opcode::Argument && std::get<ArgumentPayload>(inst.payload).index == index )
+                    selves.insert(id.index);
+            }
+
+        return _flow(hook, selves, entry, report);
+    }
+
+    // Updates `set` for the block and optionally reports reads of unset fields.
+    void _block(const Function& function, BlockId block, Selves& selves, FieldSet& set, bool report) {
+        for ( auto id : _package.block(block).insts ) {
+            const auto& inst = _package.inst(id);
+            switch ( inst.opcode ) {
+                case Opcode::PublishField:
+                    if ( selves.contains(inst.args[0].index) ) {
+                        set.insert(std::get<FieldPayload>(inst.payload).field.index);
+                        selves.insert(id.index);
+                    }
+                    break;
+
+                case Opcode::Load:
+                    if ( auto field = _selfField(inst.args[0], selves);
+                         field && ! set.contains(field->index) && report )
+                        _report(id, *field);
+                    break;
+
+                case Opcode::Store:
+                    if ( auto field = _selfField(inst.args[0], selves) )
+                        set.insert(field->index);
+                    break;
+
+                case Opcode::Call:
+                case Opcode::OpaqueOp:
+                    for ( size_t a = 0; a < inst.args.size(); ++a ) {
+                        auto arg = inst.args[a];
+                        if ( selves.contains(arg.index) ) {
+                            if ( inst.opcode == Opcode::Call && function.kind == FunctionKind::Parser )
+                                set = _hook(std::get<FunctionPayload>(inst.payload).function, a, set, report);
+                            else
+                                set = _allFields(arg);
+                        }
+                        // Assume the callee writes any field passed by place.
+                        else if ( auto field = _selfField(arg, selves) )
+                            set.insert(field->index);
+                    }
+                    break;
+
+                default: break;
+            }
+        }
+    }
+
+    // Finds fields set on every return path. Reports reads after block states stop changing.
+    FieldSet _flow(FunctionId id, Selves selves, const FieldSet& entry, bool report) {
+        const auto& function = _package.function(id);
+        auto cfg = buildCfg(_package, function.root_region);
+        if ( cfg.blocks.empty() )
+            return entry;
+
+        // No state means unreachable. Field sets only shrink as paths merge.
+        std::vector<std::optional<FieldSet>> in(cfg.blocks.size());
+        std::vector<std::optional<FieldSet>> out(cfg.blocks.size());
+        in[0] = entry;
+        std::vector<size_t> worklist = {0};
+        while ( ! worklist.empty() ) {
+            auto pos = worklist.back();
+            worklist.pop_back();
+            auto set = *in[pos];
+            _block(function, cfg.blocks[pos], selves, set, false);
+            if ( out[pos] == set )
+                continue;
+
+            out[pos] = set;
+            for ( auto next : cfg.successors[pos] ) {
+                auto merged = in[next] ? intersect(*in[next], set) : set;
+                if ( in[next] != merged || ! out[next] ) {
+                    in[next] = std::move(merged);
+                    worklist.push_back(next);
+                }
+            }
+        }
+
+        std::optional<FieldSet> exit;
+        for ( size_t pos = 0; pos < cfg.blocks.size(); ++pos ) {
+            if ( ! in[pos] )
+                continue; // unreachable
+
+            auto set = *in[pos];
+            _block(function, cfg.blocks[pos], selves, set, report);
+            const auto& insts = _package.block(cfg.blocks[pos]).insts;
+            if ( ! insts.empty() && _package.inst(insts.back()).opcode == Opcode::Return )
+                exit = exit ? intersect(*exit, set) : set;
+        }
+
+        // No return means no new writes visible to the caller.
+        return exit ? *exit : entry;
+    }
+
+    void _report(InstId read, DeclId field) {
+        const auto& decl = _package.declaration(field);
+        auto name = hilti::util::fmt("%s::%s", _package.typeDecl(decl.owner).name, decl.name);
+        _emitter.emit(diag::FieldReadBeforeParsed, read, name).note(diag::FieldParsedHere, field, decl.name);
+    }
+
+    const Package& _package;
+    DiagnosticEmitter _emitter;
+};
+
+} // namespace
+
+std::vector<Diagnostic> analyses::checkFieldReads(const Package& package) {
+    std::vector<Diagnostic> diags;
+    ReadChecker checker(package, diags);
+    for ( size_t i = 0; i < package.functions().size(); ++i ) {
+        FunctionId id{static_cast<uint32_t>(i)};
+        if ( package.function(id).kind == FunctionKind::Parser )
+            checker.checkParser(id);
     }
 
     return diags;

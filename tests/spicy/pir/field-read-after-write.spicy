@@ -1,0 +1,30 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: grep -q 'attached PIR-produced HILTI module' on.log
+# @TEST-EXEC: test "$(grep -c field-read-before-parsed on.log)" = 0
+
+# @TEST-DOC: Accepts reads after parsing or assignment sets the field. Covers hooks, writes in both branches, and `&size`.
+
+module Test;
+
+type Item = unit {
+    x: uint8;
+};
+
+public type Pair = unit {
+    first: uint8 {
+        print self.first;
+        self.second = 1;
+
+        if ( $$ == 1 )
+            self.third = 1;
+        else
+            self.third = 2;
+    }
+
+    second: uint8 { print self.first, self.second, self.third; }
+    third: uint8;
+    length: uint64;
+    items: Item[] &size=self.length;
+
+    on %done { print self.third; }
+};
