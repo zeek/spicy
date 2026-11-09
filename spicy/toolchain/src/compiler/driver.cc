@@ -1,5 +1,11 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <string>
+#include <string_view>
+#include <vector>
+
+#include <hilti/base/util.h>
+
 #include <spicy/ast/builder/builder.h>
 #include <spicy/compiler/driver.h>
 
@@ -16,6 +22,7 @@ spicy::Options Driver::spicyCompilerOptions() const {
     const auto& hilti_options = hiltiOptions();
     options.track_offsets = hilti_options.getAuxOption<bool>("spicy.track_offsets", false);
     options.experimental_pir = hilti_options.getAuxOption<bool>("spicy.experimental_pir", false);
+    options.suppressed_warnings = hilti_options.getAuxOption<std::vector<std::string>>("spicy.suppressed_warnings", {});
     return options;
 }
 
@@ -23,6 +30,7 @@ void Driver::setSpicyCompilerOptions(const spicy::Options& options) {
     auto hilti_options = hiltiOptions();
     hilti_options.setAuxOption("spicy.track_offsets", options.track_offsets);
     hilti_options.setAuxOption("spicy.experimental_pir", options.experimental_pir);
+    hilti_options.setAuxOption("spicy.suppressed_warnings", options.suppressed_warnings);
     setCompilerOptions(std::move(hilti_options));
 }
 
@@ -30,18 +38,29 @@ std::unique_ptr<hilti::Builder> Driver::createBuilder(hilti::ASTContext* ctx) co
     return std::make_unique<Builder>(ctx);
 }
 
-std::string Driver::hookAddCommandLineOptions() { return "Q"; }
+std::string Driver::hookAddCommandLineOptions() { return "QW:"; }
 
 std::vector<hilti::driver::LongOption> Driver::hookAddCommandLineLongOptions() {
     return {{.name = "include-offsets", .has_argument = false, .val = 'Q'},
             {.name = "experimental-pir", .has_argument = false, .val = OptExperimentalPIR}};
 }
 
-bool Driver::hookProcessCommandLineOption(int opt, const char* /*optarg*/) {
+bool Driver::hookProcessCommandLineOption(int opt, const char* optarg) {
     auto hilti_options = hiltiOptions();
 
     switch ( opt ) {
         case 'Q': hilti_options.setAuxOption("spicy.track_offsets", true); break;
+        case 'W': {
+            // Only `no-<id>` is supported for now.
+            std::string_view arg = optarg;
+            if ( ! arg.starts_with("no-") || arg.size() == 3 )
+                fatalError(hilti::util::fmt("invalid warning option '-W %s'; expected '-W no-<id>'", arg));
+
+            auto suppressed = hilti_options.getAuxOption<std::vector<std::string>>("spicy.suppressed_warnings", {});
+            suppressed.emplace_back(arg.substr(3));
+            hilti_options.setAuxOption("spicy.suppressed_warnings", std::move(suppressed));
+            break;
+        }
         case OptExperimentalPIR: hilti_options.setAuxOption("spicy.experimental_pir", true); break;
         default: return false;
     }
@@ -52,5 +71,7 @@ bool Driver::hookProcessCommandLineOption(int opt, const char* /*optarg*/) {
 
 std::string Driver::hookAugmentUsage() {
     return "  -Q | --include-offsets            Include stream offsets of parsed data in output.\n"
-           "       --experimental-pir           Run the experimental Parser IR phase (for development only).\n";
+           "       --experimental-pir           Run the experimental Parser IR phase (for development only).\n"
+           "  -W no-<id>                       Do not report the warning <id> (currently only applies to\n"
+           "                                   --experimental-pir diagnostics). Can be given multiple times.\n";
 }

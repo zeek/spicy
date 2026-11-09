@@ -44,7 +44,8 @@ struct TargetBinding {
 /** PIR construction succeeded and owns a self-contained package with no AST references. */
 struct Success {
     ir::Package package;
-    std::vector<TargetBinding> bindings; /**< for the target adapter; not part of the package */
+    std::vector<TargetBinding> bindings;     /**< for the target adapter; not part of the package */
+    std::vector<ir::Diagnostic> diagnostics; /**< user diagnostics in report order */
 };
 
 /**
@@ -94,5 +95,15 @@ using BuildResult = hilti::Result<BuildOutcome>;
  * @return the build's outcome; currently always `Unsupported`
  */
 BuildResult build(const hilti::ASTContext& ctx);
+
+/**
+ * Logs user diagnostics with their source locations and IDs. Skips warnings listed in `suppressed`.
+ * Errors cannot be suppressed.
+ *
+ * @return true if any reported diagnostic is an error
+ */
+bool report(const ir::Package& package,
+            const std::vector<ir::Diagnostic>& diagnostics,
+            const std::vector<std::string>& suppressed);
 
 } // namespace spicy::detail::pir

@@ -11,6 +11,7 @@
 #include <spicy/compiler/detail/pir/ir/diagnostic-definition.h>
 #include <spicy/compiler/detail/pir/ir/diagnostics/core.h>
 #include <spicy/compiler/detail/pir/ir/diagnostics/declarations.h>
+#include <spicy/compiler/detail/pir/ir/diagnostics/fields.h>
 #include <spicy/compiler/detail/pir/ir/diagnostics/foreign.h>
 #include <spicy/compiler/detail/pir/ir/diagnostics/parser.h>
 #include <spicy/compiler/detail/pir/ir/diagnostics/procedural.h>

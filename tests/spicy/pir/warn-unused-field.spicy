@@ -1,0 +1,32 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir >/dev/null 2>output
+# @TEST-EXEC: btest-diff output
+#
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -W no-unused-field >/dev/null 2>suppressed
+# @TEST-EXEC: test ! -s suppressed
+#
+# @TEST-EXEC-FAIL: spicyc %INPUT -p --experimental-pir -W unused-field >/dev/null 2>invalid
+# @TEST-EXEC: btest-diff invalid
+
+# @TEST-DOC: Only unused private fields warn. Reads through helpers, `$$`, and `self` count as uses. Checks warning suppression and rejects invalid `-W` options.
+
+module Test;
+
+function show(i: Item) {
+    print i.used;
+}
+
+type Item = unit {
+    used: uint8;
+    unused: uint8;
+    hooked: uint8 { print $$; }
+    via_self: uint8 { print self.via_self; }
+    also_unused: uint8;
+
+    on %done { show(self); }
+};
+
+public type Message = unit {
+    length: uint64;
+    never_used_but_public: uint8;
+    items: Item[] &size=self.length;
+};

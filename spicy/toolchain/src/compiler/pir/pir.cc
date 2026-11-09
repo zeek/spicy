@@ -1,9 +1,14 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <algorithm>
+#include <cassert>
+#include <string_view>
+
 #include <hilti/ast/ast-context.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
 
+#include <spicy/compiler/detail/pir/analyses/field-use.h>
 #include <spicy/compiler/detail/pir/ir/printer.h>
 #include <spicy/compiler/detail/pir/ir/verifier.h>
 #include <spicy/compiler/detail/pir/lowerer.h>
@@ -42,6 +47,13 @@ pir::BuildResult pir::build(const hilti::ASTContext& ctx) {
     if ( ! diags.empty() )
         return BuildOutcome(Error{.package = std::move(package), .diagnostics = std::move(diags)});
 
+    // Check for user mistakes before optimization changes the package.
+    std::vector<ir::Diagnostic> user_diags;
+    {
+        hilti::util::timing::Collector _("spicy/compiler/pir/build/analyze");
+        user_diags = analyses::checkUnusedFields(package);
+    }
+
     HILTI_DEBUG(logging::debug::PIR, "before constant folding:");
     HILTI_DEBUG(logging::debug::PIR, ir::print(package));
 
@@ -66,5 +78,49 @@ pir::BuildResult pir::build(const hilti::ASTContext& ctx) {
     HILTI_DEBUG(logging::debug::PIR, "after constant folding:");
     HILTI_DEBUG(logging::debug::PIR, ir::print(package));
 
-    return BuildOutcome(Success{.package = std::move(package), .bindings = std::move(bindings)});
+    return BuildOutcome(
+        Success{.package = std::move(package), .bindings = std::move(bindings), .diagnostics = std::move(user_diags)});
+}
+
+bool pir::report(const ir::Package& package,
+                 const std::vector<ir::Diagnostic>& diagnostics,
+                 const std::vector<std::string>& suppressed) {
+    auto location = [&](const ir::DiagnosticSite& site) {
+        const auto& sources = package.sourceManager();
+        if ( ! sources.isValid(site.source) )
+            return hilti::Location();
+
+        const auto& span = sources.span(site.source);
+        if ( ! sources.isValid(span.file) )
+            return hilti::Location();
+
+        return hilti::Location(sources.file(span.file).diagnostic_path,
+                               span.begin_line,
+                               span.end_line,
+                               span.begin_column,
+                               span.end_column);
+    };
+
+    bool errors = false;
+    for ( const auto& d : diagnostics ) {
+        const auto& def = d.definition;
+        assert(def.classification == ir::DiagnosticClassification::User);
+        if ( def.severity == ir::DiagnosticSeverity::Warning &&
+             std::ranges::find(suppressed, std::string_view(def.id)) != suppressed.end() )
+            continue;
+
+        auto message = fmt("%s [%s]", d.message, def.id);
+        if ( def.severity == ir::DiagnosticSeverity::Error ) {
+            hilti::logger().error(message, location(d.primary));
+            errors = true;
+        }
+        else
+            hilti::logger().warning(message, location(d.primary));
+
+        // Suppressing a diagnostic also suppresses its notes.
+        for ( const auto& note : d.notes )
+            hilti::logger().info(fmt("note: %s", note.message), location(note.site));
+    }
+
+    return errors;
 }

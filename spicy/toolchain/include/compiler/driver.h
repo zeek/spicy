@@ -18,6 +18,7 @@ struct Options {
     bool track_offsets = false; /**< true to have the generated code record fields' offsets */
     bool experimental_pir =
         false; /**< true to run the experimental Parser IR phase alongside the standard code generator */
+    std::vector<std::string> suppressed_warnings; /**< suppressed warning IDs (PIR only for now) */
 };
 
 /**

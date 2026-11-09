@@ -1,6 +1,8 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <string>
 #include <variant>
+#include <vector>
 
 #include <hilti/ast/builder/builder.h>
 #include <hilti/compiler/driver.h>
@@ -130,6 +132,13 @@ hilti::Plugin spicy::detail::createSpicyPlugin() {
                     // A successful PIR build; try the HILTI backend before deciding whether the
                     // legacy generator runs at all for this compilation.
                     const auto& success = std::get<pir::Success>(*result);
+
+                    // Report diagnostics even if the backend falls back. User errors stop compilation.
+                    auto suppressed =
+                        builder->options().getAuxOption<std::vector<std::string>>("spicy.suppressed_warnings", {});
+                    if ( pir::report(success.package, success.diagnostics, suppressed) )
+                        return false;
+
                     auto lowering = pir::backend::hilti::lower(*spicy_builder, success.package, success.bindings);
 
                     if ( auto* pir_module = std::get_if<hilti::declaration::Module*>(&lowering) ) {

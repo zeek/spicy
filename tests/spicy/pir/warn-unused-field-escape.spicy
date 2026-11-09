@@ -1,0 +1,28 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir --strict-public-api >/dev/null 2>strict
+# @TEST-EXEC: test ! -s strict
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir --no-strict-public-api >/dev/null 2>non-strict
+# @TEST-EXEC: test ! -s non-strict
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>debug
+# @TEST-EXEC: grep -q 'constructed .* function(s)' debug
+
+# @TEST-DOC: Printing a private unit inside a tuple uses all its fields. Nested tuples count too, even if the backend falls back.
+
+module Test;
+
+function show_flat(i: FlatItem) { print i, 1; }
+function show_nested(i: NestedItem) { print (i, 1), "nested"; }
+
+type FlatItem = unit {
+    x: uint8;
+    on %done { show_flat(self); }
+};
+
+type NestedItem = unit {
+    x: uint8;
+    on %done { show_nested(self); }
+};
+
+public type Message = unit {
+    flat: FlatItem[] &size=1;
+    nested: NestedItem[] &size=1;
+};
