@@ -2,25 +2,28 @@
 
 cmake_minimum_required(VERSION 3.15.0)
 
-if (WIN32)
+if(WIN32)
     # Set up vcpkg toolchain for Windows builds. The toolchain file must be set
     # before the project() call.
     get_filename_component(_toolchain ./3rdparty/vcpkg/scripts/buildsystems/vcpkg.cmake ABSOLUTE)
     set(CMAKE_TOOLCHAIN_FILE ${_toolchain} CACHE STRING "Vcpkg toolchain file")
 
-    if (NOT DEFINED VCPKG_TARGET_TRIPLET)
+    if(NOT DEFINED VCPKG_TARGET_TRIPLET)
         set(VCPKG_TARGET_TRIPLET "x64-windows-static" CACHE STRING "Vcpkg target triplet")
-    endif ()
-    if (NOT DEFINED VCPKG_HOST_TRIPLET)
+    endif()
+    if(NOT DEFINED VCPKG_HOST_TRIPLET)
         set(VCPKG_HOST_TRIPLET "x64-windows-static" CACHE STRING "Vcpkg host triplet")
-    endif ()
-    if (NOT DEFINED VCPKG_OVERLAY_TRIPLETS)
-        set(VCPKG_OVERLAY_TRIPLETS "${CMAKE_SOURCE_DIR}/vcpkg-triplets"
-            CACHE STRING "Vcpkg overlay triplets")
-    endif ()
-endif ()
+    endif()
+    if(NOT DEFINED VCPKG_OVERLAY_TRIPLETS)
+        set(VCPKG_OVERLAY_TRIPLETS
+            "${CMAKE_SOURCE_DIR}/vcpkg-triplets"
+            CACHE STRING
+            "Vcpkg overlay triplets"
+        )
+    endif()
+endif()
 
-if (APPLE AND CMAKE_VERSION VERSION_GREATER_EQUAL 4.0.0 AND NOT CMAKE_OSX_SYSROOT)
+if(APPLE AND CMAKE_VERSION VERSION_GREATER_EQUAL 4.0.0 AND NOT CMAKE_OSX_SYSROOT)
     # We are going to need having CMAKE_OSX_SYSROOT point to the macOS SDK
     # path. However, starting with CMake 4.0, CMAKE_OSX_SYSROOT is not set
     # automatically anymore. So we follow the guidance from the CMake 4.0
@@ -36,25 +39,25 @@ if (APPLE AND CMAKE_VERSION VERSION_GREATER_EQUAL 4.0.0 AND NOT CMAKE_OSX_SYSROO
     # ours, but this does lead to CMAKE_OSX_SYSROOT pointing to the macOS SDK
     # path when we need it.
     set(CMAKE_OSX_SYSROOT "macosx")
-endif ()
+endif()
 
 project(spicy LANGUAGES C CXX)
 
-if (MSVC)
+if(MSVC)
     # When building Spicy as part of Zeek, libunistd may already exist.
     # Reuse that target to avoid duplicate target-name collisions.
-    if (NOT TARGET libunistd)
+    if(NOT TARGET libunistd)
         add_subdirectory(3rdparty/libunistd)
         include_directories(SYSTEM BEFORE ${CMAKE_SOURCE_DIR}/3rdparty/libunistd/unistd)
         list(APPEND CMAKE_REQUIRED_INCLUDES ${CMAKE_SOURCE_DIR}/3rdparty/libunistd/unistd)
-    else ()
+    else()
         get_target_property(_libunistd_include_dirs libunistd INTERFACE_INCLUDE_DIRECTORIES)
-        if (_libunistd_include_dirs)
+        if(_libunistd_include_dirs)
             include_directories(SYSTEM BEFORE ${_libunistd_include_dirs})
             list(APPEND CMAKE_REQUIRED_INCLUDES ${_libunistd_include_dirs})
-        endif ()
+        endif()
         unset(_libunistd_include_dirs)
-    endif ()
+    endif()
 
     # Force-include unistd.h in C++ compilation units so that libunistd can set
     # up WinSock2.h / WIN32_LEAN_AND_MEAN before anything else pulls in Windows.h.
@@ -66,7 +69,7 @@ if (MSVC)
     add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus>)
     # Use UTF-8 for both source and execution character sets.
     add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:/utf-8>)
-endif ()
+endif()
 
 set(flex_minimum_version "2.5.37")
 set(bison_minimum_version "3.0")
@@ -74,10 +77,10 @@ set(macos_minimum_version "19.0.0") # macOS 10.15.0 (Catalina)
 
 ## Initialize defaults & global options
 
-if (NOT CMAKE_BUILD_TYPE)
+if(NOT CMAKE_BUILD_TYPE)
     # CMake doesn't set build type by default.
     set(CMAKE_BUILD_TYPE "Debug")
-endif ()
+endif()
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
@@ -94,56 +97,57 @@ string(REPLACE "-O2" "-O3" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_REL
 include(CheckCompiler)
 
 include(GNUInstallDirs)
-if (NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
-endif ()
+endif()
 
-if (NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
-endif ()
+endif()
 
-if (NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
-endif ()
+endif()
 
-if (BINARY_PACKAGING_MODE)
+if(BINARY_PACKAGING_MODE)
     # Binary packaging mode uses a static link which causes issues with
     # unresolved symbols for a number of tests.
-    if (USE_SANITIZERS)
+    if(USE_SANITIZERS)
         message(FATAL_ERROR "Sanitizers are unsupported in binary packaging mode")
-    endif ()
+    endif()
 
     set(BUILD_SHARED_LIBS OFF)
     set(CMAKE_SKIP_RPATH ON)
     set(CMAKE_INSTALL_RPATH_USE_LINK_PATH OFF)
     set(CMAKE_MACOSX_RPATH OFF)
-else ()
+else()
     make_install_rpath(rpath ${CMAKE_INSTALL_FULL_BINDIR} ${CMAKE_INSTALL_FULL_LIBDIR})
     set(CMAKE_INSTALL_RPATH "${rpath}")
-endif ()
+endif()
 
-if (USE_CCACHE)
+if(USE_CCACHE)
     find_program(CCACHE_PROGRAM ccache)
-    if (CCACHE_PROGRAM)
+    if(CCACHE_PROGRAM)
         set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
         set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE_PROGRAM})
-    else ()
+    else()
         set(USE_CCACHE "no (error: could not find ccache)")
-    endif ()
-else ()
+    endif()
+else()
     set(USE_CCACHE "no")
-endif ()
+endif()
 
-if (USE_SANITIZERS)
+if(USE_SANITIZERS)
     # Recommended flags per https://github.com/google/sanitizers/wiki/AddressSanitizer
     set(sanitizer_cxx_flags
-        "-fsanitize=${USE_SANITIZERS} -fno-omit-frame-pointer -fno-optimize-sibling-calls -O1")
+        "-fsanitize=${USE_SANITIZERS} -fno-omit-frame-pointer -fno-optimize-sibling-calls -O1"
+    )
     set(sanitizer_ld_flags "-fsanitize=${USE_SANITIZERS}")
 
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         set(sanitizer_cxx_flags "${sanitizer_cxx_flags} -shared-libasan")
         set(sanitizer_ld_flags "${sanitizer_ld_flags} -frtlib-add-rpath -shared-libasan")
-    endif ()
+    endif()
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${sanitizer_cxx_flags}")
     set(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} ${sanitizer_cxx_flags}")
@@ -152,12 +156,12 @@ if (USE_SANITIZERS)
     set(EXTRA_LD_FLAGS "${EXTRA_LD_FLAGS} ${sanitizer_ld_flags}")
 
     set(HILTI_DEV_PRECOMPILE_HEADERS "no")
-endif ()
+endif()
 
-if (USE_WERROR)
+if(USE_WERROR)
     set(werror_flags "-Werror")
 
-    if (CMAKE_COMPILER_IS_GNUCXX)
+    if(CMAKE_COMPILER_IS_GNUCXX)
         # GCC's `-Wstringop-overflow` has a hardcoded limit for the maximum size
         # of a strings it can analyze which we exceed in e.g., in some
         # benchmarks in some libstd++ use of `__builtin_memcpy`. Disable the
@@ -166,9 +170,9 @@ if (USE_WERROR)
 
         # With versions >=13.0 GCC gained `-Warray-bounds` which reports false
         # positives, see e.g., https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111273.
-        if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 13.0)
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 13.0)
             string(APPEND werror_flags " -Wno-array-bounds")
-        endif ()
+        endif()
 
         # GCC regularly diagnoses out of bounds access in its own use of
         # `__builtin_memcpy` in e.g., its `bits/char_traits.h`.
@@ -178,11 +182,11 @@ if (USE_WERROR)
         # uninitialized values, e.g., in its string implementation. These are
         # extremely tedious to silence, so just disable the warning altogether.
         string(APPEND werror_flags " -Wno-maybe-uninitialized")
-    endif ()
+    endif()
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${werror_flags}")
     set(EXTRA_CXX_FLAGS "${EXTRA_CXX_FLAGS} ${werror_flags}")
-endif ()
+endif()
 
 ## Load modules
 
@@ -195,35 +199,34 @@ endif ()
 # for the artifacts with `NO_DEFAULT_PATH` and then later trigger the upstream
 # `find_package` logic. With that any user-specified prefix takes precedence
 # over what could be found in the default search locations.
-if (FLEX_ROOT)
+if(FLEX_ROOT)
     find_program(
         FLEX_EXECUTABLE
         NAMES flex win_flex
         PATHS ${FLEX_ROOT}
         PATH_SUFFIXES bin tools
-        NO_DEFAULT_PATH)
-    find_library(
-        FL_LIBRARY
-        NAMES fl
-        PATHS ${FLEX_ROOT}
-        PATH_SUFFIXES lib
-        NO_DEFAULT_PATH)
+        NO_DEFAULT_PATH
+    )
+    find_library(FL_LIBRARY NAMES fl PATHS ${FLEX_ROOT} PATH_SUFFIXES lib NO_DEFAULT_PATH)
     find_path(
-        FLEX_INCLUDE_DIR FlexLexer.h
+        FLEX_INCLUDE_DIR
+        FlexLexer.h
         PATHS ${FLEX_ROOT}
         PATH_SUFFIXES include tools
-        NO_DEFAULT_PATH)
+        NO_DEFAULT_PATH
+    )
     set(_flex_include_hints ${FLEX_ROOT})
-endif ()
+endif()
 
-if (BISON_ROOT)
+if(BISON_ROOT)
     find_program(
         BISON_EXECUTABLE
         NAMES bison win_bison
         PATHS ${BISON_ROOT}
         PATH_SUFFIXES bin tools
-        NO_DEFAULT_PATH)
-endif ()
+        NO_DEFAULT_PATH
+    )
+endif()
 
 find_package(FLEX "${flex_minimum_version}" REQUIRED)
 find_package(BISON "${bison_minimum_version}" REQUIRED)
@@ -233,41 +236,47 @@ find_package(Backtrace)
 # On Windows, FlexLexer.h may not be in a standard include path. Derive
 # search hints from the found flex executable so that common package manager
 # layouts (e.g. chocolatey's winflexbison3) are discovered automatically.
-if (WIN32 AND FLEX_FOUND)
+if(WIN32 AND FLEX_FOUND)
     get_filename_component(_flex_exe_dir "${FLEX_EXECUTABLE}" DIRECTORY)
     get_filename_component(_flex_parent "${_flex_exe_dir}" DIRECTORY)
-    list(APPEND _flex_include_hints "${_flex_exe_dir}" "${_flex_parent}/lib/winflexbison3/tools"
-         "${_flex_parent}/lib/winflexbison3")
+    list(
+        APPEND _flex_include_hints
+        "${_flex_exe_dir}"
+        "${_flex_parent}/lib/winflexbison3/tools"
+        "${_flex_parent}/lib/winflexbison3"
+    )
 
     find_path(FLEX_INCLUDE_DIR FlexLexer.h HINTS ${_flex_include_hints} PATH_SUFFIXES include tools)
-endif ()
+endif()
 
 find_path(
     FLEX_INCLUDE_DIRS
     NAMES FlexLexer.h
     HINTS ${_flex_include_hints}
-    PATH_SUFFIXES include tools REQUIRED)
+    PATH_SUFFIXES include tools
+    REQUIRED
+)
 
-if (Backtrace_FOUND AND NOT APPLE)
+if(Backtrace_FOUND AND NOT APPLE)
     # On systems other than MacOS there's a libexecinfo that's not working for us:
     # it seems to break when compiling without frame pointers so we disable it.
-    if ("${Backtrace_LIBRARY}" MATCHES "libexecinfo")
+    if("${Backtrace_LIBRARY}" MATCHES "libexecinfo")
         message(STATUS "Disabling backtrace because we found libexecinfo")
         set(Backtrace_FOUND "no")
-    endif ()
-endif ()
+    endif()
+endif()
 
 # Prettify output
-if (Backtrace_FOUND)
+if(Backtrace_FOUND)
     set(HILTI_HAVE_BACKTRACE "yes")
-else ()
+else()
     set(HILTI_HAVE_BACKTRACE "no")
-endif ()
+endif()
 
-if (APPLE)
+if(APPLE)
     set(MACOS_FOUND "yes")
     require_version("macOS" MACOS_FOUND ${CMAKE_SYSTEM_VERSION} "${macos_minimum_version}" true)
-endif ()
+endif()
 
 find_package(GoldLinker)
 find_package(Threads)
@@ -283,14 +292,17 @@ option(SPICY_ENABLE_TESTS "Build Spicy unit tests and benchmarks" ON)
 option(SPICY_ENABLE_BENCHMARKS "Build Spicy benchmarks" ON)
 
 option(BUILD_TOOLCHAIN "Build the Spicy compiler toolchain" ON)
-option(HILTI_SKIP_EXPENSIVE_DEBUG_CHECKS
-       "In debug builds, skip particularly expensive consistency checks inside the compiler" OFF)
+option(
+    HILTI_SKIP_EXPENSIVE_DEBUG_CHECKS
+    "In debug builds, skip particularly expensive consistency checks inside the compiler"
+    OFF
+)
 
-if (BUILD_TOOLCHAIN)
+if(BUILD_TOOLCHAIN)
     set(HAVE_TOOLCHAIN yes)
-else ()
+else()
     set(HAVE_TOOLCHAIN no)
-endif ()
+endif()
 
 set(HILTI_COMPILER_LAUNCHER "" CACHE STRING "C++ compiler launcher to use by default during JIT")
 
@@ -304,21 +316,25 @@ set(CMAKE_PROJECT_VERSION ${SPICY_VERSION})
 # Get Spicy commit. If we cannot get the current commit (e.g., no .git
 # directory present for release tarballs), this will leave SPICY_COMMIT unset.
 execute_process(
-    COMMAND ${CMAKE_COMMAND} -E env GIT_DIR=${CMAKE_CURRENT_SOURCE_DIR}/.git git rev-parse --short
-            HEAD
+    COMMAND
+        ${CMAKE_COMMAND} -E env GIT_DIR=${CMAKE_CURRENT_SOURCE_DIR}/.git git rev-parse --short HEAD
     OUTPUT_VARIABLE SPICY_COMMIT
     OUTPUT_STRIP_TRAILING_WHITESPACE
-    ERROR_VARIABLE ignored)
+    ERROR_VARIABLE ignored
+)
 
 string(REGEX MATCH "([0-9]*)\.([0-9]*)\.([0-9]*).*" _ ${CMAKE_PROJECT_VERSION})
-math(EXPR SPICY_VERSION_NUMBER
-     "${CMAKE_MATCH_1} * 10000 + ${CMAKE_MATCH_2} * 100 + ${CMAKE_MATCH_3}")
+math(
+    EXPR
+    SPICY_VERSION_NUMBER
+    "${CMAKE_MATCH_1} * 10000 + ${CMAKE_MATCH_2} * 100 + ${CMAKE_MATCH_3}"
+)
 
-if (NOT "${SPICY_COMMIT}" STREQUAL "")
+if(NOT "${SPICY_COMMIT}" STREQUAL "")
     set(SPICY_VERSION_LONG "${SPICY_VERSION} (${SPICY_COMMIT})")
-else ()
+else()
     set(SPICY_VERSION_LONG ${SPICY_VERSION})
-endif ()
+endif()
 
 # Add subdirectories.
 add_subdirectory(hilti)
@@ -326,21 +342,32 @@ add_subdirectory(spicy)
 add_subdirectory(scripts)
 add_subdirectory(3rdparty)
 
-if (MSVC)
+if(MSVC)
     set_property(TARGET fiber APPEND PROPERTY COMPILE_OPTIONS "/w")
-else ()
+else()
     set_property(TARGET fiber APPEND PROPERTY COMPILE_OPTIONS "-w")
-endif ()
+endif()
 
 # Suppress warnings from bundled headers when their targets are consumed.
-foreach (target benchmark fiber header-utils jrx-objects reproc reproc++)
-    if (TARGET ${target})
+foreach(
+    target
+    benchmark
+    fiber
+    header-utils
+    jrx-objects
+    reproc
+    reproc++
+)
+    if(TARGET ${target})
         set_property(
-            TARGET ${target} APPEND
-            PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
-                     "$<TARGET_PROPERTY:${target},INTERFACE_INCLUDE_DIRECTORIES>")
-    endif ()
-endforeach ()
+            TARGET ${target}
+            APPEND
+            PROPERTY
+                INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
+                    "$<TARGET_PROPERTY:${target},INTERFACE_INCLUDE_DIRECTORIES>"
+        )
+    endif()
+endforeach()
 
 ## Print build summary
 string(TOUPPER ${CMAKE_BUILD_TYPE} BuildType)
@@ -352,10 +379,7 @@ string(STRIP "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_${BuildType}}" cxxflags)
 
 option("HILTI_DEV_PRECOMPILE_HEADERS" "Precompile headers for developer tests" ON)
 
-if (${HILTI_DEV_PRECOMPILE_HEADERS}
-    AND TARGET hilti-config
-    AND TARGET spicy-config
-    AND NOT MSVC)
+if(${HILTI_DEV_PRECOMPILE_HEADERS} AND TARGET hilti-config AND TARGET spicy-config AND NOT MSVC)
     # Precompile libhilti for use in JIT during development.
     #
     # We only use precompiled headers during JIT, but e.g., not to during
@@ -363,56 +387,68 @@ if (${HILTI_DEV_PRECOMPILE_HEADERS}
     # e.g., making it harder for ccache to work during development. It also
     # allows us to punt on some trickier cleanups of header files.
     add_custom_command(
-        OUTPUT ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti.h
-               ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti.h.gch
-               ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti_debug.h
-               ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti_debug.h.gch
-               ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy.h
-               ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy.h.gch
-               ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy_debug.h
-               ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy_debug.h.gch
+        OUTPUT
+            ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti.h
+            ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti.h.gch
+            ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti_debug.h
+            ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti_debug.h.gch
+            ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy.h
+            ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy.h.gch
+            ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy_debug.h
+            ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libspicy_debug.h.gch
         COMMENT "Generating precompiled headers"
-        COMMAND ${CMAKE_COMMAND} -E env SPICY_CACHE=${PROJECT_BINARY_DIR}/cache/spicy
-                ${PROJECT_SOURCE_DIR}/scripts/precompile-headers.sh --bindir ${CMAKE_BINARY_DIR}/bin
-        DEPENDS ${PROJECT_SOURCE_DIR}/scripts/precompile-headers.sh
-                ${CMAKE_CURRENT_SOURCE_DIR}/hilti/runtime/include/libhilti.h
-                ${CMAKE_CURRENT_SOURCE_DIR}/spicy/runtime/include/libspicy.h
-                hilti-config
-                spicy-config)
-    add_custom_target(precompiled-headers ALL COMMENT "Generating precompiled headers"
-                      DEPENDS ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti.h)
-endif ()
+        COMMAND
+            ${CMAKE_COMMAND} -E env SPICY_CACHE=${PROJECT_BINARY_DIR}/cache/spicy
+            ${PROJECT_SOURCE_DIR}/scripts/precompile-headers.sh --bindir ${CMAKE_BINARY_DIR}/bin
+        DEPENDS
+            ${PROJECT_SOURCE_DIR}/scripts/precompile-headers.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/hilti/runtime/include/libhilti.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/spicy/runtime/include/libspicy.h
+            hilti-config
+            spicy-config
+    )
+    add_custom_target(
+        precompiled-headers
+        ALL
+        COMMENT "Generating precompiled headers"
+        DEPENDS ${PROJECT_BINARY_DIR}/cache/spicy/precompiled_libhilti.h
+    )
+endif()
 
 # Global test target
 add_custom_target(
     check
     COMMAND ctest --output-on-failure -C $<CONFIG>
     DEPENDS tests
-    COMMENT "Running unit tests")
+    COMMENT "Running unit tests"
+)
 add_custom_target(tests COMMENT "Building test targets")
 add_dependencies(tests hilti-tests spicy-tests)
 
-if (SPICY_ENABLE_TESTS)
+if(SPICY_ENABLE_TESTS)
     add_custom_target(tests-build ALL DEPENDS tests COMMENT "Forcing test build")
-endif ()
+endif()
 
 # Packaging.
 # Check tags the HEAD commit corresponds to. If we cannot get the current
 # commit (e.g., no .git directory present for release tarballs), this will
 # leave SPICY_TAGS unset which is fine for users working from tarballs.
-execute_process(COMMAND git tag --points-at HEAD v* OUTPUT_VARIABLE SPICY_TAGS
-                ERROR_VARIABLE ignored)
+execute_process(
+    COMMAND git tag --points-at HEAD v*
+    OUTPUT_VARIABLE SPICY_TAGS
+    ERROR_VARIABLE ignored
+)
 
-if ("${SPICY_TAGS}" STREQUAL "")
+if("${SPICY_TAGS}" STREQUAL "")
     # If the HEAD commit does not correspond to a tag it is not a release. Hide
     # the version number in packaging artifacts so we can e.g., provide stable
     # links to the latest version.
     set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-dev")
-else ()
+else()
     # If the HEAD commit corresponds to a tag it is a release and we expect a
     # version number in packaging artifacts.
     set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${CMAKE_PROJECT_VERSION}")
-endif ()
+endif()
 
 set(CPACK_PACKAGE_CONTACT "info@zeek.org")
 
@@ -426,14 +462,14 @@ set(CPACK_BINARY_TZ OFF)
 set(CPACK_BINARY_TGZ ON)
 
 find_program(RPMBUILD rpmbuild)
-if (RPMBUILD)
+if(RPMBUILD)
     set(CPACK_BINARY_RPM ON)
-endif ()
+endif()
 
 find_program(DPKG_DEB dpkg-deb)
-if (DPKG_DEB)
+if(DPKG_DEB)
     set(CPACK_BINARY_DEB ON)
-endif ()
+endif()
 
 # While this should be sufficient to set a prefix for installation, we still
 # bake in other absolute paths by using `CMAKE_INSTALL_FULL_*`-style variables,
@@ -449,17 +485,18 @@ include(CPack)
 set(SPICY_HOST_SYSTEM "${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_VERSION} (${CMAKE_SYSTEM_PROCESSOR})")
 set(SPICY_C_COMPILER "${CMAKE_C_COMPILER} (${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION})")
 set(SPICY_CXX_COMPILER
-    "${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION})")
+    "${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION})"
+)
 
 set(SPICY_CLANG_TIDY "no")
-if (CMAKE_CXX_CLANG_TIDY)
+if(CMAKE_CXX_CLANG_TIDY)
     set(SPICY_CLANG_TIDY "yes (${CMAKE_CXX_CLANG_TIDY})")
-endif ()
+endif()
 
 set(SPICY_SANITIZERS "no")
-if (USE_SANITIZERS)
+if(USE_SANITIZERS)
     set(SPICY_SANITIZERS "yes (${USE_SANITIZERS})")
-endif ()
+endif()
 
 message(
     "\n====================|  Spicy Build Summary  |===================="
@@ -491,4 +528,5 @@ message(
     "\nFlex version:          ${FLEX_VERSION}"
     "\nzlib version:          ${ZLIB_VERSION_STRING}"
     "\n"
-    "\n================================================================\n")
+    "\n================================================================\n"
+)

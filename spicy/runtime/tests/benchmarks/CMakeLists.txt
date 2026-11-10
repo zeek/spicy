@@ -7,24 +7,29 @@ list(TRANSFORM BENCH_MODULE PREPEND Benchmark_ OUTPUT_VARIABLE _generated_source
 list(TRANSFORM _generated_sources APPEND ".cc" OUTPUT_VARIABLE _generated_sources)
 list(APPEND _generated_sources "Benchmark___linker__.cc")
 
-if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.27")
+if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.27")
     set_source_files_properties(${_generated_sources} PROPERTIES SKIP_LINTING ON)
-endif ()
+endif()
 
-if (BUILD_TOOLCHAIN)
+if(BUILD_TOOLCHAIN)
     add_custom_command(
         OUTPUT ${_generated_sources}
         COMMAND spicyc -x ${CMAKE_CURRENT_BINARY_DIR}/Benchmark "${BENCH_SOURCES}"
         DEPENDS spicyc ${BENCH_SOURCES}
-        COMMENT "Generating C++ code for Benchmark")
+        COMMENT "Generating C++ code for Benchmark"
+    )
 
     add_executable(spicy-rt-parsing-benchmark EXCLUDE_FROM_ALL parsing.cc ${_generated_sources})
-    if (NOT MSVC)
+    if(NOT MSVC)
         target_compile_options(spicy-rt-parsing-benchmark PRIVATE -Wall -Wno-error)
-    endif ()
-    target_link_libraries(spicy-rt-parsing-benchmark
-                          PRIVATE $<IF:$<CONFIG:Debug>,spicy-rt-debug,spicy-rt>)
-    target_link_libraries(spicy-rt-parsing-benchmark
-                          PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt>)
+    endif()
+    target_link_libraries(
+        spicy-rt-parsing-benchmark
+        PRIVATE $<IF:$<CONFIG:Debug>,spicy-rt-debug,spicy-rt>
+    )
+    target_link_libraries(
+        spicy-rt-parsing-benchmark
+        PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt>
+    )
     target_link_libraries(spicy-rt-parsing-benchmark PRIVATE benchmark)
-endif ()
+endif()

@@ -14,7 +14,7 @@ set(gcc_minimum_version "12.0")
 include(CheckCXXSourceCompiles)
 
 # Checks whether the set C++ compiler sufficiently supports C++20.
-macro (cxx20_compile_test)
+macro(cxx20_compile_test)
     check_cxx_source_compiles(
         "
         #include <optional>
@@ -28,46 +28,50 @@ macro (cxx20_compile_test)
             auto s_ = s.subspan(0, 3);
         }
         "
-        cxx20_works)
+        cxx20_works
+    )
 
-    if (NOT cxx20_works)
+    if(NOT cxx20_works)
         message(FATAL_ERROR "failed using C++20 for compilation")
-    endif ()
-endmacro ()
+    endif()
+endmacro()
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${gcc_minimum_version})
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${gcc_minimum_version})
         message(
             FATAL_ERROR
-                "GCC version must be at least "
-                "${gcc_minimum_version} for C++20 support, detected: "
-                "${CMAKE_CXX_COMPILER_VERSION}")
-    endif ()
+            "GCC version must be at least "
+            "${gcc_minimum_version} for C++20 support, detected: "
+            "${CMAKE_CXX_COMPILER_VERSION}"
+        )
+    endif()
 
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${clang_minimum_version})
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${clang_minimum_version})
         message(
             FATAL_ERROR
-                "Clang version must be at least "
-                "${clang_minimum_version} for C++20 support, detected: "
-                "${CMAKE_CXX_COMPILER_VERSION}")
-    endif ()
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5)
+            "Clang version must be at least "
+            "${clang_minimum_version} for C++20 support, detected: "
+            "${CMAKE_CXX_COMPILER_VERSION}"
+        )
+    endif()
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5)
         set(cxx20_flag "-std=c++20")
-    endif ()
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${apple_clang_minimum_version})
+    endif()
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS ${apple_clang_minimum_version})
         message(
             FATAL_ERROR
-                "Apple Clang version must be at least "
-                "${apple_clang_minimum_version} for C++20 support, detected: "
-                "${CMAKE_CXX_COMPILER_VERSION}")
-    endif ()
-else ()
+            "Apple Clang version must be at least "
+            "${apple_clang_minimum_version} for C++20 support, detected: "
+            "${CMAKE_CXX_COMPILER_VERSION}"
+        )
+    endif()
+else()
     # Unrecognized compiler: fine to be permissive of other compilers as long
     # as they are able to support C++20 and can compile the test program, but
     # we just won't be able to give specific advice on what compiler version a
     # user needs in the case it actually doesn't support C++20.
-endif ()
+endif()
 
 cxx20_compile_test()
