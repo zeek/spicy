@@ -110,11 +110,3 @@ repos:
     args: ["-w", "-i", "4", "-ci"]
 
 exclude: 3rdparty/|doc/(autogen|.*examples)/|/Baseline/|(\.svg$)|(\.dat$)
-
-default_language_version:
-  # Above cmake-format and cmake-lint hooks do not work with python-3.15 so
-  # globally pin any Python-based hooks to python-3.14.
-  #
-  # TODO: Drop this once we can bump the hooks to a version with works with
-  # python-3.15.
-  python: python3.14
