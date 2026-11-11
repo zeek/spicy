@@ -51,6 +51,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "string",
             .doc = "Returns the number of characters the string contains.",
+            .pure = true,
         };
     }
 

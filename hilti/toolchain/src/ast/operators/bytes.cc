@@ -233,6 +233,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "bytes",
             .doc = "Returns the number of bytes the value contains.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::Size)

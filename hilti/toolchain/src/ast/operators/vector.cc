@@ -129,6 +129,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "vector",
             .doc = "Returns the number of elements a vector contains.",
+            .pure = true,
         };
     }
 

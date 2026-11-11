@@ -133,6 +133,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "map",
             .doc = "Returns the number of elements a map contains.",
+            .pure = true,
         };
     }
 
