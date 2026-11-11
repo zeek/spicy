@@ -72,6 +72,7 @@ public:
             .ns = "enum_",
             .doc =
                 "Casts an enum value into a signed integer. If the enum value is ``Undef``, this will return ``-1``.",
+            .pure = true,
         };
     }
 
@@ -97,6 +98,7 @@ public:
             .doc =
                 "Casts an enum value into a unsigned integer. This will throw an exception if the enum value is "
                 "``Undef``.",
+            .pure = true,
         };
     }
 

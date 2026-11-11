@@ -570,6 +570,7 @@ public:
             .result_doc = "int<*>",
             .ns = "signed_integer",
             .doc = "Converts the value into a different signed integer type, accepting any loss of information.",
+            .pure = true,
         };
     }
 
@@ -593,6 +594,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "signed_integer",
             .doc = "Converts the value into an unsigned integer type, accepting any loss of information.",
+            .pure = true,
         };
     }
 
@@ -615,6 +617,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "signed_integer",
             .doc = "Converts the value into a real, accepting any loss of information.",
+            .pure = true,
         };
     }
 
@@ -636,6 +639,7 @@ public:
             .doc =
                 "Converts the value into an enum instance. The value does *not* need to correspond to "
                 "any of the target type's enumerator labels.",
+            .pure = true,
         };
     }
 
@@ -658,6 +662,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeInterval()},
             .ns = "signed_integer",
             .doc = "Interprets the value as number of seconds.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, signed_integer::CastToInterval)
@@ -675,6 +680,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "signed_integer",
             .doc = "Converts the value to a boolean by comparing against zero",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, signed_integer::CastToBool)

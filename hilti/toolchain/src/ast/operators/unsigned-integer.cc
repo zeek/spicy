@@ -738,6 +738,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Converts the value into a different unsigned integer type, accepting any loss of information.",
+            .pure = true,
         };
     }
 
@@ -761,6 +762,7 @@ public:
             .result_doc = "int<*>",
             .ns = "unsigned_integer",
             .doc = "Converts the value into a signed integer type, accepting any loss of information.",
+            .pure = true,
         };
     }
 
@@ -783,6 +785,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "unsigned_integer",
             .doc = "Converts the value into a real, accepting any loss of information.",
+            .pure = true,
         };
     }
 
@@ -804,6 +807,7 @@ public:
             .doc =
                 "Converts the value into an enum instance. The value does *not* need to correspond to "
                 "any of the target type's enumerator labels.",
+            .pure = true,
         };
     }
 
@@ -826,6 +830,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeInterval()},
             .ns = "unsigned_integer",
             .doc = "Interprets the value as number of seconds.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, unsigned_integer::CastToInterval)
@@ -843,6 +848,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeTime()},
             .ns = "unsigned_integer",
             .doc = "Interprets the value as number of seconds.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, unsigned_integer::CastToTime)
@@ -860,6 +866,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Converts the value to a boolean by comparing against zero",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, unsigned_integer::CastToBool)
