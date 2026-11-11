@@ -39,6 +39,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "real",
             .doc = "Returns the difference between the two values.",
+            .pure = true,
         };
     }
 
@@ -74,6 +75,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "real",
             .doc = "Divides the first value by the second.",
+            .pure = true,
         };
     }
 
@@ -198,6 +200,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "real",
             .doc = "Computes the modulus of the first real divided by the second.",
+            .pure = true,
         };
     }
 
@@ -216,6 +219,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "real",
             .doc = "Multiplies the first real by the second.",
+            .pure = true,
         };
     }
 
@@ -251,6 +255,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "real",
             .doc = "Computes the first real raised to the power of the second.",
+            .pure = true,
         };
     }
 
@@ -269,6 +274,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "real",
             .doc = "Returns the sum of the reals.",
+            .pure = true,
         };
     }
 

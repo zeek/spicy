@@ -58,6 +58,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeTime()},
             .ns = "time",
             .doc = "Adds the interval to the time.",
+            .pure = true,
         };
     }
 
@@ -75,6 +76,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeInterval()},
             .ns = "time",
             .doc = "Returns the difference of the times.",
+            .pure = true,
         };
     }
 
@@ -92,6 +94,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeTime()},
             .ns = "time",
             .doc = "Subtracts the interval from the time.",
+            .pure = true,
         };
     }
 

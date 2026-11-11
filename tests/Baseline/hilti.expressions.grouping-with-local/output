@@ -8,7 +8,7 @@ global int<64> g = 1;
 assert "abc" == "abc";
 assert (1, 2, 3, "abc") == "abc";
 assert (1, 2, 3, "xyz") == "xyz";
-assert ({local uint<64> i = 2;} i * i) == 4;
+assert (2 * 2) == 4;
 assert default<int<64>>() == 0;
 assert (x[0], x[2]) == (0, 2);
 assert g == 1;

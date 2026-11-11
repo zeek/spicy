@@ -190,6 +190,7 @@ public:
                 "to a location before the first. The result is undefined if the iterators do not refer to the same "
                 "bytes "
                 "instance.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::iterator::Difference)
@@ -206,6 +207,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBytesIterator()},
             .ns = "bytes::iterator",
             .doc = "Returns an iterator which is pointing the given number of bytes beyond the one passed in.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::iterator::Sum)
@@ -374,6 +376,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBytes()},
             .ns = "bytes",
             .doc = "Returns the concatenation of two bytes values.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::Sum)
