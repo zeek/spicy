@@ -111,6 +111,7 @@ public:
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
                 "value.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::iterator::Lower)
@@ -129,6 +130,7 @@ public:
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
                 "value.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::iterator::LowerEqual)
@@ -147,6 +149,7 @@ public:
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
                 "value.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::iterator::Greater)
@@ -165,6 +168,7 @@ public:
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
                 "value.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::iterator::GreaterEqual)
@@ -286,6 +290,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::Greater)
@@ -302,6 +307,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::GreaterEqual)
@@ -334,6 +340,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::Lower)
@@ -350,6 +357,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::LowerEqual)

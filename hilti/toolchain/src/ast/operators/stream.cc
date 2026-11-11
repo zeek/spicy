@@ -115,6 +115,7 @@ public:
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same stream "
                 "value.",
+            .pure = true,
         };
     }
 
@@ -134,6 +135,7 @@ public:
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same stream "
                 "value.",
+            .pure = true,
         };
     }
 
@@ -153,6 +155,7 @@ public:
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same stream "
                 "value.",
+            .pure = true,
         };
     }
 
@@ -172,6 +175,7 @@ public:
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same stream "
                 "value.",
+            .pure = true,
         };
     }
 

@@ -109,6 +109,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "time",
             .doc = "Compares the times.",
+            .pure = true,
         };
     }
 
@@ -126,6 +127,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "time",
             .doc = "Compares the times.",
+            .pure = true,
         };
     }
 
@@ -143,6 +145,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "time",
             .doc = "Compares the times.",
+            .pure = true,
         };
     }
 
@@ -160,6 +163,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "time",
             .doc = "Compares the times.",
+            .pure = true,
         };
     }
 
