@@ -24,6 +24,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(8)},
             .ns = "bytes::iterator",
             .doc = "Returns the character the iterator is pointing to.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::iterator::Deref)

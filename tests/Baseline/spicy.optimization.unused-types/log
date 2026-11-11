@@ -112,7 +112,6 @@
 [debug/optimizer]       - deleting function state: foo::Priv5::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv5::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv5::_t_parse_stage1
-[debug/optimizer]       - deleting function state: foo::Priv5::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv5::parse1
 [debug/optimizer]       - deleting function state: foo::Priv5::parse2
 [debug/optimizer]       - deleting function state: foo::Priv5::parse3
@@ -123,7 +122,6 @@
 [debug/optimizer]       - deleting function state: foo::Priv6::_t_parse_foo__Priv6_stage2
 [debug/optimizer]       - deleting function state: foo::Priv6::_t_parse_foo__Priv6_stage2
 [debug/optimizer]       - deleting function state: foo::Priv6::_t_parse_foo__Priv6_stage2
-[debug/optimizer]       - deleting function state: foo::Priv6::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv6::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv6::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::Priv6::_t_parse_stage1
@@ -274,13 +272,11 @@
 [debug/optimizer]       - updating function: foo::Priv5::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv5::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv5::_t_parse_stage1
-[debug/optimizer]       - updating function: foo::Priv5::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv6::_t_parse_foo__Priv6_stage2
 [debug/optimizer]       - updating function: foo::Priv6::_t_parse_foo__Priv6_stage2
 [debug/optimizer]       - updating function: foo::Priv6::_t_parse_foo__Priv6_stage2
 [debug/optimizer]       - updating function: foo::Priv6::_t_parse_foo__Priv6_stage2
 [debug/optimizer]       - updating function: foo::Priv6::_t_parse_foo__Priv6_stage2
-[debug/optimizer]       - updating function: foo::Priv6::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv6::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv6::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::Priv6::_t_parse_stage1
@@ -336,7 +332,6 @@
 [debug/optimizer]       - updating module: foo
 [debug/optimizer]       - updating module: foo
 [debug/optimizer]       - updating module: foo
-[debug/optimizer]     * computed CFGs
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]     * computed CFGs
@@ -694,8 +689,6 @@
 [debug/optimizer]     * resolver
 [debug/optimizer]     * resolver
 [debug/optimizer]     * resolver
-[debug/optimizer]     * resolver
-[debug/optimizer]     -> modified
 [debug/optimizer]     -> modified
 [debug/optimizer]     -> modified
 [debug/optimizer]     -> modified
@@ -1112,8 +1105,8 @@
 [debug/optimizer]   [<no location>] statement::Expression "_t_result = (_t_cur, _t_lah, _t_lahe, _t_error);" -> statement::Expression "(_t_cur, _t_lah, _t_lahe, _t_error);" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "_t_result = (_t_cur, _t_lah, _t_lahe, _t_error);" -> statement::Expression "(_t_cur, _t_lah, _t_lahe, _t_error);" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "_t_result = (_t_cur, _t_lah, _t_lahe, _t_error);" -> statement::Expression "(_t_cur, _t_lah, _t_lahe, _t_error);" (statement result unused)
-[debug/optimizer]   [<no location>] statement::Expression "begin(_t_cur);" -> null (statement result unused)
-[debug/optimizer]   [<no location>] statement::Expression "begin(_t_cur);" -> null (statement result unused)
+[debug/optimizer]   [<no location>] statement::Expression "begin(_t_cur);" -> null (removing unused expression result)
+[debug/optimizer]   [<no location>] statement::Expression "begin(_t_cur);" -> null (removing unused expression result)
 [debug/optimizer]   [<no location>] statement::If "if ( False ) { (*_t_unit)._t_begin = begin(_t_ncur); }" -> null (removing if statement with always-false condition)
 [debug/optimizer]   [<no location>] statement::If "if ( False ) { (*_t_unit)._t_begin = begin(_t_ncur); }" -> null (removing if statement with always-false condition)
 [debug/optimizer]   [<no location>] statement::If "if ( False ) { (*_t_unit)._t_begin = begin(_t_ncur); }" -> null (removing if statement with always-false condition)
@@ -1927,9 +1920,7 @@
 [debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]   re-processing AST, round 1
-[debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>

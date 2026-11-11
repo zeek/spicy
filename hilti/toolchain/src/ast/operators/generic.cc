@@ -230,6 +230,7 @@ public:
             .result_doc = "<iterator>",
             .ns = "generic",
             .doc = "Returns an iterator to the beginning of the container's content.",
+            .pure = true,
         };
     }
 
