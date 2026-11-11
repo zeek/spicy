@@ -192,6 +192,7 @@ public:
             .result_doc = "<type of element>",
             .ns = "vector",
             .doc = "Returns the vector element at the given index.",
+            .pure = true,
         };
     }
 
@@ -213,6 +214,7 @@ public:
             .result_doc = "<type of element>",
             .ns = "vector",
             .doc = "Returns the vector element at the given index.",
+            .pure = true,
         };
     }
 
