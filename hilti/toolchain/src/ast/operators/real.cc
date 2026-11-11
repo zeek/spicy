@@ -126,6 +126,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "real",
             .doc = "Compares the two reals.",
+            .pure = true,
         };
     }
 
@@ -143,6 +144,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "real",
             .doc = "Compares the two reals.",
+            .pure = true,
         };
     }
 
@@ -160,6 +162,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "real",
             .doc = "Compares the two reals.",
+            .pure = true,
         };
     }
 
@@ -177,6 +180,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "real",
             .doc = "Compares the two reals.",
+            .pure = true,
         };
     }
 

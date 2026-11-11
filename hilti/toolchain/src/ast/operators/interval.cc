@@ -91,6 +91,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "interval",
             .doc = "Compares the intervals.",
+            .pure = true,
         };
     }
 
@@ -108,6 +109,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "interval",
             .doc = "Compares the intervals.",
+            .pure = true,
         };
     }
 
@@ -125,6 +127,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "interval",
             .doc = "Compares the intervals.",
+            .pure = true,
         };
     }
 
@@ -142,6 +145,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "interval",
             .doc = "Compares the intervals.",
+            .pure = true,
         };
     }
 
