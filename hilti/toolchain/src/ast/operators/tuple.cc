@@ -67,6 +67,7 @@ public:
             .result_doc = "<type of element>",
             .ns = "tuple",
             .doc = "Extracts the tuple element at the given index. The index must be a constant unsigned integer.",
+            .pure = true,
         };
     }
 
@@ -114,6 +115,7 @@ public:
             .result_doc = "<type of element>",
             .ns = "tuple",
             .doc = "Extracts the tuple element corresponding to the given ID.",
+            .pure = true,
         };
     }
 

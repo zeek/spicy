@@ -87,6 +87,7 @@ public:
 Retrieves the value of a union's field. If the union does not have the field set,
 this triggers an exception.
 )",
+            .pure = true,
         };
     }
 
@@ -113,6 +114,7 @@ public:
 Retrieves the value of a union's field. If the union does not have the field set,
 this triggers an exception unless the value is only being assigned to.
 )",
+            .pure = true,
         };
     }
 
@@ -136,6 +138,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "union_",
             .doc = "Returns true if the union's field is set.",
+            .pure = true,
         };
     }
 
