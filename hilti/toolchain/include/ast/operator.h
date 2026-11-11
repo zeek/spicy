@@ -237,6 +237,8 @@ struct Signature {
     std::string ns;        /**< namespace where to document this operator */
     std::string doc;       /**< documentation string describing the operator */
     bool skip_doc = false; /**< if true, do not include this operator into any documentation */
+
+    bool pure = false; /**< if true the operator has no side effects not expressed in its signature */
 };
 
 namespace detail {
@@ -252,6 +254,7 @@ struct ProcessedSignature {
     std::string result_doc; /**< explicitly set documentation string for result type */
     std::string namespace_; /**< namespace where to document this operator */
     bool skip_doc;          /**< if true, do not include this operator into any documentation */
+    bool pure = false;      /**< if true the operator has no side effects not expressed in its signature */
 };
 } // namespace detail
 
@@ -312,6 +315,8 @@ public:
      * than created through user code (like functions or methods).
      */
     auto isBuiltIn() const { return _builtin; }
+
+    auto isPure() const { return signature().pure; }
 
     /** Returns the operator's operands. */
     auto operands() const { return signature().operands->operands(); }

@@ -1374,6 +1374,11 @@ bool cfg::Cache::mayHaveSideEffects(const Expression* expr) {
     if ( expr->isA<expression::Name>() )
         return false;
 
+    if ( const auto* resolved = expr->tryAs<expression::ResolvedOperator>() ) {
+        return ! resolved->operator_().isPure() ||
+               std::ranges::any_of(resolved->operands(), [&](const auto* op) { return op && mayHaveSideEffects(op); });
+    }
+
     const auto* transfer = dataflow(expr);
     if ( ! transfer )
         return true;
