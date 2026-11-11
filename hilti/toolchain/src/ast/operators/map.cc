@@ -248,6 +248,7 @@ public:
             .doc =
                 "Returns the map's element for the given key. The key must exist, otherwise the operation "
                 "will throw a runtime error.",
+            .pure = true,
         };
     }
 
@@ -279,6 +280,7 @@ public:
             .doc =
                 "Returns the map's element for the given key. The key must exist, otherwise the operation "
                 "will throw a runtime error.",
+            .pure = true,
         };
     }
 
