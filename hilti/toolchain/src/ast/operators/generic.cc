@@ -259,6 +259,7 @@ public:
             .result_doc = "<iterator>",
             .ns = "generic",
             .doc = "Returns an iterator to the end of the container's content.",
+            .pure = true,
         };
     }
 
