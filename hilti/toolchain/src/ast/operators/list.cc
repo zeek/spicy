@@ -84,6 +84,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "list::iterator",
             .doc = "Returns true if two lists iterators refer to the same location.",
+            .pure = true,
         };
     }
 
@@ -106,6 +107,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "list::iterator",
             .doc = "Returns true if two lists iterators refer to different locations.",
+            .pure = true,
         };
     }
 
@@ -146,6 +148,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "list",
             .doc = "Compares two lists element-wise.",
+            .pure = true,
         };
     }
 
@@ -168,6 +171,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "list",
             .doc = "Compares two lists element-wise.",
+            .pure = true,
         };
     }
 

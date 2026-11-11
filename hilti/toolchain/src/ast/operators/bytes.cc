@@ -73,6 +73,7 @@ public:
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
                 "value.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::iterator::Equal)
@@ -91,6 +92,7 @@ public:
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
                 "value.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::iterator::Unequal)
@@ -250,6 +252,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::Equal)
@@ -266,6 +269,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::Unequal)

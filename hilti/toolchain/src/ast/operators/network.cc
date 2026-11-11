@@ -20,6 +20,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "network",
             .doc = "Compares two network values.",
+            .pure = true,
         };
     }
 
@@ -37,6 +38,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "network",
             .doc = "Compares two network values.",
+            .pure = true,
         };
     }
 
