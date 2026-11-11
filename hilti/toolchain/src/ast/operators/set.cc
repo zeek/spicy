@@ -131,6 +131,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "set",
             .doc = "Returns the number of elements a set contains.",
+            .pure = true,
         };
     }
 

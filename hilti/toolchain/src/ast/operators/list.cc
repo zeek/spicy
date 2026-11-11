@@ -128,6 +128,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "list",
             .doc = "Returns the number of elements a list contains.",
+            .pure = true,
         };
     }
 

@@ -285,6 +285,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "stream::view",
             .doc = "Returns the number of stream the view contains.",
+            .pure = true,
         };
     }
 
@@ -733,6 +734,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "stream",
             .doc = "Returns the number of stream the value contains.",
+            .pure = true,
         };
     }
 
