@@ -199,6 +199,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "map",
             .doc = "Returns true if an element is part of the map.",
+            .pure = true,
         };
     }
 
