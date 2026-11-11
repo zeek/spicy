@@ -71,6 +71,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeString()},
             .ns = "string",
             .doc = "Returns the concatenation of two strings.",
+            .pure = true,
         };
     }
 
@@ -98,12 +99,15 @@ HILTI_OPERATOR_IMPLEMENTATION(SumAssign);
 class Modulo : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return Signature{.kind = Kind::Modulo,
-                         .op0 = {.kind = parameter::Kind::In, .type = builder->typeString()},
-                         .op1 = {.kind = parameter::Kind::In, .type = builder->typeAny()},
-                         .result = {.constness = Constness::Const, .type = builder->typeString()},
-                         .ns = "string",
-                         .doc = "Renders a printf-style format string."};
+        return Signature{
+            .kind = Kind::Modulo,
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeString()},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeAny()},
+            .result = {.constness = Constness::Const, .type = builder->typeString()},
+            .ns = "string",
+            .doc = "Renders a printf-style format string.",
+            .pure = true,
+        };
     }
 
     HILTI_OPERATOR(hilti, string::Modulo)

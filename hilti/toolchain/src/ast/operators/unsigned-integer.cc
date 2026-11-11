@@ -162,6 +162,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the difference between the two integers.",
+            .pure = true,
         };
     }
 
@@ -216,6 +217,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Divides the first integer by the second.",
+            .pure = true,
         };
     }
 
@@ -390,6 +392,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the modulus of the first integer divided by the second.",
+            .pure = true,
         };
     }
 
@@ -417,6 +420,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Multiplies the first integer by the second.",
+            .pure = true,
         };
     }
 
@@ -471,6 +475,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the first integer raised to the power of the second.",
+            .pure = true,
         };
     }
 
@@ -498,6 +503,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the sum of the integers.",
+            .pure = true,
         };
     }
 
