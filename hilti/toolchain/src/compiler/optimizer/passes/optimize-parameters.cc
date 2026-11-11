@@ -1,8 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <hilti/ast/builder/builder.h>
-#include <hilti/ast/expressions/assign.h>
-#include <hilti/ast/visitor.h>
 #include <hilti/base/logger.h>
 #include <hilti/compiler/detail/optimizer/collector-callers.h>
 #include <hilti/compiler/detail/optimizer/optimizer.h>
@@ -52,13 +50,9 @@ struct CollectorParameters : public optimizer::visitor::Collector {
             if ( ! tup )
                 continue;
 
-            for ( const auto* arg : tup->value() ) {
-                auto nodes = hilti::visitor::range(hilti::visitor::PreOrder(), const_cast<Expression*>(arg));
-                for ( const auto* n : nodes ) {
-                    if ( n->isA<expression::Assign>() || n->isA<operator_::function::Call>() )
-                        return true;
-                }
-            }
+            if ( auto* cfg = state()->cfgCache();
+                 std::ranges::any_of(tup->value(), [&](const auto& arg) { return cfg->mayHaveSideEffects(arg); }) )
+                return true;
         }
 
         return false;
