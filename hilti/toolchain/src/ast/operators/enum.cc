@@ -23,6 +23,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "enum_",
             .doc = "Compares two enum values.",
+            .pure = true,
         };
     }
 
@@ -45,6 +46,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "enum_",
             .doc = "Compares two enum values.",
+            .pure = true,
         };
     }
 

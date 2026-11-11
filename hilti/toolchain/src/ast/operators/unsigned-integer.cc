@@ -270,6 +270,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Compares the two integers.",
+            .pure = true,
         };
     }
 
@@ -547,6 +548,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Compares the two integers.",
+            .pure = true,
         };
     }
 

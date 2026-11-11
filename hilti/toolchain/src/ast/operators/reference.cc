@@ -42,6 +42,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "strong_reference",
             .doc = "Returns true if both operands reference the same instance.",
+            .pure = true,
         };
     }
 
@@ -64,6 +65,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "strong_reference",
             .doc = "Returns true if the two operands reference different instances.",
+            .pure = true,
         };
     }
 
@@ -111,6 +113,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "weak_reference",
             .doc = "Returns true if both operands reference the same instance.",
+            .pure = true,
         };
     }
 
@@ -133,6 +136,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "weak_reference",
             .doc = "Returns true if the two operands reference different instances.",
+            .pure = true,
         };
     }
 
@@ -180,6 +184,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "value_reference",
             .doc = "Returns true if the values of both operands are equal.",
+            .pure = true,
         };
     }
 
@@ -202,6 +207,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "value_reference",
             .doc = "Returns true if the values of both operands are not equal.",
+            .pure = true,
         };
     }
 

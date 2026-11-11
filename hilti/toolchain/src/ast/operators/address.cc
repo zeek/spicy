@@ -19,6 +19,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "address",
             .doc = "Compares two address values.",
+            .pure = true,
         };
     }
 
@@ -36,6 +37,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "address",
             .doc = "Compares two address values.",
+            .pure = true,
         };
     }
 

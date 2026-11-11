@@ -20,6 +20,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bool_",
             .doc = "Compares two boolean values.",
+            .pure = true,
         };
     }
 
@@ -37,6 +38,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bool_",
             .doc = "Compares two boolean values.",
+            .pure = true,
         };
     }
 

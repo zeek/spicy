@@ -255,6 +255,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "signed_integer",
             .doc = "Compares the two integers.",
+            .pure = true,
         };
     }
 
@@ -532,6 +533,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "signed_integer",
             .doc = "Compares the two integers.",
+            .pure = true,
         };
     }
 

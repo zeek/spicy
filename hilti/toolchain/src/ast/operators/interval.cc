@@ -21,6 +21,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "interval",
             .doc = "Compares two interval values.",
+            .pure = true,
         };
     }
 
@@ -38,6 +39,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "interval",
             .doc = "Compares two interval values.",
+            .pure = true,
         };
     }
 
