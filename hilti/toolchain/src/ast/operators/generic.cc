@@ -65,6 +65,7 @@ public:
             .result = {.constness = Constness::Mutable, .type = builder->typeBytes()},
             .ns = "generic",
             .doc = "Packs a value into a binary representation. See :ref:`packing` for details.",
+            .pure = true,
         };
     }
 
@@ -130,6 +131,7 @@ public:
             .result_doc = "<unpacked value>",
             .ns = "generic",
             .doc = "Unpacks a value from a binary representation. See :ref:`packing` for details.",
+            .pure = true,
         };
     }
 
