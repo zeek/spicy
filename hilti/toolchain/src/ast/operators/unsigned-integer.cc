@@ -581,6 +581,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the bit-wise negation of the integer.",
+            .pure = true,
         };
     }
 
@@ -602,6 +603,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the bit-wise 'and' of the two integers.",
+            .pure = true,
         };
     }
 
@@ -629,6 +631,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the bit-wise 'or' of the two integers.",
+            .pure = true,
         };
     }
 
@@ -656,6 +659,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the bit-wise 'xor' of the two integers.",
+            .pure = true,
         };
     }
 
@@ -683,6 +687,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Shifts the integer to the left by the given number of bits.",
+            .pure = true,
         };
     }
 
@@ -706,6 +711,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Shifts the integer to the right by the given number of bits.",
+            .pure = true,
         };
     }
 
