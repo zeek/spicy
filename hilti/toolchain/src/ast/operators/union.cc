@@ -38,6 +38,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "union_",
             .doc = "Compares two unions element-wise.",
+            .pure = true,
         };
     }
 
@@ -60,6 +61,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "union_",
             .doc = "Compares two unions element-wise.",
+            .pure = true,
         };
     }
 

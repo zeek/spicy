@@ -41,6 +41,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "error",
             .doc = "Compares two error descriptions lexicographically.",
+            .pure = true,
         };
     }
 
@@ -58,6 +59,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "error",
             .doc = "Compares two error descriptions lexicographically.",
+            .pure = true,
         };
     }
 

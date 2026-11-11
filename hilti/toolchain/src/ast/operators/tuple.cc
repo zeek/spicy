@@ -23,6 +23,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "tuple",
             .doc = "Compares two tuples element-wise.",
+            .pure = true,
         };
     }
 
@@ -45,6 +46,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "tuple",
             .doc = "Compares two tuples element-wise.",
+            .pure = true,
         };
     }
 

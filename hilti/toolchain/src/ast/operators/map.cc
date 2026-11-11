@@ -88,6 +88,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "map::iterator",
             .doc = "Returns true if two map iterators refer to the same location.",
+            .pure = true,
         };
     }
 
@@ -110,6 +111,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "map::iterator",
             .doc = "Returns true if two map iterators refer to different locations.",
+            .pure = true,
         };
     }
 
@@ -151,6 +153,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "map",
             .doc = "Compares two maps element-wise.",
+            .pure = true,
         };
     }
 
@@ -173,6 +176,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "map",
             .doc = "Compares two maps element-wise.",
+            .pure = true,
         };
     }
 

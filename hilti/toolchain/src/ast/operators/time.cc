@@ -22,6 +22,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "time",
             .doc = "Compares two time values.",
+            .pure = true,
         };
     }
 
@@ -39,6 +40,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "time",
             .doc = "Compares two time values.",
+            .pure = true,
         };
     }
 

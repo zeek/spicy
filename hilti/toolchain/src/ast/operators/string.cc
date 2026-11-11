@@ -18,6 +18,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "string",
             .doc = "Compares two strings lexicographically.",
+            .pure = true,
         };
     }
 
@@ -35,6 +36,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "string",
             .doc = "Compares two strings lexicographically.",
+            .pure = true,
         };
     }
 
