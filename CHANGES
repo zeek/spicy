@@ -1,3 +1,29 @@
+1.18.0-dev.74 | 2026-11-11 12:17:25 +0100
+
+  * Drop use of cmake-format/cmake-lint, switch to gersemi (Benjamin Bannier, Corelight)
+
+    The package behind cmake-format and cmake-lint appears to be
+    unmaintained, and the hooks now fail with python-3.15 which is
+    the default Python interpreter on e.g., macos.
+
+    As far as I recall the most value we got out of these hooks was
+    formatting, and I do not recall the linting to be helpful, so this patch
+    switches from cmake-format to gersemi, and drops the cmake-lint hook. In
+    contrast to cmake-format, gersemi is more opinionated with way fewer
+    tuning knobs, so this migration causes a change in formatting style.
+    Looking at the changes to CMake source files in this patch (all
+    automatically generated), the difference in formatting style is
+    noticeable, but IMO not drastic enough to worry about. One upside of
+    gersemi is that it can learn about custom CMake macros and functions
+    automatically without us having the declare them.
+
+  * Revert "Work around CMake pre-commit hooks failing with python-3.15" (Benjamin Bannier, Corelight)
+
+    This reverts commit cd21adeb9cbe130ab8c8bf79a91feda613f020d3. My
+    assumption was that pre-commit would download an interpreter if it was
+    not available, but this is not the case so pre-commit failed on
+    platforms without python-3.14.
+
 1.18.0-dev.71 | 2026-11-09 16:11:20 +0100
 
   * Work around CMake pre-commit hooks failing with python-3.15 (Benjamin Bannier, Corelight)

@@ -7,14 +7,18 @@ file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/bin" "${PROJECT_BINARY_DIR}/lib")
 
 # Create a version string that's a valid C identifier. We use only the actual
 # version number, no development postfix, to make ccache a bit happier.
-string(REGEX REPLACE "([0-9]+\.[0-9]+\.[0-9]+).*" "\\1" SPICY_VERSION_C_IDENT
-                     "${CMAKE_PROJECT_VERSION}")
+string(
+    REGEX REPLACE "([0-9]+\.[0-9]+\.[0-9]+).*"
+    "\\1"
+    SPICY_VERSION_C_IDENT
+    "${CMAKE_PROJECT_VERSION}"
+)
 string(REPLACE "." "_" SPICY_VERSION_C_IDENT "${SPICY_VERSION_C_IDENT}")
 
-if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     # Distinguish between release and debug builds.
     set(SPICY_VERSION_C_IDENT "${SPICY_VERSION_C_IDENT}_debug")
-endif ()
+endif()
 
 ##### Runtime libraries
 
@@ -49,76 +53,95 @@ set(SOURCES
     src/unicode.cc
     src/util.cc
     src/version.cc
-    ${PROJECT_SOURCE_DIR}/3rdparty/utf8proc/utf8proc.c)
+    ${PROJECT_SOURCE_DIR}/3rdparty/utf8proc/utf8proc.c
+)
 
 # main.cc provides default main() implementations marked as weak on non-MSVC.
 # On MSVC, weak function linkage is not supported, so we add main.cc only to
 # the static library (below) where standard linker semantics (object files
 # override library symbols) provide the same behavior.
-if (NOT MSVC)
+if(NOT MSVC)
     list(APPEND SOURCES src/main.cc)
-endif ()
+endif()
 
-foreach (lib hilti-rt hilti-rt-debug)
+foreach(lib hilti-rt hilti-rt-debug)
     add_library(${lib}-objects OBJECT ${SOURCES})
-    if (NOT MSVC)
+    if(NOT MSVC)
         target_compile_options(${lib}-objects PRIVATE "-fPIC")
-    endif ()
+    endif()
     target_compile_definitions(${lib}-objects PRIVATE UTF8PROC_STATIC)
     target_link_libraries(${lib}-objects PRIVATE ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
-    target_include_directories(${lib}-objects BEFORE
-                               PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-    target_include_directories(${lib}-objects BEFORE
-                               PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>)
     target_include_directories(
-        ${lib}-objects SYSTEM BEFORE
-        PUBLIC $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty>
-               $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/json/include>)
+        ${lib}-objects
+        BEFORE
+        PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    )
+    target_include_directories(
+        ${lib}-objects
+        BEFORE
+        PUBLIC $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+    )
+    target_include_directories(
+        ${lib}-objects
+        SYSTEM
+        BEFORE
+        PUBLIC
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty>
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/json/include>
+    )
 
     add_dependencies(${lib}-objects jrx-objects)
-    target_include_directories(${lib}-objects SYSTEM BEFORE
-                               PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/justrx/include)
+    target_include_directories(
+        ${lib}-objects
+        SYSTEM
+        BEFORE
+        PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/justrx/include
+    )
 
     add_dependencies(${lib}-objects fiber)
     target_include_directories(
-        ${lib}-objects SYSTEM BEFORE
-        PRIVATE ${PROJECT_SOURCE_DIR}/3rdparty/fiber/include
-                ${PROJECT_SOURCE_DIR}/3rdparty/fiber/deps/cxx-header-utils/include
-                ${PROJECT_SOURCE_DIR}/3rdparty/utfcpp/source)
+        ${lib}-objects
+        SYSTEM
+        BEFORE
+        PRIVATE
+            ${PROJECT_SOURCE_DIR}/3rdparty/fiber/include
+            ${PROJECT_SOURCE_DIR}/3rdparty/fiber/deps/cxx-header-utils/include
+            ${PROJECT_SOURCE_DIR}/3rdparty/utfcpp/source
+    )
 
     add_library(${lib} STATIC)
     target_link_libraries(${lib} ${lib}-objects)
-    if (MSVC)
+    if(MSVC)
         target_sources(${lib} PRIVATE src/main.cc)
-    endif ()
+    endif()
     target_link_libraries(${lib} jrx-objects)
     target_link_libraries(${lib} fiber)
 
-    if (WIN32)
+    if(WIN32)
         target_link_libraries(${lib} Ws2_32)
         target_link_libraries(${lib} libunistd)
         target_link_libraries(${lib} libportable)
-    endif ()
-endforeach ()
+    endif()
+endforeach()
 
 # Build hilti-rt with release flags.
-if (NOT MSVC)
-    if (CMAKE_CXX_FLAGS_RELEASE)
+if(NOT MSVC)
+    if(CMAKE_CXX_FLAGS_RELEASE)
         string(REPLACE " " ";" cxx_flags_release ${CMAKE_CXX_FLAGS_RELEASE})
-    endif ()
+    endif()
     target_compile_options(hilti-rt-objects PRIVATE ${cxx_flags_release})
     target_compile_options(hilti-rt-objects PRIVATE "-O3;-DNDEBUG;-Wall")
-endif ()
+endif()
 target_compile_definitions(hilti-rt-objects PRIVATE "HILTI_RT_BUILD_TYPE_RELEASE")
 
 # Build hilti-rt-debug with debug flags.
-if (NOT MSVC)
-    if (CMAKE_CXX_FLAGS_DEBUG)
+if(NOT MSVC)
+    if(CMAKE_CXX_FLAGS_DEBUG)
         string(REPLACE " " ";" cxx_flags_debug ${CMAKE_CXX_FLAGS_DEBUG})
-    endif ()
+    endif()
     target_compile_options(hilti-rt-debug-objects PRIVATE ${cxx_flags_debug})
     target_compile_options(hilti-rt-debug-objects PRIVATE "-UNDEBUG;-O0;-Wall")
-endif ()
+endif()
 target_compile_definitions(hilti-rt-debug-objects PRIVATE "HILTI_RT_BUILD_TYPE_DEBUG")
 
 add_library(hilti-rt-tests-library-dummy1 EXCLUDE_FROM_ALL SHARED src/tests/library-dummy.cc)
@@ -135,11 +158,11 @@ configure_file(include/config.h.in ${AUTOGEN_H}/config.h)
 
 # On Windows, shared libraries (DLLs) are placed in the runtime output directory (bin/)
 # rather than the library output directory (lib/).
-if (WIN32)
+if(WIN32)
     set(TEST_SHARED_LIB_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
-else ()
+else()
     set(TEST_SHARED_LIB_DIRECTORY "${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
-endif ()
+endif()
 configure_file(src/tests/config.h.in ${AUTOGEN_H}/tests/config.h)
 
 ##### Binaries
@@ -150,21 +173,28 @@ install(TARGETS hilti-rt hilti-rt-debug ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBD
 
 install_headers(include hilti/rt)
 install_headers(${PROJECT_BINARY_DIR}/include/hilti/rt hilti/rt)
-install(CODE "file(REMOVE \"\$ENV\{DESTDIR\}${CMAKE_INSTALL_FULL_INCLUDEDIR}/hilti/rt/hilti\")"
-)# Get rid of symlink.
+install(CODE "file(REMOVE \"\$ENV\{DESTDIR\}${CMAKE_INSTALL_FULL_INCLUDEDIR}/hilti/rt/hilti\")") # Get rid of symlink.
 
 # Install the 3rdparty headers that we need individually.
-install_headers(${PROJECT_SOURCE_DIR}/3rdparty/ArticleEnumClass-v2
-                hilti/rt/3rdparty/ArticleEnumClass-v2)
-install_headers(${PROJECT_SOURCE_DIR}/3rdparty/SafeInt hilti/rt/3rdparty/SafeInt SafeInt.hpp
-                safe_math_impl.h safe_math.h)
+install_headers(
+    ${PROJECT_SOURCE_DIR}/3rdparty/ArticleEnumClass-v2
+    hilti/rt/3rdparty/ArticleEnumClass-v2
+)
+install_headers(
+    ${PROJECT_SOURCE_DIR}/3rdparty/SafeInt
+    hilti/rt/3rdparty/SafeInt
+    SafeInt.hpp
+    safe_math_impl.h
+    safe_math.h
+)
 install_headers(${PROJECT_SOURCE_DIR}/3rdparty/tinyformat hilti/rt/3rdparty/tinyformat)
 install_headers(${PROJECT_SOURCE_DIR}/3rdparty/json/include/nlohmann hilti/rt/3rdparty/nlohmann)
 
 ##### Tests
 
 add_executable(
-    hilti-rt-tests EXCLUDE_FROM_ALL
+    hilti-rt-tests
+    EXCLUDE_FROM_ALL
     src/tests/main.cc
     src/tests/address.cc
     src/tests/backtrace.cc
@@ -204,34 +234,45 @@ add_executable(
     src/tests/type-info.cc
     src/tests/union.cc
     src/tests/util.cc
-    src/tests/vector.cc)
-if (NOT MSVC)
+    src/tests/vector.cc
+)
+if(NOT MSVC)
     target_compile_options(hilti-rt-tests PRIVATE "-Wall")
     target_compile_options(hilti-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
     target_link_options(hilti-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
-endif ()
-target_link_libraries(hilti-rt-tests
-                      PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
+endif()
+target_link_libraries(
+    hilti-rt-tests
+    PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>
+)
 target_link_libraries(hilti-rt-tests PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt> doctest)
 add_dependencies(hilti-rt-tests hilti-rt-tests-library-dummy1 hilti-rt-tests-library-dummy2)
 add_test(NAME hilti-rt-tests COMMAND ${PROJECT_BINARY_DIR}/bin/hilti-rt-tests)
 
 add_executable(hilti-rt-configuration-tests EXCLUDE_FROM_ALL src/tests/configuration.cc)
-if (NOT MSVC)
+if(NOT MSVC)
     target_compile_options(hilti-rt-configuration-tests PRIVATE "-Wall")
     target_compile_options(hilti-rt-configuration-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
     target_link_options(hilti-rt-configuration-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
-endif ()
-target_link_libraries(hilti-rt-configuration-tests
-                      PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt> doctest)
-add_test(NAME hilti-rt-configuration-tests
-         COMMAND ${PROJECT_BINARY_DIR}/bin/hilti-rt-configuration-tests)
+endif()
+target_link_libraries(
+    hilti-rt-configuration-tests
+    PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt> doctest
+)
+add_test(
+    NAME hilti-rt-configuration-tests
+    COMMAND ${PROJECT_BINARY_DIR}/bin/hilti-rt-configuration-tests
+)
 
-if (SPICY_ENABLE_BENCHMARKS)
+if(SPICY_ENABLE_BENCHMARKS)
     add_executable(
-        hilti-rt-benchmark EXCLUDE_FROM_ALL src/benchmarks/fiber.cc src/benchmarks/iteration.cc
-                                            src/benchmarks/value-reference.cc)
+        hilti-rt-benchmark
+        EXCLUDE_FROM_ALL
+        src/benchmarks/fiber.cc
+        src/benchmarks/iteration.cc
+        src/benchmarks/value-reference.cc
+    )
     target_compile_options(hilti-rt-benchmark PRIVATE "-Wall")
     target_link_libraries(hilti-rt-benchmark PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt>)
     target_link_libraries(hilti-rt-benchmark PRIVATE benchmark)
-endif ()
+endif()

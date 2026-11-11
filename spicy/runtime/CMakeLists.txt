@@ -20,46 +20,56 @@ set(SOURCES
     src/util.cc
     src/zlib.cc
     ${PROJECT_SOURCE_DIR}/3rdparty/libb64/src/cdecode.c
-    ${PROJECT_SOURCE_DIR}/3rdparty/libb64/src/cencode.c)
+    ${PROJECT_SOURCE_DIR}/3rdparty/libb64/src/cencode.c
+)
 
-foreach (lib spicy-rt spicy-rt-debug)
+foreach(lib spicy-rt spicy-rt-debug)
     add_library(${lib}-objects OBJECT ${SOURCES})
-    if (NOT MSVC)
+    if(NOT MSVC)
         target_compile_options(${lib}-objects PRIVATE "-fPIC")
-    endif ()
+    endif()
     target_link_libraries(${lib}-objects PRIVATE ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS})
     target_link_libraries(${lib}-objects PUBLIC ZLIB::ZLIB)
-    target_include_directories(${lib}-objects BEFORE
-                               PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-    target_include_directories(${lib}-objects BEFORE
-                               PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>)
     target_include_directories(
-        ${lib}-objects SYSTEM BEFORE
-        PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/libb64/include>)
+        ${lib}-objects
+        BEFORE
+        PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    )
+    target_include_directories(
+        ${lib}-objects
+        BEFORE
+        PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+    )
+    target_include_directories(
+        ${lib}-objects
+        SYSTEM
+        BEFORE
+        PRIVATE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/3rdparty/libb64/include>
+    )
 
     add_library(${lib} STATIC)
     target_link_libraries(${lib} ${lib}-objects)
-endforeach ()
+endforeach()
 
 # Build spicy-rt with release flags.
-if (NOT MSVC)
-    if (CMAKE_CXX_FLAGS_RELEASE)
+if(NOT MSVC)
+    if(CMAKE_CXX_FLAGS_RELEASE)
         string(REPLACE " " ";" cxx_flags_release ${CMAKE_CXX_FLAGS_RELEASE})
-    endif ()
+    endif()
     target_compile_options(spicy-rt-objects PRIVATE ${cxx_flags_release})
     target_compile_options(spicy-rt-objects PRIVATE "-g;-O3;-DNDEBUG;-Wall")
-endif ()
+endif()
 target_compile_definitions(spicy-rt-objects PRIVATE "HILTI_RT_BUILD_TYPE_RELEASE")
 target_link_libraries(spicy-rt-objects PUBLIC hilti-rt-objects)
 
 # Build spicy-rt-debug with debug flags.
-if (NOT MSVC)
-    if (CMAKE_CXX_FLAGS_DEBUG)
+if(NOT MSVC)
+    if(CMAKE_CXX_FLAGS_DEBUG)
         string(REPLACE " " ";" cxx_flags_debug ${CMAKE_CXX_FLAGS_DEBUG})
-    endif ()
+    endif()
     target_compile_options(spicy-rt-debug-objects PRIVATE ${cxx_flags_debug})
     target_compile_options(spicy-rt-debug-objects PRIVATE "-UNDEBUG;-O0;-Wall")
-endif ()
+endif()
 target_compile_definitions(spicy-rt-debug-objects PRIVATE "HILTI_RT_BUILD_TYPE_DEBUG")
 target_link_libraries(spicy-rt-debug-objects PUBLIC hilti-rt-debug-objects)
 
@@ -75,13 +85,13 @@ install(TARGETS spicy-rt spicy-rt-debug ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBD
 
 install_headers(include spicy/rt)
 install_headers(${PROJECT_BINARY_DIR}/include/spicy/rt spicy/rt)
-install(CODE "file(REMOVE \"\$ENV\{DESTDIR\}${CMAKE_INSTALL_FULL_INCLUDEDIR}/spicy/rt/spicy\")"
-)# Get rid of symlink.
+install(CODE "file(REMOVE \"\$ENV\{DESTDIR\}${CMAKE_INSTALL_FULL_INCLUDEDIR}/spicy/rt/spicy\")") # Get rid of symlink.
 
 ##### Tests
 
 add_executable(
-    spicy-rt-tests EXCLUDE_FROM_ALL
+    spicy-rt-tests
+    EXCLUDE_FROM_ALL
     src/tests/main.cc
     src/tests/base64.cc
     src/tests/debug.cc
@@ -93,21 +103,26 @@ add_executable(
     src/tests/sink.cc
     src/tests/unit-context.cc
     src/tests/util.cc
-    src/tests/zlib.cc)
+    src/tests/zlib.cc
+)
 
-if (NOT MSVC)
+if(NOT MSVC)
     target_compile_options(spicy-rt-tests PRIVATE "-Wall")
     target_compile_options(spicy-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
     target_link_options(spicy-rt-tests PRIVATE $<$<CONFIG:Debug>:-O0>)
-endif ()
-target_link_libraries(spicy-rt-tests
-                      PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>)
+endif()
+target_link_libraries(
+    spicy-rt-tests
+    PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug-objects,hilti-rt-objects>
+)
 target_link_libraries(spicy-rt-tests PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt> doctest)
-target_link_libraries(spicy-rt-tests
-                      PRIVATE $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects>)
+target_link_libraries(
+    spicy-rt-tests
+    PRIVATE $<IF:$<CONFIG:Debug>,spicy-rt-debug-objects,spicy-rt-objects>
+)
 target_link_libraries(spicy-rt-tests PRIVATE $<IF:$<CONFIG:Debug>,spicy-rt-debug,spicy-rt> doctest)
 add_test(NAME spicy-rt-tests COMMAND ${PROJECT_BINARY_DIR}/bin/spicy-rt-tests)
 
-if (SPICY_ENABLE_BENCHMARKS)
+if(SPICY_ENABLE_BENCHMARKS)
     add_subdirectory(tests/benchmarks/)
-endif ()
+endif()

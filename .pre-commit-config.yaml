@@ -70,13 +70,10 @@ repos:
   - id: rst-inline-touching-normal
     stages: ["pre-commit"]
 
-- repo: https://github.com/cheshirekow/cmake-format-precommit
-  rev: e2c2116d86a80e72e7146a06e68b7c228afc6319  # frozen: v0.6.13
+- repo: https://github.com/BlankSpruce/gersemi-pre-commit
+  rev: 28010ddd6016e1a0f7bd232acb6536ef996ae897  # frozen: 0.29.2
   hooks:
-  - id: cmake-format
-    stages: ["pre-commit"]
-  - id: cmake-lint
-    stages: ["pre-commit"]
+  - id: gersemi
 
 - repo: https://github.com/crate-ci/typos
   rev: 512fc24f32f44ab01972217aaaf3dc86ec234d53  # frozen: v1.50.2
@@ -110,11 +107,3 @@ repos:
     args: ["-w", "-i", "4", "-ci"]
 
 exclude: 3rdparty/|doc/(autogen|.*examples)/|/Baseline/|(\.svg$)|(\.dat$)
-
-default_language_version:
-  # Above cmake-format and cmake-lint hooks do not work with python-3.15 so
-  # globally pin any Python-based hooks to python-3.14.
-  #
-  # TODO: Drop this once we can bump the hooks to a version with works with
-  # python-3.15.
-  python: python3.14
