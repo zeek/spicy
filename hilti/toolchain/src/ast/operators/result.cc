@@ -20,6 +20,7 @@ public:
             .doc =
                 "Retrieves the value stored inside the result instance. Will throw a ``NoResult`` exception if the "
                 "result is in an error state.",
+            .pure = true,
         };
     }
 
