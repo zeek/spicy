@@ -22,6 +22,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "real",
             .doc = "Inverts the sign of the real.",
+            .pure = true,
         };
     }
 

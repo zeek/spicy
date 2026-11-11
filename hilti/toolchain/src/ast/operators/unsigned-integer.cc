@@ -139,6 +139,7 @@ public:
             .result_doc = "uint",
             .ns = "unsigned_integer",
             .doc = "Inverts the sign of the integer.",
+            .pure = true,
         };
     }
 
