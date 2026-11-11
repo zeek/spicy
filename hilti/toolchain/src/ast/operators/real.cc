@@ -330,6 +330,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "real",
             .doc = "Converts the value to an unsigned integer type, accepting any loss of information.",
+            .pure = true,
         };
     }
 
@@ -353,6 +354,7 @@ public:
             .result_doc = "int<*>",
             .ns = "real",
             .doc = "Converts the value to a signed integer type, accepting any loss of information.",
+            .pure = true,
         };
     }
 
@@ -375,6 +377,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeTime()},
             .ns = "real",
             .doc = "Interprets the value as number of seconds since the UNIX epoch.",
+            .pure = true,
         };
     }
 
@@ -393,6 +396,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeInterval()},
             .ns = "real",
             .doc = "Interprets the value as number of seconds.",
+            .pure = true,
         };
     }
 
