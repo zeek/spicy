@@ -56,6 +56,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "network",
             .doc = "Returns true if the address is part of the network range.",
+            .pure = true,
         };
     }
 

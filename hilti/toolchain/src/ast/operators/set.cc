@@ -197,6 +197,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "set",
             .doc = "Returns true if an element is part of the set.",
+            .pure = true,
         };
     }
 

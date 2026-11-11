@@ -326,6 +326,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = "Returns true if the right-hand-side value contains the left-hand-side value as a subsequence.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::In)
