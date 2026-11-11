@@ -126,6 +126,7 @@ public:
             .result_doc = "int",
             .ns = "signed_integer",
             .doc = "Inverts the sign of the integer.",
+            .pure = true,
         };
     }
 
