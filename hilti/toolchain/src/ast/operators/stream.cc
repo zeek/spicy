@@ -311,6 +311,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream::view",
             .doc = "Returns true if the right-hand-side view contains the left-hand-side bytes as a subsequence.",
+            .pure = true,
         };
     }
 
@@ -328,6 +329,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream::view",
             .doc = "Returns true if the right-hand-side bytes contains the left-hand-side view as a subsequence.",
+            .pure = true,
         };
     }
 
