@@ -240,6 +240,7 @@ public:
             .result_doc = "vector<*>",
             .ns = "vector",
             .doc = "Returns the concatenation of two vectors.",
+            .pure = true,
         };
     }
 

@@ -198,6 +198,7 @@ public:
                 "to a location before the first. The result is undefined if the iterators do not refer to the same "
                 "stream "
                 "instance.",
+            .pure = true,
         };
     }
 
@@ -215,6 +216,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeStreamIterator()},
             .ns = "stream::iterator",
             .doc = "Advances the iterator by the given number of stream.",
+            .pure = true,
         };
     }
 
