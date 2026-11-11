@@ -26,6 +26,7 @@ public:
             .result_doc = "<dereferenced type>",
             .ns = "map::iterator",
             .doc = "Returns the map element that the iterator refers to.",
+            .pure = true,
         };
     }
 

@@ -53,7 +53,6 @@
 [debug/optimizer]       - deleting function state: foo::C::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::C::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::C::_t_parse_stage1
-[debug/optimizer]       - deleting function state: foo::C::_t_parse_stage1
 [debug/optimizer]       - deleting function state: foo::C::parse1
 [debug/optimizer]       - deleting function state: foo::C::parse2
 [debug/optimizer]       - deleting function state: foo::C::parse3
@@ -612,7 +611,7 @@
 [debug/optimizer]   [<no location>] statement::Expression "_t_result = (_t_cur, _t_lah, _t_lahe, _t_error);" -> statement::Expression "(_t_cur, _t_lah, _t_lahe, _t_error);" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "_t_result = (_t_cur, _t_lah, _t_lahe, _t_error);" -> statement::Expression "(_t_cur, _t_lah, _t_lahe, _t_error);" (statement result unused)
 [debug/optimizer]   [<no location>] statement::Expression "_t_result = (_t_cur, _t_lah, _t_lahe, _t_error);" -> statement::Expression "(_t_cur, _t_lah, _t_lahe, _t_error);" (statement result unused)
-[debug/optimizer]   [<no location>] statement::Expression "begin(_t_cur);" -> null (statement result unused)
+[debug/optimizer]   [<no location>] statement::Expression "begin(_t_cur);" -> null (removing unused expression result)
 [debug/optimizer]   [<no location>] statement::If "if ( False ) { (*_t_unit)._t_begin = begin(_t_ncur); }" -> null (removing if statement with always-false condition)
 [debug/optimizer]   [<no location>] statement::If "if ( False ) { (*_t_unit)._t_begin = begin(_t_ncur); }" -> null (removing if statement with always-false condition)
 [debug/optimizer]   [<no location>] statement::If "if ( False ) { (*_t_unit)._t_begin = begin(_t_ncur); }" -> null (removing if statement with always-false condition)

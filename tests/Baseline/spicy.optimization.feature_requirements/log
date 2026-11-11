@@ -374,10 +374,12 @@
 [debug/optimizer]     * function changed: foo::X1::parse1
 [debug/optimizer]     * function changed: foo::X1::parse1
 [debug/optimizer]     * function changed: foo::X1::parse1
+[debug/optimizer]     * function changed: foo::X1::parse1
 [debug/optimizer]     * function changed: foo::X1::parse2
 [debug/optimizer]     * function changed: foo::X1::parse2
 [debug/optimizer]     * function changed: foo::X1::parse2
 [debug/optimizer]     * function changed: foo::X1::parse2
+[debug/optimizer]     * function changed: foo::X1::parse3
 [debug/optimizer]     * function changed: foo::X1::parse3
 [debug/optimizer]     * function changed: foo::X1::parse3
 [debug/optimizer]     * function changed: foo::X1::parse3
@@ -1316,6 +1318,8 @@
 [debug/optimizer]   [feature_requirements.spicy:18:11-20:1] statement::Block "{ (*_t_unit)._t_begin = begin(_t_ncur); }" -> inlining block
 [debug/optimizer]   [feature_requirements.spicy:18:11-20:1] statement::Expression "(*_t_unit)._t_begin = begin(_t_ncur);" -> statement::Expression "begin(_t_ncur);" (statement result unused)
 [debug/optimizer]   [feature_requirements.spicy:18:11-20:1] statement::Expression "(*_t_unit)._t_begin = begin(_t_ncur);" -> statement::Expression "begin(_t_ncur);" (statement result unused)
+[debug/optimizer]   [feature_requirements.spicy:18:11-20:1] statement::Expression "begin(_t_ncur);" -> null (removing unused expression result)
+[debug/optimizer]   [feature_requirements.spicy:18:11-20:1] statement::Expression "begin(_t_ncur);" -> null (removing unused expression result)
 [debug/optimizer]   [feature_requirements.spicy:18:11-20:1] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [feature_requirements.spicy:18:11-20:1] statement::Expression "default<void>();" -> removing default<void> statement
 [debug/optimizer]   [feature_requirements.spicy:18:11-20:1] statement::Expression "default<void>();" -> removing default<void> statement
