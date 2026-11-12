@@ -56,6 +56,11 @@ constexpr ExpectedSchema ExpectedSchemas[] = {
      .operand_count = 2,
      .payload_kind = PayloadKind::Field},
     {.opcode = Opcode::OpaqueOp, .spelling = "opaque.op", .payload_kind = PayloadKind::ForeignFunction},
+    {.opcode = Opcode::Convert,
+     .spelling = "core.convert",
+     .operand_count = 1,
+     .payload_kind = PayloadKind::Conversion,
+     .is_pure = true},
 };
 
 } // namespace
@@ -598,4 +603,86 @@ TEST_CASE("parser.read_integer produces a value of its width and signedness") {
         auto errors = verify(package);
         CHECK(std::ranges::any_of(errors, [](auto& e) { return e.tag == "read-integer-result-type-mismatch"; }));
     }
+}
+
+TEST_CASE("core.convert accepts exactly the operand and result types of its rule") {
+    struct Case {
+        IntegerType from;
+        std::optional<IntegerType> to; // a bool when absent
+        ConversionRule rule;
+        bool valid;
+    };
+
+    const IntegerType u8{.width = 8, .signedness = Signedness::Unsigned};
+    const IntegerType u16{.width = 16, .signedness = Signedness::Unsigned};
+    const IntegerType i8{.width = 8, .signedness = Signedness::Signed};
+    const IntegerType i16{.width = 16, .signedness = Signedness::Signed};
+    const Case cases[] = {
+        {.from = u8, .to = u16, .rule = ConversionRule::IntegerWiden, .valid = true},
+        {.from = u8, .to = i16, .rule = ConversionRule::IntegerWiden, .valid = true},
+        {.from = i8, .to = i16, .rule = ConversionRule::IntegerWiden, .valid = true},
+        {.from = i8, .to = u16, .rule = ConversionRule::IntegerWiden, .valid = false},
+        {.from = u16, .to = u8, .rule = ConversionRule::IntegerWiden, .valid = false},
+        {.from = u8, .to = u8, .rule = ConversionRule::IntegerWiden, .valid = false},
+        {.from = u8, .to = i8, .rule = ConversionRule::IntegerWiden, .valid = false},
+        {.from = u8, .to = {}, .rule = ConversionRule::IntegerWiden, .valid = false},
+        {.from = i8, .to = {}, .rule = ConversionRule::IntegerToBool, .valid = true},
+        {.from = u8, .to = u16, .rule = ConversionRule::IntegerToBool, .valid = false},
+    };
+
+    for ( const auto& c : cases ) {
+        Package package;
+        auto builder = package.builder();
+        auto from = builder.integerType(c.from.width, c.from.signedness);
+        auto to = c.to ? builder.integerType(c.to->width, c.to->signedness) : builder.boolType();
+        auto fn = builder.createFunction("f", to);
+        auto block = builder.createBlock(package.function(fn).root_region);
+        auto value = builder.addIntConstant(block, from, 1);
+        builder.addReturn(block, builder.addConvert(block, value, to, c.rule));
+
+        auto errors = verify(package);
+        CHECK(std::ranges::all_of(errors, [](auto& e) { return e.tag == "convert-rule-mismatch"; }));
+        CHECK_EQ(errors.empty(), c.valid);
+    }
+
+    // A conversion's operand must be an integer for either rule.
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("f", builder.boolType());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto flag = builder.addBoolConstant(block, true);
+    builder.addReturn(block, builder.addConvert(block, flag, builder.boolType(), ConversionRule::IntegerToBool));
+    auto errors = verify(package);
+    CHECK(std::ranges::any_of(errors, [](auto& e) { return e.tag == "convert-rule-mismatch"; }));
+}
+
+TEST_CASE("constant folding converts constants and merges widenings") {
+    Package package;
+    auto builder = package.builder();
+    auto i8 = builder.integerType(8, Signedness::Signed);
+    auto i32 = builder.integerType(32, Signedness::Signed);
+    auto u8 = builder.uint8Type();
+    auto u16 = builder.integerType(16, Signedness::Unsigned);
+    auto fn = builder.createFunction("f", std::vector<Parameter>{u8}, builder.uint64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto arg = builder.addArgument(fn, block, 0);
+    auto minus_one =
+        builder.addConvert(block, builder.addIntConstant(block, i8, 0xff), i32, ConversionRule::IntegerWiden);
+    auto zero = builder.addConvert(block,
+                                   builder.addIntConstant(block, u8, 0),
+                                   builder.boolType(),
+                                   ConversionRule::IntegerToBool);
+    auto narrow = builder.addConvert(block, arg, u16, ConversionRule::IntegerWiden);
+    auto wide = builder.addConvert(block, narrow, builder.uint64Type(), ConversionRule::IntegerWiden);
+    builder.addReturn(block, wide);
+
+    REQUIRE(verify(package).empty());
+    CHECK(foldConstants(package, fn));
+    REQUIRE(verify(package).empty());
+    CHECK_EQ(package.inst(minus_one).opcode, Opcode::IntConstant);
+    CHECK_EQ(std::get<IntegerLiteral>(package.inst(minus_one).payload).bits, 0xffffffffU);
+    CHECK_EQ(package.inst(zero).opcode, Opcode::BoolConstant);
+    CHECK_FALSE(std::get<BoolLiteral>(package.inst(zero).payload).value);
+    CHECK_EQ(package.inst(wide).opcode, Opcode::Convert);
+    CHECK_EQ(package.inst(wide).args, std::vector<InstId>{arg});
 }

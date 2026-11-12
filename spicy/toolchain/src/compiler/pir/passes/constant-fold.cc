@@ -102,6 +102,39 @@ bool foldInst(Package& package, InstId id) {
             return true;
         }
 
+        case Opcode::Convert: {
+            const auto rule = std::get<ConversionPayload>(inst.payload).rule;
+            if ( auto value = integerConstant(package, inst.args[0]) ) {
+                switch ( rule ) {
+                    case ConversionRule::IntegerWiden: {
+                        // A wider integer holds the same value, sign-extended if the source is signed.
+                        auto bits = static_cast<uint64_t>(signedValue(value->bits, value->type));
+                        auto width = package.type(inst.result_type).integer.width;
+                        package.replaceInst(id,
+                                            Opcode::IntConstant,
+                                            {},
+                                            InstPayload(IntegerLiteral{truncateBits(bits, width)}));
+                        return true;
+                    }
+                    case ConversionRule::IntegerToBool:
+                        package.replaceInst(id, Opcode::BoolConstant, {}, InstPayload(BoolLiteral{value->bits != 0}));
+                        return true;
+                }
+            }
+
+            // Two widenings in a row are one widening of the original value.
+            const auto& operand = package.inst(inst.args[0]);
+            if ( rule == ConversionRule::IntegerWiden && operand.opcode == Opcode::Convert &&
+                 operand.args.size() == 1 &&
+                 std::get<ConversionPayload>(operand.payload).rule == ConversionRule::IntegerWiden ) {
+                auto source = operand.args[0];
+                package.replaceInst(id, Opcode::Convert, {source}, InstPayload(ConversionPayload{rule}));
+                return true;
+            }
+
+            return false;
+        }
+
         default: return false;
     }
 }

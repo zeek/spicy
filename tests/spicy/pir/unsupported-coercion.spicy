@@ -1,0 +1,15 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: A coercion that no conversion rule covers, here to an optional, falls back to the standard
+# code generator.
+
+module Test;
+
+public type X = unit {
+    len: uint8;
+
+    on %done {
+        local r: optional<uint8> = self.len;
+    }
+};

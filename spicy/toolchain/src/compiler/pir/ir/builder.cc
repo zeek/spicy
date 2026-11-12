@@ -298,6 +298,10 @@ InstId Builder::addIntConstant(BlockId block, TypeId type, uint64_t bits, Source
     return addInst(block, Opcode::IntConstant, {}, type, InstPayload(IntegerLiteral{bits}), span);
 }
 
+InstId Builder::addConvert(BlockId block, InstId value, TypeId type, ConversionRule rule, SourceSpanId span) {
+    return addInst(block, Opcode::Convert, {value}, type, InstPayload(ConversionPayload{rule}), span);
+}
+
 InstId Builder::addAdd(BlockId block, InstId lhs, InstId rhs, SourceSpanId span) {
     // The operands have one integer type, and the sum has that type.
     return addInst(block, Opcode::Add, {lhs, rhs}, _package.inst(lhs).result_type, {}, span);

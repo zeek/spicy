@@ -192,6 +192,11 @@ enum class Opcode {
      * new parser state.
      */
     ReleaseInput,
+    /**
+     * Converts its operand to the result type by the rule its payload names. Each rule is one primitive step; the
+     * frontend has already chosen it, so PIR never selects or ranks conversions.
+     */
+    Convert,
 };
 
 enum class TypeKind { Void, Integer, Bytes, ParserState, Unit, Tuple, Vector, Set, Opaque, Place, Bool, String };
@@ -388,6 +393,20 @@ struct ReadBytesPayload {
     friend constexpr bool operator==(ReadBytesPayload, ReadBytesPayload) = default;
 };
 
+/**
+ * A primitive conversion. Each rule states which operand and result types it accepts.
+ *
+ * - `IntegerWiden`: `uintN` to `uintM` or `intM`, or `intN` to `intM`, with M > N. It cannot fail.
+ * - `IntegerToBool`: any integer to `bool`, true when nonzero. It cannot fail.
+ */
+enum class ConversionRule { IntegerWiden, IntegerToBool };
+
+struct ConversionPayload {
+    ConversionRule rule = ConversionRule::IntegerWiden;
+
+    friend constexpr bool operator==(ConversionPayload, ConversionPayload) = default;
+};
+
 using InstPayload = std::variant<std::monostate,
                                  IntegerLiteral,
                                  ArgumentPayload,
@@ -404,7 +423,8 @@ using InstPayload = std::variant<std::monostate,
                                  BranchPayload,
                                  JumpPayload,
                                  GlobalPayload,
-                                 PortLiteral>;
+                                 PortLiteral,
+                                 ConversionPayload>;
 
 enum class PayloadKind {
     None,
@@ -424,6 +444,7 @@ enum class PayloadKind {
     Jump,
     Global,
     Port,
+    Conversion,
 };
 
 /** Whether a suspending parser read consumes bytes and how it resumes. */
@@ -487,6 +508,7 @@ constexpr bool payloadMatchesKind(const InstPayload& payload, PayloadKind kind) 
         case PayloadKind::Jump: return std::holds_alternative<JumpPayload>(payload);
         case PayloadKind::Global: return std::holds_alternative<GlobalPayload>(payload);
         case PayloadKind::Port: return std::holds_alternative<PortLiteral>(payload);
+        case PayloadKind::Conversion: return std::holds_alternative<ConversionPayload>(payload);
     }
 
     return false;
@@ -541,6 +563,8 @@ inline constexpr TypeConstraint KBranchOperandTypes[] = {fixedType(TypeKind::Boo
 inline constexpr OperandRole KBranchOperandRoles[] = {OperandRole::Borrow};
 inline constexpr TypeConstraint KEqualOperandTypes[] = {anyType(), anyType()};
 inline constexpr OperandRole KEqualOperandRoles[] = {OperandRole::Borrow, OperandRole::Borrow};
+inline constexpr TypeConstraint KConvertOperandTypes[] = {anyType()};
+inline constexpr OperandRole KConvertOperandRoles[] = {OperandRole::Borrow};
 inline constexpr TypeConstraint KVariadicOperandTypes[] = {anyType()};
 inline constexpr OperandRole KVariadicOperandRoles[] = {OperandRole::Consume};
 
@@ -571,7 +595,7 @@ inline constexpr ParserOperationContract KSubunitContract{
 
 // One entry per `Opcode` value, in declaration order, so `schemaFor()` can index directly without
 // per-call allocation.
-inline constexpr std::array<OpcodeSchema, 38> KSchemas{{
+inline constexpr std::array<OpcodeSchema, 39> KSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Add,
         .spelling = "core.add",
@@ -912,6 +936,15 @@ inline constexpr std::array<OpcodeSchema, 38> KSchemas{{
                  .payload_kind = PayloadKind::None,
                  .is_terminator = false,
                  .is_pure = false},
+    OpcodeSchema{.opcode = Opcode::Convert,
+                 .spelling = "core.convert",
+                 // The rule decides which operand and result types are valid, which the verifier checks.
+                 .operand_types = KConvertOperandTypes,
+                 .operand_roles = KConvertOperandRoles,
+                 .result_type = anyType(),
+                 .payload_kind = PayloadKind::Conversion,
+                 .is_terminator = false,
+                 .is_pure = true},
 }};
 
 } // namespace detail
@@ -980,6 +1013,7 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
         case Opcode::StringConstant:
         case Opcode::BytesConstant:
         case Opcode::IntConstant:
+        case Opcode::Convert:
         case Opcode::ForeignConstant:
         case Opcode::PortConstant: return {};
         case Opcode::FieldPlace:

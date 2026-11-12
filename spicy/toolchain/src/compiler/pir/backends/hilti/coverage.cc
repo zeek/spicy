@@ -111,6 +111,7 @@ void checkRegion(const ir::Package& package,
                 // Byte bounds may compute their length from calls, constants, and fields, so those operations are
                 // lowered in parser functions too.
                 case ir::Opcode::IntConstant:
+                case ir::Opcode::Convert:
                 case ir::Opcode::Add:
                 case ir::Opcode::Call:
                 case ir::Opcode::OpaqueOp:
@@ -200,6 +201,7 @@ void checkProcedureRegion(const ir::Package& package, ir::RegionId region, std::
             switch ( inst.opcode ) {
                 case ir::Opcode::Argument:
                 case ir::Opcode::IntConstant:
+                case ir::Opcode::Convert:
                 case ir::Opcode::Add:
                 case ir::Opcode::Return:
                 case ir::Opcode::Call:

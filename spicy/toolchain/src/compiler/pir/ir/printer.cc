@@ -126,6 +126,13 @@ std::optional<std::string> renderPayload(const Package& package, const InstPaylo
         }
     }
 
+    if ( const auto* conversion = std::get_if<ConversionPayload>(&payload) ) {
+        switch ( conversion->rule ) {
+            case ConversionRule::IntegerWiden: return std::string("integer_widen");
+            case ConversionRule::IntegerToBool: return std::string("integer_to_bool");
+        }
+    }
+
     if ( const auto* bytes = std::get_if<BytesLiteral>(&payload) )
         return fmt("b\"%s\"", bytes->value);
 

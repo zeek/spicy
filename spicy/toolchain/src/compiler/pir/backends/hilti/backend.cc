@@ -545,6 +545,25 @@ protected:
                 values_[id.index] = std::move(name);
                 return true;
             }
+            case ir::Opcode::Convert: {
+                auto name = fmt("v_%u", id.index);
+                auto* operand = _value(b, inst.args[0]);
+                ::hilti::Expression* converted = nullptr;
+                switch ( std::get<ir::ConversionPayload>(inst.payload).rule ) {
+                    case ir::ConversionRule::IntegerWiden:
+                        converted = b.cast(operand, targetType(b, package_, inst.result_type), meta);
+                        break;
+                    case ir::ConversionRule::IntegerToBool:
+                        converted =
+                            b.unequal(operand,
+                                      integerLiteral(b, package_, package_.inst(inst.args[0]).result_type, 0, meta),
+                                      meta);
+                        break;
+                }
+                b.addLocal(::hilti::ID(name), targetType(b, package_, inst.result_type), converted, meta);
+                values_[id.index] = std::move(name);
+                return true;
+            }
             case ir::Opcode::ForeignConstant:
                 // A native constant is named where it is used, so it needs no local.
                 values_[id.index] = std::get<ir::StringLiteral>(inst.payload).value;

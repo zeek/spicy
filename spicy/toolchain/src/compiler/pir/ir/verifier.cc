@@ -1138,6 +1138,21 @@ private:
                 return;
             }
 
+            case Opcode::Convert: {
+                const auto* payload = std::get_if<ConversionPayload>(&inst.payload);
+                if ( ! payload || inst.args.size() != 1 || ! _package.isValid(inst.args[0]) )
+                    return;
+
+                if ( ! conversionAccepts(_package,
+                                         payload->rule,
+                                         _package.inst(inst.args[0]).result_type,
+                                         inst.result_type) )
+                    _emitter.emit("convert-rule-mismatch",
+                                  "core.convert's operand and result types do not fit its conversion rule",
+                                  inst_id);
+                return;
+            }
+
             case Opcode::IntConstant: {
                 const auto* payload = std::get_if<IntegerLiteral>(&inst.payload);
                 if ( ! payload || ! _package.isValid(inst.result_type) ||

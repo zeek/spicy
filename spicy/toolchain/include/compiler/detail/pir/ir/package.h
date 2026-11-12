@@ -251,6 +251,9 @@ constexpr uint8_t readIntegerValueWidth(uint32_t read_width) {
 /** Whether `width` is the width of a PIR integer type. */
 constexpr bool isIntegerWidth(unsigned width) { return width == 8 || width == 16 || width == 32 || width == 64; }
 
+/** Whether `rule` converts a value of type `from` to type `to`. */
+bool conversionAccepts(const Package& package, ConversionRule rule, TypeId from, TypeId to);
+
 /** The affine discipline of an instantiated type: a tuple inherits it from any element that has it. */
 ValueDiscipline typeDiscipline(const Package& package, TypeId id);
 

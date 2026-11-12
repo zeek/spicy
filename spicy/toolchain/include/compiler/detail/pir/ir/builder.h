@@ -120,6 +120,8 @@ public:
 
     /** Adds `core.int_constant` of the integer type `type`, holding `bits` as `IntegerLiteral` describes. */
     InstId addIntConstant(BlockId block, TypeId type, uint64_t bits, SourceSpanId span = {});
+    /** Adds `core.convert` of `value` to `type` by `rule`. */
+    InstId addConvert(BlockId block, InstId value, TypeId type, ConversionRule rule, SourceSpanId span = {});
     InstId addAdd(BlockId block, InstId lhs, InstId rhs, SourceSpanId span = {});
     InstId addReturn(BlockId block, InstId value, SourceSpanId span = {});
     /** Adds the `core.return` of a function with a `void` result, which carries no operand. */

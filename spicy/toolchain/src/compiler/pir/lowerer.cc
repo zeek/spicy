@@ -370,6 +370,9 @@ public:
             return _lowerSum(op);
         }
 
+        if ( auto* coerced = expr->tryAs<hilti::expression::Coerced>() )
+            return _lowerCoerced(coerced);
+
         return _unsupported("unsupported expression", expr->meta().location());
     }
 
@@ -468,6 +471,9 @@ private:
             ctor = coerced->coercedCtor();
         return ctor && (ctor->isA<hilti::ctor::SignedInteger>() || ctor->isA<hilti::ctor::UnsignedInteger>());
     }
+
+    // A coercion that the frontend inserted, as one explicit conversion.
+    std::variant<ir::InstId, UnsupportedFeature> _lowerCoerced(hilti::expression::Coerced* coerced);
 
     // `"..." % (a, b)`: the runtime formats the values of a tuple constructor into the string.
     std::variant<ir::InstId, UnsupportedFeature> _lowerFormat(hilti::expression::ResolvedOperator* op);
@@ -1160,6 +1166,30 @@ std::variant<ir::InstId, UnsupportedFeature> BodyLowerer::_lowerForeignConstant(
     if ( ! type || _package.type(*type).kind != ir::TypeKind::Opaque )
         return _unsupported(fmt("reference to '%s' is not supported", std::string(name->id())), loc);
     return _builder.addForeignConstant(_block, *type, std::string(name->id()), internSpan(_package, loc));
+}
+
+std::variant<ir::InstId, UnsupportedFeature> BodyLowerer::_lowerCoerced(hilti::expression::Coerced* coerced) {
+    auto loc = coerced->meta().location();
+    auto operand = lower(coerced->expression());
+    if ( auto* feature = std::get_if<UnsupportedFeature>(&operand) )
+        return *feature;
+
+    auto value = std::get<ir::InstId>(operand);
+    auto from = _package.inst(value).result_type;
+    auto to = _procedures.valueType(coerced->type()->type());
+    if ( ! to )
+        return _unsupported("unsupported coercion", loc);
+
+    // Coercions that PIR's types do not distinguish, such as to a constant type, change nothing.
+    if ( *to == from )
+        return value;
+
+    for ( auto rule : {ir::ConversionRule::IntegerWiden, ir::ConversionRule::IntegerToBool} ) {
+        if ( ir::conversionAccepts(_package, rule, from, *to) )
+            return _builder.addConvert(_block, value, *to, rule, internSpan(_package, loc));
+    }
+
+    return _unsupported("unsupported coercion", loc);
 }
 
 std::variant<ir::InstId, UnsupportedFeature> BodyLowerer::_lowerCtor(hilti::Ctor* ctor, const hilti::Location& loc) {

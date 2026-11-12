@@ -54,6 +54,23 @@ ValueDiscipline typeDiscipline(const Package& package, TypeId id) {
     return typeDiscipline(package, id, visiting);
 }
 
+bool conversionAccepts(const Package& package, ConversionRule rule, TypeId from, TypeId to) {
+    if ( ! package.isValid(from) || ! package.isValid(to) || package.type(from).kind != TypeKind::Integer )
+        return false;
+
+    const auto& source = package.type(from).integer;
+    const auto& target = package.type(to);
+    switch ( rule ) {
+        case ConversionRule::IntegerWiden:
+            // Any wider integer holds every unsigned value, but only a signed one holds every signed value.
+            return target.kind == TypeKind::Integer && target.integer.width > source.width &&
+                   (source.signedness == Signedness::Unsigned || target.integer.signedness == Signedness::Signed);
+        case ConversionRule::IntegerToBool: return target.kind == TypeKind::Bool;
+    }
+
+    return false;
+}
+
 OperandRole operandRole(const Package& package, const Inst& inst, size_t index) {
     if ( inst.opcode == Opcode::Call ) {
         const auto* payload = std::get_if<FunctionPayload>(&inst.payload);
