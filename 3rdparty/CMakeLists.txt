@@ -1,12 +1,9 @@
-# Override `cmake_minimum_required` to suppress deprecation warnings from
-# 3rdparty projects using a lower version.
-#
-# NOTE: We use our own version here instead of the absolute minimum required
-# one which could cause policies to be enabled which are not expected by the
-# 3rdparty project; we likely will catch any incompatiblities via build
-# failures.
+# Override `cmake_minimum_required` to suppress deprecation and policy
+# warnings from 3rdparty projects. We use the project minimum as the lower
+# bound and the running CMake version as the upper bound so all known
+# policies are set to NEW.
 macro(cmake_minimum_required)
-    _cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION})
+    _cmake_minimum_required(VERSION ${CMAKE_MINIMUM_REQUIRED_VERSION}...${CMAKE_VERSION})
 endmacro()
 
 # If we run clang-tidy as part of CMake we never want to check files in this

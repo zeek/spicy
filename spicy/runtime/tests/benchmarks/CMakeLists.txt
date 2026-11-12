@@ -31,5 +31,5 @@ if(BUILD_TOOLCHAIN)
         spicy-rt-parsing-benchmark
         PRIVATE $<IF:$<CONFIG:Debug>,hilti-rt-debug,hilti-rt>
     )
-    target_link_libraries(spicy-rt-parsing-benchmark PRIVATE benchmark)
+    target_link_libraries(spicy-rt-parsing-benchmark PRIVATE benchmark::benchmark)
 endif()

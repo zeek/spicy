@@ -1,3 +1,27 @@
+1.18.0-dev.79 | 2026-11-12 10:44:08 +0100
+
+  * Use full names to link to 3rdparty targets (Benjamin Bannier, Corelight)
+
+    We previously used target names only available when building the
+    3rdparty projects as subdirectories. The installed targets would instead
+    use namespaced names, so switch to that so the diff in a potential
+    unbundled build can be smaller.
+
+  * Fix macro to override minimum CMake version (Benjamin Bannier, Corelight)
+
+    While we were able successfully suppress errors from too low
+    requirements in bundled 3rdparty code, since we did not specify an upper
+    bound this had potentially no effect on setting all known policies to
+    NEW. We now set an upper limit as well.
+
+  * Explicitly set default branch for `3rdparty/json` (Benjamin Bannier, Corelight)
+
+    For whatever reason https://github.com/nlohmann/json set their default
+    branch to `develop`, not `master` where they do releases. This causes
+    confusion for e.g., dependabot which attempts to bump us onto the
+    `develop` branch (see e.g., #2510, #2516, or #2547) which is definitely
+    not what we want.
+
 1.18.0-dev.74 | 2026-11-11 12:17:25 +0100
 
   * Drop use of cmake-format/cmake-lint, switch to gersemi (Benjamin Bannier, Corelight)
