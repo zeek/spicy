@@ -94,6 +94,15 @@ std::optional<ir::Transport> portTransport(hilti::rt::Protocol protocol) {
     return std::nullopt;
 }
 
+// The width and signedness of a HILTI integer type, whether or not PIR supports that width.
+std::optional<ir::IntegerType> integerType(const hilti::UnqualifiedType* type) {
+    if ( const auto* integer = type->tryAs<hilti::type::UnsignedInteger>() )
+        return ir::IntegerType{.width = static_cast<uint8_t>(integer->width()), .signedness = ir::Signedness::Unsigned};
+    if ( const auto* integer = type->tryAs<hilti::type::SignedInteger>() )
+        return ir::IntegerType{.width = static_cast<uint8_t>(integer->width()), .signedness = ir::Signedness::Signed};
+    return std::nullopt;
+}
+
 UnsupportedFeature unsupported(const std::string& feature, std::string reason, const hilti::Location& loc) {
     return UnsupportedFeature{.feature = feature, .reason = std::move(reason), .location = loc};
 }
@@ -480,9 +489,7 @@ private:
         if ( ! _package.isValid(type) )
             return _unsupported("only integers and bools can be compared", op->meta().location());
         switch ( _package.type(type).kind ) {
-            case ir::TypeKind::Int64:
-            case ir::TypeKind::UInt8:
-            case ir::TypeKind::UInt64:
+            case ir::TypeKind::Integer:
             case ir::TypeKind::Bool: break;
             default: return _unsupported("only integers and bools can be compared", op->meta().location());
         }
@@ -497,10 +504,10 @@ private:
         if ( op->kind() != hilti::operator_::Kind::Sum )
             return _unsupported("only signed-integer addition is supported", op->meta().location());
 
-        auto* signed_type = op->result()->type()->tryAs<hilti::type::SignedInteger>();
-        auto* unsigned_type = op->result()->type()->tryAs<hilti::type::UnsignedInteger>();
-        if ( ! ((signed_type && signed_type->width() == 64) || (unsigned_type && unsigned_type->width() == 64)) )
-            return _unsupported("only 64-bit integer addition is supported", op->meta().location());
+        auto integer = integerType(op->result()->type());
+        if ( ! integer || ! ir::isIntegerWidth(integer->width) )
+            return _unsupported("only integer addition is supported", op->meta().location());
+        auto result = _builder.integerType(integer->width, integer->signedness);
 
         auto lhs = lower(op->op0());
         if ( auto* feature = std::get_if<UnsupportedFeature>(&lhs) )
@@ -509,6 +516,10 @@ private:
         auto rhs = lower(op->op1());
         if ( auto* feature = std::get_if<UnsupportedFeature>(&rhs) )
             return *feature;
+
+        if ( _package.inst(std::get<ir::InstId>(lhs)).result_type != result ||
+             _package.inst(std::get<ir::InstId>(rhs)).result_type != result )
+            return _unsupported("only operands of the sum's type can be added", op->meta().location());
 
         return _builder.addAdd(_block,
                                std::get<ir::InstId>(lhs),
@@ -793,14 +804,12 @@ public:
             }
             return _builder.tupleType(std::move(elements));
         }
-        if ( const auto* integer = type->tryAs<hilti::type::SignedInteger>(); integer && integer->width() == 64 )
-            return _builder.int64Type();
-        if ( const auto* integer = type->tryAs<hilti::type::UnsignedInteger>() ) {
-            if ( integer->width() == 8 )
-                return _builder.uint8Type();
-            if ( integer->width() == 64 )
-                return _builder.uint64Type();
-        }
+        if ( const auto* integer = type->tryAs<hilti::type::SignedInteger>();
+             integer && ir::isIntegerWidth(integer->width()) )
+            return _builder.integerType(integer->width(), ir::Signedness::Signed);
+        if ( const auto* integer = type->tryAs<hilti::type::UnsignedInteger>();
+             integer && ir::isIntegerWidth(integer->width()) )
+            return _builder.integerType(integer->width(), ir::Signedness::Unsigned);
         if ( type->isA<hilti::type::Bool>() )
             return _builder.boolType();
         if ( type->isA<hilti::type::String>() )
@@ -1157,18 +1166,23 @@ std::variant<ir::InstId, UnsupportedFeature> BodyLowerer::_lowerCtor(hilti::Ctor
     if ( auto* coerced = ctor->tryAs<hilti::ctor::Coerced>() )
         ctor = coerced->coercedCtor();
 
+    // The frontend has already produced a literal of the target type, so a coerced literal needs no conversion.
     if ( auto* literal = ctor->tryAs<hilti::ctor::SignedInteger>() ) {
-        if ( literal->width() != 64 )
-            return _unsupported("only signed 64-bit integer literals are supported", loc);
-        return _builder.addConstant(_block, literal->value(), internSpan(_package, loc));
+        if ( ! ir::isIntegerWidth(literal->width()) )
+            return _unsupported("unsupported integer literal width", loc);
+        return _builder.addIntConstant(_block,
+                                       _builder.integerType(literal->width(), ir::Signedness::Signed),
+                                       ir::truncateBits(static_cast<uint64_t>(literal->value()), literal->width()),
+                                       internSpan(_package, loc));
     }
 
     if ( auto* literal = ctor->tryAs<hilti::ctor::UnsignedInteger>() ) {
-        if ( literal->width() == 8 )
-            return _builder.addUint8Constant(_block, static_cast<uint8_t>(literal->value()), internSpan(_package, loc));
-        if ( literal->width() != 64 )
-            return _unsupported("only unsigned 8-bit and 64-bit integer literals are supported", loc);
-        return _builder.addUint64Constant(_block, literal->value(), internSpan(_package, loc));
+        if ( ! ir::isIntegerWidth(literal->width()) )
+            return _unsupported("unsupported integer literal width", loc);
+        return _builder.addIntConstant(_block,
+                                       _builder.integerType(literal->width(), ir::Signedness::Unsigned),
+                                       ir::truncateBits(literal->value(), literal->width()),
+                                       internSpan(_package, loc));
     }
 
     if ( auto* literal = ctor->tryAs<hilti::ctor::Port>() ) {
@@ -1498,7 +1512,8 @@ enum class FieldForm { Integer, Bytes, Vector };
 struct FieldSpec {
     type::unit::item::Field* source = nullptr;
     FieldForm form = FieldForm::Integer;
-    uint32_t width = 0;
+    uint8_t width = 0;
+    ir::Signedness signedness = ir::Signedness::Unsigned;
     uint64_t byte_count = 0;
     hilti::Expression* bound = nullptr; /**< a vector's `&size` */
     type::Unit* child = nullptr;
@@ -1553,9 +1568,7 @@ public:
             for ( auto& field : spec.fields ) {
                 ir::TypeId field_type;
                 switch ( field.form ) {
-                    case FieldForm::Integer:
-                        field_type = field.width == 8 ? _builder.uint8Type() : _builder.uint64Type();
-                        break;
+                    case FieldForm::Integer: field_type = _builder.integerType(field.width, field.signedness); break;
                     case FieldForm::Bytes: field_type = _builder.bytesType(); break;
                     case FieldForm::Vector:
                         field_type = _builder.vectorType(_builder.unitType(_spec(field.child).declaration));
@@ -1656,13 +1669,8 @@ private:
                 return reject("only a tuple of named integers can be a context", decl->meta().location());
 
             for ( const auto* element : tuple->elements() ) {
-                const auto* element_type = element->type()->type();
-                const auto* unsigned_type = element_type->tryAs<hilti::type::UnsignedInteger>();
-                const auto* signed_type = element_type->tryAs<hilti::type::SignedInteger>();
-                const bool supported =
-                    (unsigned_type && (unsigned_type->width() == 8 || unsigned_type->width() == 64)) ||
-                    (signed_type && signed_type->width() == 64);
-                if ( ! element->id() || ! supported )
+                auto element_type = _procedures.valueType(element->type()->type());
+                if ( ! element->id() || ! element_type || _package.type(*element_type).kind != ir::TypeKind::Integer )
                     return reject("only a tuple of named integers can be a context", decl->meta().location());
                 spec.context_names.push_back(std::string(element->id()));
             }
@@ -1699,16 +1707,16 @@ private:
             auto* item_type = field->itemType() ? field->itemType()->type() : nullptr;
             auto* attrs = field->attributes();
             auto* size = attrs ? attrs->find(attribute::kind::Size) : nullptr;
-            if ( auto* integer = parse_type ? parse_type->tryAs<hilti::type::UnsignedInteger>() : nullptr ) {
+            if ( auto integer = parse_type ? integerType(parse_type) : std::nullopt ) {
                 if ( attrs && *attrs )
                     return reject("field attributes are not supported yet", field_loc);
-                auto* item_integer = item_type ? item_type->tryAs<hilti::type::UnsignedInteger>() : nullptr;
-                if ( ! item_integer || item_integer->width() != integer->width() ||
-                     (integer->width() != 8 && integer->width() != 64) || size || field->repeatCount() ||
+                auto item_integer = item_type ? integerType(item_type) : std::nullopt;
+                if ( item_integer != integer || ! ir::isIntegerWidth(integer->width) || size || field->repeatCount() ||
                      field->item() )
                     return reject("unsupported integer field form", field_loc);
                 f.form = FieldForm::Integer;
-                f.width = integer->width();
+                f.width = integer->width;
+                f.signedness = integer->signedness;
             }
             else if ( parse_type && parse_type->isA<hilti::type::Bytes>() ) {
                 if ( ! size )
@@ -1935,7 +1943,7 @@ private:
                                 _builder.addReadInteger(block,
                                                         state,
                                                         ir::ReadIntegerPayload{.width = field.width,
-                                                                               .signedness = ir::Signedness::Unsigned,
+                                                                               .signedness = field.signedness,
                                                                                .byte_order = ir::ByteOrder::Network},
                                                         span) :
                                 _builder.addReadBytes(block, state, field.byte_count, span);

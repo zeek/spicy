@@ -170,10 +170,12 @@ NameMap makeNames(const ir::Package& package, const std::vector<TargetBinding>& 
 ::hilti::QualifiedType* targetType(::hilti::Builder& b, const ir::Package& package, ir::TypeId id) {
     const auto& type = package.type(id);
     switch ( type.kind ) {
-        case ir::TypeKind::UInt8: return b.qualifiedType(b.typeUnsignedInteger(8), ::hilti::Constness::Mutable);
-        case ir::TypeKind::UInt64: return b.qualifiedType(b.typeUnsignedInteger(64), ::hilti::Constness::Mutable);
+        case ir::TypeKind::Integer:
+            return b.qualifiedType(type.integer.signedness == ir::Signedness::Signed ?
+                                       static_cast<::hilti::UnqualifiedType*>(b.typeSignedInteger(type.integer.width)) :
+                                       b.typeUnsignedInteger(type.integer.width),
+                                   ::hilti::Constness::Mutable);
         case ir::TypeKind::Bytes: return b.qualifiedType(b.typeBytes(), ::hilti::Constness::Mutable);
-        case ir::TypeKind::Int64: return b.qualifiedType(b.typeSignedInteger(64), ::hilti::Constness::Mutable);
         case ir::TypeKind::Bool: return b.qualifiedType(b.typeBool(), ::hilti::Constness::Mutable);
         case ir::TypeKind::String: return b.qualifiedType(b.typeString(), ::hilti::Constness::Mutable);
         case ir::TypeKind::Tuple: {
@@ -206,6 +208,18 @@ NameMap makeNames(const ir::Package& package, const std::vector<TargetBinding>& 
                                    ::hilti::Constness::Mutable);
         default: ::hilti::util::cannotBeReached();
     }
+}
+
+// An integer literal of exactly the PIR integer type `id`.
+::hilti::Expression* integerLiteral(::hilti::Builder& b,
+                                    const ir::Package& package,
+                                    ir::TypeId id,
+                                    uint64_t bits,
+                                    const ::hilti::Meta& meta) {
+    const auto integer = package.type(id).integer;
+    if ( integer.signedness == ir::Signedness::Signed )
+        return b.expressionCtor(b.ctorSignedInteger(ir::signedValue(bits, integer), integer.width, meta), meta);
+    return b.expressionCtor(b.ctorUnsignedInteger(bits, integer.width, meta), meta);
 }
 
 ::hilti::Declaration* lowerUnitType(::hilti::Builder& b, const ir::Package& package, ir::TypeDeclId id) {
@@ -395,15 +409,6 @@ protected:
             case ir::Opcode::Argument:
                 values_[id.index] = fmt("arg_%u", std::get<ir::ArgumentPayload>(inst.payload).index);
                 return true;
-            case ir::Opcode::Int64Constant: {
-                auto name = fmt("v_%u", id.index);
-                b.addLocal(::hilti::ID(name),
-                           targetType(b, package_, inst.result_type),
-                           b.integer(std::get<ir::Int64Literal>(inst.payload).value),
-                           meta);
-                values_[id.index] = std::move(name);
-                return true;
-            }
             case ir::Opcode::Add: {
                 auto name = fmt("v_%u", id.index);
                 b.addLocal(::hilti::ID(name),
@@ -527,12 +532,15 @@ protected:
                 values_[id.index] = std::move(name);
                 return true;
             }
-            case ir::Opcode::Uint8Constant:
-            case ir::Opcode::Uint64Constant: {
+            case ir::Opcode::IntConstant: {
                 auto name = fmt("v_%u", id.index);
                 b.addLocal(::hilti::ID(name),
                            targetType(b, package_, inst.result_type),
-                           b.integer(std::get<ir::Uint64Literal>(inst.payload).value, meta),
+                           integerLiteral(b,
+                                          package_,
+                                          inst.result_type,
+                                          std::get<ir::IntegerLiteral>(inst.payload).bits,
+                                          meta),
                            meta);
                 values_[id.index] = std::move(name);
                 return true;
@@ -787,9 +795,7 @@ private:
                                    std::get<ir::ReadBytesPayload>(inst.payload).length;
         _wait(b, bytes, meta);
         auto value_name = fmt("v_%u", id.index);
-        auto* value_type = integer ? b.qualifiedType(b.typeUnsignedInteger(static_cast<unsigned>(bytes * 8)),
-                                                     ::hilti::Constness::Mutable) :
-                                     b.qualifiedType(b.typeBytes(), ::hilti::Constness::Mutable);
+        auto* value_type = targetType(b, package_, package_.type(inst.result_type).type_arguments[1]);
         // Keep the field location on the statement as well as its declaration, so this temporary does not
         // introduce a whole-unit location update between the availability check and the read.
         auto* declaration = b.declarationLocalVariable(::hilti::ID(value_name), value_type, {}, meta);
@@ -798,8 +804,7 @@ private:
         LocalBuilder tb(_b.context(), try_body);
         if ( integer ) {
             auto* unpacked =
-                tb.deref(tb.unpack(tb.qualifiedType(tb.typeUnsignedInteger(static_cast<unsigned>(bytes * 8)),
-                                                    ::hilti::Constness::Mutable),
+                tb.deref(tb.unpack(value_type,
                                    {tb.id(::hilti::ID("cursor")), tb.id(::hilti::ID("hilti::ByteOrder::Network"))},
                                    meta));
             tb.addAssign(tb.tuple({tb.id(::hilti::ID(value_name)), tb.id(::hilti::ID("cursor"))}), unpacked, meta);

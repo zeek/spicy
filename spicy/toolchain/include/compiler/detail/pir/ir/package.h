@@ -27,14 +27,23 @@ static_assert(std::is_trivially_copyable_v<RegionId> && sizeof(RegionId) == 4);
 static_assert(std::is_trivially_copyable_v<BlockId> && sizeof(BlockId) == 4);
 static_assert(std::is_trivially_copyable_v<InstId> && sizeof(InstId) == 4);
 
+/** The width and signedness of an integer type. Widths are 8, 16, 32, or 64 bits. */
+struct IntegerType {
+    uint8_t width = 0;
+    Signedness signedness = Signedness::Unsigned;
+
+    friend constexpr bool operator==(IntegerType, IntegerType) = default;
+};
+
 /**
  * A structurally interned type. `type_arguments` is populated for `Tuple` and `Vector`; `declaration`
- * only for `Unit` and `Opaque`. Compare by `TypeId`, not by rendered name.
+ * only for `Unit` and `Opaque`; `integer` only for `Integer`. Compare by `TypeId`, not by rendered name.
  */
 struct Type {
     TypeKind kind;
     std::vector<TypeId> type_arguments; /**< `Tuple` or `Vector` */
     TypeDeclId declaration;             /**< `Unit` only; invalid otherwise */
+    IntegerType integer;                /**< `Integer` only; zero otherwise */
 };
 
 struct Inst {
@@ -118,7 +127,7 @@ struct ContextIdentity {
 struct ParserRoot {
     TypeDeclId unit;
     FunctionId function;
-    std::string name; /**< the parser's exported, qualified name */
+    std::string name;                       /**< the parser's exported, qualified name */
     std::optional<ContextIdentity> context; /**< set exactly when the parser function takes a context */
 };
 
@@ -208,8 +217,6 @@ private:
 
     TypeId _void_type;
     TypeId _int64_type;
-    TypeId _uint8_type;        /**< invalid until first requested */
-    TypeId _uint64_type;       /**< invalid until first requested */
     TypeId _bytes_type;        /**< invalid until first requested */
     TypeId _parser_state_type; /**< invalid until first requested */
     TypeId _bool_type;         /**< invalid until first requested */
@@ -217,6 +224,32 @@ private:
 
     SourceManager _sources;
 };
+
+/** `value`'s two's complement bits, truncated to `width` bits. */
+constexpr uint64_t truncateBits(uint64_t value, unsigned width) {
+    return width >= 64 ? value : value & ((uint64_t{1} << width) - 1);
+}
+
+/** The value of an integer constant's `bits` in `type`, sign-extended when the type is signed. */
+constexpr int64_t signedValue(uint64_t bits, IntegerType type) {
+    if ( type.signedness == Signedness::Unsigned || type.width >= 64 || ! (bits >> (type.width - 1U) & 1U) )
+        return static_cast<int64_t>(bits);
+    return static_cast<int64_t>(bits | ~((uint64_t{1} << type.width) - 1));
+}
+
+/**
+ * The width of the value that `parser.read_integer` produces for a read of `read_width` bits: the narrowest supported
+ * integer that holds it. Zero if there is none.
+ */
+constexpr uint8_t readIntegerValueWidth(uint32_t read_width) {
+    for ( uint8_t width : {8, 16, 32, 64} )
+        if ( read_width != 0 && read_width <= width )
+            return width;
+    return 0;
+}
+
+/** Whether `width` is the width of a PIR integer type. */
+constexpr bool isIntegerWidth(unsigned width) { return width == 8 || width == 16 || width == 32 || width == 64; }
 
 /** The affine discipline of an instantiated type: a tuple inherits it from any element that has it. */
 ValueDiscipline typeDiscipline(const Package& package, TypeId id);

@@ -63,6 +63,11 @@ public:
         }
         else if ( ! type.type_arguments.empty() )
             _emitter.emit("type-unexpected-type-arguments", "only a tuple type may carry type arguments", id);
+
+        if ( type.kind == TypeKind::Integer ? ! isIntegerWidth(type.integer.width) : type.integer != IntegerType{} )
+            _emitter.emit("type-invalid-integer",
+                          "an integer type must have a width of 8, 16, 32, or 64 bits, and no other type has one",
+                          id);
     }
 
     void verifyTypeDecl(TypeDeclId id, const TypeDecl& decl) {
@@ -1119,8 +1124,7 @@ private:
 
                 auto lhs = _package.inst(inst.args[0]).result_type;
                 auto rhs = _package.inst(inst.args[1]).result_type;
-                bool integer = _package.isValid(lhs) && (_package.type(lhs).kind == TypeKind::Int64 ||
-                                                         _package.type(lhs).kind == TypeKind::UInt64);
+                bool integer = _package.isValid(lhs) && _package.type(lhs).kind == TypeKind::Integer;
                 // The operands share one integer type, the one a constraint on operands would name.
                 if ( lhs != rhs || ! integer )
                     _emitter.emit("operand-type-mismatch",
@@ -1129,7 +1133,20 @@ private:
                                   1);
                 else if ( inst.result_type != lhs )
                     _emitter.emit("add-operand-type-mismatch",
-                                  "core.add operands and result must have one 64-bit integer type",
+                                  "core.add operands and result must have one integer type",
+                                  inst_id);
+                return;
+            }
+
+            case Opcode::IntConstant: {
+                const auto* payload = std::get_if<IntegerLiteral>(&inst.payload);
+                if ( ! payload || ! _package.isValid(inst.result_type) ||
+                     _package.type(inst.result_type).kind != TypeKind::Integer )
+                    return;
+
+                if ( truncateBits(payload->bits, _package.type(inst.result_type).integer.width) != payload->bits )
+                    _emitter.emit("int-constant-out-of-range",
+                                  "core.int_constant has bits set above the width of its type",
                                   inst_id);
                 return;
             }
@@ -1141,10 +1158,9 @@ private:
                 auto lhs = _package.inst(inst.args[0]).result_type;
                 auto rhs = _package.inst(inst.args[1]).result_type;
                 if ( lhs != rhs || ! _package.isValid(lhs) || ! _isComparable(_package.type(lhs).kind) )
-                    _emitter
-                        .emit("equal-operand-type-mismatch",
-                              "core.equal operands must have the same comparable type (int64, uint8, uint64, or bool)",
-                              inst_id);
+                    _emitter.emit("equal-operand-type-mismatch",
+                                  "core.equal operands must have the same comparable type (an integer or bool)",
+                                  inst_id);
                 return;
             }
 
@@ -1347,11 +1363,14 @@ private:
                 if ( ! payload )
                     return;
 
-                if ( (payload->width != 8 && payload->width != 64) || payload->signedness != Signedness::Unsigned ||
-                     payload->byte_order != ByteOrder::Network )
+                if ( ! isIntegerWidth(payload->width) || payload->byte_order != ByteOrder::Network )
                     _emitter.emit("read-integer-unsupported-payload",
-                                  "parser.read_integer only supports unsigned width-8 or width-64 network-order reads",
+                                  "parser.read_integer only supports network-order reads of 8, 16, 32, or 64 bits",
                                   inst_id);
+
+                // The value is the narrowest integer that holds the bits read, which have the payload's signedness.
+                const IntegerType value{.width = readIntegerValueWidth(payload->width),
+                                        .signedness = payload->signedness};
 
                 bool result_ok = _package.isValid(inst.result_type);
                 if ( result_ok ) {
@@ -1360,14 +1379,14 @@ private:
                                 _package.isValid(result.type_arguments[0]) &&
                                 _package.type(result.type_arguments[0]).kind == TypeKind::ParserState &&
                                 _package.isValid(result.type_arguments[1]) &&
-                                _package.type(result.type_arguments[1]).kind ==
-                                    (payload->width == 64 ? TypeKind::UInt64 : TypeKind::UInt8);
+                                _package.type(result.type_arguments[1]).kind == TypeKind::Integer &&
+                                _package.type(result.type_arguments[1]).integer == value;
                 }
 
                 if ( ! result_ok )
                     _emitter.emit("read-integer-result-type-mismatch",
-                                  "parser.read_integer's result type must be tuple<parser.state, uint8 or uint64> "
-                                  "matching its width",
+                                  "parser.read_integer's result type must be tuple<parser.state, intN or uintN> "
+                                  "holding its width and signedness",
                                   inst_id);
                 return;
             }
@@ -1432,8 +1451,8 @@ private:
             case Opcode::EnterBound:
                 if ( inst.args.size() == 2 && _package.isValid(inst.args[1]) ) {
                     auto length_type = _package.inst(inst.args[1]).result_type;
-                    if ( ! _package.isValid(length_type) || (_package.type(length_type).kind != TypeKind::UInt8 &&
-                                                             _package.type(length_type).kind != TypeKind::UInt64) )
+                    if ( ! _package.isValid(length_type) || _package.type(length_type).kind != TypeKind::Integer ||
+                         _package.type(length_type).integer.signedness != Signedness::Unsigned )
                         _emitter.emit("invalid-parser-operation",
                                       "parser operation has inconsistent types, payload, or region signature",
                                       inst_id);
@@ -1500,9 +1519,7 @@ private:
     // The types that `core.equal` compares.
     static bool _isComparable(TypeKind kind) {
         switch ( kind ) {
-            case TypeKind::Int64:
-            case TypeKind::UInt8:
-            case TypeKind::UInt64:
+            case TypeKind::Integer:
             case TypeKind::Bool: return true;
             case TypeKind::Void:
             case TypeKind::Bytes:

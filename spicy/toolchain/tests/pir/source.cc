@@ -57,7 +57,7 @@ TEST_SUITE("pir::ir::SourceManager") {
         auto builder = package.builder();
         auto fn = builder.createFunction("f", builder.int64Type());
         auto block = builder.createBlock(package.function(fn).root_region);
-        auto c = builder.addConstant(block, 1);
+        auto c = builder.addIntConstant(block, builder.int64Type(), 1);
         builder.addReturn(block, c);
 
         CHECK_FALSE(package.function(fn).span.isSet());
@@ -74,7 +74,7 @@ TEST_SUITE("pir::ir::SourceManager") {
         auto builder = package.builder();
         auto fn = builder.createFunction("f", builder.int64Type(), SourceSpanId{99});
         auto block = builder.createBlock(package.function(fn).root_region);
-        auto c = builder.addConstant(block, 1);
+        auto c = builder.addIntConstant(block, builder.int64Type(), 1);
         builder.addReturn(block, c);
 
         auto diags = verify(package);
@@ -88,7 +88,7 @@ TEST_SUITE("pir::ir::SourceManager") {
 
         auto fn = builder.createFunction("f", builder.int64Type(), span);
         auto block = builder.createBlock(package.function(fn).root_region);
-        auto c = builder.addConstant(block, 1);
+        auto c = builder.addIntConstant(block, builder.int64Type(), 1);
         builder.addReturn(block, c);
 
         auto diags = verify(package);
@@ -104,7 +104,7 @@ TEST_SUITE("pir::ir::SourceManager") {
 
         auto fn = builder.createFunction("f", builder.int64Type());
         auto block = builder.createBlock(package.function(fn).root_region);
-        auto c = builder.addConstant(block, 1, span);
+        auto c = builder.addIntConstant(block, builder.int64Type(), 1, span);
         builder.addReturn(block, c);
 
         auto diags = verify(package);

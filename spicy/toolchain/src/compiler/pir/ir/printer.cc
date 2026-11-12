@@ -51,9 +51,14 @@ std::string_view byteOrderName(ByteOrder order) {
 // Absent for `std::monostate` (no payload); otherwise the payload's canonical printed form, to be
 // joined alongside operands. A multi-field payload (e.g. `ReadIntegerPayload`) is already
 // comma-joined internally so it reads as one further element in that outer join.
-std::optional<std::string> renderPayload(const Package& package, const InstPayload& payload) {
-    if ( const auto* lit = std::get_if<Int64Literal>(&payload) )
-        return fmt("%d", lit->value);
+std::optional<std::string> renderPayload(const Package& package, const InstPayload& payload, TypeId result_type) {
+    // A constant reads as a value of its type, so the type decides whether its bits are signed.
+    if ( const auto* lit = std::get_if<IntegerLiteral>(&payload) ) {
+        if ( package.isValid(result_type) && package.type(result_type).kind == TypeKind::Integer &&
+             package.type(result_type).integer.signedness == Signedness::Signed )
+            return fmt("%lld", static_cast<long long>(signedValue(lit->bits, package.type(result_type).integer)));
+        return fmt("%llu", static_cast<unsigned long long>(lit->bits));
+    }
 
     if ( const auto* arg = std::get_if<ArgumentPayload>(&payload) )
         return fmt("%u", arg->index);
@@ -113,9 +118,6 @@ std::optional<std::string> renderPayload(const Package& package, const InstPaylo
             return std::string("@<invalid-global>");
         return fmt("@global %%%u \"%s\"", global->global.index, package.global(global->global).name);
     }
-    if ( const auto* literal = std::get_if<Uint64Literal>(&payload) )
-        return fmt("%llu", static_cast<unsigned long long>(literal->value));
-
     if ( const auto* port = std::get_if<PortLiteral>(&payload) ) {
         switch ( port->transport ) {
             case Transport::TCP: return fmt("%u/tcp", port->number);
@@ -152,7 +154,7 @@ std::string printInst(const Package& package, InstId id) {
     for ( auto arg : inst.args )
         tokens.push_back(printOperand(arg));
 
-    if ( auto payload_text = renderPayload(package, inst.payload) )
+    if ( auto payload_text = renderPayload(package, inst.payload, inst.result_type) )
         tokens.push_back(std::move(*payload_text));
 
     for ( size_t i = 0; i < tokens.size(); ++i )
@@ -175,9 +177,8 @@ std::string typeName(const Package& package, TypeId type_id) {
     const auto& t = package.type(type_id);
     switch ( t.kind ) {
         case TypeKind::Void: return "void";
-        case TypeKind::Int64: return "int64";
-        case TypeKind::UInt8: return "uint8";
-        case TypeKind::UInt64: return "uint64";
+        case TypeKind::Integer:
+            return fmt("%sint%u", t.integer.signedness == Signedness::Signed ? "" : "u", t.integer.width);
         case TypeKind::Bytes: return "bytes";
         case TypeKind::ParserState: return "parser.state";
         case TypeKind::Bool: return "bool";

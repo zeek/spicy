@@ -8,17 +8,21 @@
 
 namespace spicy::detail::pir::ir {
 
-TypeId Builder::uint8Type() {
-    if ( ! _package._uint8_type.isSet() )
-        _package._uint8_type = _package._types.add(Type{.kind = TypeKind::UInt8});
-    return _package._uint8_type;
+TypeId Builder::integerType(uint8_t width, Signedness signedness) {
+    const IntegerType integer{.width = width, .signedness = signedness};
+    for ( size_t i = 0; i < _package._types.size(); ++i ) {
+        auto id = TypeId{static_cast<uint32_t>(i)};
+        const auto& t = _package._types.get(id);
+        if ( t.kind == TypeKind::Integer && t.integer == integer )
+            return id;
+    }
+
+    return _package._types.add(Type{.kind = TypeKind::Integer, .integer = integer});
 }
 
-TypeId Builder::uint64Type() {
-    if ( ! _package._uint64_type.isSet() )
-        _package._uint64_type = _package._types.add(Type{.kind = TypeKind::UInt64});
-    return _package._uint64_type;
-}
+TypeId Builder::uint8Type() { return integerType(8, Signedness::Unsigned); }
+
+TypeId Builder::uint64Type() { return integerType(64, Signedness::Unsigned); }
 
 TypeId Builder::bytesType() {
     if ( ! _package._bytes_type.isSet() )
@@ -290,8 +294,8 @@ InstId Builder::addInstForTesting(BlockId block,
     return id;
 }
 
-InstId Builder::addConstant(BlockId block, int64_t value, SourceSpanId span) {
-    return addInst(block, Opcode::Int64Constant, {}, _package._int64_type, InstPayload(Int64Literal{value}), span);
+InstId Builder::addIntConstant(BlockId block, TypeId type, uint64_t bits, SourceSpanId span) {
+    return addInst(block, Opcode::IntConstant, {}, type, InstPayload(IntegerLiteral{bits}), span);
 }
 
 InstId Builder::addAdd(BlockId block, InstId lhs, InstId rhs, SourceSpanId span) {
@@ -325,7 +329,8 @@ InstId Builder::addUnitCreate(BlockId block, TypeDeclId unit, SourceSpanId span)
 }
 
 InstId Builder::addReadInteger(BlockId block, InstId state, ReadIntegerPayload payload, SourceSpanId span) {
-    auto result_type = tupleType({parserStateType(), payload.width == 64 ? uint64Type() : uint8Type()});
+    auto result_type =
+        tupleType({parserStateType(), integerType(readIntegerValueWidth(payload.width), payload.signedness)});
     return addInst(block, Opcode::ReadInteger, {state}, result_type, InstPayload(payload), span);
 }
 
@@ -490,14 +495,6 @@ InstId Builder::addGlobalPlace(BlockId block, GlobalId global, SourceSpanId span
         result_type = placeType(_package.global(global).type);
 
     return addInst(block, Opcode::GlobalPlace, {}, result_type, InstPayload(GlobalPayload{global}), span);
-}
-
-InstId Builder::addUint8Constant(BlockId block, uint8_t value, SourceSpanId span) {
-    return addInst(block, Opcode::Uint8Constant, {}, uint8Type(), InstPayload(Uint64Literal{value}), span);
-}
-
-InstId Builder::addUint64Constant(BlockId block, uint64_t value, SourceSpanId span) {
-    return addInst(block, Opcode::Uint64Constant, {}, uint64Type(), InstPayload(Uint64Literal{value}), span);
 }
 
 InstId Builder::addForeignConstant(BlockId block, TypeId type, std::string spelling, SourceSpanId span) {

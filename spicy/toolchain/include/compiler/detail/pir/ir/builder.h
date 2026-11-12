@@ -19,7 +19,8 @@ public:
     TypeId voidType() const noexcept { return _package._void_type; }
     TypeId int64Type() const noexcept { return _package._int64_type; }
 
-    /** Interns `uint8` lazily so procedural-only packages keep stable type numbering. */
+    /** Interns an integer type by width and signedness. Only `int64` exists before it is first requested. */
+    TypeId integerType(uint8_t width, Signedness signedness);
     TypeId uint8Type();
     TypeId uint64Type();
     TypeId bytesType();
@@ -117,7 +118,8 @@ public:
                              InstPayload payload = {},
                              SourceSpanId span = {});
 
-    InstId addConstant(BlockId block, int64_t value, SourceSpanId span = {});
+    /** Adds `core.int_constant` of the integer type `type`, holding `bits` as `IntegerLiteral` describes. */
+    InstId addIntConstant(BlockId block, TypeId type, uint64_t bits, SourceSpanId span = {});
     InstId addAdd(BlockId block, InstId lhs, InstId rhs, SourceSpanId span = {});
     InstId addReturn(BlockId block, InstId value, SourceSpanId span = {});
     /** Adds the `core.return` of a function with a `void` result, which carries no operand. */
@@ -168,9 +170,6 @@ public:
     InstId addBoolConstant(BlockId block, bool value, SourceSpanId span = {});
     InstId addStringConstant(BlockId block, std::string value, SourceSpanId span = {});
     InstId addBytesConstant(BlockId block, std::string value, SourceSpanId span = {});
-    /** Adds `core.uint64_constant` holding `value`. */
-    InstId addUint64Constant(BlockId block, uint64_t value, SourceSpanId span = {});
-    InstId addUint8Constant(BlockId block, uint8_t value, SourceSpanId span = {});
     /** Adds `core.foreign_constant` naming a native constant `spelling` of the opaque type `type`. */
     InstId addForeignConstant(BlockId block, TypeId type, std::string spelling, SourceSpanId span = {});
     /** Adds `core.port_constant` holding a port of type `type`, which is the opaque native port type. */

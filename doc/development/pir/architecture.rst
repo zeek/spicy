@@ -201,28 +201,28 @@ below it. Instead, this is all collapsed into a more assembly-like format:
        block %2:
          %12: core.branch %2, then %9, else %10 : void
        block %3:
-         %5 = core.int64_constant 1 : int64
+         %5 = core.int_constant 1 : int64
          %6: core.return %5 : void
        block %4:
          %7: core.jump %5 : void
        block %5:
          %8: core.branch %2, then %6, else %7 : void
        block %6:
-         %9 = core.int64_constant 3 : int64
+         %9 = core.int_constant 3 : int64
          %10: core.return %9 : void
        block %7:
          %11: core.jump %8 : void
        block %8:
          %16: core.jump %12 : void
        block %9:
-         %13 = core.int64_constant 4 : int64
+         %13 = core.int_constant 4 : int64
          %14: core.return %13 : void
        block %10:
          %15: core.jump %11 : void
        block %11:
          %17: core.jump %12 : void
        block %12:
-         %18 = core.int64_constant 2 : int64
+         %18 = core.int_constant 2 : int64
          %19: core.return %18 : void
 
 This makes the control flow through the program much simpler *to a computer*. That means
@@ -273,8 +273,8 @@ For example, an ``Inst`` currently looks like:
        SourceSpanId span;
    };
 
-You can see that an `Inst` does not contain a pointer to a type, but instead a `TypeId`.
-This `TypeId` is little more than a `uint32_t`, which is itself an index into the arena.
+You can see that an ``Inst`` does not contain a pointer to a type, but instead a ``TypeId``.
+This ``TypeId`` is little more than a ``uint32_t``, which is itself an index into the arena.
 The arena is basically just a vector of the underlying type.
 
 For example, the instruction arena is defined like:
@@ -283,7 +283,7 @@ For example, the instruction arena is defined like:
 
        Arena<Inst, InstId> _instructions;
 
-Which means that an `InstId` is an index into a vector, and the result is an `Inst` (which
+Which means that an ``InstId`` is an index into a vector, and the result is an ``Inst`` (which
 we saw before).
 
 Diagnostics

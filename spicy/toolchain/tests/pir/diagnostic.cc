@@ -72,7 +72,7 @@ TEST_SUITE("pir::ir::InternalError") {
 
         auto fn = builder.createFunction("f", builder.int64Type());
         auto block = builder.createBlock(package.function(fn).root_region);
-        auto c = builder.addConstant(block, 1, span);
+        auto c = builder.addIntConstant(block, builder.int64Type(), 1, span);
 
         std::vector<InternalError> errors;
         InternalErrorEmitter emitter(package, errors);
@@ -113,7 +113,7 @@ TEST_SUITE("pir::ir::InternalError") {
 
         auto fn = builder.createFunction("answer", builder.int64Type(), fn_span);
         auto block = builder.createBlock(package.function(fn).root_region);
-        auto c = builder.addConstant(block, 1);
+        auto c = builder.addIntConstant(block, builder.int64Type(), 1);
         auto ret = builder.addInstForTesting(block, Opcode::Return, {c}, builder.voidType(), {}, return_span);
 
         std::vector<InternalError> errors;

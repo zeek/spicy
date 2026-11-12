@@ -1,0 +1,47 @@
+# @TEST-EXEC: cp ${SCRIPTS}/pir-parse.h parse.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -p -D spicy-pir >/dev/null 2>pir.log
+# @TEST-EXEC: rg "attached PIR-produced|parser.read_integer|core.int_constant" pir.log | sort -u >route
+# @TEST-EXEC: btest-diff route
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT -j driver.cc >legacy
+# @TEST-EXEC: cmp output legacy
+
+# @TEST-DOC: Parses integers of every width and signedness through PIR and compares them with literals of
+# their own types. The output matches the legacy build, also when the input arrives one byte at a time or ends early.
+
+module Test;
+
+public type Widths = unit {
+    u8: uint8;
+    u16: uint16;
+    u32: uint32;
+    u64: uint64;
+    i8: int8;
+    i16: int16;
+    i32: int32;
+    i64: int64;
+
+    on %done {
+        print self.u8, self.u16, self.u32, self.u64;
+        print self.i8, self.i16, self.i32, self.i64;
+        print self.u16 == 258, self.u32 == 1, self.i8 == -1, self.i16 == -2, self.i64 == -9223372036854775807;
+    }
+};
+
+@TEST-START-FILE driver.cc
+static constexpr unsigned error_style = 0;
+#include "parse.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    std::string input = std::string("\x01\x01\x02\x01\x02\x03\x04\x01\x02\x03\x04\x05\x06\x07\x08", 15) +
+                        std::string("\xff\xff\xfe\x80\x00\x00\x00\x80\x00\x00\x00\x00\x00\x00\x01", 15);
+    run("Test::Widths", "whole", {{input}});
+    run("Test::Widths", "bytewise", {{input}}, 1);
+    run("Test::Widths", "eod", {{input.substr(0, 20)}});
+    return 0;
+}
+
+@TEST-END-FILE

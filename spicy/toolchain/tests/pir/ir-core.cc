@@ -31,8 +31,8 @@ Sample makeSample() {
     auto builder = s.package.builder();
     auto fn = builder.createFunction("main", builder.int64Type());
     auto block = builder.createBlock(s.package.function(fn).root_region);
-    auto c40 = builder.addConstant(block, 40);
-    auto c2 = builder.addConstant(block, 2);
+    auto c40 = builder.addIntConstant(block, builder.int64Type(), 40);
+    auto c2 = builder.addIntConstant(block, builder.int64Type(), 2);
     s.add = builder.addAdd(block, c40, c2);
     builder.addReturn(block, s.add);
     return s;
@@ -44,8 +44,8 @@ const char* expected_initial =
     "function %0 \"main\" -> int64:\n"
     "  region %0:\n"
     "    block %0:\n"
-    "      %0 = core.int64_constant 40 : int64\n"
-    "      %1 = core.int64_constant 2 : int64\n"
+    "      %0 = core.int_constant 40 : int64\n"
+    "      %1 = core.int_constant 2 : int64\n"
     "      %2 = core.add %0, %1 : int64\n"
     "      %3: core.return %2 : void\n";
 
@@ -55,9 +55,9 @@ const char* expected_folded =
     "function %0 \"main\" -> int64:\n"
     "  region %0:\n"
     "    block %0:\n"
-    "      %0 = core.int64_constant 40 : int64\n"
-    "      %1 = core.int64_constant 2 : int64\n"
-    "      %2 = core.int64_constant 42 : int64\n"
+    "      %0 = core.int_constant 40 : int64\n"
+    "      %1 = core.int_constant 2 : int64\n"
+    "      %2 = core.int_constant 42 : int64\n"
     "      %3: core.return %2 : void\n";
 
 } // namespace
@@ -109,8 +109,8 @@ TEST_CASE("constant folding declines to fold on signed overflow") {
     auto builder = package.builder();
     auto fn = builder.createFunction("overflow", builder.int64Type());
     auto block = builder.createBlock(package.function(fn).root_region);
-    auto max = builder.addConstant(block, std::numeric_limits<int64_t>::max());
-    auto one = builder.addConstant(block, 1);
+    auto max = builder.addIntConstant(block, builder.int64Type(), std::numeric_limits<int64_t>::max());
+    auto one = builder.addIntConstant(block, builder.int64Type(), 1);
     auto add = builder.addAdd(block, max, one);
     builder.addReturn(block, add);
 
@@ -124,7 +124,7 @@ TEST_CASE("constant folding safely skips a core.add with too few operands") {
     auto builder = package.builder();
     auto fn = builder.createFunction("bad", builder.int64Type());
     auto block = builder.createBlock(package.function(fn).root_region);
-    auto c = builder.addConstant(block, 1);
+    auto c = builder.addIntConstant(block, builder.int64Type(), 1);
     auto add = builder.addInstForTesting(block, Opcode::Add, {c}, builder.int64Type());
     builder.addReturn(block, add);
 
@@ -138,7 +138,7 @@ TEST_CASE("verifier rejects an invalid operand ID") {
     auto builder = package.builder();
     auto fn = builder.createFunction("bad", builder.int64Type());
     auto block = builder.createBlock(package.function(fn).root_region);
-    auto c = builder.addConstant(block, 1);
+    auto c = builder.addIntConstant(block, builder.int64Type(), 1);
     auto bogus = InstId{999};
     auto add = builder.addInstForTesting(block, Opcode::Add, {c, bogus}, builder.int64Type());
     builder.addReturn(block, add);
@@ -152,9 +152,9 @@ TEST_CASE("verifier rejects an operand type mismatch") {
     auto builder = package.builder();
     auto fn = builder.createFunction("bad", builder.int64Type());
     auto block = builder.createBlock(package.function(fn).root_region);
-    auto c = builder.addConstant(block, 1);
+    auto c = builder.addIntConstant(block, builder.int64Type(), 1);
     auto bad_void =
-        builder.addInstForTesting(block, Opcode::Int64Constant, {}, builder.voidType(), InstPayload(Int64Literal{0}));
+        builder.addInstForTesting(block, Opcode::IntConstant, {}, builder.voidType(), InstPayload(IntegerLiteral{0}));
     auto add = builder.addAdd(block, c, bad_void);
     builder.addReturn(block, add);
 
@@ -168,7 +168,7 @@ TEST_CASE("verifier rejects a return value that doesn't match the function's res
     auto fn = builder.createFunction("bad", builder.int64Type());
     auto block = builder.createBlock(package.function(fn).root_region);
     auto c =
-        builder.addInstForTesting(block, Opcode::Int64Constant, {}, builder.voidType(), InstPayload(Int64Literal{0}));
+        builder.addInstForTesting(block, Opcode::IntConstant, {}, builder.voidType(), InstPayload(IntegerLiteral{0}));
     builder.addReturn(block, c);
 
     auto diags = verify(package);
@@ -227,9 +227,9 @@ TEST_CASE("verifier rejects an instruction after the block terminator") {
     auto builder = package.builder();
     auto fn = builder.createFunction("bad", builder.int64Type());
     auto block = builder.createBlock(package.function(fn).root_region);
-    auto c = builder.addConstant(block, 1);
+    auto c = builder.addIntConstant(block, builder.int64Type(), 1);
     builder.addReturn(block, c);
-    builder.addConstant(block, 2);
+    builder.addIntConstant(block, builder.int64Type(), 2);
 
     auto diags = verify(package);
     CHECK(hasInternalError(diags, "terminator-not-last"));
@@ -337,7 +337,7 @@ TEST_CASE("uint8 and parser.state intern deterministically and are stable across
     auto uint8_1 = builder.uint8Type();
     auto uint8_2 = builder.uint8Type();
     CHECK_EQ(uint8_1, uint8_2);
-    CHECK_EQ(package.type(uint8_1).kind, TypeKind::UInt8);
+    CHECK_EQ(package.type(uint8_1).kind, TypeKind::Integer);
 
     auto state_1 = builder.parserStateType();
     auto state_2 = builder.parserStateType();
@@ -462,7 +462,7 @@ TEST_CASE("a resolved foreign call verifies and prints with its native binding")
 
     auto fn = builder.createFunction("caller", handle);
     auto block = builder.createBlock(package.function(fn).root_region);
-    auto arg = builder.addConstant(block, 7);
+    auto arg = builder.addIntConstant(block, builder.int64Type(), 7);
     auto made = builder.addOpaqueOp(block, make, {arg});
     builder.addReturn(block, made);
 
@@ -603,12 +603,12 @@ TEST_CASE("a call with a local place verifies and prints") {
     auto increment = builder.createFunction("increment", {builder.int64Type()}, builder.int64Type());
     auto increment_block = builder.createBlock(package.function(increment).root_region);
     auto x = builder.addArgument(increment, increment_block, 0);
-    auto one = builder.addConstant(increment_block, 1);
+    auto one = builder.addIntConstant(increment_block, builder.int64Type(), 1);
     builder.addReturn(increment_block, builder.addAdd(increment_block, x, one));
 
     auto fn = builder.createFunction("caller", builder.int64Type());
     auto block = builder.createBlock(package.function(fn).root_region);
-    auto place = builder.addLocalPlace(block, builder.addConstant(block, 5));
+    auto place = builder.addLocalPlace(block, builder.addIntConstant(block, builder.int64Type(), 5));
     auto value = builder.addLoad(block, place);
     auto result = builder.addCall(block, increment, {value});
     builder.addStore(block, place, result);
@@ -627,9 +627,9 @@ TEST_CASE("verifier rejects a store whose value differs from the place's element
     auto builder = package.builder();
     auto fn = builder.createFunction("bad", builder.int64Type());
     auto block = builder.createBlock(package.function(fn).root_region);
-    auto place = builder.addLocalPlace(block, builder.addConstant(block, 1));
+    auto place = builder.addLocalPlace(block, builder.addIntConstant(block, builder.int64Type(), 1));
     auto byte =
-        builder.addInstForTesting(block, Opcode::Int64Constant, {}, builder.uint8Type(), InstPayload(Int64Literal{2}));
+        builder.addInstForTesting(block, Opcode::IntConstant, {}, builder.uint8Type(), InstPayload(IntegerLiteral{2}));
     builder.addStore(block, place, byte);
     builder.addReturn(block, builder.addLoad(block, place));
 
@@ -641,7 +641,7 @@ TEST_CASE("verifier rejects a load and a store whose operand is not a place") {
     auto builder = package.builder();
     auto fn = builder.createFunction("bad", builder.int64Type());
     auto block = builder.createBlock(package.function(fn).root_region);
-    auto not_a_place = builder.addConstant(block, 1);
+    auto not_a_place = builder.addIntConstant(block, builder.int64Type(), 1);
     auto loaded = builder.addLoad(block, not_a_place);
     builder.addStore(block, not_a_place, loaded);
     builder.addReturn(block, loaded);
@@ -684,7 +684,7 @@ TEST_CASE("verifier rejects a place stored in a tuple or returned from a functio
 
     auto fn = builder.createFunction("returns_place", place);
     auto block = builder.createBlock(package.function(fn).root_region);
-    builder.addInstForTesting(block, Opcode::Int64Constant, {}, place, InstPayload(Int64Literal{0}));
+    builder.addInstForTesting(block, Opcode::IntConstant, {}, place, InstPayload(IntegerLiteral{0}));
     builder.addInstForTesting(block, Opcode::Return, {}, place);
 
     auto diags = verify(package);
@@ -697,9 +697,9 @@ TEST_CASE("verifier rejects a local place initialized with a void value") {
     auto fn = builder.createFunction("bad", builder.int64Type());
     auto block = builder.createBlock(package.function(fn).root_region);
     auto void_value =
-        builder.addInstForTesting(block, Opcode::Int64Constant, {}, builder.voidType(), InstPayload(Int64Literal{0}));
+        builder.addInstForTesting(block, Opcode::IntConstant, {}, builder.voidType(), InstPayload(IntegerLiteral{0}));
     builder.addLocalPlace(block, void_value);
-    builder.addReturn(block, builder.addConstant(block, 0));
+    builder.addReturn(block, builder.addIntConstant(block, builder.int64Type(), 0));
 
     CHECK(hasInternalError(verify(package), "local-place-invalid-initial"));
 }
@@ -744,7 +744,7 @@ TEST_CASE("verifier rejects a tuple whose result does not match its operands") {
     auto builder = package.builder();
     auto fn = builder.createFunction("bad", builder.voidType());
     auto block = builder.createBlock(package.function(fn).root_region);
-    auto value = builder.addConstant(block, 1);
+    auto value = builder.addIntConstant(block, builder.int64Type(), 1);
     builder.addInstForTesting(block, Opcode::Tuple, {value}, builder.tupleType({builder.uint8Type()}));
     builder.addReturnVoid(block);
 
@@ -771,10 +771,10 @@ TEST_CASE("a native any formal accepts any copyable operand, and a tuple formal 
 
     auto fn = builder.createFunction("caller", builder.voidType());
     auto block = builder.createBlock(package.function(fn).root_region);
-    builder.addOpaqueOp(block, show, {builder.addConstant(block, 1)});
+    builder.addOpaqueOp(block, show, {builder.addIntConstant(block, builder.int64Type(), 1)});
     builder.addOpaqueOp(block, show, {builder.addBoolConstant(block, false)});
-    builder.addOpaqueOp(block, show_pointer, {builder.addConstant(block, 3)});
-    builder.addOpaqueOp(block, show_tuple, {builder.addTuple(block, {builder.addConstant(block, 2)})});
+    builder.addOpaqueOp(block, show_pointer, {builder.addIntConstant(block, builder.int64Type(), 3)});
+    builder.addOpaqueOp(block, show_tuple, {builder.addTuple(block, {builder.addIntConstant(block, builder.int64Type(), 2)})});
     builder.addReturnVoid(block);
     CHECK(verify(package).empty());
 
@@ -786,7 +786,7 @@ TEST_CASE("a native any formal accepts any copyable operand, and a tuple formal 
                                                         bad_builder.voidType());
     auto bad_fn = bad_builder.createFunction("caller", bad_builder.voidType());
     auto bad_block = bad_builder.createBlock(bad.function(bad_fn).root_region);
-    bad_builder.addOpaqueOp(bad_block, tuple_only, {bad_builder.addConstant(bad_block, 1)});
+    bad_builder.addOpaqueOp(bad_block, tuple_only, {bad_builder.addIntConstant(bad_block, bad_builder.int64Type(), 1)});
     bad_builder.addReturnVoid(bad_block);
 
     CHECK(hasInternalError(verify(bad), "opaque-op-argument-type-mismatch"));
@@ -837,7 +837,7 @@ TEST_CASE("verifier checks call operands even though calls declare no operand ty
 
     auto fn = cyclic_builder.createFunction("caller", cyclic_builder.int64Type());
     auto block = cyclic_builder.createBlock(cyclic.function(fn).root_region);
-    auto constant = cyclic_builder.addConstant(block, 42);
+    auto constant = cyclic_builder.addIntConstant(block, cyclic_builder.int64Type(), 42);
     auto call = cyclic_builder.addCall(block, cyclic_callee, {constant});
     cyclic.replaceInst(constant, Opcode::Call, {call}, FunctionPayload{cyclic_callee});
     cyclic_builder.addReturn(block, call);
@@ -913,13 +913,13 @@ TEST_CASE("an ordinary function may branch, and a value defined before the branc
     auto join = builder.createBlock(region);
 
     auto flag = builder.addArgument(fn, entry, 0);
-    auto base = builder.addConstant(entry, 40);
+    auto base = builder.addIntConstant(entry, builder.int64Type(), 40);
     builder.addBranch(entry, flag, then_block, else_block);
 
     builder.addJump(then_block, join);
     builder.addJump(else_block, join);
 
-    builder.addReturn(join, builder.addAdd(join, base, builder.addConstant(join, 2)));
+    builder.addReturn(join, builder.addAdd(join, base, builder.addIntConstant(join, builder.int64Type(), 2)));
 
     CHECK(verify(package).empty());
     auto dump = print(package);
@@ -938,8 +938,8 @@ TEST_CASE("an ordinary function whose arms both return leaves no join block") {
 
     auto flag = builder.addArgument(fn, entry, 0);
     builder.addBranch(entry, flag, then_block, else_block);
-    builder.addReturn(then_block, builder.addConstant(then_block, 1));
-    builder.addReturn(else_block, builder.addConstant(else_block, 2));
+    builder.addReturn(then_block, builder.addIntConstant(then_block, builder.int64Type(), 1));
+    builder.addReturn(else_block, builder.addIntConstant(else_block, builder.int64Type(), 2));
 
     CHECK(verify(package).empty());
 }
@@ -953,9 +953,9 @@ TEST_CASE("verifier rejects a branch on a condition that is not a bool") {
     auto then_block = builder.createBlock(region);
     auto else_block = builder.createBlock(region);
 
-    builder.addBranch(entry, builder.addConstant(entry, 1), then_block, else_block);
-    builder.addReturn(then_block, builder.addConstant(then_block, 1));
-    builder.addReturn(else_block, builder.addConstant(else_block, 2));
+    builder.addBranch(entry, builder.addIntConstant(entry, builder.int64Type(), 1), then_block, else_block);
+    builder.addReturn(then_block, builder.addIntConstant(then_block, builder.int64Type(), 1));
+    builder.addReturn(else_block, builder.addIntConstant(else_block, builder.int64Type(), 2));
 
     CHECK(hasInternalError(verify(package), "operand-type-mismatch"));
 }
@@ -965,7 +965,7 @@ TEST_CASE("verifier rejects a successor that belongs to another function body") 
     auto builder = package.builder();
     auto other = builder.createFunction("other", builder.int64Type());
     auto other_block = builder.createBlock(package.function(other).root_region);
-    builder.addReturn(other_block, builder.addConstant(other_block, 1));
+    builder.addReturn(other_block, builder.addIntConstant(other_block, builder.int64Type(), 1));
 
     auto fn = builder.createFunction("bad", builder.int64Type());
     auto entry = builder.createBlock(package.function(fn).root_region);
@@ -998,7 +998,7 @@ TEST_CASE("verifier rejects a value used in a block that its defining block does
     auto join = builder.createBlock(region);
 
     builder.addBranch(entry, builder.addBoolConstant(entry, true), then_block, else_block);
-    auto only_on_then = builder.addConstant(then_block, 1);
+    auto only_on_then = builder.addIntConstant(then_block, builder.int64Type(), 1);
     builder.addJump(then_block, join);
     builder.addJump(else_block, join);
     builder.addReturn(join, only_on_then);
@@ -1011,9 +1011,9 @@ TEST_CASE("core.equal compares two integers or two bools of one type and yields 
     auto builder = package.builder();
     auto fn = builder.createFunction("compare", builder.int64Type());
     auto block = builder.createBlock(package.function(fn).root_region);
-    builder.addEqual(block, builder.addConstant(block, 1), builder.addConstant(block, 2));
+    builder.addEqual(block, builder.addIntConstant(block, builder.int64Type(), 1), builder.addIntConstant(block, builder.int64Type(), 2));
     builder.addEqual(block, builder.addBoolConstant(block, true), builder.addBoolConstant(block, false));
-    builder.addReturn(block, builder.addConstant(block, 0));
+    builder.addReturn(block, builder.addIntConstant(block, builder.int64Type(), 0));
 
     CHECK(verify(package).empty());
     CHECK(print(package).find("core.equal") != std::string::npos);
@@ -1024,9 +1024,9 @@ TEST_CASE("verifier rejects core.equal on operands of different or non-comparabl
     auto builder = package.builder();
     auto fn = builder.createFunction("bad", builder.int64Type());
     auto block = builder.createBlock(package.function(fn).root_region);
-    builder.addEqual(block, builder.addConstant(block, 1), builder.addBoolConstant(block, true));
+    builder.addEqual(block, builder.addIntConstant(block, builder.int64Type(), 1), builder.addBoolConstant(block, true));
     builder.addEqual(block, builder.addBytesConstant(block, "a"), builder.addBytesConstant(block, "a"));
-    builder.addReturn(block, builder.addConstant(block, 0));
+    builder.addReturn(block, builder.addIntConstant(block, builder.int64Type(), 0));
 
     CHECK(hasInternalError(verify(package), "equal-operand-type-mismatch"));
 }
@@ -1055,9 +1055,9 @@ TEST_CASE("an affine value consumed on each of two exclusive arms is consumed on
     auto flag = builder.addArgument(fn, entry, 0);
     auto vector = builder.addVectorEmpty(entry, builder.int64Type());
     builder.addBranch(entry, flag, then_block, else_block);
-    builder.addVectorAppend(then_block, vector, builder.addConstant(then_block, 1));
+    builder.addVectorAppend(then_block, vector, builder.addIntConstant(then_block, builder.int64Type(), 1));
     builder.addReturnVoid(then_block);
-    builder.addVectorAppend(else_block, vector, builder.addConstant(else_block, 2));
+    builder.addVectorAppend(else_block, vector, builder.addIntConstant(else_block, builder.int64Type(), 2));
     builder.addReturnVoid(else_block);
 
     CHECK(verify(package).empty());
@@ -1075,9 +1075,9 @@ TEST_CASE("verifier rejects an affine value consumed on a path that reaches a se
     auto flag = builder.addArgument(fn, entry, 0);
     auto vector = builder.addVectorEmpty(entry, builder.int64Type());
     builder.addBranch(entry, flag, then_block, join);
-    builder.addVectorAppend(then_block, vector, builder.addConstant(then_block, 1));
+    builder.addVectorAppend(then_block, vector, builder.addIntConstant(then_block, builder.int64Type(), 1));
     builder.addJump(then_block, join);
-    builder.addVectorAppend(join, vector, builder.addConstant(join, 2));
+    builder.addVectorAppend(join, vector, builder.addIntConstant(join, builder.int64Type(), 2));
     builder.addReturnVoid(join);
 
     CHECK(hasInternalError(verify(package), "parser-state-reused"));
@@ -1102,7 +1102,7 @@ TEST_CASE("the dominator tree and post-dominators of a diamond") {
     builder.addBranch(entry, builder.addArgument(fn, entry, 0), left, right);
     builder.addJump(left, join);
     builder.addJump(right, join);
-    builder.addReturn(join, builder.addConstant(join, 0));
+    builder.addReturn(join, builder.addIntConstant(join, builder.int64Type(), 0));
 
     auto cfg = buildCfg(package, region);
     CHECK(isAcyclic(cfg));
@@ -1138,11 +1138,11 @@ TEST_CASE("an early return inside a nested guard still structures to one emissio
     auto b = builder.addArgument(fn, entry, 1);
     builder.addBranch(entry, a, outer_then, outer_else);
     builder.addBranch(outer_then, b, inner_then, inner_else);
-    builder.addReturn(inner_then, builder.addConstant(inner_then, 1));
+    builder.addReturn(inner_then, builder.addIntConstant(inner_then, builder.int64Type(), 1));
     builder.addJump(inner_else, inner_join);
     builder.addJump(inner_join, join);
     builder.addJump(outer_else, join);
-    builder.addReturn(join, builder.addConstant(join, 2));
+    builder.addReturn(join, builder.addIntConstant(join, builder.int64Type(), 2));
 
     CHECK(verify(package).empty());
     auto cfg = buildCfg(package, region);
@@ -1166,8 +1166,8 @@ TEST_CASE("two arms that both reach the same two returning blocks are not struct
     builder.addBranch(b0, flag, b1, b2);
     builder.addBranch(b1, flag, b3, b4);
     builder.addBranch(b2, flag, b3, b4);
-    builder.addReturn(b3, builder.addConstant(b3, 1));
-    builder.addReturn(b4, builder.addConstant(b4, 2));
+    builder.addReturn(b3, builder.addIntConstant(b3, builder.int64Type(), 1));
+    builder.addReturn(b4, builder.addIntConstant(b4, builder.int64Type(), 2));
 
     CHECK(verify(package).empty());
     auto cfg = buildCfg(package, region);
@@ -1290,4 +1290,104 @@ TEST_CASE("leaving a bound needs a state that is still bounded after a release")
     builder.addParserFinish(s.block, unbounded, completed);
 
     CHECK(hasInternalError(verify(s.package), "invalid-parser-operation"));
+}
+
+TEST_CASE("integer types intern by width and signedness") {
+    Package package;
+    auto builder = package.builder();
+    CHECK_EQ(builder.integerType(64, Signedness::Signed), builder.int64Type());
+    CHECK_EQ(builder.integerType(8, Signedness::Unsigned), builder.uint8Type());
+    CHECK_EQ(builder.integerType(64, Signedness::Unsigned), builder.uint64Type());
+
+    auto u16 = builder.integerType(16, Signedness::Unsigned);
+    auto i16 = builder.integerType(16, Signedness::Signed);
+    CHECK_NE(u16, i16);
+    CHECK_EQ(builder.integerType(16, Signedness::Unsigned), u16);
+    CHECK_EQ(package.type(i16).integer, IntegerType{.width = 16, .signedness = Signedness::Signed});
+    CHECK_EQ(typeName(package, i16), "int16");
+    CHECK_EQ(typeName(package, builder.integerType(32, Signedness::Unsigned)), "uint32");
+}
+
+TEST_CASE("verifier rejects an integer type of an unsupported width") {
+    Package package;
+    auto builder = package.builder();
+    builder.integerType(24, Signedness::Unsigned);
+    CHECK(hasInternalError(verify(package), "type-invalid-integer"));
+}
+
+namespace {
+
+// A function that adds two constants of `type` and returns the sum.
+struct Addition {
+    Package package;
+    FunctionId function;
+    InstId add;
+};
+
+Addition makeAddition(uint8_t width, Signedness signedness, uint64_t lhs, uint64_t rhs) {
+    Addition a;
+    auto builder = a.package.builder();
+    auto type = builder.integerType(width, signedness);
+    a.function = builder.createFunction("f", type);
+    auto block = builder.createBlock(a.package.function(a.function).root_region);
+    a.add = builder.addAdd(block, builder.addIntConstant(block, type, lhs), builder.addIntConstant(block, type, rhs));
+    builder.addReturn(block, a.add);
+    return a;
+}
+
+std::optional<uint64_t> folded(Addition& a) {
+    REQUIRE(verify(a.package).empty());
+    foldConstants(a.package, a.function);
+    REQUIRE(verify(a.package).empty());
+    const auto& inst = a.package.inst(a.add);
+    if ( inst.opcode != Opcode::IntConstant )
+        return {};
+    return std::get<IntegerLiteral>(inst.payload).bits;
+}
+
+} // namespace
+
+TEST_CASE("constant folding adds every integer width when the sum fits") {
+    for ( uint8_t width : {8, 16, 32, 64} ) {
+        auto max = truncateBits(UINT64_MAX, width);
+        auto unsigned_sum = makeAddition(width, Signedness::Unsigned, max - 1, 1);
+        CHECK_EQ(folded(unsigned_sum), max);
+
+        auto unsigned_overflow = makeAddition(width, Signedness::Unsigned, max, 1);
+        CHECK_FALSE(folded(unsigned_overflow));
+
+        // -1 + -1 is -2, which is all ones but the lowest bit.
+        auto signed_sum = makeAddition(width, Signedness::Signed, max, max);
+        CHECK_EQ(folded(signed_sum), max - 1);
+
+        auto signed_max = truncateBits(UINT64_MAX, width - 1);
+        auto signed_overflow = makeAddition(width, Signedness::Signed, signed_max, 1);
+        CHECK_FALSE(folded(signed_overflow));
+
+        auto signed_min = signed_max + 1;
+        auto signed_underflow = makeAddition(width, Signedness::Signed, signed_min, max);
+        CHECK_FALSE(folded(signed_underflow));
+    }
+}
+
+TEST_CASE("constant folding compares constants of one type") {
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("f", builder.boolType());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto u16 = builder.integerType(16, Signedness::Unsigned);
+    auto same = builder.addEqual(block, builder.addIntConstant(block, u16, 7), builder.addIntConstant(block, u16, 7));
+    auto different =
+        builder.addEqual(block, builder.addIntConstant(block, u16, 7), builder.addIntConstant(block, u16, 8));
+    auto bools = builder.addEqual(block, builder.addBoolConstant(block, true), builder.addBoolConstant(block, false));
+    auto nested = builder.addEqual(block, same, different);
+    builder.addReturn(block, nested);
+
+    REQUIRE(verify(package).empty());
+    CHECK(foldConstants(package, fn));
+    REQUIRE(verify(package).empty());
+    for ( auto [id, value] : {std::pair{same, true}, {different, false}, {bools, false}, {nested, false}} ) {
+        REQUIRE_EQ(package.inst(id).opcode, Opcode::BoolConstant);
+        CHECK_EQ(std::get<BoolLiteral>(package.inst(id).payload).value, value);
+    }
 }

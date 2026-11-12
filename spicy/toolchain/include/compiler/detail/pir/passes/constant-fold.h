@@ -6,7 +6,7 @@
 
 namespace spicy::detail::pir::passes {
 
-/** Folds non-overflowing `core.add` constants in place. */
+/** Folds non-overflowing `core.add` and `core.equal` of constants in place. */
 bool foldConstants(ir::Package& package, ir::FunctionId function);
 
 } // namespace spicy::detail::pir::passes

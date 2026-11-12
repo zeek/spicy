@@ -5,8 +5,10 @@
 
 module Test;
 
+import spicy;
+
 type Child = unit {
-    value: uint16;
+    value: uint16 &byte-order=spicy::ByteOrder::Little;
 };
 
 public type Root = unit {

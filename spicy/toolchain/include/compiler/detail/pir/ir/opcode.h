@@ -27,9 +27,7 @@ namespace spicy::detail::pir::ir {
  */
 enum class Opcode {
     /**
-     * Adds two of the same integer type. Result is the type of the first.
-     *
-     * Currently only applies to int64 and uint64.
+     * Adds two values of the same integer type, with the result in that type. Overflow fails at runtime.
      */
     Add,
     /**
@@ -169,17 +167,9 @@ enum class Opcode {
      */
     GlobalPlace,
     /**
-     * An int64 constant.
+     * An integer constant. The result type gives its width and signedness.
      */
-    Int64Constant,
-    /**
-     * A uint64 constant.
-     */
-    Uint64Constant,
-    /**
-     * A uint8 constant.
-     */
-    Uint8Constant,
+    IntConstant,
     /**
      * A constant for foreign values, such as hilti::Protocol.
      */
@@ -204,22 +194,7 @@ enum class Opcode {
     ReleaseInput,
 };
 
-enum class TypeKind {
-    Void,
-    Int64,
-    UInt8,
-    UInt64,
-    Bytes,
-    ParserState,
-    Unit,
-    Tuple,
-    Vector,
-    Set,
-    Opaque,
-    Place,
-    Bool,
-    String
-};
+enum class TypeKind { Void, Integer, Bytes, ParserState, Unit, Tuple, Vector, Set, Opaque, Place, Bool, String };
 
 enum class TypeConstraintKind {
     Any,
@@ -261,9 +236,7 @@ constexpr ValueDiscipline typeKindDiscipline(TypeKind kind) {
         case TypeKind::Vector:
         case TypeKind::Set: return ValueDiscipline::Affine;
         case TypeKind::Void:
-        case TypeKind::Int64:
-        case TypeKind::UInt8:
-        case TypeKind::UInt64:
+        case TypeKind::Integer:
         case TypeKind::Bytes:
         case TypeKind::Tuple:
         case TypeKind::Opaque:
@@ -294,10 +267,15 @@ enum class OperandRole {
 
 // Every opcode gets its own payload (if necessary) so that the verifier
 // and printer never infers the payload meaning.
-struct Int64Literal {
-    int64_t value = 0;
 
-    friend constexpr bool operator==(Int64Literal, Int64Literal) = default;
+/**
+ * The bits of an integer constant in two's complement, truncated to the width of the constant's type. Bits above
+ * that width are zero. The type says whether the bits are signed.
+ */
+struct IntegerLiteral {
+    uint64_t bits = 0;
+
+    friend constexpr bool operator==(IntegerLiteral, IntegerLiteral) = default;
 };
 
 /** An explicit invalid sentinel distinguishes "no real index yet" from index 0. */
@@ -347,12 +325,6 @@ struct GlobalPayload {
     GlobalId global;
 
     friend constexpr bool operator==(GlobalPayload, GlobalPayload) = default;
-};
-
-struct Uint64Literal {
-    uint64_t value = 0;
-
-    friend constexpr bool operator==(Uint64Literal, Uint64Literal) = default;
 };
 
 /** The transport protocol of a port, as the runtime's `hilti::rt::Protocol` names it. */
@@ -417,7 +389,7 @@ struct ReadBytesPayload {
 };
 
 using InstPayload = std::variant<std::monostate,
-                                 Int64Literal,
+                                 IntegerLiteral,
                                  ArgumentPayload,
                                  TupleGetPayload,
                                  ReadIntegerPayload,
@@ -432,12 +404,11 @@ using InstPayload = std::variant<std::monostate,
                                  BranchPayload,
                                  JumpPayload,
                                  GlobalPayload,
-                                 Uint64Literal,
                                  PortLiteral>;
 
 enum class PayloadKind {
     None,
-    Int64Literal,
+    IntegerLiteral,
     Argument,
     TupleGet,
     ReadInteger,
@@ -452,7 +423,6 @@ enum class PayloadKind {
     Branch,
     Jump,
     Global,
-    Uint64Literal,
     Port,
 };
 
@@ -501,7 +471,7 @@ struct OpcodeSchema {
 constexpr bool payloadMatchesKind(const InstPayload& payload, PayloadKind kind) {
     switch ( kind ) {
         case PayloadKind::None: return std::holds_alternative<std::monostate>(payload);
-        case PayloadKind::Int64Literal: return std::holds_alternative<Int64Literal>(payload);
+        case PayloadKind::IntegerLiteral: return std::holds_alternative<IntegerLiteral>(payload);
         case PayloadKind::Argument: return std::holds_alternative<ArgumentPayload>(payload);
         case PayloadKind::TupleGet: return std::holds_alternative<TupleGetPayload>(payload);
         case PayloadKind::ReadInteger: return std::holds_alternative<ReadIntegerPayload>(payload);
@@ -516,7 +486,6 @@ constexpr bool payloadMatchesKind(const InstPayload& payload, PayloadKind kind) 
         case PayloadKind::Branch: return std::holds_alternative<BranchPayload>(payload);
         case PayloadKind::Jump: return std::holds_alternative<JumpPayload>(payload);
         case PayloadKind::Global: return std::holds_alternative<GlobalPayload>(payload);
-        case PayloadKind::Uint64Literal: return std::holds_alternative<Uint64Literal>(payload);
         case PayloadKind::Port: return std::holds_alternative<PortLiteral>(payload);
     }
 
@@ -602,7 +571,7 @@ inline constexpr ParserOperationContract KSubunitContract{
 
 // One entry per `Opcode` value, in declaration order, so `schemaFor()` can index directly without
 // per-call allocation.
-inline constexpr std::array<OpcodeSchema, 40> KSchemas{{
+inline constexpr std::array<OpcodeSchema, 38> KSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Add,
         .spelling = "core.add",
@@ -895,31 +864,12 @@ inline constexpr std::array<OpcodeSchema, 40> KSchemas{{
                  .payload_kind = PayloadKind::Global,
                  .is_terminator = false,
                  .is_pure = false},
-    OpcodeSchema{
-        .opcode = Opcode::Int64Constant,
-        .spelling = "core.int64_constant",
-        .operand_types = KNoOperandTypes,
-        .operand_roles = KNoOperandRoles,
-        .result_type = fixedType(TypeKind::Int64),
-        .payload_kind = PayloadKind::Int64Literal,
-        .is_terminator = false,
-        .is_pure = true,
-        .parser_contract = std::nullopt,
-    },
-    OpcodeSchema{.opcode = Opcode::Uint64Constant,
-                 .spelling = "core.uint64_constant",
+    OpcodeSchema{.opcode = Opcode::IntConstant,
+                 .spelling = "core.int_constant",
                  .operand_types = KNoOperandTypes,
                  .operand_roles = KNoOperandRoles,
-                 .result_type = fixedType(TypeKind::UInt64),
-                 .payload_kind = PayloadKind::Uint64Literal,
-                 .is_terminator = false,
-                 .is_pure = true},
-    OpcodeSchema{.opcode = Opcode::Uint8Constant,
-                 .spelling = "core.uint8_constant",
-                 .operand_types = KNoOperandTypes,
-                 .operand_roles = KNoOperandRoles,
-                 .result_type = fixedType(TypeKind::UInt8),
-                 .payload_kind = PayloadKind::Uint64Literal,
+                 .result_type = fixedType(TypeKind::Integer),
+                 .payload_kind = PayloadKind::IntegerLiteral,
                  .is_terminator = false,
                  .is_pure = true},
     OpcodeSchema{.opcode = Opcode::ForeignConstant,
@@ -1021,14 +971,15 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
                     .reads_places = true,
                     .writes_places = true};
         case Opcode::LocalPlace: return {.allocates = true};
+        // HILTI integers are checked, so an overflow fails at runtime. That is a logic error, not a parse error.
+        case Opcode::Add: return {.may_fail = true};
         case Opcode::Load: return {.reads_places = true};
         case Opcode::Store: return {.writes_places = true};
         case Opcode::Tuple:
         case Opcode::BoolConstant:
         case Opcode::StringConstant:
         case Opcode::BytesConstant:
-        case Opcode::Uint64Constant:
-        case Opcode::Uint8Constant:
+        case Opcode::IntConstant:
         case Opcode::ForeignConstant:
         case Opcode::PortConstant: return {};
         case Opcode::FieldPlace:
@@ -1036,8 +987,6 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
         case Opcode::Finish:
         case Opcode::Yield:
         case Opcode::Return:
-        case Opcode::Add:
-        case Opcode::Int64Constant:
         case Opcode::Argument:
         case Opcode::RegionArgument:
         case Opcode::TupleGet:

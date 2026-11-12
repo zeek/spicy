@@ -153,19 +153,17 @@ TEST_CASE("a two-field unit is covered once both fields publish") {
     CHECK(checkCoverage(package).empty());
 }
 
-TEST_CASE("an unsupported read-integer width produces a coverage gap") {
+TEST_CASE("an unsupported read-integer byte order produces a coverage gap") {
     auto sample = makeOneByte();
-    auto block = BlockId{0};
     auto read = InstId{2}; // %2 = parser.read_integer in the canonical sequence above
     sample.package.replaceInst(read,
                                Opcode::ReadInteger,
                                {InstId{0}},
                                ReadIntegerPayload{
-                                   .width = 16,
+                                   .width = 8,
                                    .signedness = Signedness::Unsigned,
-                                   .byte_order = ByteOrder::Network,
+                                   .byte_order = ByteOrder::Little,
                                });
-    (void)block;
 
     CHECK_FALSE(checkCoverage(sample.package).empty());
 }
@@ -388,19 +386,19 @@ TEST_CASE("branches that rejoin, including past an early return, are supported a
             builder.addJump(b1, b3);
             builder.addJump(b2, b3);
             builder.addJump(b3, b4);
-            builder.addReturn(b4, builder.addConstant(b4, 2));
+            builder.addReturn(b4, builder.addIntConstant(b4, builder.int64Type(), 2));
         }
         else if ( name == "closes_after_return" ) {
             builder.addBranch(b1, flag, b3, b4);
             builder.addJump(b2, b4);
-            builder.addReturn(b3, builder.addConstant(b3, 1));
-            builder.addReturn(b4, builder.addConstant(b4, 2));
+            builder.addReturn(b3, builder.addIntConstant(b3, builder.int64Type(), 1));
+            builder.addReturn(b4, builder.addIntConstant(b4, builder.int64Type(), 2));
         }
         else {
             builder.addBranch(b1, flag, b3, b4);
             builder.addBranch(b2, flag, b3, b4);
-            builder.addReturn(b3, builder.addConstant(b3, 1));
-            builder.addReturn(b4, builder.addConstant(b4, 2));
+            builder.addReturn(b3, builder.addIntConstant(b3, builder.int64Type(), 1));
+            builder.addReturn(b4, builder.addIntConstant(b4, builder.int64Type(), 2));
         }
         builder.addFunctionRoot(fn);
         return package;

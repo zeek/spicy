@@ -49,7 +49,9 @@ struct Cells {
         auto fn = builder.createFunction("write", {Parameter(unit_type, ParameterMode::BorrowMut)}, builder.voidType());
         auto block = builder.createBlock(package.function(fn).root_region);
         auto cell = builder.addArgument(fn, block, 0);
-        builder.addStore(block, builder.addFieldPlace(block, cell, first), builder.addUint64Constant(block, 7));
+        builder.addStore(block,
+                         builder.addFieldPlace(block, cell, first),
+                         builder.addIntConstant(block, builder.uint64Type(), 7));
         builder.addReturnVoid(block);
         return fn;
     }
@@ -131,7 +133,9 @@ TEST_CASE("an assignment through a field place derived from a read borrow is rej
     auto block = builder.createBlock(s.package.function(fn).root_region);
     auto cell = builder.addArgument(fn, block, 0);
     // The store passes the type check: the place holds a uint64, and so does the value.
-    builder.addStore(block, builder.addFieldPlace(block, cell, s.second), builder.addUint64Constant(block, 1));
+    builder.addStore(block,
+                     builder.addFieldPlace(block, cell, s.second),
+                     builder.addIntConstant(block, builder.uint64Type(), 1));
     builder.addReturnVoid(block);
 
     CHECK(hasInternalError(verify(s.package), "borrow-write-denied"));
@@ -144,7 +148,9 @@ TEST_CASE("a scalar borrowed through a place follows the same write permission")
 
     auto set = builder.createFunction("set", {Parameter(place, ParameterMode::BorrowMut)}, builder.voidType());
     auto set_block = builder.createBlock(package.function(set).root_region);
-    builder.addStore(set_block, builder.addArgument(set, set_block, 0), builder.addConstant(set_block, 3));
+    builder.addStore(set_block,
+                     builder.addArgument(set, set_block, 0),
+                     builder.addIntConstant(set_block, builder.int64Type(), 3));
     builder.addReturnVoid(set_block);
 
     auto get = builder.createFunction("get", {Parameter(place, ParameterMode::Borrow)}, builder.int64Type());
@@ -167,12 +173,14 @@ TEST_CASE("a caller can lend its local storage, and sees the callee's write") {
 
     auto set = builder.createFunction("set", {Parameter(place, ParameterMode::BorrowMut)}, builder.voidType());
     auto set_block = builder.createBlock(package.function(set).root_region);
-    builder.addStore(set_block, builder.addArgument(set, set_block, 0), builder.addConstant(set_block, 3));
+    builder.addStore(set_block,
+                     builder.addArgument(set, set_block, 0),
+                     builder.addIntConstant(set_block, builder.int64Type(), 3));
     builder.addReturnVoid(set_block);
 
     auto fn = builder.createFunction("caller", builder.int64Type());
     auto block = builder.createBlock(package.function(fn).root_region);
-    auto local = builder.addLocalPlace(block, builder.addConstant(block, 1));
+    auto local = builder.addLocalPlace(block, builder.addIntConstant(block, builder.int64Type(), 1));
     builder.addCall(block, set, {local});
     builder.addReturn(block, builder.addLoad(block, local));
 
@@ -209,7 +217,9 @@ TEST_CASE("a borrowed unit cannot be consumed, returned, or forwarded to an owni
     auto borrowed = published_builder.addArgument(publish, publish_block, 0);
     published_builder.addPublishField(publish_block,
                                       borrowed,
-                                      published_builder.addUint64Constant(publish_block, 1),
+                                      published_builder.addIntConstant(publish_block,
+                                                                       published_builder.uint64Type(),
+                                                                       1),
                                       published.first);
     published_builder.addReturnVoid(publish_block);
     CHECK(hasInternalError(verify(published.package), "borrowed-value-consumed"));
@@ -540,7 +550,7 @@ TEST_CASE("a call must pass the type and count of each parameter") {
 
     auto fn = builder.createFunction("caller", builder.voidType());
     auto block = builder.createBlock(s.package.function(fn).root_region);
-    builder.addCall(block, read, {builder.addConstant(block, 1)});
+    builder.addCall(block, read, {builder.addIntConstant(block, builder.int64Type(), 1)});
     builder.addCall(block, read, {});
     builder.addReturnVoid(block);
 

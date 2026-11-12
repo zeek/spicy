@@ -30,14 +30,12 @@ void report(std::vector<UnsupportedFeature>& out, std::string feature, std::stri
 bool isStorageType(const ir::Package& package, ir::TypeId id) {
     const auto& type = package.type(id);
     switch ( type.kind ) {
-        case ir::TypeKind::UInt8:
-        case ir::TypeKind::UInt64:
+        case ir::TypeKind::Integer:
         case ir::TypeKind::Bytes:
         case ir::TypeKind::Unit: return true;
         case ir::TypeKind::Vector: return isStorageType(package, type.type_arguments[0]);
         case ir::TypeKind::Set: return false;
         case ir::TypeKind::Void:
-        case ir::TypeKind::Int64:
         case ir::TypeKind::ParserState:
         case ir::TypeKind::Opaque:
         case ir::TypeKind::Place:
@@ -52,7 +50,6 @@ bool isStorageType(const ir::Package& package, ir::TypeId id) {
 // code produces. Unit fields and other storage remain limited to `isStorageType`.
 bool isVectorElementType(const ir::Package& package, ir::TypeId id) {
     switch ( package.type(id).kind ) {
-        case ir::TypeKind::Int64:
         case ir::TypeKind::Bool:
         case ir::TypeKind::String:
         case ir::TypeKind::Opaque: return true;
@@ -107,14 +104,13 @@ void checkRegion(const ir::Package& package,
                 case ir::Opcode::ReadBytes: break;
                 case ir::Opcode::ReadInteger: {
                     const auto* p = std::get_if<ir::ReadIntegerPayload>(&inst.payload);
-                    if ( ! p || (p->width != 8 && p->width != 64) || p->signedness != ir::Signedness::Unsigned ||
-                         p->byte_order != ir::ByteOrder::Network )
-                        unsupported("only unsigned width-8 and width-64 network-order reads are supported");
+                    if ( ! p || ! ir::isIntegerWidth(p->width) || p->byte_order != ir::ByteOrder::Network )
+                        unsupported("only network-order reads of 8, 16, 32, or 64 bits are supported");
                     break;
                 }
                 // Byte bounds may compute their length from calls, constants, and fields, so those operations are
                 // lowered in parser functions too.
-                case ir::Opcode::Int64Constant:
+                case ir::Opcode::IntConstant:
                 case ir::Opcode::Add:
                 case ir::Opcode::Call:
                 case ir::Opcode::OpaqueOp:
@@ -124,8 +120,6 @@ void checkRegion(const ir::Package& package,
                 case ir::Opcode::GlobalPlace:
                 case ir::Opcode::SetEmpty:
                 case ir::Opcode::SetInsert:
-                case ir::Opcode::Uint64Constant:
-                case ir::Opcode::Uint8Constant:
                 case ir::Opcode::ForeignConstant:
                 case ir::Opcode::PortConstant:
                 case ir::Opcode::LocalPlace:
@@ -153,9 +147,7 @@ bool isProcedureType(const ir::Package& package, ir::TypeId id) {
     const auto& type = package.type(id);
     switch ( type.kind ) {
         case ir::TypeKind::Void:
-        case ir::TypeKind::Int64:
-        case ir::TypeKind::UInt8:
-        case ir::TypeKind::UInt64:
+        case ir::TypeKind::Integer:
         case ir::TypeKind::Bytes:
         case ir::TypeKind::Bool:
         case ir::TypeKind::String: return true;
@@ -207,7 +199,7 @@ void checkProcedureRegion(const ir::Package& package, ir::RegionId region, std::
             };
             switch ( inst.opcode ) {
                 case ir::Opcode::Argument:
-                case ir::Opcode::Int64Constant:
+                case ir::Opcode::IntConstant:
                 case ir::Opcode::Add:
                 case ir::Opcode::Return:
                 case ir::Opcode::Call:
@@ -218,8 +210,6 @@ void checkProcedureRegion(const ir::Package& package, ir::RegionId region, std::
                 case ir::Opcode::VectorAppend:
                 case ir::Opcode::SetEmpty:
                 case ir::Opcode::SetInsert:
-                case ir::Opcode::Uint64Constant:
-                case ir::Opcode::Uint8Constant:
                 case ir::Opcode::ForeignConstant:
                 case ir::Opcode::PortConstant:
                 case ir::Opcode::LocalPlace:
@@ -261,7 +251,9 @@ std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package, const 
             const auto& fn = package.foreignFunction(binding.function);
             valid = fn.target_provided && binding.kind == TargetBindingKind::LinkedArtifactScope &&
                     fn.parameters.empty() && package.isValid(fn.result_type) &&
-                    package.type(fn.result_type).kind == ir::TypeKind::UInt64;
+                    package.type(fn.result_type).kind == ir::TypeKind::Integer &&
+                    package.type(fn.result_type).integer ==
+                        ir::IntegerType{.width = 64, .signedness = ir::Signedness::Unsigned};
         }
 
         if ( ! valid )
@@ -275,9 +267,7 @@ std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package, const 
         const auto& type = package.type(ir::TypeId{static_cast<uint32_t>(i)});
         switch ( type.kind ) {
             case ir::TypeKind::Void:
-            case ir::TypeKind::Int64:
-            case ir::TypeKind::UInt8:
-            case ir::TypeKind::UInt64:
+            case ir::TypeKind::Integer:
             case ir::TypeKind::Bytes:
             case ir::TypeKind::ParserState:
             case ir::TypeKind::Unit:

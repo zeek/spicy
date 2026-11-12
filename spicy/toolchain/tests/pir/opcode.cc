@@ -32,9 +32,9 @@ struct ExpectedSchema {
 };
 
 constexpr ExpectedSchema ExpectedSchemas[] = {
-    {.opcode = Opcode::Int64Constant,
-     .spelling = "core.int64_constant",
-     .payload_kind = PayloadKind::Int64Literal,
+    {.opcode = Opcode::IntConstant,
+     .spelling = "core.int_constant",
+     .payload_kind = PayloadKind::IntegerLiteral,
      .is_pure = true},
     {.opcode = Opcode::Add, .spelling = "core.add", .operand_count = 2},
     {.opcode = Opcode::Return, .spelling = "core.return", .operand_count = 1, .is_terminator = true},
@@ -115,7 +115,7 @@ TEST_CASE("core.tuple_get on an invalid index is rejected by the verifier withou
     auto block = builder.createBlock(package.function(fn).root_region);
     auto tuple_ty = builder.tupleType({builder.int64Type()});
     auto tuple_val =
-        builder.addInstForTesting(block, Opcode::Int64Constant, {}, tuple_ty, InstPayload(Int64Literal{0}));
+        builder.addInstForTesting(block, Opcode::IntConstant, {}, tuple_ty, InstPayload(IntegerLiteral{0}));
     auto get = builder.addInstForTesting(block,
                                          Opcode::TupleGet,
                                          {tuple_val},
@@ -132,7 +132,7 @@ TEST_CASE("core.tuple_get on a non-tuple operand is rejected by the verifier wit
     auto builder = package.builder();
     auto fn = builder.createFunction("f", builder.int64Type());
     auto block = builder.createBlock(package.function(fn).root_region);
-    auto c = builder.addConstant(block, 1);
+    auto c = builder.addIntConstant(block, builder.int64Type(), 1);
     auto get =
         builder.addInstForTesting(block, Opcode::TupleGet, {c}, builder.int64Type(), InstPayload(TupleGetPayload{0}));
     builder.addReturn(block, get);
@@ -249,7 +249,7 @@ TEST_CASE("verifier rejects a read with a non-state operand") {
     auto builder = package.builder();
     auto fn = builder.createFunction("f", builder.int64Type());
     auto block = builder.createBlock(package.function(fn).root_region);
-    auto c = builder.addConstant(block, 1);
+    auto c = builder.addIntConstant(block, builder.int64Type(), 1);
     auto read = builder.addInstForTesting(block,
                                           Opcode::ReadInteger,
                                           {c},
@@ -263,7 +263,7 @@ TEST_CASE("verifier rejects a read with a non-state operand") {
 
 TEST_CASE("verifier rejects a read with an unsupported payload") {
     auto p = makeOneBytePipeline();
-    p.package.builder().addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 16});
+    p.package.builder().addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 24});
 
     auto diags = verify(p.package);
     CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "read-integer-unsupported-payload"; }));
@@ -539,4 +539,63 @@ TEST_CASE("a parser root names exactly the elements of its context tuple") {
     CHECK(! verified({"n"}));
     CHECK(verified({}));
     CHECK(verified({"n", "m"}));
+}
+
+TEST_CASE("an integer constant must fit the width of its type") {
+    for ( uint8_t width : {8, 16, 32, 64} ) {
+        for ( auto signedness : {Signedness::Unsigned, Signedness::Signed} ) {
+            auto verified = [&](uint64_t bits) {
+                Package package;
+                auto builder = package.builder();
+                auto type = builder.integerType(width, signedness);
+                auto fn = builder.createFunction("f", type);
+                auto block = builder.createBlock(package.function(fn).root_region);
+                builder.addReturn(block, builder.addIntConstant(block, type, bits));
+                auto errors = verify(package);
+                CHECK(std::ranges::all_of(errors, [](auto& e) { return e.tag == "int-constant-out-of-range"; }));
+                return errors.empty();
+            };
+
+            CHECK(verified(0));
+            CHECK(verified(truncateBits(UINT64_MAX, width)));
+            if ( width < 64 )
+                CHECK_FALSE(verified(uint64_t{1} << width));
+        }
+    }
+}
+
+TEST_CASE("a signed constant prints as its signed value") {
+    Package package;
+    auto builder = package.builder();
+    auto i8 = builder.integerType(8, Signedness::Signed);
+    auto fn = builder.createFunction("f", i8);
+    auto block = builder.createBlock(package.function(fn).root_region);
+    builder.addReturn(block, builder.addIntConstant(block, i8, 0xff));
+    CHECK(verify(package).empty());
+    CHECK_NE(print(package).find("core.int_constant -1 : int8"), std::string::npos);
+}
+
+TEST_CASE("parser.read_integer produces a value of its width and signedness") {
+    for ( uint32_t width : {8, 16, 32, 64} ) {
+        Package package;
+        auto builder = package.builder();
+        auto unit = builder.createUnitDecl("U");
+        auto fn = builder.createParserFunction(unit, builder.parserStateType(), builder.unitType(unit));
+        auto block = builder.createBlock(package.function(fn).root_region);
+        auto state = builder.addArgument(fn, block, 0);
+        auto read =
+            builder.addReadInteger(block, state, ReadIntegerPayload{.width = width, .signedness = Signedness::Signed});
+        CHECK_EQ(package.inst(builder.addTupleGet(block, read, 1)).result_type,
+                 builder.integerType(width, Signedness::Signed));
+
+        // A result of the other signedness does not match the payload.
+        builder.addInstForTesting(block,
+                                  Opcode::ReadInteger,
+                                  {builder.addTupleGet(block, read, 0)},
+                                  builder.tupleType(
+                                      {builder.parserStateType(), builder.integerType(width, Signedness::Unsigned)}),
+                                  InstPayload(ReadIntegerPayload{.width = width, .signedness = Signedness::Signed}));
+        auto errors = verify(package);
+        CHECK(std::ranges::any_of(errors, [](auto& e) { return e.tag == "read-integer-result-type-mismatch"; }));
+    }
 }

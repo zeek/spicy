@@ -11,7 +11,8 @@ namespace spicy::detail::pir::ir {
 
 Package::Package() {
     _void_type = _types.add(Type{.kind = TypeKind::Void});
-    _int64_type = _types.add(Type{.kind = TypeKind::Int64});
+    _int64_type =
+        _types.add(Type{.kind = TypeKind::Integer, .integer = {.width = 64, .signedness = Signedness::Signed}});
 }
 
 Builder Package::builder() { return Builder(*this); }
