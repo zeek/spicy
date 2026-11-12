@@ -298,6 +298,14 @@ InstId Builder::addIntConstant(BlockId block, TypeId type, uint64_t bits, Source
     return addInst(block, Opcode::IntConstant, {}, type, InstPayload(IntegerLiteral{bits}), span);
 }
 
+InstId Builder::addPhi(BlockId block, TypeId type, SourceSpanId span) {
+    return addInst(block, Opcode::Phi, {}, type, {}, span);
+}
+
+InstId Builder::addUpsilon(BlockId block, InstId value, InstId phi, SourceSpanId span) {
+    return addInst(block, Opcode::Upsilon, {value}, _package._void_type, InstPayload(UpsilonPayload{phi}), span);
+}
+
 InstId Builder::addConvert(BlockId block, InstId value, TypeId type, ConversionRule rule, SourceSpanId span) {
     return addInst(block, Opcode::Convert, {value}, type, InstPayload(ConversionPayload{rule}), span);
 }

@@ -198,6 +198,17 @@ enum class Opcode {
      * frontend has already chosen it, so PIR never selects or ranks conversions.
      */
     Convert,
+    /**
+     * Reads the value that the last `core.upsilon` targeting this Phi wrote into its shadow. Every path to a Phi must
+     * write the shadow after the Phi's previous execution, and no path may write it twice without the Phi in between.
+     * A Phi may appear anywhere in its function's body.
+     */
+    Phi,
+    /**
+     * Writes its operand into the shadow of the `core.phi` that its payload names. The target is not an operand and not
+     * a use of the Phi's result. An affine operand is consumed.
+     */
+    Upsilon,
 };
 
 enum class TypeKind { Void, Integer, Bytes, ParserState, Unit, Tuple, Vector, Set, Opaque, Place, Bool, String };
@@ -402,6 +413,13 @@ struct ConversionPayload {
     friend constexpr bool operator==(ConversionPayload, ConversionPayload) = default;
 };
 
+/** The `core.phi` that a `core.upsilon` writes. */
+struct UpsilonPayload {
+    InstId phi;
+
+    friend constexpr bool operator==(UpsilonPayload, UpsilonPayload) = default;
+};
+
 using InstPayload = std::variant<std::monostate,
                                  IntegerLiteral,
                                  ArgumentPayload,
@@ -418,7 +436,8 @@ using InstPayload = std::variant<std::monostate,
                                  JumpPayload,
                                  GlobalPayload,
                                  PortLiteral,
-                                 ConversionPayload>;
+                                 ConversionPayload,
+                                 UpsilonPayload>;
 
 enum class PayloadKind {
     None,
@@ -438,6 +457,7 @@ enum class PayloadKind {
     Global,
     Port,
     Conversion,
+    Upsilon,
 };
 
 /** Whether a suspending parser read consumes bytes and how it resumes. */
@@ -501,6 +521,7 @@ constexpr bool payloadMatchesKind(const InstPayload& payload, PayloadKind kind) 
         case PayloadKind::Global: return std::holds_alternative<GlobalPayload>(payload);
         case PayloadKind::Port: return std::holds_alternative<PortLiteral>(payload);
         case PayloadKind::Conversion: return std::holds_alternative<ConversionPayload>(payload);
+        case PayloadKind::Upsilon: return std::holds_alternative<UpsilonPayload>(payload);
     }
 
     return false;
@@ -562,6 +583,8 @@ inline constexpr TypeConstraint KEqualOperandTypes[] = {anyType(), anyType()};
 inline constexpr OperandRole KEqualOperandRoles[] = {OperandRole::Borrow, OperandRole::Borrow};
 inline constexpr TypeConstraint KConvertOperandTypes[] = {anyType()};
 inline constexpr OperandRole KConvertOperandRoles[] = {OperandRole::Borrow};
+inline constexpr TypeConstraint KUpsilonOperandTypes[] = {anyType()};
+inline constexpr OperandRole KUpsilonOperandRoles[] = {OperandRole::Consume};
 inline constexpr TypeConstraint KVariadicOperandTypes[] = {anyType()};
 inline constexpr OperandRole KVariadicOperandRoles[] = {OperandRole::Consume};
 
@@ -592,7 +615,7 @@ inline constexpr ParserOperationContract KSubunitContract{
 
 // One entry per `Opcode` value, in declaration order, so `schemaFor()` can index directly without
 // per-call allocation.
-inline constexpr std::array<OpcodeSchema, 39> KSchemas{{
+inline constexpr std::array<OpcodeSchema, 41> KSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Add,
         .spelling = "core.add",
@@ -942,6 +965,23 @@ inline constexpr std::array<OpcodeSchema, 39> KSchemas{{
                  .payload_kind = PayloadKind::Conversion,
                  .is_terminator = false,
                  .is_pure = true},
+    OpcodeSchema{.opcode = Opcode::Phi,
+                 .spelling = "core.phi",
+                 .operand_types = KNoOperandTypes,
+                 .operand_roles = KNoOperandRoles,
+                 .result_type = anyType(),
+                 .payload_kind = PayloadKind::None,
+                 .is_terminator = false,
+                 .is_pure = false},
+    OpcodeSchema{.opcode = Opcode::Upsilon,
+                 .spelling = "core.upsilon",
+                 // The operand has the target Phi's type, which the verifier checks.
+                 .operand_types = KUpsilonOperandTypes,
+                 .operand_roles = KUpsilonOperandRoles,
+                 .result_type = fixedType(TypeKind::Void),
+                 .payload_kind = PayloadKind::Upsilon,
+                 .is_terminator = false,
+                 .is_pure = false},
 }};
 
 } // namespace detail
@@ -969,6 +1009,9 @@ struct OperationEffects {
     bool writes_world = false;
     bool reads_places = false;
     bool writes_places = false;
+    /** Reads or writes the shadow of a Phi. */
+    bool reads_shadow = false;
+    bool writes_shadow = false;
 };
 
 constexpr OperationEffects effectsFor(Opcode opcode) {
@@ -1001,6 +1044,8 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
                     .reads_places = true,
                     .writes_places = true};
         case Opcode::LocalPlace: return {.allocates = true};
+        case Opcode::Phi: return {.reads_shadow = true};
+        case Opcode::Upsilon: return {.writes_shadow = true};
         // HILTI integers are checked, so an overflow fails at runtime. That is a logic error, not a parse error.
         case Opcode::Add: return {.may_fail = true};
         case Opcode::Load: return {.reads_places = true};

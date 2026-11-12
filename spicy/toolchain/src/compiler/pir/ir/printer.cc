@@ -123,6 +123,9 @@ std::optional<std::string> renderPayload(const Package& package, const InstPaylo
         }
     }
 
+    if ( const auto* upsilon = std::get_if<UpsilonPayload>(&payload) )
+        return fmt("^%%%u", upsilon->phi.index);
+
     if ( const auto* conversion = std::get_if<ConversionPayload>(&payload) ) {
         switch ( conversion->rule ) {
             case ConversionRule::IntegerWiden: return std::string("integer_widen");

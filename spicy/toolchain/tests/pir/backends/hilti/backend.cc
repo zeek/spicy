@@ -322,3 +322,37 @@ TEST_CASE("a value used in a block other than its own is declared at function en
     CHECK(text.find("v_" + std::to_string(shared.index) + " = 7;") != std::string::npos);
     CHECK(text.find("local int<64> v_" + std::to_string(only_here.index) + " = 5;") != std::string::npos);
 }
+
+TEST_CASE("a Phi gets its own shadow unless all its Upsilons write the same storage") {
+    auto build = [](bool same) {
+        Package package;
+        auto builder = package.builder();
+        auto fn = builder.createFunction("merge", {builder.boolType(), builder.int64Type()}, builder.int64Type());
+        auto region = package.function(fn).root_region;
+        auto entry = builder.createBlock(region);
+        auto then_ = builder.createBlock(region);
+        auto else_ = builder.createBlock(region);
+        auto join = builder.createBlock(region);
+        auto flag = builder.addArgument(fn, entry, 0);
+        auto number = builder.addArgument(fn, entry, 1);
+        builder.addBranch(entry, flag, then_, else_);
+        auto phi = builder.addPhi(join, builder.int64Type());
+        builder.addUpsilon(then_, same ? number : builder.addIntConstant(then_, builder.int64Type(), 1), phi);
+        builder.addJump(then_, join);
+        builder.addUpsilon(else_, number, phi);
+        builder.addJump(else_, join);
+        builder.addReturn(join, phi);
+        builder.addFunctionRoot(fn);
+        return std::pair{lowered(package), phi};
+    };
+
+    auto [separate, phi] = build(false);
+    auto shadow = "phi_" + std::to_string(phi.index);
+    CHECK(separate.find("local int<64> " + shadow + ";") != std::string::npos);
+    CHECK(separate.find(shadow + " = arg_1;") != std::string::npos);
+    CHECK(separate.find("v_" + std::to_string(phi.index) + " = " + shadow) != std::string::npos);
+
+    auto [coalesced, coalesced_phi] = build(true);
+    CHECK(coalesced.find("phi_") == std::string::npos);
+    CHECK(coalesced.find("return arg_1;") != std::string::npos);
+}

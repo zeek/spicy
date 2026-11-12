@@ -191,6 +191,10 @@ public:
     InstId addEqual(BlockId block, InstId lhs, InstId rhs, SourceSpanId span = {});
     /** Adds the terminating `core.branch` on `condition`, transferring control to `then_block` or `else_block`. */
     InstId addBranch(BlockId block, InstId condition, BlockId then_block, BlockId else_block, SourceSpanId span = {});
+    /** Adds `core.phi`, which reads a shadow of `type`. */
+    InstId addPhi(BlockId block, TypeId type, SourceSpanId span = {});
+    /** Adds `core.upsilon`, which writes `value` into the shadow of `phi`. */
+    InstId addUpsilon(BlockId block, InstId value, InstId phi, SourceSpanId span = {});
     /** Adds the terminating `core.jump` to `target`. */
     InstId addJump(BlockId block, BlockId target, SourceSpanId span = {});
 

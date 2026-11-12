@@ -481,8 +481,43 @@ protected:
                 return Storage{.name = fmt("p_%u", id.index),
                                .owner = id,
                                .type = package_.type(inst.result_type).type_arguments[0]};
+            case ir::Opcode::Phi: {
+                if ( auto coalesced = _coalesced(id) )
+                    return *coalesced;
+                return self;
+            }
             default: return self;
         }
+    }
+
+    // The storage that a Phi shares with every value its Upsilons write, if they all have the same one. The Phi and
+    // its Upsilons then need no code. This always holds for the parser state, which is the cursor, and for a unit
+    // built from one `unit.create`.
+    std::optional<Storage> _coalesced(ir::InstId phi) {
+        if ( auto it = coalesced_.find(phi.index); it != coalesced_.end() )
+            return it->second;
+
+        // A Phi that its own Upsilon writes again names the same storage, so it does not decide.
+        coalesced_.emplace(phi.index, std::nullopt);
+        std::optional<Storage> shared;
+        bool same = true;
+        bool any = false;
+        for ( auto upsilon : upsilons_[phi.index] ) {
+            auto value = package_.inst(upsilon).args[0];
+            if ( value == phi )
+                continue;
+            auto storage = _storage(value);
+            if ( any && storage.name != shared->name )
+                same = false;
+            shared = storage;
+            any = true;
+        }
+
+        std::optional<Storage> result;
+        if ( any && same )
+            result = shared;
+        coalesced_[phi.index] = result;
+        return result;
     }
 
     // Lowers a body whose control flow is the CFG of `region`. One block is emitted inline. Otherwise each block in
@@ -494,6 +529,12 @@ protected:
         auto order = ir::postorder(cfg.successors, 0);
         std::ranges::reverse(order);
 
+        // Unreachable blocks are not emitted, so their Upsilons neither write a shadow nor decide coalescing.
+        for ( auto pos : order )
+            for ( auto id : package_.block(cfg.blocks[pos]).insts )
+                if ( const auto* upsilon = std::get_if<ir::UpsilonPayload>(&package_.inst(id).payload) )
+                    upsilons_[upsilon->phi.index].push_back(id);
+
         std::vector<std::pair<std::string, Storage>> hoisted;
         auto hoist = [&](const Storage& storage) {
             if ( hoisted_.insert(storage.name).second )
@@ -501,6 +542,10 @@ protected:
         };
 
         if ( order.size() == 1 ) {
+            // A shadow that the block's own Upsilons write still needs its declaration.
+            for ( auto id : package_.block(cfg.blocks[0]).insts )
+                if ( package_.inst(id).opcode == ir::Opcode::Phi && ! _coalesced(id) )
+                    hoist(Storage{.name = fmt("phi_%u", id.index), .owner = id, .type = package_.inst(id).result_type});
             for ( const auto& [name, storage] : hoisted )
                 fb.addLocal(::hilti::ID(name), _storageType(fb, storage));
             for ( auto id : package_.block(cfg.blocks[0]).insts )
@@ -524,6 +569,8 @@ protected:
                 else
                     for ( auto arg : inst.args )
                         use(_storage(arg));
+                if ( inst.opcode == ir::Opcode::Phi && ! _coalesced(id) )
+                    hoist(Storage{.name = fmt("phi_%u", id.index), .owner = id, .type = inst.result_type});
             }
         }
         for ( const auto& [name, storage] : hoisted )
@@ -769,6 +816,45 @@ protected:
                 values_[id.index] = std::move(name);
                 return true;
             }
+            case ir::Opcode::Phi: {
+                // A coalesced Phi names the storage its Upsilons already wrote. Otherwise it reads its shadow into
+                // its own local, so that a later write of the shadow cannot change the value it read.
+                if ( auto shared = _coalesced(id) ) {
+                    auto upsilon = std::ranges::find_if(upsilons_[id.index], [&](auto u) {
+                        return package_.inst(u).args[0] != id;
+                    });
+                    auto value = package_.inst(*upsilon).args[0];
+                    values_[id.index] = values_.at(value.index);
+                    if ( held_by_reference_.contains(value.index) )
+                        held_by_reference_.insert(id.index);
+                    return true;
+                }
+
+                ::hilti::Expression* shadow = b.id(::hilti::ID(fmt("phi_%u", id.index)));
+                if ( ir::typeDiscipline(package_, inst.result_type) == ir::ValueDiscipline::Affine )
+                    shadow = b.move(shadow, meta);
+                auto name = fmt("v_%u", id.index);
+                _local(b, name, targetType(b, package_, inst.result_type), shadow, meta);
+                values_[id.index] = std::move(name);
+                return true;
+            }
+            case ir::Opcode::Upsilon: {
+                auto phi = std::get<ir::UpsilonPayload>(inst.payload).phi;
+                if ( _coalesced(phi) )
+                    return true;
+
+                auto shadow = fmt("phi_%u", phi.index);
+                if ( values_.at(inst.args[0].index) == shadow )
+                    return true;
+
+                // An affine value is consumed, so the shadow takes over its storage.
+                auto* value = _value(b, inst.args[0]);
+                if ( ir::typeDiscipline(package_, package_.inst(inst.args[0]).result_type) ==
+                     ir::ValueDiscipline::Affine )
+                    value = b.move(value, meta);
+                b.addAssign(b.id(::hilti::ID(shadow)), value, meta);
+                return true;
+            }
             case ir::Opcode::ForeignConstant:
                 // A native constant is named where it is used, so it needs no local.
                 values_[id.index] = std::get<ir::StringLiteral>(inst.payload).value;
@@ -820,6 +906,9 @@ protected:
     std::unordered_map<uint32_t, std::pair<std::string, std::string>> fields_;
     /** Locals declared at function entry because blocks other than their own use them. */
     std::unordered_set<std::string> hoisted_;
+    /** The Upsilons of each Phi, by Phi index. */
+    std::unordered_map<uint32_t, std::vector<ir::InstId>> upsilons_;
+    std::unordered_map<uint32_t, std::optional<Storage>> coalesced_;
 };
 
 class FunctionEmitter : public ProceduralOps {

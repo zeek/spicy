@@ -31,4 +31,8 @@ using FunctionId = ID<FunctionTag>;
 struct BlockTag {};
 using BlockId = ID<BlockTag>;
 
+// `InstId` is named by the Upsilon payload in `opcode.h`, so it is defined here too.
+struct InstTag {};
+using InstId = ID<InstTag>;
+
 } // namespace spicy::detail::pir::ir

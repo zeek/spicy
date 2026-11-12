@@ -1,6 +1,8 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <algorithm>
+#include <iterator>
+#include <set>
 #include <unordered_map>
 #include <unordered_set>
 #include <variant>
@@ -191,6 +193,8 @@ public:
             _emitter.emit("invalid-root-region", "function's root region is not a valid region ID", id);
             return;
         }
+
+        _verifyShadows(fn);
 
         if ( fn.kind == FunctionKind::Parser ) {
             _verifyRegion(id, fn.root_region, fn, {});
@@ -1138,6 +1142,30 @@ private:
                 return;
             }
 
+            case Opcode::Phi:
+                if ( ! _package.isValid(inst.result_type) || inst.result_type == _package.voidType() ||
+                     _package.type(inst.result_type).kind == TypeKind::Place )
+                    _emitter.emit("phi-invalid-type", "core.phi's type must be a value type other than void", inst_id);
+                return;
+
+            case Opcode::Upsilon: {
+                const auto* payload = std::get_if<UpsilonPayload>(&inst.payload);
+                if ( ! payload )
+                    return;
+
+                if ( ! _package.isValid(payload->phi) || _package.inst(payload->phi).opcode != Opcode::Phi ) {
+                    _emitter.emit("upsilon-target-invalid",
+                                  "core.upsilon's target is not a core.phi of the same function body",
+                                  inst_id);
+                    return;
+                }
+
+                if ( inst.args.size() == 1 && _package.isValid(inst.args[0]) &&
+                     _package.inst(inst.args[0]).result_type != _package.inst(payload->phi).result_type )
+                    _emitter.emit("upsilon-type-mismatch", "core.upsilon's value does not have its Phi's type", inst_id);
+                return;
+            }
+
             case Opcode::Convert: {
                 const auto* payload = std::get_if<ConversionPayload>(&inst.payload);
                 if ( ! payload || inst.args.size() != 1 || ! _package.isValid(inst.args[0]) )
@@ -1533,6 +1561,133 @@ private:
                 return;
 
             default: return;
+        }
+    }
+
+    // Phis and Upsilons live in a function's body, the CFG of its root region. Every path to a Phi must write its
+    // shadow after the Phi last ran, and no path may write the shadow twice without the Phi running in between. Both
+    // are checked by a forward dataflow over the body: `must` holds the Phis whose shadow is written on every path,
+    // `may` those whose shadow is written on some path. The worklist reaches a fixpoint on cyclic graphs too.
+    void _verifyShadows(const Function& fn) {
+        if ( ! _package.isValid(fn.root_region) )
+            return;
+
+        auto cfg = buildCfg(_package, fn.root_region);
+        std::unordered_set<uint32_t> in_body;
+        for ( auto block : cfg.blocks )
+            for ( auto id : _package.block(block).insts )
+                if ( _package.isValid(id) )
+                    in_body.insert(id.index);
+
+        // Anything a structured region holds is outside the body.
+        auto outside = [&](auto&& self, RegionId region) -> void {
+            if ( ! _package.isValid(region) )
+                return;
+            for ( auto block : _package.region(region).blocks ) {
+                if ( ! _package.isValid(block) )
+                    continue;
+                for ( auto id : _package.block(block).insts ) {
+                    if ( ! _package.isValid(id) )
+                        continue;
+                    const auto& inst = _package.inst(id);
+                    if ( inst.opcode == Opcode::Phi || inst.opcode == Opcode::Upsilon )
+                        _emitter.emit("phi-outside-function-body",
+                                      "core.phi and core.upsilon may only appear in a function's root region",
+                                      id);
+                    for ( auto child : inst.regions )
+                        self(self, child);
+                }
+            }
+        };
+        for ( auto id : in_body )
+            for ( auto child : _package.inst(InstId{id}).regions )
+                outside(outside, child);
+
+        // The Phi that an Upsilon of this body writes, if it is a Phi of the same body.
+        auto target = [&](const Inst& inst) -> std::optional<uint32_t> {
+            const auto* payload = std::get_if<UpsilonPayload>(&inst.payload);
+            if ( ! payload || ! in_body.contains(payload->phi.index) ||
+                 _package.inst(payload->phi).opcode != Opcode::Phi )
+                return std::nullopt;
+            return payload->phi.index;
+        };
+
+        for ( auto id : in_body ) {
+            const auto& inst = _package.inst(InstId{id});
+            if ( inst.opcode == Opcode::Upsilon && ! target(inst) && std::get_if<UpsilonPayload>(&inst.payload) &&
+                 _package.isValid(std::get<UpsilonPayload>(inst.payload).phi) &&
+                 _package.inst(std::get<UpsilonPayload>(inst.payload).phi).opcode == Opcode::Phi )
+                _emitter.emit("upsilon-target-invalid",
+                              "core.upsilon's target is not a core.phi of the same function body",
+                              InstId{id});
+        }
+
+        if ( cfg.blocks.empty() )
+            return;
+
+        struct Shadows {
+            std::set<uint32_t> must;
+            std::set<uint32_t> may;
+            bool operator==(const Shadows&) const = default;
+        };
+
+        auto transfer = [&](BlockId block, Shadows& state, bool report) {
+            for ( auto id : _package.block(block).insts ) {
+                if ( ! _package.isValid(id) )
+                    continue;
+                const auto& inst = _package.inst(id);
+                if ( inst.opcode == Opcode::Upsilon ) {
+                    auto phi = target(inst);
+                    if ( ! phi )
+                        continue;
+                    if ( report && state.may.contains(*phi) )
+                        _emitter.emit("phi-shadow-overwritten",
+                                      "core.upsilon may write a Phi's shadow that an earlier Upsilon wrote and the Phi "
+                                      "has not read yet",
+                                      id);
+                    state.must.insert(*phi);
+                    state.may.insert(*phi);
+                }
+                else if ( inst.opcode == Opcode::Phi ) {
+                    if ( report && ! state.must.contains(id.index) )
+                        _emitter.emit("phi-shadow-unset",
+                                      "core.phi may run without an Upsilon writing its shadow since the Phi last ran",
+                                      id);
+                    state.must.erase(id.index);
+                    state.may.erase(id.index);
+                }
+            }
+        };
+
+        std::vector<std::optional<Shadows>> in(cfg.blocks.size());
+        in[0] = Shadows{};
+        std::vector<size_t> worklist = {0};
+        while ( ! worklist.empty() ) {
+            auto pos = worklist.back();
+            worklist.pop_back();
+            auto state = *in[pos];
+            transfer(cfg.blocks[pos], state, false);
+            for ( auto next : cfg.successors[pos] ) {
+                Shadows merged = state;
+                if ( in[next] ) {
+                    std::set<uint32_t> must;
+                    std::ranges::set_intersection(in[next]->must, state.must, std::inserter(must, must.begin()));
+                    merged.must = std::move(must);
+                    merged.may.insert(in[next]->may.begin(), in[next]->may.end());
+                }
+                if ( in[next] != merged ) {
+                    in[next] = std::move(merged);
+                    worklist.push_back(next);
+                }
+            }
+        }
+
+        // Unreachable blocks have no state and are not checked.
+        for ( size_t pos = 0; pos < cfg.blocks.size(); ++pos ) {
+            if ( ! in[pos] )
+                continue;
+            auto state = *in[pos];
+            transfer(cfg.blocks[pos], state, true);
         }
     }
 

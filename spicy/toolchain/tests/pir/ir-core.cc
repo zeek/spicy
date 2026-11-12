@@ -1342,3 +1342,206 @@ TEST_CASE("constant folding compares constants of one type") {
         CHECK_EQ(std::get<BoolLiteral>(package.inst(id).payload).value, value);
     }
 }
+
+namespace {
+
+// An ordinary function `f(bool) -> T` whose body is a diamond: `entry` branches to `then` or `else`, which both
+// jump to `join`. Tests add the merge.
+struct Diamond {
+    Package package;
+    FunctionId function;
+    BlockId entry;
+    BlockId then_;
+    BlockId else_;
+    BlockId join;
+    InstId condition;
+};
+
+Diamond makeDiamond() {
+    Diamond d;
+    auto builder = d.package.builder();
+    auto result = builder.int64Type();
+    d.function = builder.createFunction("f", std::vector<Parameter>{builder.boolType()}, result);
+    auto region = d.package.function(d.function).root_region;
+    d.entry = builder.createBlock(region);
+    d.then_ = builder.createBlock(region);
+    d.else_ = builder.createBlock(region);
+    d.join = builder.createBlock(region);
+    d.condition = builder.addArgument(d.function, d.entry, 0);
+    return d;
+}
+
+void closeDiamond(Diamond& d) {
+    auto builder = d.package.builder();
+    builder.addBranch(d.entry, d.condition, d.then_, d.else_);
+    builder.addJump(d.then_, d.join);
+    builder.addJump(d.else_, d.join);
+}
+
+} // namespace
+
+TEST_CASE("a Phi merges the values that Upsilons write on both arms of a diamond") {
+    auto d = makeDiamond();
+    auto builder = d.package.builder();
+    auto phi = builder.addPhi(d.join, builder.int64Type());
+    builder.addUpsilon(d.then_, builder.addIntConstant(d.then_, builder.int64Type(), 1), phi);
+    builder.addUpsilon(d.else_, builder.addIntConstant(d.else_, builder.int64Type(), 2), phi);
+    closeDiamond(d);
+    builder.addReturn(d.join, phi);
+
+    CHECK(verify(d.package).empty());
+    CHECK_NE(print(d.package).find("core.upsilon %"), std::string::npos);
+    CHECK_NE(print(d.package).find("^%" + std::to_string(phi.index)), std::string::npos);
+}
+
+TEST_CASE("verifier rejects a Phi that a path reaches without writing its shadow") {
+    auto d = makeDiamond();
+    auto builder = d.package.builder();
+    auto phi = builder.addPhi(d.join, builder.int64Type());
+    builder.addUpsilon(d.then_, builder.addIntConstant(d.then_, builder.int64Type(), 1), phi);
+    closeDiamond(d);
+    builder.addReturn(d.join, phi);
+
+    CHECK(hasInternalError(verify(d.package), "phi-shadow-unset"));
+}
+
+TEST_CASE("verifier rejects an Upsilon that writes a shadow before the earlier write was read") {
+    auto d = makeDiamond();
+    auto builder = d.package.builder();
+    auto phi = builder.addPhi(d.join, builder.int64Type());
+    // The entry writes the shadow, and the then-arm writes it again before the Phi reads it.
+    builder.addUpsilon(d.entry, builder.addIntConstant(d.entry, builder.int64Type(), 0), phi);
+    builder.addUpsilon(d.then_, builder.addIntConstant(d.then_, builder.int64Type(), 1), phi);
+    closeDiamond(d);
+    builder.addReturn(d.join, phi);
+
+    auto errors = verify(d.package);
+    CHECK(hasInternalError(errors, "phi-shadow-overwritten"));
+    CHECK_FALSE(hasInternalError(errors, "phi-shadow-unset"));
+}
+
+TEST_CASE("a Phi reads its shadow where it sits, which a later Upsilon may write again") {
+    auto d = makeDiamond();
+    auto builder = d.package.builder();
+    auto phi = builder.addPhi(d.join, builder.int64Type());
+    builder.addUpsilon(d.then_, builder.addIntConstant(d.then_, builder.int64Type(), 1), phi);
+    builder.addUpsilon(d.else_, builder.addIntConstant(d.else_, builder.int64Type(), 2), phi);
+    closeDiamond(d);
+    // After the Phi has read the shadow, writing it again is no double write.
+    builder.addUpsilon(d.join, phi, phi);
+    builder.addReturn(d.join, phi);
+    CHECK(verify(d.package).empty());
+}
+
+TEST_CASE("a Phi need not lead its block or have its Upsilons in predecessors") {
+    auto d = makeDiamond();
+    auto builder = d.package.builder();
+    auto phi = builder.addPhi(d.then_, builder.int64Type());
+    // The entry writes the shadow, and only the then-arm reads it.
+    builder.addUpsilon(d.entry, builder.addIntConstant(d.entry, builder.int64Type(), 7), phi);
+    auto sum = builder.addAdd(d.then_, phi, builder.addIntConstant(d.then_, builder.int64Type(), 1));
+    builder.addLocalPlace(d.then_, sum);
+    closeDiamond(d);
+    builder.addReturn(d.join, builder.addIntConstant(d.join, builder.int64Type(), 0));
+    CHECK(verify(d.package).empty());
+}
+
+TEST_CASE("verifier rejects a Phi that runs before any Upsilon writes its shadow") {
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("f", builder.int64Type());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto phi = builder.addPhi(block, builder.int64Type());
+    builder.addUpsilon(block, builder.addIntConstant(block, builder.int64Type(), 1), phi);
+    builder.addReturn(block, phi);
+    CHECK(hasInternalError(verify(package), "phi-shadow-unset"));
+}
+
+TEST_CASE("verifier rejects an Upsilon whose target is not a Phi of its function or has another type") {
+    auto d = makeDiamond();
+    auto builder = d.package.builder();
+    auto phi = builder.addPhi(d.join, builder.int64Type());
+    auto one = builder.addIntConstant(d.then_, builder.int64Type(), 1);
+    builder.addUpsilon(d.then_, one, phi);
+    builder.addUpsilon(d.else_, builder.addBoolConstant(d.else_, true), phi);
+    closeDiamond(d);
+    builder.addReturn(d.join, phi);
+    CHECK(hasInternalError(verify(d.package), "upsilon-type-mismatch"));
+
+    auto other = makeDiamond();
+    auto ob = other.package.builder();
+    auto not_phi = ob.addIntConstant(other.entry, ob.int64Type(), 0);
+    ob.addInstForTesting(other.then_,
+                         Opcode::Upsilon,
+                         {ob.addIntConstant(other.then_, ob.int64Type(), 1)},
+                         ob.voidType(),
+                         InstPayload(UpsilonPayload{not_phi}));
+    closeDiamond(other);
+    ob.addReturn(other.join, not_phi);
+    CHECK(hasInternalError(verify(other.package), "upsilon-target-invalid"));
+
+    // A Phi of another function is not a target either.
+    Package two;
+    auto tb = two.builder();
+    auto f = tb.createFunction("f", tb.int64Type());
+    auto f_block = tb.createBlock(two.function(f).root_region);
+    auto foreign_phi = tb.addPhi(f_block, tb.int64Type());
+    tb.addUpsilon(f_block, tb.addIntConstant(f_block, tb.int64Type(), 0), foreign_phi);
+    tb.addReturn(f_block, foreign_phi);
+    auto g = tb.createFunction("g", tb.int64Type());
+    auto g_block = tb.createBlock(two.function(g).root_region);
+    auto zero = tb.addIntConstant(g_block, tb.int64Type(), 0);
+    tb.addUpsilon(g_block, zero, foreign_phi);
+    tb.addReturn(g_block, zero);
+    CHECK(hasInternalError(verify(two), "upsilon-target-invalid"));
+}
+
+TEST_CASE("verifier rejects a Phi of void type") {
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("f", builder.voidType());
+    auto block = builder.createBlock(package.function(fn).root_region);
+    builder.addPhi(block, builder.voidType());
+    builder.addReturnVoid(block);
+    CHECK(hasInternalError(verify(package), "phi-invalid-type"));
+}
+
+TEST_CASE("an affine value written by an Upsilon on each arm is consumed once per path") {
+    auto d = makeDiamond();
+    auto builder = d.package.builder();
+    auto vector_type = builder.vectorType(builder.int64Type());
+    // `f` returns an int64; the merged vector is only consumed by a store into a local.
+    auto phi = builder.addPhi(d.join, vector_type);
+    auto vector = builder.addVectorEmpty(d.entry, builder.int64Type());
+    builder.addUpsilon(d.then_, vector, phi);
+    builder.addUpsilon(d.else_,
+                       builder.addVectorAppend(d.else_,
+                                               vector,
+                                               builder.addIntConstant(d.else_, builder.int64Type(), 1)),
+                       phi);
+    closeDiamond(d);
+    builder.addLocalPlace(d.join, phi);
+    builder.addReturn(d.join, builder.addIntConstant(d.join, builder.int64Type(), 0));
+    CHECK(verify(d.package).empty());
+
+    // Consuming the same version twice on one arm is a reuse.
+    auto twice = makeDiamond();
+    auto tb = twice.package.builder();
+    auto twice_phi = tb.addPhi(twice.join, vector_type);
+    auto twice_vector = tb.addVectorEmpty(twice.entry, tb.int64Type());
+    tb.addUpsilon(twice.then_, twice_vector, twice_phi);
+    tb.addLocalPlace(twice.then_, twice_vector);
+    tb.addUpsilon(twice.else_, tb.addVectorEmpty(twice.else_, tb.int64Type()), twice_phi);
+    closeDiamond(twice);
+    tb.addLocalPlace(twice.join, twice_phi);
+    tb.addReturn(twice.join, tb.addIntConstant(twice.join, tb.int64Type(), 0));
+    CHECK(hasInternalError(verify(twice.package), "parser-state-reused"));
+}
+
+TEST_CASE("Phi and Upsilon have shadow effects") {
+    CHECK(effectsFor(Opcode::Phi).reads_shadow);
+    CHECK_FALSE(effectsFor(Opcode::Phi).writes_shadow);
+    CHECK(effectsFor(Opcode::Upsilon).writes_shadow);
+    CHECK_FALSE(schemaFor(Opcode::Phi)->is_pure);
+    CHECK_FALSE(schemaFor(Opcode::Upsilon)->is_pure);
+}

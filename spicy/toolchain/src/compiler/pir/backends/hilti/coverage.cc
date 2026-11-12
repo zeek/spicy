@@ -129,6 +129,8 @@ void checkRegion(const ir::Package& package,
                 case ir::Opcode::BoolConstant:
                 case ir::Opcode::StringConstant:
                 case ir::Opcode::BytesConstant:
+                case ir::Opcode::Phi:
+                case ir::Opcode::Upsilon:
                 case ir::Opcode::Branch:
                 case ir::Opcode::Jump:
                 case ir::Opcode::Equal: unsupported("procedural lowering is not supported"); break;
@@ -186,28 +188,36 @@ bool isProcedureParameter(const ir::Package& package, const ir::Parameter& param
     return false;
 }
 
-// A value that a block other than its own uses is declared at function entry with its type's default value, which
-// only native types that the backend knows have.
+// A value that a block other than its own uses, and a Phi's shadow, are declared at function entry with their type's
+// default value, which only native types that the backend knows have. The entry's own values need no declaration.
 void checkCrossBlockValues(const ir::Package& package, ir::RegionId region, std::vector<UnsupportedFeature>& out) {
-    for ( auto block_id : package.region(region).blocks ) {
+    const auto& blocks = package.region(region).blocks;
+    if ( blocks.empty() )
+        return;
+
+    auto defaultable = [&](ir::TypeId type) {
+        if ( ! package.isValid(type) || package.type(type).kind != ir::TypeKind::Opaque )
+            return true;
+        const auto& native = package.typeDecl(package.type(type).declaration).opaque;
+        return native && (native->cxx_name == "hilti::rt::Port" || native->cxx_name == "hilti::rt::Protocol");
+    };
+
+    for ( auto block_id : blocks ) {
         for ( auto id : package.block(block_id).insts ) {
             const auto& inst = package.inst(id);
+            bool hoisted = inst.opcode == ir::Opcode::Phi && ! defaultable(inst.result_type);
             for ( auto arg : inst.args ) {
                 const auto& operand = package.inst(arg);
-                if ( operand.parent == block_id || operand.opcode == ir::Opcode::Argument ||
-                     ! package.isValid(operand.result_type) ||
-                     package.type(operand.result_type).kind != ir::TypeKind::Opaque )
-                    continue;
+                if ( operand.parent != block_id && operand.parent != blocks.front() &&
+                     operand.opcode != ir::Opcode::Argument && ! defaultable(operand.result_type) )
+                    hoisted = true;
+            }
 
-                const auto& native = package.typeDecl(package.type(operand.result_type).declaration).opaque;
-                if ( native && (native->cxx_name == "hilti::rt::Port" || native->cxx_name == "hilti::rt::Protocol") )
-                    continue;
-
+            if ( hoisted )
                 report(out,
                        "value",
                        "value used across blocks needs a default-constructible type",
                        toLocation(package, inst.span));
-            }
         }
     }
 }
@@ -228,6 +238,8 @@ void checkProcedureRegion(const ir::Package& package, ir::RegionId region, std::
                 case ir::Opcode::Argument:
                 case ir::Opcode::IntConstant:
                 case ir::Opcode::Convert:
+                case ir::Opcode::Phi:
+                case ir::Opcode::Upsilon:
                 case ir::Opcode::Add:
                 case ir::Opcode::Return:
                 case ir::Opcode::Call:
