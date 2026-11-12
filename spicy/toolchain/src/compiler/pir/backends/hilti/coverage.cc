@@ -186,6 +186,32 @@ bool isProcedureParameter(const ir::Package& package, const ir::Parameter& param
     return false;
 }
 
+// A value that a block other than its own uses is declared at function entry with its type's default value, which
+// only native types that the backend knows have.
+void checkCrossBlockValues(const ir::Package& package, ir::RegionId region, std::vector<UnsupportedFeature>& out) {
+    for ( auto block_id : package.region(region).blocks ) {
+        for ( auto id : package.block(block_id).insts ) {
+            const auto& inst = package.inst(id);
+            for ( auto arg : inst.args ) {
+                const auto& operand = package.inst(arg);
+                if ( operand.parent == block_id || operand.opcode == ir::Opcode::Argument ||
+                     ! package.isValid(operand.result_type) ||
+                     package.type(operand.result_type).kind != ir::TypeKind::Opaque )
+                    continue;
+
+                const auto& native = package.typeDecl(package.type(operand.result_type).declaration).opaque;
+                if ( native && (native->cxx_name == "hilti::rt::Port" || native->cxx_name == "hilti::rt::Protocol") )
+                    continue;
+
+                report(out,
+                       "value",
+                       "value used across blocks needs a default-constructible type",
+                       toLocation(package, inst.span));
+            }
+        }
+    }
+}
+
 // Ordinary functions have no structured regions, so their body is a flat list of procedural operations.
 void checkProcedureRegion(const ir::Package& package, ir::RegionId region, std::vector<UnsupportedFeature>& out) {
     for ( auto block_id : package.region(region).blocks ) {
@@ -235,10 +261,7 @@ void checkProcedureRegion(const ir::Package& package, ir::RegionId region, std::
         }
     }
 
-    // The HILTI backend emits each branch's arms and then its join, so every block must fall into that structure once.
-    auto cfg = ir::buildCfg(package, region);
-    if ( ! cfg.blocks.empty() && ! ir::isStructured(cfg, ir::branchJoins(cfg)) )
-        report(out, "control flow", "control flow must be structured as nested branches with joins");
+    checkCrossBlockValues(package, region, out);
 }
 
 } // namespace

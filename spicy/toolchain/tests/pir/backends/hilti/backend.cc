@@ -249,3 +249,76 @@ TEST_CASE("a bound accessor lowers to the target's scope expression without a de
 // process are expected to differ in that name alone, not a real determinism gap.
 
 TEST_SUITE_END();
+
+namespace {
+
+// The printed HILTI module of a package that must lower.
+std::string lowered(const Package& package) {
+    REQUIRE(verify(package).empty());
+    ::hilti::init();
+    spicy::init();
+    ::hilti::Options options;
+    auto ctx = std::make_shared<::hilti::Context>(options);
+    ::hilti::Builder builder(ctx->astContext());
+    auto result = lower(builder, package);
+    REQUIRE(std::holds_alternative<::hilti::declaration::Module*>(result));
+    return std::get<::hilti::declaration::Module*>(result)->print();
+}
+
+} // namespace
+
+TEST_CASE("a CFG whose arms share their tails lowers to labeled blocks and gotos") {
+    // 0 -> {1, 2}, 1 -> {3, 4}, 2 -> {3, 4}: both arms reach both returns, which nested ifs cannot express.
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("crossing", {builder.boolType()}, builder.int64Type());
+    auto region = package.function(fn).root_region;
+    auto b0 = builder.createBlock(region);
+    auto b1 = builder.createBlock(region);
+    auto b2 = builder.createBlock(region);
+    auto b3 = builder.createBlock(region);
+    auto b4 = builder.createBlock(region);
+    auto flag = builder.addArgument(fn, b0, 0);
+    builder.addBranch(b0, flag, b1, b2);
+    builder.addBranch(b1, flag, b3, b4);
+    builder.addBranch(b2, flag, b3, b4);
+    builder.addReturn(b3, builder.addIntConstant(b3, builder.int64Type(), 1));
+    builder.addReturn(b4, builder.addIntConstant(b4, builder.int64Type(), 2));
+    builder.addFunctionRoot(fn);
+
+    auto text = lowered(package);
+    CHECK(text.find("goto b3;") != std::string::npos);
+    CHECK(text.find("goto b4;") != std::string::npos);
+    CHECK(text.find("b3:") != std::string::npos);
+    CHECK(text.find("b4:") != std::string::npos);
+    // The block that follows the entry in reverse postorder needs no label: the entry falls through into it.
+    CHECK((text.find("b1:") == std::string::npos) != (text.find("b2:") == std::string::npos));
+}
+
+TEST_CASE("a value used in a block other than its own is declared at function entry") {
+    // Block 1 computes a value that the join reads after a diamond. A value used only in its block stays there.
+    Package package;
+    auto builder = package.builder();
+    auto fn = builder.createFunction("hoist", {builder.boolType()}, builder.int64Type());
+    auto region = package.function(fn).root_region;
+    auto entry = builder.createBlock(region);
+    auto b1 = builder.createBlock(region);
+    auto b2 = builder.createBlock(region);
+    auto b3 = builder.createBlock(region);
+    auto join = builder.createBlock(region);
+    auto flag = builder.addArgument(fn, entry, 0);
+    builder.addJump(entry, b1);
+    auto shared = builder.addIntConstant(b1, builder.int64Type(), 7);
+    builder.addBranch(b1, flag, b2, b3);
+    auto only_here = builder.addIntConstant(b2, builder.int64Type(), 5);
+    builder.addLocalPlace(b2, only_here);
+    builder.addJump(b2, join);
+    builder.addJump(b3, join);
+    builder.addReturn(join, shared);
+    builder.addFunctionRoot(fn);
+
+    auto text = lowered(package);
+    CHECK(text.find("local int<64> v_" + std::to_string(shared.index) + ";") != std::string::npos);
+    CHECK(text.find("v_" + std::to_string(shared.index) + " = 7;") != std::string::npos);
+    CHECK(text.find("local int<64> v_" + std::to_string(only_here.index) + " = 5;") != std::string::npos);
+}

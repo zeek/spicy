@@ -410,7 +410,8 @@ TEST_CASE("branches that rejoin, including past an early return, are supported a
         CHECK(checkCoverage(package).empty());
     }
 
+    // Shared tails need no structure, since the backend emits gotos.
     auto crossing = build("crossing");
     CHECK(verify(crossing).empty());
-    CHECK_FALSE(checkCoverage(crossing).empty());
+    CHECK(checkCoverage(crossing).empty());
 }

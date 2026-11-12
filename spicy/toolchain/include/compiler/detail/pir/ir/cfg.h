@@ -70,18 +70,4 @@ bool dominates(const std::vector<size_t>& immediate_dominators, size_t dominator
 /** The immediate post-dominator of each position of `cfg`, with the synthetic exit kept distinct. */
 std::vector<PostDominator> immediatePostDominators(const Cfg& cfg);
 
-/**
- * Where the two arms of each branch rejoin, indexed by position; empty for a position that is not a branch, and
- * for a branch whose arms never rejoin. A branch rejoins at its immediate post-dominator when that is a block.
- * Otherwise an early return cuts across it, and the join is the earliest block that both arms reach.
- */
-std::vector<std::optional<size_t>> branchJoins(const Cfg& cfg);
-
-/**
- * Whether `cfg` can be emitted as nested structured control flow with the given joins. Each branch's arms run up
- * to its join, which then follows them at the enclosing level. The emission is structured only if no block is
- * reached twice.
- */
-bool isStructured(const Cfg& cfg, const std::vector<std::optional<size_t>>& joins);
-
 } // namespace spicy::detail::pir::ir

@@ -1,0 +1,119 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -P "" -o Foo.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT --strict-public-api -P "" -o Legacy.h
+# @TEST-EXEC: spicyc %INPUT --strict-public-api -j legacy-driver.cc >legacy
+# @TEST-EXEC: cmp output legacy
+# @TEST-EXEC: spicyc %INPUT --experimental-pir -p -D spicy-pir 2>&1 >/dev/null | rg "attached PIR-produced" >route
+# @TEST-EXEC: btest-diff route
+
+# @TEST-DOC: Executes ordinary functions whose control flow lowers to labeled blocks and gotos: early returns from
+# nested guards on both arms, a value computed before a guard and read after it, a chain of guards that all fall
+# into one tail, and a value computed in a guard and returned from a nested one. The output matches the legacy build both optimized and unoptimized.
+
+module Test;
+
+public function nested(a: bool, b: bool): int64 {
+    local base: int64 = 10;
+
+    if ( a ) {
+        if ( b )
+            return base + 1;
+    }
+    else {
+        if ( b )
+            return base + 2;
+    }
+
+    print "tail", a, b;
+    return base;
+}
+
+public function chain(n: int64): int64 {
+    local picked: int64 = 0;
+
+    if ( n == 1 )
+        picked = 100;
+    if ( n == 2 )
+        picked = 200;
+    if ( n == 3 )
+        return 300;
+
+    return picked + n;
+}
+
+# A value computed in a guard and returned from a nested guard, whose return is reached only by a goto.
+public function escape(a: int64, c: bool, d: bool): int64 {
+    local x: int64 = 0;
+
+    if ( c ) {
+        x = a + 1;
+        if ( d )
+            return x;
+        return 0;
+    }
+
+    return 1;
+}
+
+@TEST-START-FILE driver.cc
+#include <iostream>
+
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+#include "Foo.h"
+
+using Int = hilti::rt::integer::safe<int64_t>;
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    for ( bool a : {false, true} )
+        for ( bool b : {false, true} )
+            std::cout << "nested " << a << b << " " << hlt::_r__spicy_pir_backend::nested(a, b).get<Int>() << std::endl;
+    for ( int n = 0; n <= 4; ++n )
+        std::cout << "chain " << n << " " << hlt::_r__spicy_pir_backend::chain(n).get<Int>() << std::endl;
+    for ( bool c : {false, true} )
+        for ( bool d : {false, true} )
+            std::cout << "escape " << c << d << " " << hlt::_r__spicy_pir_backend::escape(5, c, d).get<Int>() << std::endl;
+    return 0;
+}
+
+int main() {
+    hilti::rt::init();
+    spicy::rt::init();
+    hilti_main();
+    hilti::rt::done();
+    return 0;
+}
+@TEST-END-FILE
+
+@TEST-START-FILE legacy-driver.cc
+#include <iostream>
+
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+#include "Legacy.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    for ( bool a : {false, true} )
+        for ( bool b : {false, true} )
+            std::cout << "nested " << a << b << " " << hlt_internal::Test::nested(a, b) << std::endl;
+    for ( int n = 0; n <= 4; ++n )
+        std::cout << "chain " << n << " " << hlt_internal::Test::chain(n) << std::endl;
+    for ( bool c : {false, true} )
+        for ( bool d : {false, true} )
+            std::cout << "escape " << c << d << " " << hlt_internal::Test::escape(5, c, d) << std::endl;
+    return 0;
+}
+
+int main() {
+    hilti::rt::init();
+    spicy::rt::init();
+    hilti_main();
+    hilti::rt::done();
+    return 0;
+}
+@TEST-END-FILE

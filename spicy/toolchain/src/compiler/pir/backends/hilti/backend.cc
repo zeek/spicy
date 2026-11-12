@@ -13,6 +13,7 @@
 
 #include <hilti/ast/builder/builder.h>
 #include <hilti/ast/declarations/module.h>
+#include <hilti/base/logger.h>
 #include <hilti/base/util.h>
 
 #include <spicy/compiler/detail/pir/backends/hilti/backend.h>
@@ -402,20 +403,220 @@ protected:
         return held_by_reference_.contains(id.index) ? b.deref(value) : value;
     }
 
+    // A local of a value, unless the value is used across blocks: then its local is declared at function entry, and
+    // this assigns it.
+    void _local(LocalBuilder& b,
+                const std::string& name,
+                ::hilti::QualifiedType* type,
+                ::hilti::Expression* init,
+                const ::hilti::Meta& meta) {
+        if ( hoisted_.contains(name) ) {
+            if ( init )
+                b.addAssign(b.id(::hilti::ID(name)), init, meta);
+            return;
+        }
+
+        if ( init )
+            b.addLocal(::hilti::ID(name), type, init, meta);
+        else
+            b.addLocal(::hilti::ID(name), type, meta);
+    }
+
+    // The local that holds a value, and the instruction whose lowering declares it. A value that needs no declaration,
+    // such as the cursor or a parameter, has no owner.
+    struct Storage {
+        std::string name;
+        ir::InstId owner;
+        ir::TypeId type;
+    };
+
+    Storage _argumentStorage(uint32_t index) const {
+        if ( auto it = arguments_.find(index); it != arguments_.end() )
+            return it->second;
+        ::hilti::logger().internalError("unbound PIR function argument");
+    }
+
+    Storage _storage(ir::InstId id) {
+        const auto& inst = package_.inst(id);
+        const Storage self{.name = fmt("v_%u", id.index), .owner = id, .type = inst.result_type};
+        const Storage cursor{.name = "cursor"};
+        switch ( inst.opcode ) {
+            case ir::Opcode::Argument: {
+                return _argumentStorage(std::get<ir::ArgumentPayload>(inst.payload).index);
+            }
+            case ir::Opcode::TupleGet: {
+                auto tuple = inst.args[0];
+                auto index = std::get<ir::TupleGetPayload>(inst.payload).index;
+                switch ( package_.inst(tuple).opcode ) {
+                    case ir::Opcode::ReadInteger:
+                    case ir::Opcode::ReadBytes:
+                        return index == 0 ?
+                                   cursor :
+                                   Storage{.name = fmt("v_%u", tuple.index), .owner = tuple, .type = inst.result_type};
+                    case ir::Opcode::ParseSubunit:
+                        return index == 0 ? cursor :
+                                            Storage{.name = fmt("v_%u_unit", tuple.index),
+                                                    .owner = tuple,
+                                                    .type = inst.result_type};
+                    case ir::Opcode::RepeatToBound:
+                        return index == 0 ? cursor :
+                                            Storage{.name = fmt("carry_%u_%u", tuple.index, index),
+                                                    .owner = tuple,
+                                                    .type = inst.result_type};
+                    default: return self;
+                }
+            }
+            // These extend or address the storage of their first operand.
+            case ir::Opcode::PublishField:
+            case ir::Opcode::VectorAppend:
+            case ir::Opcode::SetInsert:
+            case ir::Opcode::FieldPlace: return _storage(inst.args[0]);
+            case ir::Opcode::EnterBound:
+            case ir::Opcode::LeaveBound:
+            case ir::Opcode::ReleaseInput: return cursor;
+            case ir::Opcode::GlobalPlace:
+                return Storage{.name = names_.globals.at(std::get<ir::GlobalPayload>(inst.payload).global.index)};
+            case ir::Opcode::ForeignConstant: return Storage{.name = std::get<ir::StringLiteral>(inst.payload).value};
+            case ir::Opcode::LocalPlace:
+                return Storage{.name = fmt("p_%u", id.index),
+                               .owner = id,
+                               .type = package_.type(inst.result_type).type_arguments[0]};
+            default: return self;
+        }
+    }
+
+    // Lowers a body whose control flow is the CFG of `region`. One block is emitted inline. Otherwise each block in
+    // reverse postorder becomes a nested block, labeled if a goto targets it. The entry stays at function level, and
+    // values used across blocks are declared there, before any label, so no goto jumps into a local's scope.
+    template<typename LowerInst>
+    void _emitBody(LocalBuilder& fb, ir::RegionId region, LowerInst lower) {
+        auto cfg = ir::buildCfg(package_, region);
+        auto order = ir::postorder(cfg.successors, 0);
+        std::ranges::reverse(order);
+
+        std::vector<std::pair<std::string, Storage>> hoisted;
+        auto hoist = [&](const Storage& storage) {
+            if ( hoisted_.insert(storage.name).second )
+                hoisted.emplace_back(storage.name, storage);
+        };
+
+        if ( order.size() == 1 ) {
+            for ( const auto& [name, storage] : hoisted )
+                fb.addLocal(::hilti::ID(name), _storageType(fb, storage));
+            for ( auto id : package_.block(cfg.blocks[0]).insts )
+                lower(fb, id);
+            return;
+        }
+
+        for ( auto pos : order ) {
+            for ( auto id : package_.block(cfg.blocks[pos]).insts ) {
+                const auto& inst = package_.inst(id);
+                auto use = [&](const Storage& storage) {
+                    if ( storage.owner.isSet() && package_.inst(storage.owner).parent != inst.parent )
+                        hoist(storage);
+                };
+                // Parser results are virtual tuples: only their projected values have physical storage.
+                // In particular, parser.state is the existing cursor, never a tuple element to materialize.
+                if ( inst.opcode == ir::Opcode::TupleGet &&
+                     package_.type(package_.type(package_.inst(inst.args[0]).result_type).type_arguments[0]).kind ==
+                         ir::TypeKind::ParserState )
+                    use(_storage(id));
+                else
+                    for ( auto arg : inst.args )
+                        use(_storage(arg));
+            }
+        }
+        for ( const auto& [name, storage] : hoisted )
+            fb.addLocal(::hilti::ID(name), _storageType(fb, storage));
+
+        std::vector<size_t> next(cfg.blocks.size(), ir::NoPosition);
+        for ( size_t k = 0; k + 1 < order.size(); ++k )
+            next[order[k]] = order[k + 1];
+
+        // A block needs a label only if some goto targets it, which falling through to it avoids.
+        std::unordered_set<size_t> targets;
+        for ( auto pos : order ) {
+            const auto& terminator = package_.inst(package_.block(cfg.blocks[pos]).insts.back());
+            auto successors = cfg.successors[pos];
+            if ( terminator.opcode == ir::Opcode::Jump || terminator.opcode == ir::Opcode::Branch ) {
+                bool fell_through = false;
+                for ( auto successor : successors ) {
+                    if ( successor == next[pos] && ! fell_through ) {
+                        fell_through = true;
+                        continue;
+                    }
+                    targets.insert(successor);
+                }
+            }
+            else
+                targets.insert(successors.begin(), successors.end());
+        }
+
+        auto label = [&](size_t pos) { return ::hilti::ID(fmt("b%u", cfg.blocks[pos].index)); };
+        for ( size_t k = 0; k < order.size(); ++k ) {
+            auto pos = order[k];
+            const auto& insts = package_.block(cfg.blocks[pos]).insts;
+            const auto& terminator = package_.inst(insts.back());
+            auto meta = metaFor(package_, terminator.span);
+            if ( k > 0 && targets.contains(pos) )
+                fb.addLabel(label(pos), meta);
+
+            std::shared_ptr<LocalBuilder> nested;
+            if ( k > 0 )
+                nested = fb.addBlock(meta);
+            auto& b = nested ? *nested : fb;
+
+            for ( size_t i = 0; i + 1 < insts.size(); ++i )
+                lower(b, insts[i]);
+
+            const auto& successors = cfg.successors[pos];
+            switch ( terminator.opcode ) {
+                case ir::Opcode::Jump:
+                    if ( successors[0] != next[pos] )
+                        b.addGoto(label(successors[0]), meta);
+                    break;
+                case ir::Opcode::Branch: {
+                    auto then_ = successors[0];
+                    auto else_ = successors[1];
+                    auto* condition = _value(b, terminator.args[0]);
+                    if ( then_ == else_ ) {
+                        if ( then_ != next[pos] )
+                            b.addGoto(label(then_), meta);
+                    }
+                    else if ( else_ == next[pos] )
+                        b.addIf(condition, meta)->addGoto(label(then_), meta);
+                    else if ( then_ == next[pos] )
+                        b.addIf(b.not_(condition, meta), meta)->addGoto(label(else_), meta);
+                    else {
+                        auto arms = b.addIfElse(condition, meta);
+                        arms.first->addGoto(label(then_), meta);
+                        arms.second->addGoto(label(else_), meta);
+                    }
+                    break;
+                }
+                default: lower(b, insts.back()); break;
+            }
+        }
+    }
+
+    // The HILTI type of a local declared at function entry.
+    virtual ::hilti::QualifiedType* _storageType(LocalBuilder& b, const Storage& storage) {
+        return targetType(b, package_, storage.type);
+    }
+
     // Lowers one procedural operation, returning false for an operation that is not procedural.
     bool _lowerProcedural(LocalBuilder& b, ir::InstId id) {
         const auto& inst = package_.inst(id);
         auto meta = metaFor(package_, inst.span);
         switch ( inst.opcode ) {
-            case ir::Opcode::Argument:
-                values_[id.index] = fmt("arg_%u", std::get<ir::ArgumentPayload>(inst.payload).index);
-                return true;
+            case ir::Opcode::Argument: values_[id.index] = _storage(id).name; return true;
             case ir::Opcode::Add: {
                 auto name = fmt("v_%u", id.index);
-                b.addLocal(::hilti::ID(name),
-                           targetType(b, package_, inst.result_type),
-                           b.sum(_value(b, inst.args[0]), _value(b, inst.args[1]), meta),
-                           meta);
+                _local(b,
+                       name,
+                       targetType(b, package_, inst.result_type),
+                       b.sum(_value(b, inst.args[0]), _value(b, inst.args[1]), meta),
+                       meta);
                 values_[id.index] = std::move(name);
                 return true;
             }
@@ -434,7 +635,7 @@ protected:
                         // The scope of the linked artifact is the only target binding so far.
                         assert(bound->second == TargetBindingKind::LinkedArtifactScope);
                         auto name = fmt("v_%u", id.index);
-                        b.addLocal(::hilti::ID(name), targetType(b, package_, inst.result_type), b.scope(meta), meta);
+                        _local(b, name, targetType(b, package_, inst.result_type), b.scope(meta), meta);
                         values_[id.index] = std::move(name);
                         return true;
                     }
@@ -455,20 +656,20 @@ protected:
                 }
 
                 auto name = fmt("v_%u", id.index);
-                b.addLocal(::hilti::ID(name), targetType(b, package_, inst.result_type), call, meta);
+                _local(b, name, targetType(b, package_, inst.result_type), call, meta);
                 values_[id.index] = std::move(name);
                 return true;
             }
             case ir::Opcode::LocalPlace: {
                 auto name = fmt("p_%u", id.index);
                 auto element = package_.type(inst.result_type).type_arguments[0];
-                b.addLocal(::hilti::ID(name), targetType(b, package_, element), _value(b, inst.args[0]), meta);
+                _local(b, name, targetType(b, package_, element), _value(b, inst.args[0]), meta);
                 values_[id.index] = std::move(name);
                 return true;
             }
             case ir::Opcode::Load: {
                 auto name = fmt("v_%u", id.index);
-                b.addLocal(::hilti::ID(name), targetType(b, package_, inst.result_type), _value(b, inst.args[0]), meta);
+                _local(b, name, targetType(b, package_, inst.result_type), _value(b, inst.args[0]), meta);
                 values_[id.index] = std::move(name);
                 return true;
             }
@@ -483,17 +684,18 @@ protected:
             case ir::Opcode::Store: b.addAssign(_value(b, inst.args[0]), _value(b, inst.args[1]), meta); return true;
             case ir::Opcode::Equal: {
                 auto name = fmt("v_%u", id.index);
-                b.addLocal(::hilti::ID(name),
-                           targetType(b, package_, inst.result_type),
-                           b.equal(_value(b, inst.args[0]), _value(b, inst.args[1]), meta),
-                           meta);
+                _local(b,
+                       name,
+                       targetType(b, package_, inst.result_type),
+                       b.equal(_value(b, inst.args[0]), _value(b, inst.args[1]), meta),
+                       meta);
                 values_[id.index] = std::move(name);
                 return true;
             }
             case ir::Opcode::VectorEmpty: {
                 auto name = fmt("v_%u", id.index);
                 auto* type = targetType(b, package_, inst.result_type);
-                b.addLocal(::hilti::ID(name), type, b.vector(type, {}, meta), meta);
+                _local(b, name, type, b.vector(type, {}, meta), meta);
                 values_[id.index] = std::move(name);
                 return true;
             }
@@ -504,7 +706,7 @@ protected:
                 return true;
             case ir::Opcode::SetEmpty: {
                 auto name = fmt("v_%u", id.index);
-                b.addLocal(::hilti::ID(name), targetType(b, package_, inst.result_type), meta);
+                _local(b, name, targetType(b, package_, inst.result_type), nullptr, meta);
                 values_[id.index] = std::move(name);
                 return true;
             }
@@ -518,31 +720,33 @@ protected:
                 for ( auto element : inst.args )
                     elements.push_back(_value(b, element));
                 auto name = fmt("v_%u", id.index);
-                b.addLocal(::hilti::ID(name), targetType(b, package_, inst.result_type), b.tuple(elements, meta), meta);
+                _local(b, name, targetType(b, package_, inst.result_type), b.tuple(elements, meta), meta);
                 values_[id.index] = std::move(name);
                 return true;
             }
             case ir::Opcode::TupleGet: {
                 auto name = fmt("v_%u", id.index);
-                b.addLocal(::hilti::ID(name),
-                           targetType(b, package_, inst.result_type),
-                           b.index(_value(b, inst.args[0]),
-                                   b.integer(std::get<ir::TupleGetPayload>(inst.payload).index),
-                                   meta),
-                           meta);
+                _local(b,
+                       name,
+                       targetType(b, package_, inst.result_type),
+                       b.index(_value(b, inst.args[0]),
+                               b.integer(std::get<ir::TupleGetPayload>(inst.payload).index),
+                               meta),
+                       meta);
                 values_[id.index] = std::move(name);
                 return true;
             }
             case ir::Opcode::IntConstant: {
                 auto name = fmt("v_%u", id.index);
-                b.addLocal(::hilti::ID(name),
-                           targetType(b, package_, inst.result_type),
-                           integerLiteral(b,
-                                          package_,
-                                          inst.result_type,
-                                          std::get<ir::IntegerLiteral>(inst.payload).bits,
-                                          meta),
-                           meta);
+                _local(b,
+                       name,
+                       targetType(b, package_, inst.result_type),
+                       integerLiteral(b,
+                                      package_,
+                                      inst.result_type,
+                                      std::get<ir::IntegerLiteral>(inst.payload).bits,
+                                      meta),
+                       meta);
                 values_[id.index] = std::move(name);
                 return true;
             }
@@ -561,7 +765,7 @@ protected:
                                       meta);
                         break;
                 }
-                b.addLocal(::hilti::ID(name), targetType(b, package_, inst.result_type), converted, meta);
+                _local(b, name, targetType(b, package_, inst.result_type), converted, meta);
                 values_[id.index] = std::move(name);
                 return true;
             }
@@ -577,10 +781,11 @@ protected:
                     protocol = ::hilti::rt::Protocol::UDP;
                 else if ( port.transport == ir::Transport::ICMP )
                     protocol = ::hilti::rt::Protocol::ICMP;
-                b.addLocal(::hilti::ID(name),
-                           targetType(b, package_, inst.result_type),
-                           b.port(::hilti::rt::Port(port.number, protocol), meta),
-                           meta);
+                _local(b,
+                       name,
+                       targetType(b, package_, inst.result_type),
+                       b.port(::hilti::rt::Port(port.number, protocol), meta),
+                       meta);
                 values_[id.index] = std::move(name);
                 return true;
             }
@@ -595,7 +800,7 @@ protected:
                     value = b.stringLiteral(std::get<ir::StringLiteral>(inst.payload).value, meta);
                 else
                     value = b.bytes(std::get<ir::BytesLiteral>(inst.payload).value, meta);
-                b.addLocal(::hilti::ID(name), targetType(b, package_, inst.result_type), value, meta);
+                _local(b, name, targetType(b, package_, inst.result_type), value, meta);
                 values_[id.index] = std::move(name);
                 return true;
             }
@@ -609,8 +814,12 @@ protected:
     const NameMap& names_;
     /** Units that are held through a reference rather than by value, by instruction index. */
     std::unordered_set<uint32_t> held_by_reference_;
+    /** Parameter storage, bound by the emitter before planning or lowering the function body. */
+    std::unordered_map<uint32_t, Storage> arguments_;
     std::unordered_map<uint32_t, std::string> values_;
     std::unordered_map<uint32_t, std::pair<std::string, std::string>> fields_;
+    /** Locals declared at function entry because blocks other than their own use them. */
+    std::unordered_set<std::string> hoisted_;
 };
 
 class FunctionEmitter : public ProceduralOps {
@@ -677,9 +886,10 @@ public:
                         fb.qualifiedType(fb.typeName(::hilti::ID("spicy_rt::Filters")), ::hilti::Constness::Mutable)),
                     meta);
 
-        const auto& region = package_.region(fn.root_region);
-        for ( auto inst_id : package_.block(region.blocks[0]).insts )
-            _lowerInst(fb, inst_id);
+        arguments_.emplace(0, Storage{.name = "cursor"});
+        if ( fn.parameters.size() == 2 )
+            arguments_.emplace(1, Storage{.name = "context"});
+        _emitBody(fb, fn.root_region, [this](LocalBuilder& b, ir::InstId id) { _lowerInst(b, id); });
 
         return _b.function(::hilti::ID(names.function),
                            _b.qualifiedType(_b.typeName(::hilti::ID(names.result)), ::hilti::Constness::Mutable),
@@ -694,6 +904,13 @@ public:
     }
 
 private:
+    // A root holds the unit it creates through a reference.
+    ::hilti::QualifiedType* _storageType(LocalBuilder& b, const Storage& storage) final {
+        if ( names_.at(_id.index).root && package_.inst(storage.owner).opcode == ir::Opcode::UnitCreate )
+            return unitReferenceType(b, package_.function(_id).parser_unit);
+        return ProceduralOps::_storageType(b, storage);
+    }
+
     ::hilti::Expression* _member(LocalBuilder& b, std::string_view base, std::string_view member) {
         return b.member(b.id(::hilti::ID(base)), std::string(member));
     }
@@ -822,8 +1039,10 @@ private:
         auto* value_type = targetType(b, package_, package_.type(inst.result_type).type_arguments[1]);
         // Keep the field location on the statement as well as its declaration, so this temporary does not
         // introduce a whole-unit location update between the availability check and the read.
-        auto* declaration = b.declarationLocalVariable(::hilti::ID(value_name), value_type, {}, meta);
-        b.block()->_add(b.context(), b.statementDeclaration(declaration, meta));
+        if ( ! hoisted_.contains(value_name) ) {
+            auto* declaration = b.declarationLocalVariable(::hilti::ID(value_name), value_type, {}, meta);
+            b.block()->_add(b.context(), b.statementDeclaration(declaration, meta));
+        }
         auto* try_body = _b.statementBlock(meta);
         LocalBuilder tb(_b.context(), try_body);
         if ( integer ) {
@@ -856,13 +1075,10 @@ private:
         const auto& inst = package_.inst(id);
         auto meta = metaFor(package_, inst.span);
         switch ( inst.opcode ) {
-            case ir::Opcode::Argument:
+            case ir::Opcode::Argument: values_[id.index] = _storage(id).name; return;
             case ir::Opcode::RegionArgument:
                 if ( ! values_.contains(id.index) )
-                    values_[id.index] =
-                        inst.opcode == ir::Opcode::Argument && std::get<ir::ArgumentPayload>(inst.payload).index == 1 ?
-                            "context" :
-                            "cursor";
+                    values_[id.index] = "cursor";
                 return;
             case ir::Opcode::TupleGet: {
                 auto index = std::get<ir::TupleGetPayload>(inst.payload).index;
@@ -876,13 +1092,19 @@ private:
                 auto name = fmt("v_%u", id.index);
                 auto unit = std::get<ir::UnitPayload>(inst.payload).unit;
                 if ( names_.at(_id.index).root ) {
-                    b.addLocal(::hilti::ID(name), b.new_(b.typeName(::hilti::ID(unitName(unit))), meta), meta);
+                    _local(b,
+                           name,
+                           unitReferenceType(b, unit),
+                           b.new_(b.typeName(::hilti::ID(unitName(unit))), meta),
+                           meta);
                     held_by_reference_.insert(id.index);
                 }
                 else
-                    b.addLocal(::hilti::ID(name),
-                               b.qualifiedType(b.typeName(::hilti::ID(unitName(unit))), ::hilti::Constness::Mutable),
-                               meta);
+                    _local(b,
+                           name,
+                           b.qualifiedType(b.typeName(::hilti::ID(unitName(unit))), ::hilti::Constness::Mutable),
+                           nullptr,
+                           meta);
                 values_[id.index] = std::move(name);
                 return;
             }
@@ -972,7 +1194,11 @@ private:
                                   meta);
                 b.addAssign(b.id(::hilti::ID("cursor")), b.move(_member(b, name, "cursor")), meta);
                 auto unit_value = fmt("v_%u_unit", id.index);
-                b.addLocal(::hilti::ID(unit_value), b.deref(_member(b, name, "unit")), meta);
+                _local(b,
+                       unit_value,
+                       targetType(b, package_, package_.type(inst.result_type).type_arguments[1]),
+                       b.deref(_member(b, name, "unit")),
+                       meta);
                 _tuples[id.index] = {"cursor", unit_value};
                 return;
             }
@@ -980,10 +1206,11 @@ private:
                 std::vector<std::string> carried{"cursor"};
                 for ( size_t i = 1; i < inst.args.size(); ++i ) {
                     auto name = fmt("carry_%u_%zu", id.index, i);
-                    b.addLocal(::hilti::ID(name),
-                               targetType(b, package_, package_.inst(inst.args[i]).result_type),
-                               _value(b, inst.args[i]),
-                               meta);
+                    _local(b,
+                           name,
+                           targetType(b, package_, package_.inst(inst.args[i]).result_type),
+                           _value(b, inst.args[i]),
+                           meta);
                     carried.push_back(std::move(name));
                 }
                 auto loop = b.addWhile(b.bool_(true), meta);
@@ -1065,14 +1292,18 @@ public:
         const auto& names = names_.at(_id.index);
         auto meta = metaFor(package_, fn.span);
         ::hilti::declaration::Parameters params;
-        for ( size_t i = 0; i < fn.parameters.size(); ++i )
-            params.push_back(parameterFor(_b, package_, fmt("arg_%zu", i), fn.parameters[i], meta));
+        for ( size_t i = 0; i < fn.parameters.size(); ++i ) {
+            auto name = fmt("arg_%zu", i);
+            params.push_back(parameterFor(_b, package_, name, fn.parameters[i], meta));
+            arguments_.emplace(i, Storage{.name = std::move(name)});
+        }
 
         auto* body = _b.statementBlock(meta);
         LocalBuilder fb(_b.context(), body);
-        _cfg = ir::buildCfg(package_, fn.root_region);
-        _joins = ir::branchJoins(_cfg);
-        _emitRange(fb, 0, std::nullopt);
+        _emitBody(fb, fn.root_region, [this](LocalBuilder& b, ir::InstId id) {
+            if ( ! _lowerProcedural(b, id) )
+                ::hilti::util::cannotBeReached();
+        });
 
         return _b.function(::hilti::ID(names.function),
                            resultType(_b, package_, fn.result_type),
@@ -1089,45 +1320,9 @@ public:
     }
 
 private:
-    // Emits the blocks from position `pos` up to `stop`. A branch emits its arms up to its join, which follows them at
-    // the same level, so the HILTI output nests exactly where the CFG branches. Coverage ensures every block is emitted
-    // once.
-    void _emitRange(LocalBuilder& b, size_t pos, std::optional<size_t> stop) {
-        while ( pos != stop.value_or(ir::NoPosition) ) {
-            const auto& insts = package_.block(_cfg.blocks[pos]).insts;
-            for ( size_t i = 0; i + 1 < insts.size(); ++i ) {
-                if ( ! _lowerProcedural(b, insts[i]) )
-                    ::hilti::util::cannotBeReached();
-            }
-
-            const auto terminator = insts.back();
-            const auto& inst = package_.inst(terminator);
-            if ( inst.opcode == ir::Opcode::Jump ) {
-                pos = _cfg.successors[pos][0];
-                continue;
-            }
-
-            if ( inst.opcode != ir::Opcode::Branch ) {
-                if ( ! _lowerProcedural(b, terminator) )
-                    ::hilti::util::cannotBeReached();
-                return;
-            }
-
-            auto arms = b.addIfElse(_value(b, inst.args[0]), metaFor(package_, inst.span));
-            _emitRange(*arms.first, _cfg.successors[pos][0], _joins[pos]);
-            _emitRange(*arms.second, _cfg.successors[pos][1], _joins[pos]);
-            if ( ! _joins[pos] )
-                return;
-
-            pos = *_joins[pos];
-        }
-    }
-
     ::hilti::Builder& _b;
     ir::FunctionId _id;
     std::optional<::hilti::declaration::Linkage> _linkage;
-    ir::Cfg _cfg;
-    std::vector<std::optional<size_t>> _joins;
 };
 
 } // namespace

@@ -1,7 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <algorithm>
-#include <array>
 
 #include <spicy/compiler/detail/pir/ir/cfg.h>
 
@@ -182,120 +181,6 @@ std::vector<PostDominator> immediatePostDominators(const Cfg& cfg) {
     }
 
     return result;
-}
-
-namespace {
-
-// The positions reachable from `start` without entering `stop`, which itself is never marked. `start` is marked
-// unless it is `stop`.
-std::vector<bool> reachableAvoiding(const Cfg& cfg, size_t start, std::optional<size_t> stop) {
-    std::vector<bool> reached(cfg.blocks.size(), false);
-    std::vector<size_t> pending = {start};
-    while ( ! pending.empty() ) {
-        auto next = pending.back();
-        pending.pop_back();
-        if ( (stop && next == *stop) || reached[next] )
-            continue;
-
-        reached[next] = true;
-        pending.insert(pending.end(), cfg.successors[next].begin(), cfg.successors[next].end());
-    }
-
-    return reached;
-}
-
-// Whether the two arms of a branch rejoin at `join` (or do not rejoin at all, if nothing is given) without any block
-// being emitted twice. Each arm's blocks up to the join must be disjoint from the other arm's, and from the blocks
-// that follow the join.
-bool rejoinsAt(const Cfg& cfg, std::array<size_t, 2> arms, std::optional<size_t> join) {
-    auto first = reachableAvoiding(cfg, arms[0], join);
-    auto second = reachableAvoiding(cfg, arms[1], join);
-    auto after = join ? reachableAvoiding(cfg, *join, std::nullopt) : std::vector<bool>(cfg.blocks.size(), false);
-
-    for ( size_t i = 0; i < cfg.blocks.size(); ++i ) {
-        if ( first[i] && second[i] )
-            return false;
-        if ( after[i] && (first[i] || second[i]) )
-            return false;
-    }
-
-    return true;
-}
-
-} // namespace
-
-std::vector<std::optional<size_t>> branchJoins(const Cfg& cfg) {
-    std::vector<std::optional<size_t>> joins(cfg.blocks.size());
-    if ( cfg.blocks.empty() )
-        return joins;
-
-    auto post_dominators = immediatePostDominators(cfg);
-    auto topological = postorder(cfg.successors, 0);
-    std::ranges::reverse(topological);
-
-    for ( size_t pos = 0; pos < cfg.blocks.size(); ++pos ) {
-        if ( cfg.successors[pos].size() != 2 )
-            continue;
-
-        const std::array<size_t, 2> arms = {cfg.successors[pos][0], cfg.successors[pos][1]};
-
-        // The immediate post-dominator comes first. An early return cuts across it, so the other candidates are
-        // the blocks either arm reaches, in topological order.
-        std::vector<size_t> candidates;
-        if ( post_dominators[pos].kind == PostDominator::Kind::Block )
-            candidates.emplace_back(post_dominators[pos].position);
-
-        auto from_first = reachableAvoiding(cfg, arms[0], std::nullopt);
-        auto from_second = reachableAvoiding(cfg, arms[1], std::nullopt);
-        for ( auto candidate : topological ) {
-            if ( from_first[candidate] || from_second[candidate] )
-                candidates.emplace_back(candidate);
-        }
-
-        for ( auto candidate : candidates ) {
-            if ( rejoinsAt(cfg, arms, candidate) ) {
-                joins[pos] = candidate;
-                break;
-            }
-        }
-    }
-
-    return joins;
-}
-
-bool isStructured(const Cfg& cfg, const std::vector<std::optional<size_t>>& joins) {
-    // Mirrors the emission order: a branch emits its arms up to its join, then continues from the join.
-    std::vector<bool> emitted(cfg.blocks.size(), false);
-    bool structured = true;
-
-    auto walk_range = [&](auto&& self, size_t pos, std::optional<size_t> stop) -> void {
-        while ( structured && pos != stop.value_or(NoPosition) ) {
-            if ( emitted[pos] ) {
-                structured = false;
-                return;
-            }
-            emitted[pos] = true;
-
-            const auto& next = cfg.successors[pos];
-            if ( next.empty() )
-                return;
-
-            if ( next.size() == 1 ) {
-                pos = next[0];
-                continue;
-            }
-
-            self(self, next[0], joins[pos]);
-            self(self, next[1], joins[pos]);
-            if ( ! joins[pos] )
-                return;
-
-            pos = *joins[pos];
-        }
-    };
-
-    walk_range(walk_range, 0, std::nullopt);
-    return structured;
 }
 
 } // namespace spicy::detail::pir::ir

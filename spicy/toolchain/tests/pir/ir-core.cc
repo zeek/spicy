@@ -1116,7 +1116,6 @@ TEST_CASE("the dominator tree and post-dominators of a diamond") {
     CHECK(ipdom[0].kind == PostDominator::Kind::Block);
     CHECK(ipdom[0].position == 3);
     CHECK(ipdom[3].kind == PostDominator::Kind::Exit);
-    CHECK(isStructured(cfg, branchJoins(cfg)));
 }
 
 TEST_CASE("postorder follows successors in order, tolerates cycles, and omits unreachable positions") {
@@ -1124,60 +1123,6 @@ TEST_CASE("postorder follows successors in order, tolerates cycles, and omits un
     std::vector<std::vector<size_t>> successors = {{1, 2}, {0}, {}, {0}};
     CHECK(postorder(successors, 0) == std::vector<size_t>{1, 2, 0});
     CHECK(postorder({{1}, {0}}, 0) == std::vector<size_t>{1, 0});
-}
-
-TEST_CASE("an early return inside a nested guard still structures to one emission per block") {
-    // if (a) { if (b) return 1; } return 2;  -- the inner return cuts across the outer join.
-    Package package;
-    auto builder = package.builder();
-    auto fn = builder.createFunction("pick", {builder.boolType(), builder.boolType()}, builder.int64Type());
-    auto region = package.function(fn).root_region;
-    auto entry = builder.createBlock(region);
-    auto outer_then = builder.createBlock(region);
-    auto outer_else = builder.createBlock(region);
-    auto inner_then = builder.createBlock(region);
-    auto inner_else = builder.createBlock(region);
-    auto inner_join = builder.createBlock(region);
-    auto join = builder.createBlock(region);
-
-    auto a = builder.addArgument(fn, entry, 0);
-    auto b = builder.addArgument(fn, entry, 1);
-    builder.addBranch(entry, a, outer_then, outer_else);
-    builder.addBranch(outer_then, b, inner_then, inner_else);
-    builder.addReturn(inner_then, builder.addIntConstant(inner_then, builder.int64Type(), 1));
-    builder.addJump(inner_else, inner_join);
-    builder.addJump(inner_join, join);
-    builder.addJump(outer_else, join);
-    builder.addReturn(join, builder.addIntConstant(join, builder.int64Type(), 2));
-
-    CHECK(verify(package).empty());
-    auto cfg = buildCfg(package, region);
-    auto joins = branchJoins(cfg);
-    CHECK(joins[0] == std::optional<size_t>(cfg.position.at(join.index)));
-    CHECK(isStructured(cfg, joins));
-}
-
-TEST_CASE("two arms that both reach the same two returning blocks are not structured") {
-    // 0 -> {1, 2}, 1 -> {3, 4}, 2 -> {3, 4}: each arm reaches both exits, so one of them is emitted twice.
-    Package package;
-    auto builder = package.builder();
-    auto fn = builder.createFunction("crossing", {builder.boolType()}, builder.int64Type());
-    auto region = package.function(fn).root_region;
-    auto b0 = builder.createBlock(region);
-    auto b1 = builder.createBlock(region);
-    auto b2 = builder.createBlock(region);
-    auto b3 = builder.createBlock(region);
-    auto b4 = builder.createBlock(region);
-    auto flag = builder.addArgument(fn, b0, 0);
-    builder.addBranch(b0, flag, b1, b2);
-    builder.addBranch(b1, flag, b3, b4);
-    builder.addBranch(b2, flag, b3, b4);
-    builder.addReturn(b3, builder.addIntConstant(b3, builder.int64Type(), 1));
-    builder.addReturn(b4, builder.addIntConstant(b4, builder.int64Type(), 2));
-
-    CHECK(verify(package).empty());
-    auto cfg = buildCfg(package, region);
-    CHECK_FALSE(isStructured(cfg, branchJoins(cfg)));
 }
 
 namespace {
