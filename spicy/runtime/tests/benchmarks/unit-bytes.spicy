@@ -1,0 +1,14 @@
+# Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
+
+module BenchmarkBytes;
+
+# Bytes with constraints.
+type BytesEntry = unit {
+    len: uint8;
+    payload: bytes &size=self.len;
+};
+
+public type UnitBytes = unit {
+    length: uint64;
+    entries: BytesEntry[] &size=self.length;
+};

@@ -1,0 +1,9 @@
+# Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
+
+module BenchmarkRegex;
+
+public type Regex = unit {
+    length: uint64;
+    data: /A*/;
+    end_: b"END";
+};

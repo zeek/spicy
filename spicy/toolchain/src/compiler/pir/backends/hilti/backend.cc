@@ -51,6 +51,7 @@ struct FunctionNames {
 // The names of one parser entry: its adapter, its registered record, and its registration.
 struct ParserEntryNames {
     std::string parse1;
+    std::string parse3;
     std::string parser;
     std::string registration;
     std::string context_new;
@@ -135,6 +136,7 @@ NameMap makeNames(const ir::Package& package, const std::vector<TargetBinding>& 
         names.globals.push_back(unique(fmt("g_%zu", i)));
     for ( size_t i = 0; i < package.parserRoots().size(); ++i )
         names.parser_entries.push_back(ParserEntryNames{.parse1 = unique(fmt("parse1_%zu", i)),
+                                                        .parse3 = unique(fmt("parse3_%zu", i)),
                                                         .parser = unique(fmt("parser_%zu", i)),
                                                         .registration = unique(fmt("register_parser_%zu", i)),
                                                         .context_new = unique(fmt("context_new_%zu", i))});
@@ -1113,67 +1115,85 @@ void lowerParserEntry(::hilti::Builder& builder,
     // The adapter takes the runtime's endpoint arguments, runs the root parser over them, and returns where the parser
     // finished. Resumption needs no adapter state: the root's own input waits suspend the call, and the runtime resumes
     // it with the same input.
-    ::hilti::declaration::Parameters params = {
-        builder.parameter(::hilti::ID("data"),
-                          builder.typeValueReference(
-                              builder.qualifiedType(builder.typeStream(), ::hilti::Constness::Mutable)),
-                          ::hilti::parameter::Kind::InOut,
-                          meta),
-        builder.parameter(::hilti::ID("initial_cursor"),
-                          builder.typeOptional(view_type),
-                          ::hilti::parameter::Kind::In,
-                          meta),
-        builder.parameter(::hilti::ID("unit_context"),
-                          builder.typeOptional(context_type),
-                          ::hilti::parameter::Kind::In,
-                          meta),
-    };
-    auto* body = builder.statementBlock(meta);
-    LocalBuilder fb(builder.context(), body);
-    // A parser with a context shares one instance with the other parsers of the connection: the runtime hands over the
-    // instance that the connection's first parser created, and a parser run without one makes its own.
     const auto& root_function = package.function(root.function);
     const bool has_context = root_function.parameters.size() == 2;
-    ::hilti::Expressions arguments = {fb.id(::hilti::ID("data")), fb.id(::hilti::ID("initial_cursor"))};
     ::hilti::QualifiedType* context_value = nullptr;
-    if ( has_context ) {
-        context_value =
-            builder.qualifiedType(builder.typeName(::hilti::ID(
-                                      names.context_types[names.root_context_type.at(root.function.index)])),
-                                  ::hilti::Constness::Mutable);
-        fb.addLocal(::hilti::ID("context_ref"), fb.strongReference(context_value), meta);
-        auto* unit_context_id = fb.id(::hilti::ID("unit_context"));
-        auto* created = fb.call("spicy_rt::createContext", {fb.new_(context_value->type(), meta)}, meta);
-        fb.addExpression(fb.call("spicy_rt::setContext",
-                                 {fb.id(::hilti::ID("context_ref")),
-                                  fb.ternary(unit_context_id, fb.deref(unit_context_id), created),
-                                  fb.typeinfo(context_value)},
-                                 meta));
-        arguments.push_back(fb.deref(fb.id(::hilti::ID("context_ref"))));
-    }
-    else
-        fb.addExpression(fb.call("spicy_rt::rejectUnitContext", {fb.id(::hilti::ID("unit_context"))}, meta));
-    fb.addLocal(::hilti::ID("result"), fb.call(moduleLevel(names_root.function), arguments, meta), meta);
-    auto* success =
-        fb.equal(fb.member(fb.id(::hilti::ID("result")), "kind"), fb.id(::hilti::ID("OutcomeKind::Success")), meta);
-    auto returned = fb.addIf(success, meta);
-    returned->addReturn(returned->member(returned->id(::hilti::ID("result")), "cursor"), meta);
-    // Input that holds a gap is reported as the runtime reports missing data, and every other ending is a parse error.
-    auto gap = fb.addIf(fb.equal(fb.member(fb.id(::hilti::ID("result")), "kind"),
-                                 fb.id(::hilti::ID("OutcomeKind::Gap")),
-                                 meta),
-                        meta);
-    gap->addThrow(gap->exception(gap->typeName("hilti::MissingData"), "gap in input", meta), meta);
-    fb.addThrow(fb.exception(fb.typeName("spicy_rt::ParseError"), "parsing did not complete", meta), meta);
-    decls.push_back(builder.function(::hilti::ID(parse1),
-                                     view_type,
-                                     params,
-                                     body,
-                                     ::hilti::type::function::Flavor::Function,
-                                     ::hilti::declaration::Linkage::Public,
-                                     ::hilti::type::function::CallingConvention::Extern,
-                                     {},
+
+    for ( bool parsed_unit : {false, true} ) {
+        ::hilti::declaration::Parameters params = {
+            builder.parameter(::hilti::ID("data"),
+                              builder.typeValueReference(
+                                  builder.qualifiedType(builder.typeStream(), ::hilti::Constness::Mutable)),
+                              ::hilti::parameter::Kind::InOut,
+                              meta),
+            builder.parameter(::hilti::ID("initial_cursor"),
+                              builder.typeOptional(view_type),
+                              ::hilti::parameter::Kind::In,
+                              meta),
+            builder.parameter(::hilti::ID("unit_context"),
+                              builder.typeOptional(context_type),
+                              ::hilti::parameter::Kind::In,
+                              meta),
+        };
+        if ( parsed_unit )
+            params.insert(params.begin(),
+                          builder.parameter(::hilti::ID("parsed_unit"),
+                                            builder.typeValueReference(
+                                                builder.qualifiedType(builder.typeName("spicy_rt::ParsedUnit"),
+                                                                      ::hilti::Constness::Mutable)),
+                                            ::hilti::parameter::Kind::InOut,
+                                            meta));
+        auto* body = builder.statementBlock(meta);
+        LocalBuilder fb(builder.context(), body);
+        // A parser with a context shares one instance with the other parsers of the connection: the runtime hands over
+        // the instance that the connection's first parser created, and a parser run without one makes its own.
+        ::hilti::Expressions arguments = {fb.id(::hilti::ID("data")), fb.id(::hilti::ID("initial_cursor"))};
+        if ( has_context ) {
+            context_value =
+                builder.qualifiedType(builder.typeName(::hilti::ID(
+                                          names.context_types[names.root_context_type.at(root.function.index)])),
+                                      ::hilti::Constness::Mutable);
+            fb.addLocal(::hilti::ID("context_ref"), fb.strongReference(context_value), meta);
+            auto* unit_context_id = fb.id(::hilti::ID("unit_context"));
+            auto* created = fb.call("spicy_rt::createContext", {fb.new_(context_value->type(), meta)}, meta);
+            fb.addExpression(fb.call("spicy_rt::setContext",
+                                     {fb.id(::hilti::ID("context_ref")),
+                                      fb.ternary(unit_context_id, fb.deref(unit_context_id), created),
+                                      fb.typeinfo(context_value)},
                                      meta));
+            arguments.push_back(fb.deref(fb.id(::hilti::ID("context_ref"))));
+        }
+        else
+            fb.addExpression(fb.call("spicy_rt::rejectUnitContext", {fb.id(::hilti::ID("unit_context"))}, meta));
+        fb.addLocal(::hilti::ID("result"), fb.call(moduleLevel(names_root.function), arguments, meta), meta);
+        auto* success =
+            fb.equal(fb.member(fb.id(::hilti::ID("result")), "kind"), fb.id(::hilti::ID("OutcomeKind::Success")), meta);
+        auto returned = fb.addIf(success, meta);
+        if ( parsed_unit )
+            returned->addExpression(
+                returned->call("spicy_rt::initializeParsedUnit",
+                               {returned->id(::hilti::ID("parsed_unit")),
+                                returned->deref(returned->member(returned->id(::hilti::ID("result")), "unit"))},
+                               meta));
+        returned->addReturn(returned->member(returned->id(::hilti::ID("result")), "cursor"), meta);
+        // Input that holds a gap is reported as the runtime reports missing data, and every other ending is a parse
+        // error.
+        auto gap = fb.addIf(fb.equal(fb.member(fb.id(::hilti::ID("result")), "kind"),
+                                     fb.id(::hilti::ID("OutcomeKind::Gap")),
+                                     meta),
+                            meta);
+        gap->addThrow(gap->exception(gap->typeName("hilti::MissingData"), "gap in input", meta), meta);
+        fb.addThrow(fb.exception(fb.typeName("spicy_rt::ParseError"), "parsing did not complete", meta), meta);
+        decls.push_back(builder.function(::hilti::ID(parsed_unit ? entry.parse3 : parse1),
+                                         view_type,
+                                         params,
+                                         body,
+                                         ::hilti::type::function::Flavor::Function,
+                                         ::hilti::declaration::Linkage::Public,
+                                         ::hilti::type::function::CallingConvention::Extern,
+                                         {},
+                                         meta));
+    }
 
     if ( has_context ) {
         auto* context_body = builder.statementBlock(meta);
@@ -1211,7 +1231,7 @@ void lowerParserEntry(::hilti::Builder& builder,
                          builder.ctorStructField(::hilti::ID("is_public"), builder.bool_(true, meta)),
                          builder.ctorStructField(::hilti::ID("parse1"), builder.id(::hilti::ID(parse1))),
                          builder.ctorStructField(::hilti::ID("parse2"), none),
-                         builder.ctorStructField(::hilti::ID("parse3"), none),
+                         builder.ctorStructField(::hilti::ID("parse3"), builder.id(::hilti::ID(entry.parse3))),
                          builder.ctorStructField(::hilti::ID("context_new"),
                                                  has_context ? static_cast<::hilti::Expression*>(
                                                                    builder.id(::hilti::ID(entry.context_new))) :

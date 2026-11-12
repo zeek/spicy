@@ -52,14 +52,35 @@ static std::string makeBytesInput(std::uint64_t entry_count) {
     return bigEndian(entries.size()) + entries;
 }
 
+static std::uint64_t expectedInput(std::int64_t count) { return count + 11; }
+
+static std::uint64_t expectedSwitch(std::int64_t count) { return makeSwitchInput(count).size(); }
+
+static std::uint64_t expectedNested(std::int64_t count) { return makeNestedInput(count).size(); }
+
+static std::uint64_t expectedBytes(std::int64_t count) { return makeBytesInput(count).size(); }
+
+// Initialize once per process. PIR-compiled modules keep their parser in module globals, which
+// `done()` destroys while the registry still points at it, so re-initializing per benchmark breaks
+// the parser lookup.
+static void initRuntime() {
+    static const bool initialized = [] {
+        hilti::rt::init();
+        spicy::rt::init();
+        std::atexit(hilti::rt::done);
+        return true;
+    }();
+    (void)initialized;
+}
+
 template<class... Args>
 static void benchmarkParser(benchmark::State& state, Args&&... args) {
     auto args_tuple = std::make_tuple(std::move(args)...);
     const auto& parser_name = std::get<0>(args_tuple);
     auto make_input = std::get<1>(args_tuple);
+    auto expected_offset = std::get<2>(args_tuple);
 
-    hilti::rt::init();
-    spicy::rt::init();
+    initRuntime();
 
     const spicy::rt::Parser* parser = nullptr;
     for ( const auto* p : spicy::rt::parsers() ) {
@@ -69,16 +90,19 @@ static void benchmarkParser(benchmark::State& state, Args&&... args) {
         }
     }
 
-    if ( ! parser )
-        hilti::rt::fatalError(hilti::rt::fmt("parser %s not found", parser_name));
+    if ( ! parser ) {
+        state.SkipWithError(hilti::rt::fmt("parser %s not available", parser_name).c_str());
+        return;
+    }
 
-    if ( parser->name == "Benchmark::UnitVectorSize"_hs ) {
+    const auto input_size = expected_offset(state.range(0));
+
+    {
         auto stream = hilti::rt::reference::make_value<hilti::rt::Stream>(make_input(state.range(0)));
         stream->freeze();
         auto cursor = parser->parse1(stream, {}, {}).template get<hilti::rt::stream::View>();
-        if ( cursor.offset() != static_cast<std::uint64_t>(state.range(0)) + 11 ) {
-            state.SkipWithError("legacy result did not consume the expected input");
-            hilti::rt::done();
+        if ( cursor.offset() != input_size ) {
+            state.SkipWithError("parser did not consume the expected input");
             return;
         }
     }
@@ -94,34 +118,46 @@ static void benchmarkParser(benchmark::State& state, Args&&... args) {
         benchmark::DoNotOptimize(cursor);
     }
 
-    hilti::rt::done();
+    state.SetBytesProcessed(state.iterations() * input_size);
 }
 
 static const int64_t min_input = 100;
 static const int64_t max_input = 100000;
 static const int64_t mult = 10;
 
-BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitVectorSize, "Benchmark::UnitVectorSize"_hs, makeInput)
+BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitVectorSize, "Benchmark::UnitVectorSize"_hs, makeInput, expectedInput)
     ->RangeMultiplier(mult)
     ->Range(min_input, max_input);
 
-BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitVectorLookahead, "BenchmarkOther::UnitVectorLookahead"_hs, makeInput)
+BENCHMARK_CAPTURE(benchmarkParser,
+                  Benchmark::UnitVectorLookahead,
+                  "BenchmarkLookahead::UnitVectorLookahead"_hs,
+                  makeInput,
+                  expectedInput)
     ->RangeMultiplier(mult)
     ->Range(min_input, max_input);
 
-BENCHMARK_CAPTURE(benchmarkParser, Benchmark::Regex, "BenchmarkOther::Regex"_hs, makeInput)
+BENCHMARK_CAPTURE(benchmarkParser, Benchmark::Regex, "BenchmarkRegex::Regex"_hs, makeInput, expectedInput)
     ->RangeMultiplier(mult)
     ->Range(min_input, max_input);
 
-BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitSwitch, "BenchmarkOther::UnitSwitch"_hs, makeSwitchInput)
+BENCHMARK_CAPTURE(benchmarkParser,
+                  Benchmark::UnitSwitch,
+                  "BenchmarkSwitch::UnitSwitch"_hs,
+                  makeSwitchInput,
+                  expectedSwitch)
     ->RangeMultiplier(mult)
     ->Range(min_input, max_input);
 
-BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitNested, "BenchmarkOther::UnitNested"_hs, makeNestedInput)
+BENCHMARK_CAPTURE(benchmarkParser,
+                  Benchmark::UnitNested,
+                  "BenchmarkNested::UnitNested"_hs,
+                  makeNestedInput,
+                  expectedNested)
     ->RangeMultiplier(mult)
     ->Range(min_input, max_input);
 
-BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitBytes, "BenchmarkOther::UnitBytes"_hs, makeBytesInput)
+BENCHMARK_CAPTURE(benchmarkParser, Benchmark::UnitBytes, "BenchmarkBytes::UnitBytes"_hs, makeBytesInput, expectedBytes)
     ->RangeMultiplier(mult)
     ->Range(min_input, max_input);
 
