@@ -651,6 +651,12 @@ struct Printer : visitor::PreOrder {
         _out.endLine();
     }
 
+    void operator()(statement::Goto* n) final {
+        _out.beginLine();
+        _out << "goto " << n->target() << ";";
+        _out.endLine();
+    }
+
     void operator()(statement::If* n) final {
         _out.emptyLine();
         _out.beginLine();
@@ -674,6 +680,12 @@ struct Printer : visitor::PreOrder {
             _out << "else " << n->false_();
         }
 
+        _out.endLine();
+    }
+
+    void operator()(statement::Label* n) final {
+        _out.beginLine();
+        _out << n->id() << ":";
         _out.endLine();
     }
 

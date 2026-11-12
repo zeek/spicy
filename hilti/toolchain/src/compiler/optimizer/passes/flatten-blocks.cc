@@ -1,5 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <algorithm>
 #include <map>
 #include <unordered_set>
 
@@ -7,6 +8,7 @@
 #include <hilti/ast/declarations/local-variable.h>
 #include <hilti/ast/expressions/name.h>
 #include <hilti/ast/statements/block.h>
+#include <hilti/ast/statements/label.h>
 #include <hilti/compiler/detail/optimizer/optimizer.h>
 #include <hilti/compiler/detail/optimizer/pass-id.h>
 #include <hilti/compiler/detail/optimizer/pass.h>
@@ -69,6 +71,11 @@ struct Mutator : optimizer::visitor::Mutator {
         if ( ! function )
             return;
 
+        // Flattening would move nested locals to the top level, where gotos
+        // could jump past them.
+        if ( statement::label::hasLabels(*function->body()) )
+            return;
+
         auto collector = Collector(optimizer());
         collector.run(block);
 
@@ -109,12 +116,15 @@ struct Mutator : optimizer::visitor::Mutator {
                 auto* cfg = state()->cfgCache()->get(function->body());
 
                 const auto& successors = cfg->graph().neighborsDownstream(last->identity());
-                // A block should have at most one child, the statement following it.
-                assert(successors.size() <= 1);
-                if ( ! successors.empty() ) {
-                    const auto* scope_end = cfg->graph().getNode(successors.front());
-                    assert(scope_end);
-                    assert((*scope_end)->isA<cfg::End>());
+                // Exceptional edges can also leave the last statement. Only the normal edge to this scope's
+                // end describes locals to reset when flattening the block.
+                auto end = std::ranges::find_if(successors, [&](auto id) {
+                    const auto* node = cfg->graph().getNode(id);
+                    const auto* scope = (*node)->template tryAs<cfg::End>();
+                    return scope && scope->scope == parent;
+                });
+                if ( end != successors.end() ) {
+                    const auto* scope_end = cfg->graph().getNode(*end);
                     const auto& transfer = cfg->dataflow().at(*scope_end);
                     for ( auto&& [a, xx] : transfer.kill ) {
                         // Since loops and conditionals can have a block we check whether the block actually

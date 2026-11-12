@@ -469,11 +469,17 @@ public:
     auto statementFor(const hilti::ID& id, Expression* seq, Statement* body, Meta meta = {}) {
         return hilti::statement::For::create(context(), id, seq, body, std::move(meta));
     }
+    auto statementGoto(const hilti::ID& target, Meta meta = {}) {
+        return hilti::statement::Goto::create(context(), target, std::move(meta));
+    }
     auto statementIf(Declaration* init, Expression* cond, Statement* true_, Statement* false_, Meta meta = {}) {
         return hilti::statement::If::create(context(), init, cond, true_, false_, std::move(meta));
     }
     auto statementIf(Expression* cond, Statement* true_, Statement* false_, Meta meta = {}) {
         return hilti::statement::If::create(context(), cond, true_, false_, std::move(meta));
+    }
+    auto statementLabel(const hilti::ID& id, Meta meta = {}) {
+        return hilti::statement::Label::create(context(), id, std::move(meta));
     }
     auto statementReturn(Meta meta = {}) { return hilti::statement::Return::create(context(), std::move(meta)); }
     auto statementReturn(Expression* expr, Meta meta = {}) {

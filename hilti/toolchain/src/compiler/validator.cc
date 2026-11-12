@@ -34,7 +34,9 @@
 #include <hilti/ast/statements/continue.h>
 #include <hilti/ast/statements/declaration.h>
 #include <hilti/ast/statements/for.h>
+#include <hilti/ast/statements/goto.h>
 #include <hilti/ast/statements/if.h>
+#include <hilti/ast/statements/label.h>
 #include <hilti/ast/statements/return.h>
 #include <hilti/ast/statements/throw.h>
 #include <hilti/ast/statements/try.h>
@@ -289,6 +291,29 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                     error(fmt("parameter '%s' must be of type 'any' to use &cxx-any-as-ptr", p->id()), n);
             }
         }
+
+        if ( auto* body = n->body(); body && statement::label::hasLabels(*body) ) {
+            // C++ rejects jumps into the scope of an initialized variable.
+            // Since labels are only at the top level, keeping top-level
+            // locals ahead of every label and goto rules that out.
+            bool seen_jump = false;
+            for ( auto* s : body->statements() ) {
+                if ( seen_jump && s->isA<statement::Declaration>() )
+                    error("top-level local cannot follow a label or goto; declare it inside a nested block", s);
+
+                if ( s->isA<statement::Label>() || containsGoto(s) )
+                    seen_jump = true;
+            }
+        }
+    }
+
+    static bool containsGoto(Node* n) {
+        for ( auto* x : visitor::range(visitor::PreOrder(), n, {}) ) {
+            if ( x->isA<statement::Goto>() )
+                return true;
+        }
+
+        return false;
     }
 
     ////// Declarations
@@ -617,6 +642,28 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
             error("'continue' outside of loop", n);
             return;
         }
+    }
+
+    void operator()(statement::Goto* n) final {
+        auto* f = n->parent<Function>();
+        if ( ! (f && f->body()) ) {
+            error("'goto' outside of function", n);
+            return;
+        }
+
+        if ( ! statement::label::find(*f->body(), n->target()) )
+            error(fmt("unknown label '%s'", n->target()), n);
+    }
+
+    void operator()(statement::Label* n) final {
+        auto* f = n->parent<Function>();
+        if ( ! (f && n->parent() == f->body()) ) {
+            error("label must be at the top level of a function body", n);
+            return;
+        }
+
+        if ( statement::label::find(*f->body(), n->id()) != n )
+            error(fmt("duplicate label '%s'", n->id()), n);
     }
 
     void operator()(statement::Declaration* n) final {

@@ -238,6 +238,7 @@ private:
     cfg::GraphNode _addSwitch(cfg::GraphNode predecessor, const statement::Switch& switch_);
     cfg::GraphNode _addTryCatch(cfg::GraphNode predecessor, const statement::Try& try_);
     cfg::GraphNode _addReturn(cfg::GraphNode predecessor, const statement::Return& return_);
+    cfg::GraphNode _addGoto(cfg::GraphNode predecessor, statement::Goto& goto_);
     cfg::GraphNode _addThrow(cfg::GraphNode predecessor, statement::Throw& throw_, cfg::GraphNode scope_end);
     cfg::GraphNode _addCall(cfg::GraphNode predecessor, operator_::function::Call& call);
 

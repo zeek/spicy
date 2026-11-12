@@ -10,7 +10,9 @@
 #include <hilti/ast/statements/declaration.h>
 #include <hilti/ast/statements/expression.h>
 #include <hilti/ast/statements/for.h>
+#include <hilti/ast/statements/goto.h>
 #include <hilti/ast/statements/if.h>
+#include <hilti/ast/statements/label.h>
 #include <hilti/ast/statements/return.h>
 #include <hilti/ast/statements/set_location.h>
 #include <hilti/ast/statements/switch.h>

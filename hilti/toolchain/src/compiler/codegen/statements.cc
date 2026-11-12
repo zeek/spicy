@@ -4,6 +4,7 @@
 #include <hilti/ast/declarations/local-variable.h>
 #include <hilti/ast/expressions/ctor.h>
 #include <hilti/ast/expressions/resolved-operator.h>
+#include <hilti/ast/function.h>
 #include <hilti/ast/statements/all.h>
 #include <hilti/ast/types/struct.h>
 #include <hilti/base/logger.h>
@@ -35,6 +36,17 @@ static auto traceStatement(CodeGen* cg, cxx::Block* b, Statement* s, bool skip_l
 }
 
 namespace {
+
+// Returns the C++ name for a HILTI label.
+std::string cxxLabel(const ID& id) { return fmt("%s_%s", HILTI_INTERNAL_ID("l"), cxx::ID(id).str()); }
+
+// Forces braces on a nested block in a function with labels. Without them,
+// a single declaration would land in the enclosing scope, where a goto
+// could jump past it.
+void protectFromGotos(const Node* n, cxx::Block* b) {
+    if ( auto* f = n->parent<Function>(); f && f->body() && statement::label::hasLabels(*f->body()) )
+        b->setEnsureBracesforBlock();
+}
 
 struct Visitor : hilti::visitor::PreOrder {
     Visitor(CodeGen* cg, cxx::Block* b) : cg(cg), block(b) {}
@@ -139,8 +151,11 @@ struct Visitor : hilti::visitor::PreOrder {
             --level;
         }
 
-        else
-            block->addBlock(cg->compile(n));
+        else {
+            auto b = cg->compile(n);
+            protectFromGotos(n, &b);
+            block->addBlock(std::move(b));
+        }
     }
 
     void operator()(statement::Break* n) final {
@@ -191,6 +206,8 @@ struct Visitor : hilti::visitor::PreOrder {
     }
 
     void operator()(statement::Expression* n) final { block->addStatement(cg->compile(n->expression())); }
+
+    void operator()(statement::Goto* n) final { block->addStatement(fmt("goto %s", cxxLabel(n->target()))); }
 
     void operator()(statement::If* n) final {
         std::string init;
@@ -247,6 +264,8 @@ struct Visitor : hilti::visitor::PreOrder {
         if ( loopContainsBreaks(n, n->body()) )
             block->addLabel(fmt("%s_%" PRIu64, HILTI_INTERNAL_ID("done"), n->identity()));
     }
+
+    void operator()(statement::Label* n) final { block->addLabel(cxxLabel(n->id())); }
 
     void operator()(statement::Return* n) final {
         if ( cg->options().debug_flow )
@@ -320,8 +339,11 @@ struct Visitor : hilti::visitor::PreOrder {
                 if ( const auto& block = last_stmt->tryAs<statement::Block>(); block && ! block->statements().empty() )
                     last_stmt = block->statements().back();
 
-                if ( ! (last_stmt
-                            ->isAnyOf<statement::Break, statement::Continue, statement::Return, statement::Throw>()) )
+                if ( ! (last_stmt->isAnyOf<statement::Break,
+                                           statement::Continue,
+                                           statement::Goto,
+                                           statement::Return,
+                                           statement::Throw>()) )
                     cases.back().second.addStatement("break");
             }
 
@@ -371,8 +393,10 @@ struct Visitor : hilti::visitor::PreOrder {
                 default_ =
                     throw_on_default(first ? static_cast<std::string>(cxx_init) : static_cast<std::string>(cxx_id));
 
-            if ( first )
+            if ( first ) {
+                protectFromGotos(n, &*default_);
                 block->addBlock(std::move(*default_));
+            }
             else
                 block->addElse(std::move(*default_));
         };

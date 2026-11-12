@@ -488,7 +488,9 @@ public:
     virtual void operator()(hilti::statement::Declaration*) {}
     virtual void operator()(hilti::statement::Expression*) {}
     virtual void operator()(hilti::statement::For*) {}
+    virtual void operator()(hilti::statement::Goto*) {}
     virtual void operator()(hilti::statement::If*) {}
+    virtual void operator()(hilti::statement::Label*) {}
     virtual void operator()(hilti::statement::Return*) {}
     virtual void operator()(hilti::statement::SetLocation*) {}
     virtual void operator()(hilti::statement::Switch*) {}

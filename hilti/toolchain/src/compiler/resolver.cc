@@ -1035,6 +1035,18 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         n->addError("break statement outside of loop");
     }
 
+    void operator()(statement::Goto* n) final {
+        // Unlinked gotos are reported by the validator.
+        statement::Label* label = nullptr;
+        if ( auto* f = n->parent<Function>(); f && f->body() )
+            label = statement::label::find(*f->body(), n->target());
+
+        if ( label != n->linkedLabel() ) {
+            recordChange(n, "recording the label for goto statement");
+            n->setLinkedLabel(label);
+        }
+    }
+
     void operator()(statement::If* n) final {
         if ( n->init() && ! n->condition() ) {
             auto* cond = builder()->expressionName(n->init()->id());

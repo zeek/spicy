@@ -21,12 +21,13 @@ digraph {
     2 -> 0 [label="0"];
     0 -> 5 [label="1"];
     5 -> 6 [label="2"];
-    5 -> 7 [label="3"];
-    7 -> 1 [label="4"];
-    1 -> 8 [label="5"];
-    8 -> 6 [label="6"];
-    6 -> 4 [label="7"];
-    4 -> 3 [label="8"];
+    0 -> 7 [label="3"];
+    2 -> 7 [label="4"];
+    7 -> 1 [label="5"];
+    1 -> 8 [label="6"];
+    8 -> 6 [label="7"];
+    6 -> 4 [label="8"];
+    4 -> 3 [label="9"];
 }
 [debug/cfg-initial] Function 'fn2'
 digraph {
@@ -44,15 +45,16 @@ digraph {
     3 -> 0 [label="0"];
     0 -> 6 [label="1"];
     6 -> 7 [label="2"];
-    6 -> 8 [label="3"];
-    8 -> 1 [label="4"];
-    1 -> 9 [label="5"];
-    9 -> 7 [label="6"];
-    8 -> 2 [label="7"];
-    2 -> 10 [label="8"];
-    10 -> 7 [label="9"];
-    7 -> 5 [label="10"];
-    5 -> 4 [label="11"];
+    0 -> 8 [label="3"];
+    3 -> 8 [label="4"];
+    8 -> 1 [label="5"];
+    1 -> 9 [label="6"];
+    9 -> 7 [label="7"];
+    8 -> 2 [label="8"];
+    2 -> 10 [label="9"];
+    10 -> 7 [label="10"];
+    7 -> 5 [label="11"];
+    5 -> 4 [label="12"];
 }
 [debug/cfg-initial] Function 'fn3'
 digraph {
@@ -79,15 +81,18 @@ digraph {
     9 -> 10 [label="5"];
     10 -> 8 [label="6"];
     8 -> 11 [label="7"];
-    8 -> 12 [label="8"];
-    12 -> 2 [label="9"];
-    2 -> 13 [label="10"];
-    13 -> 11 [label="11"];
-    12 -> 3 [label="12"];
-    3 -> 14 [label="13"];
-    14 -> 11 [label="14"];
-    11 -> 7 [label="15"];
-    7 -> 6 [label="16"];
+    0 -> 12 [label="8"];
+    1 -> 12 [label="9"];
+    4 -> 12 [label="10"];
+    5 -> 12 [label="11"];
+    12 -> 2 [label="12"];
+    2 -> 13 [label="13"];
+    13 -> 11 [label="14"];
+    12 -> 3 [label="15"];
+    3 -> 14 [label="16"];
+    14 -> 11 [label="17"];
+    11 -> 7 [label="18"];
+    7 -> 6 [label="19"];
 }
 [debug/cfg-initial] Module 'hilti'
 digraph {

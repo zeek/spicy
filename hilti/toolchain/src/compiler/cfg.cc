@@ -56,7 +56,9 @@
 #include <hilti/ast/statements/declaration.h>
 #include <hilti/ast/statements/expression.h>
 #include <hilti/ast/statements/for.h>
+#include <hilti/ast/statements/goto.h>
 #include <hilti/ast/statements/if.h>
+#include <hilti/ast/statements/label.h>
 #include <hilti/ast/statements/return.h>
 #include <hilti/ast/statements/set_location.h>
 #include <hilti/ast/statements/switch.h>
@@ -312,7 +314,7 @@ GraphNode CFG::_addParameters(GraphNode predecessor, const Node& root) {
 
 GraphNode CFG::_addBlock(GraphNode predecessor, const Nodes& stmts, const Node* scope) {
     // If `children` directly has any statements which change control flow like
-    // `throw` or `return` any statements after that are unreachable. To model
+    // `throw`, `return`, or `goto` any statements after that are unreachable. To model
     // such ASTs we add a flow with all statements up to the "last" semantic
     // statement (either the last child or the control flow statement) to the
     // CFG under `parent`. Statements after that are added as children without
@@ -321,7 +323,11 @@ GraphNode CFG::_addBlock(GraphNode predecessor, const Nodes& stmts, const Node* 
     // After this block `last` is the last reachable statement, either end of
     // children or a control flow statement.
     auto last = std::ranges::find_if(stmts, [](auto* c) {
-        return c && (c->template isAnyOf<statement::Return, statement::Throw, statement::Continue, statement::Break>());
+        return c && (c->template isAnyOf<statement::Return,
+                                         statement::Throw,
+                                         statement::Continue,
+                                         statement::Break,
+                                         statement::Goto>());
     });
     const bool has_dead_flow = last != stmts.end();
     if ( has_dead_flow )
@@ -355,6 +361,16 @@ GraphNode CFG::_addBlock(GraphNode predecessor, const Nodes& stmts, const Node* 
 
         else if ( auto* return_ = c->tryAs<statement::Return>() )
             predecessor = _addReturn(predecessor, *return_);
+
+        else if ( auto* goto_ = c->tryAs<statement::Goto>() )
+            predecessor = _addGoto(predecessor, *goto_);
+
+        else if ( auto* label = c->tryAs<statement::Label>() ) {
+            // Gotos may have created the node already.
+            auto n = _getOrAddNode(label);
+            _addEdge(predecessor, n);
+            predecessor = n;
+        }
 
         else if ( c->isA<statement::Continue>() || c->isA<statement::Break>() )
             // `continue`/`break` statements only add flow, but no data.
@@ -489,9 +505,17 @@ GraphNode CFG::_addTryCatch(GraphNode predecessor, const statement::Try& try_cat
     auto mix_after = _getOrAddNode(_createMetaNode<Flow>());
     _addEdge(try_, mix_after);
 
-    // Since the `try` block can throw connect into node flowing into all `catch` blocks.
+    // Any operation in the body may throw, including before a return or goto that makes the body's end
+    // unreachable. Conservatively keep exceptional flow from every program point in the body. Include the
+    // predecessor so an assignment that throws need not have completed when a catch reads its target.
     auto mix_into_catches = _getOrAddNode(_createMetaNode<Flow>());
-    _addEdge(try_, mix_into_catches);
+    std::vector<GraphNode> exceptional{predecessor};
+    for ( const auto& [id, node] : _graph.nodes() )
+        if ( ! node.value->isA<MetaNode>() && cfg::contains(*try_catch.body(), *node.value.get()) )
+            exceptional.push_back(node.value);
+    std::ranges::sort(exceptional, [](const auto& a, const auto& b) { return a->identity() < b->identity(); });
+    for ( auto node : exceptional )
+        _addEdge(node, mix_into_catches);
 
     for ( auto* catch_ : try_catch.catches() ) {
         auto catch_end = _addBlock(mix_into_catches, catch_->body()->children(), catch_);
@@ -546,6 +570,32 @@ GraphNode CFG::_addReturn(GraphNode predecessor, const statement::Return& return
     auto r = _getOrAddNode(const_cast<statement::Return*>(&return_));
     _addEdge(predecessor, r);
     _addEdge(r, _end);
+
+    return _end;
+}
+
+GraphNode CFG::_addGoto(GraphNode predecessor, statement::Goto& goto_) {
+    auto g = _getOrAddNode(&goto_);
+    _addEdge(predecessor, g);
+
+    auto* label = goto_.linkedLabel();
+    if ( ! label )
+        return _end;
+
+    // Labels are at the top level, so jumping to one leaves every scope
+    // inside the top-level statement holding the goto. Flow through an end
+    // node for that statement so that its locals don't reach the label.
+    const Node* outer = &goto_;
+    while ( outer->parent() && outer->parent() != label->parent() )
+        outer = outer->parent();
+
+    if ( outer != &goto_ ) {
+        auto scope_end = _getOrAddNode(_createMetaNode<End>(outer));
+        _addEdge(g, scope_end);
+        g = scope_end;
+    }
+
+    _addEdge(g, _getOrAddNode(label));
 
     return _end;
 }
@@ -769,6 +819,8 @@ struct DataflowVisitor : visitor::PreOrder {
     void operator()(statement::Throw*) override { transfer.keep = true; }
     void operator()(statement::Return*) override { transfer.keep = true; }
     void operator()(statement::Yield*) override { transfer.keep = true; }
+    void operator()(statement::Goto*) override { transfer.keep = true; }
+    void operator()(statement::Label*) override { transfer.keep = true; }
 
     // Joint backend for function and member call visitors.
     void processCall(const node::Set<type::function::Parameter>& formal_args,

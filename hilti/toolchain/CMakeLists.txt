@@ -350,6 +350,7 @@ add_executable(
     hilti-toolchain-tests
     EXCLUDE_FROM_ALL
     tests/main.cc
+    tests/goto.cc
     tests/id-base.cc
     tests/visitor.cc
     tests/util.cc

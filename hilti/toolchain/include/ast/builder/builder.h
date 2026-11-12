@@ -582,6 +582,10 @@ public:
 
     void addContinue(Meta m = Meta()) { block()->_add(context(), statementContinue(std::move(m))); }
 
+    void addGoto(const ID& target, Meta m = Meta()) { block()->_add(context(), statementGoto(target, std::move(m))); }
+
+    void addLabel(const ID& id, Meta m = Meta()) { block()->_add(context(), statementLabel(id, std::move(m))); }
+
     void addSumAssign(const ID& dst, Expression* src, const Meta& m = Meta()) {
         block()->_add(context(), statementExpression(sumAssign(id(dst), src, m), m));
     }

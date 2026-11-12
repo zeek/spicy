@@ -652,6 +652,8 @@ constexpr Tag Throw = 4512;
 constexpr Tag Try = 4513;
 constexpr Tag While = 4514;
 constexpr Tag Yield = 4515;
+constexpr Tag Goto = 4516;
+constexpr Tag Label = 4517;
 } // namespace statement
 
 namespace type {

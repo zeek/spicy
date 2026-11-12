@@ -1,6 +1,8 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <hilti/ast/builder/builder.h>
+#include <hilti/ast/statements/goto.h>
+#include <hilti/ast/statements/label.h>
 #include <hilti/base/logger.h>
 #include <hilti/compiler/detail/cfg.h>
 #include <hilti/compiler/detail/optimizer/optimizer.h>
@@ -28,14 +30,25 @@ struct Mutator : public optimizer::visitor::Mutator {
     using optimizer::visitor::Mutator::Mutator;
 
     // Returns all nodes in the CFG that are unreachable.
-    NodePtrSet unreachableNodes(const CFG* cfg) const {
+    NodePtrSet unreachableNodes(const CFG* cfg, statement::Block* block) const {
         NodePtrSet result;
 
+        // Labels that a goto still names must stay even if unreachable.
+        std::set<const Node*> targets;
+        for ( auto* n : hilti::visitor::range(hilti::visitor::PreOrder(), block, {}) ) {
+            if ( auto* goto_ = n->tryAs<statement::Goto>(); goto_ && goto_->linkedLabel() )
+                targets.insert(goto_->linkedLabel());
+        }
+
         for ( const auto& [id, n] : cfg->graph().nodes() ) {
-            if ( n.value.get() && ! n.value->isA<cfg::MetaNode>() && n.neighbors_upstream.empty() ) {
-                assert(std::ranges::find(result, n.value.get()) == result.end());
-                result.insert(n.value.get());
-            }
+            if ( ! n.value.get() || n.value->isA<cfg::MetaNode>() || ! n.neighbors_upstream.empty() )
+                continue;
+
+            if ( auto* label = n.value->tryAs<statement::Label>(); label && targets.contains(label) )
+                continue;
+
+            assert(std::ranges::find(result, n.value.get()) == result.end());
+            result.insert(n.value.get());
         }
 
         return result;
@@ -207,7 +220,7 @@ struct Mutator : public optimizer::visitor::Mutator {
                 break;
 
             // NOLINTNEXTLINE(bugprone-nondeterministic-pointer-iteration-order)
-            for ( auto* n : unreachableNodes(cfg) )
+            for ( auto* n : unreachableNodes(cfg, block) )
                 modified |= remove(n, "unreachable code");
 
             if ( ! modified )
