@@ -1179,10 +1179,11 @@ struct ProductionVisitor : public production::Visitor {
                 first_token = false;
 
                 // Create the joint regular expression. The token IDs become the regexps' IDs.
-                auto patterns = regexps | std::views::transform([](const auto& c) {
-                                    return std::make_pair(c->template as<production::Ctor>()
+                auto patterns = regexps | std::views::transform([](Production* c) {
+                                    return std::make_pair(c->expression()
+                                                              ->as<hilti::expression::Ctor>()
                                                               ->ctor()
-                                                              ->template as<hilti::ctor::RegExp>()
+                                                              ->as<hilti::ctor::RegExp>()
                                                               ->patterns(),
                                                           c->tokenID());
                                 });

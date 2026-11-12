@@ -1,12 +1,13 @@
-# @TEST-DOC: A skip regexp that does not match during switch look-ahead (Try mode) should fall through to the default arm without error.
+# @TEST-DOC: A skip regexp that does not match during switch look-ahead should fall through to the next arm or default.
 #
-# The switch probes `Alpha`'s leading `skip /[a-z]+/` in Try mode. For `foo`
-# the regexp matches and the `a` arm is taken; for `123` it returns a definitive
-# no-match (rc=0), the Try-mode path fires, and the default arm is taken instead.
+# @TEST-EXEC: spicyc -dj %INPUT -o test.hlto
 #
-# @TEST-EXEC: spicyc -c %INPUT
-# @TEST-EXEC: ${SCRIPTS}/printf "foobar" | spicy-dump -d %INPUT >>output 2>&1
-# @TEST-EXEC: ${SCRIPTS}/printf "123bar" | spicy-dump -d %INPUT >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf "foobar" | spicy-dump -d -p test::X test.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf "123bar" | spicy-dump -d -p test::X test.hlto >>output 2>&1
+#
+# @TEST-EXEC: ${SCRIPTS}/printf "foobar" | spicy-dump -d -p test::Y test.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf "123bar" | spicy-dump -d -p test::Y test.hlto >>output 2>&1
+#
 # @TEST-EXEC: btest-diff output
 
 module test;
@@ -20,5 +21,17 @@ public type X = unit {
     switch {
         -> a: Alpha;
         * -> other: bytes &eod;
+    };
+};
+
+type Beta = unit {
+    name:  skip /[1-9]+/;
+    value: bytes &eod;
+};
+
+public type Y = unit {
+    switch {
+        -> a: Alpha;
+        -> b: Beta;
     };
 };

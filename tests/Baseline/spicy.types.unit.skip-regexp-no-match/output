@@ -9,3 +9,15 @@ test::X {
   a: (unset)
   other: 123bar
 }
+test::Y {
+  a: test::Alpha {
+    value: 
+  }
+  b: (unset)
+}
+test::Y {
+  a: (unset)
+  b: test::Beta {
+    value: bar
+  }
+}
