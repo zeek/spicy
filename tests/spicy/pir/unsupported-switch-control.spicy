@@ -1,0 +1,14 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: A switch on a value that is not an integer falls back to the standard code generator.
+
+module Test;
+
+public type Message = unit {
+    tag: bytes &size=1;
+    switch ( self.tag ) {
+        b"a" -> a: uint8;
+        * -> b: uint8;
+    };
+};

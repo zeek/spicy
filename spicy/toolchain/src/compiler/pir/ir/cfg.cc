@@ -16,6 +16,13 @@ std::vector<BlockId> successorBlocks(const Package& package, BlockId block) {
         return {branch->then_block, branch->else_block};
     if ( const auto* jump = std::get_if<JumpPayload>(&terminator.payload) )
         return {jump->target};
+    if ( const auto* cases = std::get_if<SwitchPayload>(&terminator.payload) ) {
+        std::vector<BlockId> out;
+        for ( const auto& c : cases->cases )
+            out.push_back(c.target);
+        out.push_back(cases->default_target);
+        return out;
+    }
 
     return {};
 }
@@ -37,7 +44,10 @@ Cfg buildCfg(const Package& package, RegionId region) {
             if ( ! cfg.contains(to) )
                 continue;
 
+            // Several successors of a block may be the same, so the edges are deduplicated.
             auto target = cfg.position.at(to.index);
+            if ( std::ranges::find(cfg.successors[from], target) != cfg.successors[from].end() )
+                continue;
             cfg.successors[from].emplace_back(target);
             cfg.predecessors[target].emplace_back(from);
         }

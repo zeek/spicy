@@ -356,3 +356,99 @@ TEST_CASE("a Phi gets its own shadow unless all its Upsilons write the same stor
     CHECK(coalesced.find("phi_") == std::string::npos);
     CHECK(coalesced.find("return arg_1;") != std::string::npos);
 }
+
+namespace {
+
+// A root parser that reads a tag, switches on it, and publishes `value` only in case 1. With `unreachable`, case 1 is
+// a block that no edge reaches, listed before the reachable default.
+Package makeSwitchingParser(bool unreachable) {
+    Package package;
+    auto builder = package.builder();
+    auto unit = builder.createUnitDecl("U");
+    auto tag_field = builder.createFieldDecl(unit, "tag", builder.uint8Type());
+    auto value_field = builder.createFieldDecl(unit, "value", builder.uint8Type());
+    auto fn = builder.createParserFunction(unit, builder.parserStateType(), builder.unitType(unit));
+    auto region = package.function(fn).root_region;
+    auto entry = builder.createBlock(region);
+    auto one = builder.createBlock(region);
+    auto other = builder.createBlock(region);
+    auto join = builder.createBlock(region);
+
+    auto read = builder.addReadInteger(entry, builder.addArgument(fn, entry, 0), ReadIntegerPayload{.width = 8});
+    auto state = builder.addTupleGet(entry, read, 0);
+    auto tag = builder.addTupleGet(entry, read, 1);
+    auto self = builder.addPublishField(entry, builder.addUnitCreate(entry, unit), tag, tag_field);
+    auto state_phi = builder.addPhi(join, builder.parserStateType());
+    auto unit_phi = builder.addPhi(join, builder.unitType(unit));
+    builder.addParserFinish(join, state_phi, unit_phi);
+
+    std::vector<SwitchCase> cases;
+    if ( ! unreachable )
+        cases.push_back(SwitchCase{.value = IntegerLiteral{1}, .target = one});
+    builder.addSwitch(entry, tag, SwitchPayload{.cases = cases, .default_target = other});
+
+    auto value_read = builder.addReadInteger(one, state, ReadIntegerPayload{.width = 8});
+    builder.addUpsilon(one, builder.addTupleGet(one, value_read, 0), state_phi);
+    builder.addUpsilon(one,
+                       builder.addPublishField(one, self, builder.addTupleGet(one, value_read, 1), value_field),
+                       unit_phi);
+    builder.addJump(one, join);
+    builder.addUpsilon(other, state, state_phi);
+    builder.addUpsilon(other, self, unit_phi);
+    builder.addJump(other, join);
+    builder.addParserRoot(unit, fn);
+    return package;
+}
+
+} // namespace
+
+TEST_CASE("a field that one case publishes is optional storage, and one that every path publishes is not") {
+    auto text = lowered(makeSwitchingParser(false));
+    CHECK(text.find("uint<8> field_0;") != std::string::npos);
+    CHECK(text.find("uint<8> field_1 &optional;") != std::string::npos);
+    CHECK(text.find("goto ") != std::string::npos);
+    CHECK(text.find("switch (") != std::string::npos);
+}
+
+TEST_CASE("unreachable blocks and their Upsilons are not lowered") {
+    auto text = lowered(makeSwitchingParser(true));
+    // Only the default publishes nothing, so `value` is conditional, and the unreachable case leaves no read behind.
+    CHECK(text.find("field_1 &optional;") != std::string::npos);
+    CHECK(text.find("unpack<uint<8>>") != std::string::npos);
+}
+
+TEST_CASE("parser read results crossing blocks hoist only their physical value storage") {
+    for ( bool bytes : {false, true} ) {
+        CAPTURE(bytes);
+        Package package;
+        auto builder = package.builder();
+        auto unit = builder.createUnitDecl("CrossBlock");
+        auto field = builder.createFieldDecl(unit, "value", bytes ? builder.bytesType() : builder.uint8Type());
+        auto fn = builder.createParserFunction(unit, builder.parserStateType(), builder.unitType(unit));
+        auto region = package.function(fn).root_region;
+        auto entry = builder.createBlock(region);
+        auto read_block = builder.createBlock(region);
+        auto finish = builder.createBlock(region);
+        auto state = builder.addArgument(fn, entry, 0);
+        auto object = builder.addUnitCreate(entry, unit);
+        builder.addJump(entry, read_block);
+        auto read =
+            bytes ?
+                builder.addReadBytes(read_block, state, builder.addIntConstant(read_block, builder.uint64Type(), 2)) :
+                builder.addReadInteger(read_block,
+                                       state,
+                                       ReadIntegerPayload{.width = 8,
+                                                          .signedness = Signedness::Unsigned,
+                                                          .byte_order = ByteOrder::Network});
+        builder.addJump(read_block, finish);
+        auto next = builder.addTupleGet(finish, read, 0);
+        auto value = builder.addTupleGet(finish, read, 1);
+        auto published = builder.addPublishField(finish, object, value, field);
+        builder.addParserFinish(finish, next, published);
+        builder.addParserRoot(unit, fn);
+        auto text = lowered(package);
+        auto name = "v_" + std::to_string(read.index);
+        CHECK(text.find("local " + std::string(bytes ? "bytes " : "uint<8> ") + name + ";") != std::string::npos);
+        CHECK(text.find("tuple<parser.state") == std::string::npos);
+    }
+}

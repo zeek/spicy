@@ -25,6 +25,27 @@ void Package::replaceInst(InstId id, Opcode opcode, std::vector<InstId> args, In
     inst.payload = payload;
 }
 
+void Package::eraseBlock(RegionId region, BlockId block) {
+    auto& blocks = _regions.get(region).blocks;
+    std::erase(blocks, block);
+    _erased_blocks.insert(block.index);
+    for ( auto id : _blocks.get(block).insts ) {
+        _erased_insts.insert(id.index);
+        for ( auto child : _instructions.get(id).regions ) {
+            for ( auto child_block : std::vector<BlockId>(_regions.get(child).blocks) )
+                eraseBlock(child, child_block);
+            _erased_regions.insert(child.index);
+        }
+    }
+    _blocks.get(block).insts.clear();
+}
+
+void Package::eraseInst(InstId id) {
+    auto& inst = _instructions.get(id);
+    std::erase(_blocks.get(inst.parent).insts, id);
+    _erased_insts.insert(id.index);
+}
+
 namespace {
 
 ValueDiscipline typeDiscipline(const Package& package, TypeId id, std::unordered_set<uint32_t>& visiting) {

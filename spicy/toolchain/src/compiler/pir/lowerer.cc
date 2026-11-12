@@ -68,6 +68,7 @@
 #include <spicy/ast/statements/print.h>
 #include <spicy/ast/types/unit-items/field.h>
 #include <spicy/ast/types/unit-items/property.h>
+#include <spicy/ast/types/unit-items/switch.h>
 #include <spicy/ast/types/unit-items/unit-hook.h>
 #include <spicy/ast/types/unit.h>
 #include <spicy/ast/visitor.h>
@@ -1552,10 +1553,31 @@ struct FieldSpec {
     std::vector<ir::FunctionId> hooks;                   /**< run in order once the field is published */
 };
 
+// An item of a unit or of a switch case: a field, by index into the unit's fields, or a switch.
+struct ItemSpec {
+    std::optional<size_t> field;
+    std::optional<size_t> switch_; /**< by index into the unit's switches */
+};
+
+struct CaseSpec {
+    std::vector<hilti::Expression*> values; /**< the values that select the case */
+    bool is_default = false;
+    std::vector<ItemSpec> items;
+    hilti::Location location;
+};
+
+struct SwitchSpec {
+    type::unit::item::Switch* source = nullptr;
+    hilti::Expression* control = nullptr;
+    std::vector<CaseSpec> cases;
+};
+
 struct UnitSpec {
     hilti::declaration::Type* source = nullptr;
     type::Unit* unit = nullptr;
-    std::vector<FieldSpec> fields;
+    std::vector<FieldSpec> fields; /**< every field item, in source order; fields in cases may share a name */
+    std::vector<SwitchSpec> switches;
+    std::vector<ItemSpec> items; /**< the unit's top-level items */
     ir::TypeDeclId declaration;
     ir::FunctionId function;
     std::optional<ir::TypeId> context;      /**< the tuple type of the unit's shared `%context` */
@@ -1594,6 +1616,9 @@ public:
                                                        internSpan(_package, spec.source->meta().location()));
 
         for ( auto& spec : _units ) {
+            // Fields of the same name in different switch cases are one declaration, as the frontend has checked
+            // that their types agree.
+            std::unordered_map<std::string, ir::DeclId> fields;
             for ( auto& field : spec.fields ) {
                 ir::TypeId field_type;
                 switch ( field.form ) {
@@ -1605,15 +1630,23 @@ public:
                     case FieldForm::Unit: field_type = _builder.unitType(_spec(field.child).declaration); break;
                 }
                 field.type = field_type;
+                auto name = std::string(field.source->id().local());
+                if ( auto it = fields.find(name); it != fields.end() ) {
+                    if ( _package.declaration(it->second).type != field_type )
+                        return unsupported(fmt("parser unit '%s'", std::string(spec.source->id())),
+                                           "fields of the same name must have the same type",
+                                           field.source->meta().location());
+                    field.declaration = it->second;
+                    continue;
+                }
+
                 field.declaration = _builder.createFieldDecl(spec.declaration,
-                                                             std::string(field.source->id().local()),
+                                                             name,
                                                              field_type,
                                                              internSpan(_package, field.source->meta().location()));
+                fields.emplace(name, field.declaration);
             }
 
-            std::unordered_map<std::string, ir::DeclId> fields;
-            for ( const auto& field : spec.fields )
-                fields.emplace(std::string(field.source->id().local()), field.declaration);
             _procedures.declareUnit(spec.unit, spec.declaration, std::move(fields));
         }
 
@@ -1711,6 +1744,7 @@ private:
                 return reject("unsupported context type", decl->meta().location());
             spec.context = *type;
         }
+        std::vector<type::unit::Item*> items;
         for ( auto* item : unit->items() ) {
             if ( auto* unit_hook = item->tryAs<type::unit::item::UnitHook>() ) {
                 spec.source_hooks.emplace_back(std::string(unit_hook->id().local()), unit_hook->hook());
@@ -1722,84 +1756,165 @@ private:
                  property && property->id() == hilti::ID("%context") )
                 continue;
 
-            auto* field = item->tryAs<type::unit::item::Field>();
-            if ( ! field )
-                return reject("only plain fields are supported", item->meta().location());
-            auto field_loc = field->meta().location();
-            if ( field->isAnonymous() || field->isSkip() || field->isTransient() || field->isForwarding() ||
-                 field->condition() || field->ctor() || ! field->arguments().empty() || ! field->sinks().empty() )
-                return reject("field modifiers and constructors are not supported", field_loc);
-
-            FieldSpec f{.source = field};
-            for ( auto* hook : field->hooks() )
-                f.source_hooks.push_back(hook);
-            auto* parse_type = field->parseType() ? field->parseType()->type() : nullptr;
-            auto* item_type = field->itemType() ? field->itemType()->type() : nullptr;
-            auto* attrs = field->attributes();
-            auto* size = attrs ? attrs->find(attribute::kind::Size) : nullptr;
-            if ( auto integer = parse_type ? integerType(parse_type) : std::nullopt ) {
-                if ( attrs && *attrs )
-                    return reject("field attributes are not supported yet", field_loc);
-                auto item_integer = item_type ? integerType(item_type) : std::nullopt;
-                if ( item_integer != integer || ! ir::isIntegerWidth(integer->width) || size || field->repeatCount() ||
-                     field->item() )
-                    return reject("unsupported integer field form", field_loc);
-                f.form = FieldForm::Integer;
-                f.width = integer->width;
-                f.signedness = integer->signedness;
-            }
-            else if ( parse_type && parse_type->isA<hilti::type::Bytes>() ) {
-                auto length = size ? size->valueAsExpression() : nullptr;
-                if ( ! length || field->repeatCount() || ! item_type || ! item_type->isA<hilti::type::Bytes>() ||
-                     ! _onlySize(attrs) || field->item() )
-                    return reject("bytes require a &size and no other attributes", field_loc);
-                f.form = FieldForm::Bytes;
-                f.size = *length;
-            }
-            else if ( auto* vector = parse_type ? parse_type->tryAs<hilti::type::Vector>() : nullptr ) {
-                auto* item_vector = item_type ? item_type->tryAs<hilti::type::Vector>() : nullptr;
-                if ( ! item_vector || ! size || ! _onlySize(attrs) || ! field->isContainer() ||
-                     ! field->repeatCount() || ! field->repeatCount()->isA<hilti::expression::Ctor>() ||
-                     ! field->repeatCount()->as<hilti::expression::Ctor>()->ctor()->isA<hilti::ctor::Null>() ||
-                     ! _root_units.contains(unit) )
-                    return reject("unsupported vector field form", field_loc);
-                f.child = _unitOf(vector->elementType()->type());
-                if ( ! f.child )
-                    return reject("only vectors of units are supported", field_loc);
-                if ( _root_units.contains(f.child) )
-                    return reject("vector child must be a private unit", field_loc);
-                auto expr = size->valueAsExpression();
-                if ( ! expr )
-                    return reject("vector &size must be an expression", field_loc);
-                f.size = *expr;
-                auto* child_decl = _declaration(f.child);
-                if ( ! child_decl )
-                    return reject("vector child unit has no source declaration", field_loc);
-                if ( auto error = _discover(child_decl) )
-                    return error;
-                f.form = FieldForm::Vector;
-            }
-            else if ( auto* child = parse_type ? _unitOf(parse_type) : nullptr ) {
-                if ( (attrs && *attrs) || field->repeatCount() || field->item() )
-                    return reject("sub-unit fields with attributes are not supported yet", field_loc);
-                if ( _root_units.contains(child) )
-                    return reject("sub-unit must be a private unit", field_loc);
-                auto* child_decl = _declaration(child);
-                if ( ! child_decl )
-                    return reject("sub-unit has no source declaration", field_loc);
-                if ( auto error = _discover(child_decl) )
-                    return error;
-                f.form = FieldForm::Unit;
-                f.child = child;
-            }
-            else
-                return reject("unsupported field type", field_loc);
-            spec.fields.push_back(f);
+            items.push_back(item);
         }
+
+        auto discovered = _discoverItems(spec, items, feature);
+        if ( auto* error = std::get_if<UnsupportedFeature>(&discovered) )
+            return *error;
+        spec.items = std::move(std::get<std::vector<ItemSpec>>(discovered));
 
         _visiting.erase(unit);
         _seen.insert(unit);
         _units.push_back(std::move(spec));
+        return std::nullopt;
+    }
+
+    // Discovers the fields and switches of a unit, or of a switch case, in order.
+    std::variant<std::vector<ItemSpec>, UnsupportedFeature> _discoverItems(UnitSpec& spec,
+                                                                           const std::vector<type::unit::Item*>& items,
+                                                                           const std::string& feature,
+                                                                           bool in_case = false) {
+        auto reject = [&](std::string why, const hilti::Location& loc) {
+            return unsupported(feature, std::move(why), loc);
+        };
+
+        std::vector<ItemSpec> out;
+        for ( auto* item : items ) {
+            if ( auto* field = item->tryAs<type::unit::item::Field>() ) {
+                if ( auto error = _discoverField(spec, field, feature) )
+                    return *error;
+                out.push_back(ItemSpec{.field = spec.fields.size() - 1});
+                continue;
+            }
+
+            auto* switch_ = item->tryAs<type::unit::item::Switch>();
+            if ( ! switch_ )
+                return reject("only plain fields and switches are supported", item->meta().location());
+
+            auto loc = switch_->meta().location();
+            if ( in_case )
+                return reject("nested switches are not supported yet", loc);
+            if ( ! switch_->expression() )
+                return reject("a switch without a control expression is not supported yet", loc);
+            if ( switch_->condition() || (switch_->attributes() && *switch_->attributes()) ||
+                 ! switch_->hooks().empty() )
+                return reject("switch conditions, attributes, and hooks are not supported yet", loc);
+
+            SwitchSpec sw{.source = switch_, .control = switch_->expression()};
+            for ( auto* c : switch_->cases() ) {
+                if ( c->isLookAhead() )
+                    return reject("look-ahead switch cases are not supported yet", c->meta().location());
+                auto* block = c->block();
+                if ( block->condition() || (block->attributes() && *block->attributes()) ||
+                     ! block->elseItems().empty() )
+                    return reject("switch case blocks with conditions or attributes are not supported",
+                                  c->meta().location());
+
+                std::vector<type::unit::Item*> case_items;
+                for ( auto* case_item : block->items() )
+                    case_items.push_back(case_item);
+                auto discovered = _discoverItems(spec, case_items, feature, true);
+                if ( auto* error = std::get_if<UnsupportedFeature>(&discovered) )
+                    return *error;
+
+                CaseSpec case_{.is_default = c->isDefault(),
+                               .items = std::move(std::get<std::vector<ItemSpec>>(discovered)),
+                               .location = c->meta().location()};
+                for ( auto* value : c->expressions() )
+                    case_.values.push_back(value);
+                sw.cases.push_back(std::move(case_));
+            }
+
+            if ( std::ranges::none_of(sw.cases, &CaseSpec::is_default) )
+                return reject("a switch without a default case is not supported yet", loc);
+
+            spec.switches.push_back(std::move(sw));
+            out.push_back(ItemSpec{.switch_ = spec.switches.size() - 1});
+        }
+
+        return out;
+    }
+
+    // Discovers one field, which it appends to the unit's fields.
+    std::optional<UnsupportedFeature> _discoverField(UnitSpec& spec,
+                                                     type::unit::item::Field* field,
+                                                     const std::string& feature) {
+        auto* unit = spec.unit;
+        auto reject = [&](std::string why, const hilti::Location& loc) {
+            return unsupported(feature, std::move(why), loc);
+        };
+
+        auto field_loc = field->meta().location();
+        if ( field->isAnonymous() || field->isSkip() || field->isTransient() || field->isForwarding() ||
+             field->condition() || field->ctor() || ! field->arguments().empty() || ! field->sinks().empty() )
+            return reject("field modifiers and constructors are not supported", field_loc);
+
+        FieldSpec f{.source = field};
+        for ( auto* hook : field->hooks() )
+            f.source_hooks.push_back(hook);
+        auto* parse_type = field->parseType() ? field->parseType()->type() : nullptr;
+        auto* item_type = field->itemType() ? field->itemType()->type() : nullptr;
+        auto* attrs = field->attributes();
+        auto* size = attrs ? attrs->find(attribute::kind::Size) : nullptr;
+        if ( auto integer = parse_type ? integerType(parse_type) : std::nullopt ) {
+            if ( attrs && *attrs )
+                return reject("field attributes are not supported yet", field_loc);
+            auto item_integer = item_type ? integerType(item_type) : std::nullopt;
+            if ( item_integer != integer || ! ir::isIntegerWidth(integer->width) || size || field->repeatCount() ||
+                 field->item() )
+                return reject("unsupported integer field form", field_loc);
+            f.form = FieldForm::Integer;
+            f.width = integer->width;
+            f.signedness = integer->signedness;
+        }
+        else if ( parse_type && parse_type->isA<hilti::type::Bytes>() ) {
+            auto length = size ? size->valueAsExpression() : nullptr;
+            if ( ! length || field->repeatCount() || ! item_type || ! item_type->isA<hilti::type::Bytes>() ||
+                 ! _onlySize(attrs) || field->item() )
+                return reject("bytes require a &size and no other attributes", field_loc);
+            f.form = FieldForm::Bytes;
+            f.size = *length;
+        }
+        else if ( auto* vector = parse_type ? parse_type->tryAs<hilti::type::Vector>() : nullptr ) {
+            auto* item_vector = item_type ? item_type->tryAs<hilti::type::Vector>() : nullptr;
+            if ( ! item_vector || ! size || ! _onlySize(attrs) || ! field->isContainer() || ! field->repeatCount() ||
+                 ! field->repeatCount()->isA<hilti::expression::Ctor>() ||
+                 ! field->repeatCount()->as<hilti::expression::Ctor>()->ctor()->isA<hilti::ctor::Null>() ||
+                 ! _root_units.contains(unit) )
+                return reject("unsupported vector field form", field_loc);
+            f.child = _unitOf(vector->elementType()->type());
+            if ( ! f.child )
+                return reject("only vectors of units are supported", field_loc);
+            if ( _root_units.contains(f.child) )
+                return reject("vector child must be a private unit", field_loc);
+            auto expr = size->valueAsExpression();
+            if ( ! expr )
+                return reject("vector &size must be an expression", field_loc);
+            f.size = *expr;
+            auto* child_decl = _declaration(f.child);
+            if ( ! child_decl )
+                return reject("vector child unit has no source declaration", field_loc);
+            if ( auto error = _discover(child_decl) )
+                return error;
+            f.form = FieldForm::Vector;
+        }
+        else if ( auto* child = parse_type ? _unitOf(parse_type) : nullptr ) {
+            if ( (attrs && *attrs) || field->repeatCount() || field->item() )
+                return reject("sub-unit fields with attributes are not supported yet", field_loc);
+            if ( _root_units.contains(child) )
+                return reject("sub-unit must be a private unit", field_loc);
+            auto* child_decl = _declaration(child);
+            if ( ! child_decl )
+                return reject("sub-unit has no source declaration", field_loc);
+            if ( auto error = _discover(child_decl) )
+                return error;
+            f.form = FieldForm::Unit;
+            f.child = child;
+        }
+        else
+            return reject("unsupported field type", field_loc);
+        spec.fields.push_back(f);
         return std::nullopt;
     }
 
@@ -1848,24 +1963,36 @@ private:
             return std::nullopt;
         };
 
+        // A hook on a field name runs for every field of that name, which several switch cases may share.
+        using Points = std::vector<std::vector<PendingHook>*>;
         auto point = [&](const std::string& target,
-                         const hilti::Location& loc) -> std::variant<std::vector<PendingHook>*, UnsupportedFeature> {
+                         const hilti::Location& loc) -> std::variant<Points, UnsupportedFeature> {
             if ( target == "0x25_init" )
-                return &init;
+                return Points{&init};
             if ( target == "0x25_done" )
-                return &done;
+                return Points{&done};
+            Points points;
             for ( size_t i = 0; i < spec.fields.size(); ++i )
                 if ( target == std::string(spec.fields[i].source->id().local()) )
-                    return &fields[i];
-            return reject(fmt("hooks on '%s' are not supported yet", target), loc);
+                    points.push_back(&fields[i]);
+            if ( points.empty() )
+                return reject(fmt("hooks on '%s' are not supported yet", target), loc);
+            return points;
+        };
+        auto add_all = [&](const std::string& target,
+                           spicy::declaration::Hook* decl) -> std::optional<UnsupportedFeature> {
+            auto where = point(target, decl->meta().location());
+            if ( auto* error = std::get_if<UnsupportedFeature>(&where) )
+                return *error;
+            for ( auto* points : std::get<Points>(where) )
+                if ( auto error = add(*points, decl) )
+                    return error;
+            return std::nullopt;
         };
 
         // The unit items come first, in the order in which they were written.
         for ( const auto& [target, decl] : spec.source_hooks ) {
-            auto where = point(target, decl->meta().location());
-            if ( auto* error = std::get_if<UnsupportedFeature>(&where) )
-                return *error;
-            if ( auto error = add(*std::get<std::vector<PendingHook>*>(where), decl) )
+            if ( auto error = add_all(target, decl) )
                 return error;
         }
 
@@ -1879,21 +2006,18 @@ private:
             if ( hook->hook()->unitTypeIndex() != spec.unit->typeIndex() )
                 continue;
 
-            auto where = point(std::string(hook->hook()->id().local()), hook->meta().location());
-            if ( auto* error = std::get_if<UnsupportedFeature>(&where) )
-                return *error;
-            if ( auto error = add(*std::get<std::vector<PendingHook>*>(where), hook->hook()) )
+            if ( auto error = add_all(std::string(hook->hook()->id().local()), hook->hook()) )
                 return error;
         }
 
-        // At this hook point, the first `published` fields have been parsed.
+        // Only `%done` sees a completely parsed unit.
         auto lower = [&](std::vector<PendingHook>& pending,
-                         size_t published,
+                         bool complete,
                          std::vector<ir::FunctionId>& ids,
                          const FieldSpec* field) -> std::optional<UnsupportedFeature> {
             std::ranges::stable_sort(pending, [](const auto& a, const auto& b) { return a.priority > b.priority; });
             for ( const auto& hook : pending ) {
-                auto lowered = _hook(spec, hook.decl, published, field);
+                auto lowered = _hook(spec, hook.decl, complete, field);
                 if ( auto* error = std::get_if<UnsupportedFeature>(&lowered) )
                     return *error;
 
@@ -1902,20 +2026,21 @@ private:
             return std::nullopt;
         };
 
-        if ( auto error = lower(init, 0, spec.init_hooks, nullptr) )
+        if ( auto error = lower(init, false, spec.init_hooks, nullptr) )
             return error;
         for ( size_t i = 0; i < spec.fields.size(); ++i ) {
-            if ( auto error = lower(fields[i], i + 1, spec.fields[i].hooks, &spec.fields[i]) )
+            if ( auto error = lower(fields[i], false, spec.fields[i].hooks, &spec.fields[i]) )
                 return error;
         }
-        return lower(done, spec.fields.size(), spec.hooks, nullptr);
+        return lower(done, true, spec.hooks, nullptr);
     }
 
-    // Lowers a hook with a writable borrow of `self`. All fields are addressable, but only the first `published`
-    // fields have been parsed. Integer and bytes hooks also receive the parsed value as `$$`.
+    // Lowers a hook with a writable borrow of `self`. All fields are addressable; the field-read analysis decides which
+    // reads are valid. `complete` means the unit has been parsed. Integer and bytes hooks also receive the parsed value
+    // as `$$`.
     std::variant<ir::FunctionId, UnsupportedFeature> _hook(const UnitSpec& spec,
                                                            spicy::declaration::Hook* hook,
-                                                           size_t published,
+                                                           bool complete,
                                                            const FieldSpec* field) {
         auto feature = fmt("hook of parser unit '%s'", std::string(spec.source->id()));
         auto span = internSpan(_package, hook->meta().location());
@@ -1939,7 +2064,7 @@ private:
         std::unordered_map<std::string, ir::DeclId> fields;
         for ( const auto& f : spec.fields )
             fields.emplace(std::string(f.source->id().local()), f.declaration);
-        body.setSelf(self, std::move(fields), published == spec.fields.size());
+        body.setSelf(self, std::move(fields), complete);
         if ( has_value && hook->dd() )
             body.bind(hook->dd(), Variable{.value = _builder.addArgument(id, block, 1, span)});
         if ( spec.context )
@@ -1963,6 +2088,13 @@ private:
         return attrs && attrs->attributes().size() == 1 && attrs->find(attribute::kind::Size);
     }
 
+    // Where emission continues: the current block, and the parser state and unit version that it holds.
+    struct EmitPoint {
+        ir::BlockId block;
+        ir::InstId state;
+        ir::InstId unit;
+    };
+
     std::optional<UnsupportedFeature> _emit(UnitSpec& spec) {
         auto unit_span = internSpan(_package, spec.source->meta().location());
         auto block = _builder.createBlock(_package.function(spec.function).root_region);
@@ -1977,106 +2109,218 @@ private:
                 args.push_back(*context);
             _builder.addCall(block, hook, args, unit_span);
         }
-        // `&size` may address any field.
+
+        EmitPoint at{.block = block, .state = state, .unit = unit_value};
+        if ( auto error = _emitItems(spec, spec.items, at, context) )
+            return error;
+
+        // The parser chooses where the consumers run and in what order, and calls them like any other procedure.
+        for ( auto hook : spec.hooks ) {
+            std::vector<ir::InstId> args = {at.unit};
+            if ( context )
+                args.push_back(*context);
+            _builder.addCall(at.block, hook, args, unit_span);
+        }
+        _builder.addParserFinish(at.block, at.state, at.unit, unit_span);
+        return std::nullopt;
+    }
+
+    std::optional<UnsupportedFeature> _emitItems(UnitSpec& spec,
+                                                 const std::vector<ItemSpec>& items,
+                                                 EmitPoint& at,
+                                                 std::optional<ir::InstId> context) {
+        for ( const auto& item : items ) {
+            auto error = item.field ? _emitField(spec, spec.fields[*item.field], at, context) :
+                                      _emitSwitch(spec, spec.switches[*item.switch_], at, context);
+            if ( error )
+                return error;
+        }
+        return std::nullopt;
+    }
+
+    // Lowers an expression of the unit, such as a `&size`, in the current block. An expression never adds blocks.
+    std::variant<ir::InstId, UnsupportedFeature> _lowerUnitExpression(const UnitSpec& spec,
+                                                                      hilti::Expression* expr,
+                                                                      const EmitPoint& at,
+                                                                      std::optional<ir::InstId> context) {
+        auto feature = fmt("parser unit '%s'", std::string(spec.source->id()));
+        // The expression may address any field.
         std::unordered_map<std::string, ir::DeclId> fields;
         for ( const auto& f : spec.fields )
             fields.emplace(std::string(f.source->id().local()), f.declaration);
-        for ( const auto& field : spec.fields ) {
-            auto span = internSpan(_package, field.source->meta().location());
-            // A size is an expression, so it never adds blocks and needs no region.
-            auto size = [&]() -> std::variant<ir::InstId, UnsupportedFeature> {
-                auto feature = fmt("parser unit '%s'", std::string(spec.source->id()));
-                BodyLowerer lowerer(_procedures, _package, ir::RegionId(), block, feature);
-                lowerer.setSelf(unit_value, fields, false);
-                if ( context )
-                    lowerer.setContext(*context, spec.context_names);
-                auto length = lowerer.lower(field.size);
-                if ( auto* unsupported_feature = std::get_if<UnsupportedFeature>(&length) )
-                    return *unsupported_feature;
+        BodyLowerer lowerer(_procedures, _package, ir::RegionId(), at.block, feature);
+        lowerer.setSelf(at.unit, std::move(fields), false);
+        if ( context )
+            lowerer.setContext(*context, spec.context_names);
+        return lowerer.lower(expr);
+    }
 
-                if ( _package.inst(std::get<ir::InstId>(length)).result_type != _builder.uint64Type() )
-                    return unsupported(feature,
-                                       "&size must be an unsigned 64-bit integer",
-                                       field.source->meta().location());
-                return length;
-            };
+    std::optional<UnsupportedFeature> _emitField(const UnitSpec& spec,
+                                                 const FieldSpec& field,
+                                                 EmitPoint& at,
+                                                 std::optional<ir::InstId> context) {
+        auto span = internSpan(_package, field.source->meta().location());
+        auto size = [&]() -> std::variant<ir::InstId, UnsupportedFeature> {
+            auto length = _lowerUnitExpression(spec, field.size, at, context);
+            if ( auto* unsupported_feature = std::get_if<UnsupportedFeature>(&length) )
+                return *unsupported_feature;
 
-            ir::InstId value;
-            switch ( field.form ) {
-                case FieldForm::Integer:
-                case FieldForm::Bytes: {
-                    ir::InstId read;
-                    if ( field.form == FieldForm::Integer )
-                        read = _builder.addReadInteger(block,
-                                                       state,
-                                                       ir::ReadIntegerPayload{.width = field.width,
-                                                                              .signedness = field.signedness,
-                                                                              .byte_order = ir::ByteOrder::Network},
-                                                       span);
-                    else {
-                        auto length = size();
-                        if ( auto* unsupported_feature = std::get_if<UnsupportedFeature>(&length) )
-                            return *unsupported_feature;
-                        read = _builder.addReadBytes(block, state, std::get<ir::InstId>(length), span);
-                    }
-                    state = _builder.addTupleGet(block, read, 0, span);
-                    value = _builder.addTupleGet(block, read, 1, span);
-                    break;
-                }
+            if ( _package.inst(std::get<ir::InstId>(length)).result_type != _builder.uint64Type() )
+                return unsupported(fmt("parser unit '%s'", std::string(spec.source->id())),
+                                   "&size must be an unsigned 64-bit integer",
+                                   field.source->meta().location());
+            return length;
+        };
 
-                case FieldForm::Unit: {
-                    auto child = _builder.addParseSubunit(block, state, _spec(field.child).function, span);
-                    state = _builder.addTupleGet(block, child, 0, span);
-                    value = _builder.addTupleGet(block, child, 1, span);
-                    break;
-                }
-
-                case FieldForm::Vector: {
+        ir::InstId value;
+        switch ( field.form ) {
+            case FieldForm::Integer:
+            case FieldForm::Bytes: {
+                ir::InstId read;
+                if ( field.form == FieldForm::Integer )
+                    read = _builder.addReadInteger(at.block,
+                                                   at.state,
+                                                   ir::ReadIntegerPayload{.width = field.width,
+                                                                          .signedness = field.signedness,
+                                                                          .byte_order = ir::ByteOrder::Network},
+                                                   span);
+                else {
                     auto length = size();
                     if ( auto* unsupported_feature = std::get_if<UnsupportedFeature>(&length) )
                         return *unsupported_feature;
-
-                    state = _builder.addEnterBound(block, state, std::get<ir::InstId>(length), span);
-                    auto vector =
-                        _builder.addVectorEmpty(block, _builder.unitType(_spec(field.child).declaration), span);
-                    auto body = _builder.createRegion();
-                    auto body_block = _builder.createBlock(body);
-                    auto body_state = _builder.addRegionArgument(body_block, 0, _builder.parserStateType(), span);
-                    auto body_vector =
-                        _builder.addRegionArgument(body_block, 1, _package.inst(vector).result_type, span);
-                    auto child = _builder.addParseSubunit(body_block, body_state, _spec(field.child).function, span);
-                    auto next_state = _builder.addTupleGet(body_block, child, 0, span);
-                    auto element = _builder.addTupleGet(body_block, child, 1, span);
-                    auto next_vector = _builder.addVectorAppend(body_block, body_vector, element, span);
-                    _builder.addYield(body_block, {next_state, next_vector}, span);
-                    auto repeated = _builder.addRepeatToBound(block, {state, vector}, body, span);
-                    state = _builder.addTupleGet(block, repeated, 0, span);
-                    value = _builder.addTupleGet(block, repeated, 1, span);
-                    state = _builder.addLeaveBound(block, state, span);
-                    break;
+                    read = _builder.addReadBytes(at.block, at.state, std::get<ir::InstId>(length), span);
                 }
+                at.state = _builder.addTupleGet(at.block, read, 0, span);
+                value = _builder.addTupleGet(at.block, read, 1, span);
+                break;
             }
-            // Nothing later reads the input before the cursor: values are extracted and `self` holds the fields.
-            state = _builder.addReleaseInput(block, state, span);
-            unit_value = _builder.addPublishField(block, unit_value, value, field.declaration, span);
-            // Completed-field consumers observe the published field, and `$$` is the value as it was parsed.
-            for ( auto hook : field.hooks ) {
-                std::vector<ir::InstId> args = {unit_value};
-                if ( field.form == FieldForm::Integer || field.form == FieldForm::Bytes )
-                    args.push_back(value);
-                if ( context )
-                    args.push_back(*context);
-                _builder.addCall(block, hook, args, span);
+
+            case FieldForm::Unit: {
+                auto child = _builder.addParseSubunit(at.block, at.state, _spec(field.child).function, span);
+                at.state = _builder.addTupleGet(at.block, child, 0, span);
+                value = _builder.addTupleGet(at.block, child, 1, span);
+                break;
+            }
+
+            case FieldForm::Vector: {
+                auto length = size();
+                if ( auto* unsupported_feature = std::get_if<UnsupportedFeature>(&length) )
+                    return *unsupported_feature;
+
+                at.state = _builder.addEnterBound(at.block, at.state, std::get<ir::InstId>(length), span);
+                auto vector =
+                    _builder.addVectorEmpty(at.block, _builder.unitType(_spec(field.child).declaration), span);
+                auto body = _builder.createRegion();
+                auto body_block = _builder.createBlock(body);
+                auto body_state = _builder.addRegionArgument(body_block, 0, _builder.parserStateType(), span);
+                auto body_vector = _builder.addRegionArgument(body_block, 1, _package.inst(vector).result_type, span);
+                auto child = _builder.addParseSubunit(body_block, body_state, _spec(field.child).function, span);
+                auto next_state = _builder.addTupleGet(body_block, child, 0, span);
+                auto element = _builder.addTupleGet(body_block, child, 1, span);
+                auto next_vector = _builder.addVectorAppend(body_block, body_vector, element, span);
+                _builder.addYield(body_block, {next_state, next_vector}, span);
+                auto repeated = _builder.addRepeatToBound(at.block, {at.state, vector}, body, span);
+                at.state = _builder.addTupleGet(at.block, repeated, 0, span);
+                value = _builder.addTupleGet(at.block, repeated, 1, span);
+                at.state = _builder.addLeaveBound(at.block, at.state, span);
+                break;
             }
         }
-        // The parser chooses where the consumers run and in what order, and calls them like any other procedure.
-        for ( auto hook : spec.hooks ) {
-            std::vector<ir::InstId> args = {unit_value};
+        // Nothing later reads the input before the cursor: values are extracted and `self` holds the fields.
+        at.state = _builder.addReleaseInput(at.block, at.state, span);
+        at.unit = _builder.addPublishField(at.block, at.unit, value, field.declaration, span);
+        // Completed-field consumers observe the published field, and `$$` is the value as it was parsed.
+        for ( auto hook : field.hooks ) {
+            std::vector<ir::InstId> args = {at.unit};
+            if ( field.form == FieldForm::Integer || field.form == FieldForm::Bytes )
+                args.push_back(value);
             if ( context )
                 args.push_back(*context);
-            _builder.addCall(block, hook, args, unit_span);
+            _builder.addCall(at.block, hook, args, span);
         }
-        _builder.addParserFinish(block, state, unit_value, unit_span);
+        return std::nullopt;
+    }
+
+    // A switch ends the current block with `core.switch` on its control value. Each case lowers its items in its own
+    // block and then writes its parser state and unit into the Phis that begin the join block.
+    std::optional<UnsupportedFeature> _emitSwitch(UnitSpec& spec,
+                                                  const SwitchSpec& sw,
+                                                  EmitPoint& at,
+                                                  std::optional<ir::InstId> context) {
+        auto feature = fmt("parser unit '%s'", std::string(spec.source->id()));
+        auto loc = sw.source->meta().location();
+        auto span = internSpan(_package, loc);
+        auto control = _lowerUnitExpression(spec, sw.control, at, context);
+        if ( auto* error = std::get_if<UnsupportedFeature>(&control) )
+            return *error;
+
+        auto value = std::get<ir::InstId>(control);
+        auto type = _package.inst(value).result_type;
+        if ( _package.type(type).kind != ir::TypeKind::Integer )
+            return unsupported(feature, "only integer switch controls are supported yet", loc);
+
+        auto region = _package.function(spec.function).root_region;
+        std::vector<ir::BlockId> blocks;
+        ir::SwitchPayload payload;
+        for ( const auto& c : sw.cases ) {
+            auto block = _builder.createBlock(region);
+            blocks.push_back(block);
+            if ( c.is_default )
+                payload.default_target = block;
+            for ( auto* expr : c.values ) {
+                auto bits = _caseValue(expr, _package.type(type).integer);
+                if ( ! bits )
+                    return unsupported(feature,
+                                       "switch case values must be integer literals of the control's type",
+                                       c.location);
+                payload.cases.push_back(ir::SwitchCase{.value = ir::IntegerLiteral{*bits}, .target = block});
+            }
+        }
+        _builder.addSwitch(at.block, value, std::move(payload), span);
+
+        auto join = _builder.createBlock(region);
+        auto state_phi = _builder.addPhi(join, _package.inst(at.state).result_type, span);
+        auto unit_phi = _builder.addPhi(join, _package.inst(at.unit).result_type, span);
+        for ( size_t i = 0; i < sw.cases.size(); ++i ) {
+            EmitPoint arm{.block = blocks[i], .state = at.state, .unit = at.unit};
+            if ( auto error = _emitItems(spec, sw.cases[i].items, arm, context) )
+                return error;
+            auto case_span = internSpan(_package, sw.cases[i].location);
+            _builder.addUpsilon(arm.block, arm.state, state_phi, case_span);
+            _builder.addUpsilon(arm.block, arm.unit, unit_phi, case_span);
+            _builder.addJump(arm.block, join, case_span);
+        }
+
+        at = EmitPoint{.block = join, .state = state_phi, .unit = unit_phi};
+        return std::nullopt;
+    }
+
+    // The bits of a case value, an integer literal that fits `type`.
+    static std::optional<uint64_t> _caseValue(hilti::Expression* expr, ir::IntegerType type) {
+        while ( auto* coerced = expr->tryAs<hilti::expression::Coerced>() )
+            expr = coerced->expression();
+        auto* ctor_expr = expr->tryAs<hilti::expression::Ctor>();
+        auto* ctor = ctor_expr ? ctor_expr->ctor() : nullptr;
+        if ( auto* coerced = ctor ? ctor->tryAs<hilti::ctor::Coerced>() : nullptr )
+            ctor = coerced->coercedCtor();
+        if ( ! ctor )
+            return std::nullopt;
+
+        const auto max =
+            ir::truncateBits(UINT64_MAX, type.signedness == ir::Signedness::Signed ? type.width - 1 : type.width);
+        if ( auto* literal = ctor->tryAs<hilti::ctor::UnsignedInteger>() ) {
+            if ( literal->value() > max )
+                return std::nullopt;
+            return literal->value();
+        }
+        if ( auto* literal = ctor->tryAs<hilti::ctor::SignedInteger>() ) {
+            auto v = literal->value();
+            if ( type.signedness == ir::Signedness::Unsigned ?
+                     v < 0 || static_cast<uint64_t>(v) > max :
+                     v > static_cast<int64_t>(max) || v < -static_cast<int64_t>(max) - 1 )
+                return std::nullopt;
+            return ir::truncateBits(static_cast<uint64_t>(v), type.width);
+        }
         return std::nullopt;
     }
 

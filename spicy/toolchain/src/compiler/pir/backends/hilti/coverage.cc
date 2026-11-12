@@ -116,7 +116,15 @@ void checkRegion(const ir::Package& package,
                 case ir::Opcode::Call:
                 case ir::Opcode::OpaqueOp:
                 case ir::Opcode::FieldPlace:
-                case ir::Opcode::Load: break;
+                case ir::Opcode::Load:
+                // Control flow and merges, such as for a unit's switch.
+                case ir::Opcode::Phi:
+                case ir::Opcode::Upsilon:
+                case ir::Opcode::Branch:
+                case ir::Opcode::Jump:
+                case ir::Opcode::Switch:
+                case ir::Opcode::Equal:
+                case ir::Opcode::BoolConstant: break;
                 case ir::Opcode::Return:
                 case ir::Opcode::GlobalPlace:
                 case ir::Opcode::SetEmpty:
@@ -126,14 +134,8 @@ void checkRegion(const ir::Package& package,
                 case ir::Opcode::LocalPlace:
                 case ir::Opcode::Store:
                 case ir::Opcode::Tuple:
-                case ir::Opcode::BoolConstant:
                 case ir::Opcode::StringConstant:
-                case ir::Opcode::BytesConstant:
-                case ir::Opcode::Phi:
-                case ir::Opcode::Upsilon:
-                case ir::Opcode::Branch:
-                case ir::Opcode::Jump:
-                case ir::Opcode::Equal: unsupported("procedural lowering is not supported"); break;
+                case ir::Opcode::BytesConstant: unsupported("procedural lowering is not supported"); break;
             }
             for ( auto child : inst.regions )
                 checkRegion(package, child, out, bound_depth);
@@ -262,6 +264,7 @@ void checkProcedureRegion(const ir::Package& package, ir::RegionId region, std::
                 case ir::Opcode::BytesConstant:
                 case ir::Opcode::Branch:
                 case ir::Opcode::Jump:
+                case ir::Opcode::Switch:
                 case ir::Opcode::Equal: break;
                 default: unsupported("not a procedural operation the HILTI backend can lower"); break;
             }
@@ -366,8 +369,10 @@ std::vector<UnsupportedFeature> checkCoverage(const ir::Package& package, const 
             return;
         active.insert(id.index);
         const auto& function = package.function(id);
-        if ( function.kind == ir::FunctionKind::Parser )
+        if ( function.kind == ir::FunctionKind::Parser ) {
             checkRegion(package, function.root_region, out, root_functions.contains(id.index) ? 0 : 1);
+            checkCrossBlockValues(package, function.root_region, out);
+        }
         else {
             for ( const auto& parameter : function.parameters )
                 if ( ! isProcedureParameter(package, parameter) )

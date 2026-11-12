@@ -1,0 +1,34 @@
+# @TEST-EXEC-FAIL: spicyc %INPUT --experimental-pir -c >/dev/null 2>output
+# @TEST-EXEC: btest-diff output
+
+# @TEST-DOC: Field reads around switches. A field that every path parses is always present, so reading it before it is
+# parsed is an error, also inside a case. Reading a field that only one case parses is left to fail at runtime, until
+# a switch on a constant folds to that case and makes the field always present.
+
+module Test;
+
+public type InCase = unit {
+    tag: uint8;
+    switch ( self.tag ) {
+        1 -> a: uint8 {
+            print self.later;
+        }
+        * -> b: uint8;
+    };
+    later: uint8;
+
+    on %done {
+        # Conditional: not reported.
+        print self.a;
+    }
+};
+
+public type Folded = unit {
+    first: uint8 {
+        print self.chosen;
+    }
+    switch ( 1 ) {
+        1 -> chosen: uint8;
+        * -> other: uint8;
+    };
+};

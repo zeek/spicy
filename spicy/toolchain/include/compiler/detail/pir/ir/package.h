@@ -5,6 +5,7 @@
 #include <optional>
 #include <string>
 #include <type_traits>
+#include <unordered_set>
 #include <vector>
 
 #include <spicy/compiler/detail/pir/ir/arena.h>
@@ -168,6 +169,21 @@ public:
     /** Replaces an instruction while preserving its ID and result type. */
     void replaceInst(InstId id, Opcode opcode, std::vector<InstId> args, InstPayload payload = {});
 
+    /**
+     * Removes `block` from `region`, with its instructions and any regions they own. Erased entries keep their IDs but
+     * belong to nothing, and are not orphans.
+     */
+    void eraseBlock(RegionId region, BlockId block);
+    /** Removes an instruction from its block. It must not own regions. */
+    void eraseInst(InstId id);
+    /** Whether an entry was erased. */
+    bool isErased(BlockId id) const { return _erased_blocks.contains(id.index); }
+    bool isErased(InstId id) const { return _erased_insts.contains(id.index); }
+    bool isErased(RegionId id) const { return _erased_regions.contains(id.index); }
+    size_t erasedBlocks() const { return _erased_blocks.size(); }
+    size_t erasedInsts() const { return _erased_insts.size(); }
+    size_t erasedRegions() const { return _erased_regions.size(); }
+
     const Arena<Type, TypeId>& types() const { return _types; }
     const Arena<Function, FunctionId>& functions() const { return _functions; }
     const Arena<Region, RegionId>& regions() const { return _regions; }
@@ -212,6 +228,9 @@ private:
     std::vector<Initializer> _initializers;
     std::vector<FunctionId> _function_roots;
     std::vector<std::string> _cxx_includes;
+    std::unordered_set<uint32_t> _erased_blocks;
+    std::unordered_set<uint32_t> _erased_insts;
+    std::unordered_set<uint32_t> _erased_regions;
 
     TypeId _void_type;
     TypeId _int64_type;

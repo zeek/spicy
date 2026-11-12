@@ -10,9 +10,30 @@
 
 #include <spicy/compiler/detail/pir/analyses/field-use.h>
 #include <spicy/compiler/detail/pir/ir/cfg.h>
+#include <spicy/compiler/detail/pir/ir/publication.h>
 
 using namespace spicy::detail::pir;
 using namespace spicy::detail::pir::ir;
+
+analyses::FieldPresence analyses::fieldPresence(const Package& package) {
+    FieldPresence presence;
+    for ( size_t i = 0; i < package.functions().size(); ++i ) {
+        FunctionId id{static_cast<uint32_t>(i)};
+        const auto& function = package.function(id);
+        if ( function.kind != FunctionKind::Parser || ! package.isValid(function.parser_unit) )
+            continue;
+
+        // A parser that cannot finish publishes nothing on every path to a finish.
+        auto finished = ir::analyzePublications(package, id).finished;
+        if ( finished.empty() )
+            finished.emplace_back(ir::InstId{}, std::set<uint32_t>{});
+        for ( const auto& [finish, published] : finished )
+            for ( auto field : package.typeDecl(function.parser_unit).fields )
+                if ( ! published.contains(field.index) )
+                    presence.conditional.insert(field.index);
+    }
+    return presence;
+}
 
 std::vector<Diagnostic> analyses::checkUnusedFields(const Package& package) {
     std::unordered_set<uint32_t> public_units;
@@ -103,7 +124,8 @@ FieldSet intersect(const FieldSet& a, const FieldSet& b) {
 // Other calls may write any unit or field passed to them.
 class ReadChecker {
 public:
-    ReadChecker(const Package& package, std::vector<Diagnostic>& diags) : _package(package), _emitter(package, diags) {}
+    ReadChecker(const Package& package, std::vector<Diagnostic>& diags)
+        : _package(package), _emitter(package, diags), _presence(analyses::fieldPresence(package)) {}
 
     // The parser creates `self` with all fields unset.
     void checkParser(FunctionId function) {
@@ -150,16 +172,33 @@ private:
         return _flow(hook, selves, entry, report);
     }
 
+    // Adds the versions of `self` that publications and Phis produce, wherever they are in the body.
+    void _closeSelves(const Function& function, Selves& selves) const {
+        auto cfg = buildCfg(_package, function.root_region);
+        for ( bool changed = true; changed; ) {
+            changed = false;
+            for ( auto block : cfg.blocks )
+                for ( auto id : _package.block(block).insts ) {
+                    const auto& inst = _package.inst(id);
+                    std::optional<uint32_t> version;
+                    if ( inst.opcode == Opcode::PublishField && selves.contains(inst.args[0].index) )
+                        version = id.index;
+                    else if ( inst.opcode == Opcode::Upsilon && selves.contains(inst.args[0].index) )
+                        version = std::get<UpsilonPayload>(inst.payload).phi.index;
+                    if ( version && selves.insert(*version).second )
+                        changed = true;
+                }
+        }
+    }
+
     // Updates `set` for the block and optionally reports reads of unset fields.
     void _block(const Function& function, BlockId block, Selves& selves, FieldSet& set, bool report) {
         for ( auto id : _package.block(block).insts ) {
             const auto& inst = _package.inst(id);
             switch ( inst.opcode ) {
                 case Opcode::PublishField:
-                    if ( selves.contains(inst.args[0].index) ) {
+                    if ( selves.contains(inst.args[0].index) )
                         set.insert(std::get<FieldPayload>(inst.payload).field.index);
-                        selves.insert(id.index);
-                    }
                     break;
 
                 case Opcode::Load:
@@ -201,6 +240,8 @@ private:
         if ( cfg.blocks.empty() )
             return entry;
 
+        _closeSelves(function, selves);
+
         // No state means unreachable. Field sets only shrink as paths merge.
         std::vector<std::optional<FieldSet>> in(cfg.blocks.size());
         std::vector<std::optional<FieldSet>> out(cfg.blocks.size());
@@ -241,6 +282,9 @@ private:
     }
 
     void _report(InstId read, DeclId field) {
+        if ( _presence.isConditional(field) )
+            return;
+
         const auto& decl = _package.declaration(field);
         auto name = hilti::util::fmt("%s::%s", _package.typeDecl(decl.owner).name, decl.name);
         _emitter.emit(diag::FieldReadBeforeParsed, read, name).note(diag::FieldParsedHere, field, decl.name);
@@ -248,6 +292,7 @@ private:
 
     const Package& _package;
     DiagnosticEmitter _emitter;
+    analyses::FieldPresence _presence;
 };
 
 } // namespace

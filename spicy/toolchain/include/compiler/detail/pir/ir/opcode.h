@@ -9,6 +9,7 @@
 #include <span>
 #include <string_view>
 #include <variant>
+#include <vector>
 
 #include <spicy/compiler/detail/pir/ir/declaration.h>
 
@@ -209,6 +210,11 @@ enum class Opcode {
      * a use of the Phi's result. An affine operand is consumed.
      */
     Upsilon,
+    /**
+     * Transfers control to the target of the case whose value equals the integer operand, or to the default target if
+     * no case does. Several cases may share a target.
+     */
+    Switch,
 };
 
 enum class TypeKind { Void, Integer, Bytes, ParserState, Unit, Tuple, Vector, Set, Opaque, Place, Bool, String };
@@ -420,6 +426,22 @@ struct UpsilonPayload {
     friend constexpr bool operator==(UpsilonPayload, UpsilonPayload) = default;
 };
 
+/** One case of `core.switch`: the value it matches, in its operand's type, and its target. */
+struct SwitchCase {
+    IntegerLiteral value;
+    BlockId target;
+
+    friend constexpr bool operator==(SwitchCase, SwitchCase) = default;
+};
+
+/** The successors of `core.switch`. */
+struct SwitchPayload {
+    std::vector<SwitchCase> cases;
+    BlockId default_target;
+
+    friend bool operator==(const SwitchPayload&, const SwitchPayload&) = default;
+};
+
 using InstPayload = std::variant<std::monostate,
                                  IntegerLiteral,
                                  ArgumentPayload,
@@ -437,7 +459,8 @@ using InstPayload = std::variant<std::monostate,
                                  GlobalPayload,
                                  PortLiteral,
                                  ConversionPayload,
-                                 UpsilonPayload>;
+                                 UpsilonPayload,
+                                 SwitchPayload>;
 
 enum class PayloadKind {
     None,
@@ -458,6 +481,7 @@ enum class PayloadKind {
     Port,
     Conversion,
     Upsilon,
+    Switch,
 };
 
 /** Whether a suspending parser read consumes bytes and how it resumes. */
@@ -522,6 +546,7 @@ constexpr bool payloadMatchesKind(const InstPayload& payload, PayloadKind kind) 
         case PayloadKind::Port: return std::holds_alternative<PortLiteral>(payload);
         case PayloadKind::Conversion: return std::holds_alternative<ConversionPayload>(payload);
         case PayloadKind::Upsilon: return std::holds_alternative<UpsilonPayload>(payload);
+        case PayloadKind::Switch: return std::holds_alternative<SwitchPayload>(payload);
     }
 
     return false;
@@ -585,6 +610,8 @@ inline constexpr TypeConstraint KConvertOperandTypes[] = {anyType()};
 inline constexpr OperandRole KConvertOperandRoles[] = {OperandRole::Borrow};
 inline constexpr TypeConstraint KUpsilonOperandTypes[] = {anyType()};
 inline constexpr OperandRole KUpsilonOperandRoles[] = {OperandRole::Consume};
+inline constexpr TypeConstraint KSwitchOperandTypes[] = {fixedType(TypeKind::Integer)};
+inline constexpr OperandRole KSwitchOperandRoles[] = {OperandRole::Borrow};
 inline constexpr TypeConstraint KVariadicOperandTypes[] = {anyType()};
 inline constexpr OperandRole KVariadicOperandRoles[] = {OperandRole::Consume};
 
@@ -615,7 +642,7 @@ inline constexpr ParserOperationContract KSubunitContract{
 
 // One entry per `Opcode` value, in declaration order, so `schemaFor()` can index directly without
 // per-call allocation.
-inline constexpr std::array<OpcodeSchema, 41> KSchemas{{
+inline constexpr std::array<OpcodeSchema, 42> KSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Add,
         .spelling = "core.add",
@@ -982,6 +1009,14 @@ inline constexpr std::array<OpcodeSchema, 41> KSchemas{{
                  .payload_kind = PayloadKind::Upsilon,
                  .is_terminator = false,
                  .is_pure = false},
+    OpcodeSchema{.opcode = Opcode::Switch,
+                 .spelling = "core.switch",
+                 .operand_types = KSwitchOperandTypes,
+                 .operand_roles = KSwitchOperandRoles,
+                 .result_type = fixedType(TypeKind::Void),
+                 .payload_kind = PayloadKind::Switch,
+                 .is_terminator = true,
+                 .is_pure = false},
 }};
 
 } // namespace detail
@@ -1048,7 +1083,9 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
         case Opcode::Upsilon: return {.writes_shadow = true};
         // HILTI integers are checked, so an overflow fails at runtime. That is a logic error, not a parse error.
         case Opcode::Add: return {.may_fail = true};
-        case Opcode::Load: return {.reads_places = true};
+        // A load of a conditional field fails if the field is unset. Whether a field is conditional is a property of
+        // the package, so every load may fail here, and the backend drops the check for a field that is always present.
+        case Opcode::Load: return {.may_fail = true, .reads_places = true};
         case Opcode::Store: return {.writes_places = true};
         case Opcode::Tuple:
         case Opcode::BoolConstant:
@@ -1068,6 +1105,7 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
         case Opcode::TupleGet:
         case Opcode::Branch:
         case Opcode::Jump:
+        case Opcode::Switch:
         case Opcode::Equal: return {};
     }
     return {.reads_input = true,

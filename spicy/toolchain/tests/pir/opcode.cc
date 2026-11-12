@@ -371,16 +371,14 @@ TEST_CASE("field publication rejects a duplicate publication of the same field")
     CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "duplicate-field-publication"; }));
 }
 
-TEST_CASE("field publication rejects a missing publication") {
+TEST_CASE("a parser may finish without publishing a field, which makes the field conditional") {
     auto p = makeOneBytePipeline();
     auto builder = p.package.builder();
     auto read = builder.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
     auto state1 = builder.addTupleGet(p.block, read, 0);
-    // Malformed: never publishes `value`.
     builder.addParserFinish(p.block, state1, p.unit0);
 
-    auto diags = verify(p.package);
-    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "missing-field-publication"; }));
+    CHECK(verify(p.package).empty());
 }
 
 TEST_CASE("field publication rejects stale unit-state reuse and finishing the wrong unit version") {
@@ -394,8 +392,9 @@ TEST_CASE("field publication rejects stale unit-state reuse and finishing the wr
     builder.addParserFinish(p.block, state1, p.unit0);
     (void)unit1;
 
+    // The publication consumed the earlier version.
     auto diags = verify(p.package);
-    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "unit-state-stale-or-unknown-operand"; }));
+    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "parser-state-reused"; }));
 }
 
 TEST_CASE("verifier rejects two tuple_get projections of the same read's parser-state element") {

@@ -6,6 +6,7 @@
 #include <variant>
 
 #include <spicy/compiler/detail/pir/ir/builder.h>
+#include <spicy/compiler/detail/pir/ir/cfg.h>
 #include <spicy/compiler/detail/pir/passes/constant-fold.h>
 
 using namespace spicy::detail::pir;
@@ -139,6 +140,61 @@ bool foldInst(Package& package, InstId id) {
     }
 }
 
+// A branch or switch on a constant becomes a jump to the target it always takes.
+bool foldTerminator(Package& package, BlockId block) {
+    const auto& insts = package.block(block).insts;
+    if ( insts.empty() )
+        return false;
+
+    auto id = insts.back();
+    const auto& inst = package.inst(id);
+    std::optional<BlockId> target;
+    if ( inst.opcode == Opcode::Branch && inst.args.size() == 1 ) {
+        const auto& payload = std::get<BranchPayload>(inst.payload);
+        if ( auto condition = boolConstant(package, inst.args[0]) )
+            target = *condition ? payload.then_block : payload.else_block;
+    }
+    else if ( inst.opcode == Opcode::Switch && inst.args.size() == 1 ) {
+        const auto& payload = std::get<SwitchPayload>(inst.payload);
+        if ( auto value = integerConstant(package, inst.args[0]) ) {
+            target = payload.default_target;
+            for ( const auto& c : payload.cases )
+                if ( c.value.bits == value->bits ) {
+                    target = c.target;
+                    break;
+                }
+        }
+    }
+
+    if ( ! target )
+        return false;
+
+    package.replaceInst(id, Opcode::Jump, {}, InstPayload(JumpPayload{*target}));
+    return true;
+}
+
+// Erases the blocks of `region` that its entry no longer reaches, and the Upsilons that write a Phi erased with them.
+void eraseUnreachable(Package& package, RegionId region) {
+    auto cfg = buildCfg(package, region);
+    if ( cfg.blocks.empty() )
+        return;
+
+    std::vector<bool> reachable(cfg.blocks.size(), false);
+    for ( auto pos : postorder(cfg.successors, 0) )
+        reachable[pos] = true;
+
+    for ( size_t pos = 0; pos < cfg.blocks.size(); ++pos )
+        if ( ! reachable[pos] )
+            package.eraseBlock(region, cfg.blocks[pos]);
+
+    for ( auto block : package.region(region).blocks )
+        for ( auto id : std::vector<InstId>(package.block(block).insts) ) {
+            const auto* upsilon = std::get_if<UpsilonPayload>(&package.inst(id).payload);
+            if ( upsilon && package.isErased(upsilon->phi) )
+                package.eraseInst(id);
+        }
+}
+
 } // namespace
 
 namespace spicy::detail::pir::passes {
@@ -163,7 +219,16 @@ bool foldConstants(Package& package, FunctionId function) {
             changed = foldInst(package, inst_id) || changed;
     }
 
-    return changed;
+    // A constant condition can make blocks unreachable. Their values have no uses elsewhere, since a reachable use
+    // would need a reachable definition to dominate it.
+    bool folded_control = false;
+    for ( auto block_id : std::vector<BlockId>(package.region(fn.root_region).blocks) )
+        folded_control = foldTerminator(package, block_id) || folded_control;
+
+    if ( folded_control )
+        eraseUnreachable(package, fn.root_region);
+
+    return changed || folded_control;
 }
 
 } // namespace spicy::detail::pir::passes

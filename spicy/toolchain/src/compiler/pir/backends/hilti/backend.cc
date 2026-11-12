@@ -16,6 +16,7 @@
 #include <hilti/base/logger.h>
 #include <hilti/base/util.h>
 
+#include <spicy/compiler/detail/pir/analyses/field-use.h>
 #include <spicy/compiler/detail/pir/backends/hilti/backend.h>
 #include <spicy/compiler/detail/pir/ir/cfg.h>
 
@@ -224,15 +225,22 @@ NameMap makeNames(const ir::Package& package, const std::vector<TargetBinding>& 
     return b.expressionCtor(b.ctorUnsignedInteger(bits, integer.width, meta), meta);
 }
 
-::hilti::Declaration* lowerUnitType(::hilti::Builder& b, const ir::Package& package, ir::TypeDeclId id) {
+// A field that some path does not publish is optional, so that reading it unset fails as in legacy. A field that is
+// always present keeps plain storage, whose loads need no check.
+::hilti::Declaration* lowerUnitType(::hilti::Builder& b,
+                                    const ir::Package& package,
+                                    const analyses::FieldPresence& presence,
+                                    ir::TypeDeclId id) {
     const auto& unit = package.typeDecl(id);
     ::hilti::Declarations fields;
     for ( auto field_id : unit.fields ) {
         const auto& field = package.declaration(field_id);
-        fields.push_back(b.declarationField(::hilti::ID(fieldName(field_id)),
-                                            targetType(b, package, field.type),
-                                            static_cast<::hilti::AttributeSet*>(nullptr),
-                                            metaFor(package, field.span)));
+        auto meta = metaFor(package, field.span);
+        auto* attributes = presence.isConditional(field_id) ?
+                               b.attributeSet({b.attribute(::hilti::attribute::kind::Optional, meta)}, meta) :
+                               static_cast<::hilti::AttributeSet*>(nullptr);
+        fields.push_back(
+            b.declarationField(::hilti::ID(fieldName(field_id)), targetType(b, package, field.type), attributes, meta));
     }
     return b.declarationType(::hilti::ID(unitName(id)),
                              b.qualifiedType(b.typeStruct(fields), ::hilti::Constness::Const),
@@ -557,7 +565,9 @@ protected:
             for ( auto id : package_.block(cfg.blocks[pos]).insts ) {
                 const auto& inst = package_.inst(id);
                 auto use = [&](const Storage& storage) {
-                    if ( storage.owner.isSet() && package_.inst(storage.owner).parent != inst.parent )
+                    // The entry's locals are at function level already.
+                    auto owner_block = storage.owner.isSet() ? package_.inst(storage.owner).parent : ir::BlockId{};
+                    if ( storage.owner.isSet() && owner_block != inst.parent && owner_block != cfg.blocks[0] )
                         hoist(storage);
                 };
                 // Parser results are virtual tuples: only their projected values have physical storage.
@@ -581,22 +591,17 @@ protected:
             next[order[k]] = order[k + 1];
 
         // A block needs a label only if some goto targets it, which falling through to it avoids.
+        auto position = [&](ir::BlockId block) { return cfg.position.at(block.index); };
         std::unordered_set<size_t> targets;
         for ( auto pos : order ) {
             const auto& terminator = package_.inst(package_.block(cfg.blocks[pos]).insts.back());
-            auto successors = cfg.successors[pos];
             if ( terminator.opcode == ir::Opcode::Jump || terminator.opcode == ir::Opcode::Branch ) {
-                bool fell_through = false;
-                for ( auto successor : successors ) {
-                    if ( successor == next[pos] && ! fell_through ) {
-                        fell_through = true;
-                        continue;
-                    }
-                    targets.insert(successor);
-                }
+                for ( auto successor : cfg.successors[pos] )
+                    if ( successor != next[pos] )
+                        targets.insert(successor);
             }
             else
-                targets.insert(successors.begin(), successors.end());
+                targets.insert(cfg.successors[pos].begin(), cfg.successors[pos].end());
         }
 
         auto label = [&](size_t pos) { return ::hilti::ID(fmt("b%u", cfg.blocks[pos].index)); };
@@ -616,15 +621,36 @@ protected:
             for ( size_t i = 0; i + 1 < insts.size(); ++i )
                 lower(b, insts[i]);
 
-            const auto& successors = cfg.successors[pos];
             switch ( terminator.opcode ) {
-                case ir::Opcode::Jump:
-                    if ( successors[0] != next[pos] )
-                        b.addGoto(label(successors[0]), meta);
+                case ir::Opcode::Jump: {
+                    auto target = position(std::get<ir::JumpPayload>(terminator.payload).target);
+                    if ( target != next[pos] )
+                        b.addGoto(label(target), meta);
                     break;
+                }
+                case ir::Opcode::Switch: {
+                    // Each case jumps to its target. Cases that share a target share a HILTI case.
+                    const auto& payload = std::get<ir::SwitchPayload>(terminator.payload);
+                    auto operand_type = package_.inst(terminator.args[0]).result_type;
+                    auto cases = b.addSwitch(_value(b, terminator.args[0]), meta);
+                    std::vector<std::pair<ir::BlockId, ::hilti::Expressions>> grouped;
+                    for ( const auto& c : payload.cases ) {
+                        auto it = std::ranges::find_if(grouped, [&](const auto& g) { return g.first == c.target; });
+                        if ( it == grouped.end() ) {
+                            grouped.emplace_back(c.target, ::hilti::Expressions{});
+                            it = std::prev(grouped.end());
+                        }
+                        it->second.push_back(integerLiteral(b, package_, operand_type, c.value.bits, meta));
+                    }
+                    for ( auto& [target, values] : grouped )
+                        cases.addCase(values, meta)->addGoto(label(position(target)), meta);
+                    cases.addDefault(meta)->addGoto(label(position(payload.default_target)), meta);
+                    break;
+                }
                 case ir::Opcode::Branch: {
-                    auto then_ = successors[0];
-                    auto else_ = successors[1];
+                    const auto& payload = std::get<ir::BranchPayload>(terminator.payload);
+                    auto then_ = position(payload.then_block);
+                    auto else_ = position(payload.else_block);
                     auto* condition = _value(b, terminator.args[0]);
                     if ( then_ == else_ ) {
                         if ( then_ != next[pos] )
@@ -820,9 +846,8 @@ protected:
                 // A coalesced Phi names the storage its Upsilons already wrote. Otherwise it reads its shadow into
                 // its own local, so that a later write of the shadow cannot change the value it read.
                 if ( auto shared = _coalesced(id) ) {
-                    auto upsilon = std::ranges::find_if(upsilons_[id.index], [&](auto u) {
-                        return package_.inst(u).args[0] != id;
-                    });
+                    auto upsilon = std::ranges::find_if(upsilons_[id.index],
+                                                        [&](auto u) { return package_.inst(u).args[0] != id; });
                     auto value = package_.inst(*upsilon).args[0];
                     values_[id.index] = values_.at(value.index);
                     if ( held_by_reference_.contains(value.index) )
@@ -1601,6 +1626,7 @@ LoweringResult lower(::hilti::Builder& builder,
         return Unsupported{std::move(unsupported)};
 
     auto names = makeNames(package, bindings);
+    auto presence = analyses::fieldPresence(package);
     ::hilti::Declarations decls = {builder.import("hilti"), builder.import("spicy_rt")};
     for ( const auto& include : package.cxxIncludes() )
         decls.push_back(builder.declarationProperty(::hilti::ID("%cxx-include"), builder.stringLiteral(include)));
@@ -1629,7 +1655,7 @@ LoweringResult lower(::hilti::Builder& builder,
                                     ::hilti::declaration::Linkage::Public));
     }
     for ( size_t i = 0; i < package.typeDecls().size(); ++i )
-        decls.push_back(lowerUnitType(builder, package, ir::TypeDeclId{static_cast<uint32_t>(i)}));
+        decls.push_back(lowerUnitType(builder, package, presence, ir::TypeDeclId{static_cast<uint32_t>(i)}));
     for ( size_t i = 0; i < package.functions().size(); ++i ) {
         auto id = ir::FunctionId{static_cast<uint32_t>(i)};
         if ( package.function(id).kind == ir::FunctionKind::Parser )

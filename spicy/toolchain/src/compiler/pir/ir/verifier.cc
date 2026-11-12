@@ -9,6 +9,7 @@
 
 #include <spicy/compiler/detail/pir/ir/cfg.h>
 #include <spicy/compiler/detail/pir/ir/printer.h>
+#include <spicy/compiler/detail/pir/ir/publication.h>
 #include <spicy/compiler/detail/pir/ir/reachability.h>
 #include <spicy/compiler/detail/pir/ir/verifier.h>
 
@@ -196,18 +197,16 @@ public:
 
         _verifyShadows(fn);
 
-        if ( fn.kind == FunctionKind::Parser ) {
-            _verifyRegion(id, fn.root_region, fn, {});
-            return;
-        }
-
-        // An ordinary function's body is a CFG, so its blocks are checked against the dominator tree and its
-        // affine values against all of its paths.
+        // A function's body is a CFG, so its blocks are checked against the dominator tree and its affine values
+        // against all of its paths.
         _beginBody(id, fn);
         _verifyRegion(id, fn.root_region, fn, {});
         if ( ! _cfg.blocks.empty() )
             _verifyBodyAffinity();
         _endBody();
+
+        if ( fn.kind == FunctionKind::Parser )
+            _verifyPublications(id);
     }
 
     // Whether a parameter's type suits its mode. A taken value is copyable, or a unit, vector, or set that the callee
@@ -262,13 +261,14 @@ public:
                           "structured parser operation must own exactly one valid body region",
                           owner.isSet() ? owner : InstId{});
         const auto& region = _package.region(region_id);
-        bool multi_block_body = ! owner.isSet() && fn.kind != FunctionKind::Parser;
-        if ( multi_block_body ? region.blocks.empty() : region.blocks.size() != 1 )
-            _emitter.emit(
-                "region-block-count-mismatch",
-                "function's region must contain exactly one block (an ordinary function needs at least one), has %zu",
-                id,
-                region.blocks.size());
+        // A function's body has at least one block, and a structured region exactly one.
+        bool body = ! owner.isSet();
+        if ( body ? region.blocks.empty() : region.blocks.size() != 1 )
+            _emitter
+                .emit("region-block-count-mismatch",
+                      "a structured region must contain exactly one block, and a function body at least one; has %zu",
+                      id,
+                      region.blocks.size());
 
         for ( auto block_id : region.blocks ) {
             if ( ! _package.isValid(block_id) ) {
@@ -531,11 +531,9 @@ private:
                                   inst_id);
             }
         }
-        // An ordinary function's body checks parser-state affinity across all of its blocks at once.
-        if ( owner.isSet() || fn.kind == FunctionKind::Parser )
+        // A function's body checks affinity across all of its blocks at once.
+        if ( owner.isSet() )
             _verifyParserStateAffinity(function_id, block_id);
-        if ( ! owner.isSet() )
-            _verifyUnitStateAffinity(function_id, block_id, fn);
     }
 
     void _verifyRegionSignature(BlockId block_id, InstId owner_id, const std::unordered_set<uint32_t>& bounded_states) {
@@ -724,79 +722,46 @@ private:
         }
     }
 
-    // Tracks each unit value's publication chain from `unit.create` through
-    // `unit.publish_field` to `parser.finish`, as a direct per-function scan. Straight-line
-    // affinity checking is sufficient here; a general dataflow framework is deferred.
-    void _verifyUnitStateAffinity(FunctionId /* function_id */, BlockId block_id, const Function& fn) {
-        const auto& block = _package.block(block_id);
+    // A unit is published along each path from its `unit.create`, through publications and Phis. Every publication
+    // and finish names a unit of this function, a Phi merges versions of one unit, and no path publishes a field twice.
+    // A field that some path to a finish skips is conditional, which is not an error.
+    // Whether `value` descends from a Phi that merges units of several origins.
+    bool _mixedOrigin(InstId value, const Publications& publications) const {
+        for ( unsigned depth = 0; depth < 1024 && _package.isValid(value); ++depth ) {
+            if ( std::ranges::find(publications.mixed_phis, value) != publications.mixed_phis.end() )
+                return true;
+            const auto& inst = _package.inst(value);
+            if ( inst.opcode != Opcode::PublishField || inst.args.empty() )
+                return false;
+            value = inst.args[0];
+        }
+        return false;
+    }
 
-        // Maps a unit.create's InstId to the current head of its publication chain, and the set
-        // of field DeclIds published so far along that chain.
-        struct Chain {
-            InstId head;
-            std::unordered_set<uint32_t> published;
-        };
-        std::vector<Chain> chains;
+    void _verifyPublications(FunctionId function_id) {
+        auto publications = analyzePublications(_package, function_id);
+        for ( auto phi : publications.mixed_phis )
+            _emitter.emit("unit-phi-mixed-origin", "core.phi merges units of more than one unit.create", phi);
+        for ( auto publish : publications.duplicates )
+            _emitter.emit("duplicate-field-publication", "field is published more than once", publish);
 
-        auto find_chain = [&](InstId value) -> Chain* {
-            for ( auto& chain : chains )
-                if ( chain.head == value )
-                    return &chain;
-            return nullptr;
-        };
-
-        for ( auto inst_id : block.insts ) {
-            if ( ! _package.isValid(inst_id) )
-                continue;
-
-            const auto& inst = _package.inst(inst_id);
-
-            if ( inst.opcode == Opcode::UnitCreate ) {
-                chains.push_back(Chain{.head = inst_id, .published = {}});
-                continue;
-            }
-
-            if ( inst.opcode == Opcode::PublishField ) {
-                if ( inst.args.empty() || ! _package.isValid(inst.args[0]) )
+        auto cfg = buildCfg(_package, _package.function(function_id).root_region);
+        for ( auto block : cfg.blocks ) {
+            for ( auto id : _package.block(block).insts ) {
+                if ( ! _package.isValid(id) )
                     continue;
-
-                auto* chain = find_chain(inst.args[0]);
-                if ( ! chain ) {
+                const auto& inst = _package.inst(id);
+                if ( inst.opcode != Opcode::PublishField && inst.opcode != Opcode::Finish )
+                    continue;
+                size_t operand = inst.opcode == Opcode::PublishField ? 0 : 1;
+                if ( operand >= inst.args.size() || ! _package.isValid(inst.args[operand]) )
+                    continue;
+                auto value = inst.args[operand];
+                // A unit of mixed origin is reported at its Phi already.
+                if ( ! publications.origins.contains(value.index) && ! _mixedOrigin(value, publications) )
                     _emitter.emit("unit-state-stale-or-unknown-operand",
                                   "operand does not reference a live unit-state value created earlier in this function",
-                                  inst_id);
-                    continue;
-                }
-
-                const auto* payload = std::get_if<FieldPayload>(&inst.payload);
-                if ( payload && _package.isValid(payload->field) ) {
-                    if ( ! chain->published.insert(payload->field.index).second )
-                        _emitter.emit("duplicate-field-publication", "field is published more than once", inst_id);
-                }
-
-                chain->head = inst_id;
-                continue;
-            }
-
-            if ( inst.opcode == Opcode::Finish ) {
-                if ( inst.args.size() < 2 || ! _package.isValid(inst.args[1]) )
-                    continue;
-
-                auto* chain = find_chain(inst.args[1]);
-                if ( ! chain ) {
-                    _emitter.emit("unit-state-stale-or-unknown-operand",
-                                  "operand does not reference a live unit-state value created earlier in this function",
-                                  inst_id);
-                    continue;
-                }
-
-                if ( _package.isValid(fn.parser_unit) ) {
-                    for ( auto field_id : _package.typeDecl(fn.parser_unit).fields )
-                        if ( ! chain->published.contains(field_id.index) )
-                            _emitter.emit("missing-field-publication",
-                                          "parser.finish completes a unit that has not published all of its fields",
-                                          inst_id);
-                }
+                                  id);
             }
         }
     }
@@ -1122,6 +1087,33 @@ private:
                 return;
             }
 
+            case Opcode::Switch: {
+                const auto* payload = std::get_if<SwitchPayload>(&inst.payload);
+                if ( ! payload )
+                    return;
+
+                for ( const auto& c : payload->cases )
+                    _verifySuccessor(inst_id, inst, c.target);
+                _verifySuccessor(inst_id, inst, payload->default_target);
+
+                if ( inst.args.size() != 1 || ! _package.isValid(inst.args[0]) )
+                    return;
+                auto type = _package.inst(inst.args[0]).result_type;
+                if ( ! _package.isValid(type) || _package.type(type).kind != TypeKind::Integer )
+                    return;
+
+                std::unordered_set<uint64_t> values;
+                for ( const auto& c : payload->cases ) {
+                    if ( truncateBits(c.value.bits, _package.type(type).integer.width) != c.value.bits )
+                        _emitter.emit("switch-case-out-of-range",
+                                      "core.switch case value does not fit its operand's type",
+                                      inst_id);
+                    else if ( ! values.insert(c.value.bits).second )
+                        _emitter.emit("switch-duplicate-case", "core.switch has two cases of the same value", inst_id);
+                }
+                return;
+            }
+
             case Opcode::Add: {
                 if ( inst.args.size() != 2 || ! _package.isValid(inst.args[0]) || ! _package.isValid(inst.args[1]) )
                     return;
@@ -1162,7 +1154,9 @@ private:
 
                 if ( inst.args.size() == 1 && _package.isValid(inst.args[0]) &&
                      _package.inst(inst.args[0]).result_type != _package.inst(payload->phi).result_type )
-                    _emitter.emit("upsilon-type-mismatch", "core.upsilon's value does not have its Phi's type", inst_id);
+                    _emitter.emit("upsilon-type-mismatch",
+                                  "core.upsilon's value does not have its Phi's type",
+                                  inst_id);
                 return;
             }
 
@@ -1727,7 +1721,7 @@ private:
     void _verifySuccessor(InstId inst_id, const Inst& inst, BlockId target) {
         if ( ! _in_body || ! _cfg.contains(inst.parent) ) {
             _emitter.emit("control-flow-outside-function-body",
-                          "branches and jumps are only allowed in the root region of an ordinary function",
+                          "branches, jumps, and switches are only allowed in the root region of a function",
                           inst_id);
             return;
         }
@@ -2028,21 +2022,25 @@ std::vector<InternalError> verify(const Package& package) {
     for ( auto id : reach.duplicate_insts )
         emitter.emit("duplicate-instruction-ownership", "instruction belongs to more than one block", id);
 
-    if ( reach.regions.size() != package.regions().size() )
+    // Erased entries belong to nothing on purpose.
+    auto regions = package.regions().size() - package.erasedRegions();
+    auto blocks = package.blocks().size() - package.erasedBlocks();
+    auto insts = package.instructions().size() - package.erasedInsts();
+    if ( reach.regions.size() != regions )
         emitter.emit("orphan-regions",
                      "package contains %zu unattached region(s)",
                      noSite(),
-                     package.regions().size() - reach.regions.size());
-    if ( reach.blocks.size() != package.blocks().size() )
+                     regions - reach.regions.size());
+    if ( reach.blocks.size() != blocks )
         emitter.emit("orphan-blocks",
                      "package contains %zu unattached block(s)",
                      noSite(),
-                     package.blocks().size() - reach.blocks.size());
-    if ( reach.insts.size() != package.instructions().size() )
+                     blocks - reach.blocks.size());
+    if ( reach.insts.size() != insts )
         emitter.emit("orphan-instructions",
                      "package contains %zu unattached instruction(s)",
                      noSite(),
-                     package.instructions().size() - reach.insts.size());
+                     insts - reach.insts.size());
 
     return errors;
 }

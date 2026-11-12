@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include <spicy/compiler/detail/pir/analyses/field-use.h>
 #include <spicy/compiler/detail/pir/ir/builder.h>
 #include <spicy/compiler/detail/pir/ir/package.h>
 #include <spicy/compiler/detail/pir/ir/printer.h>
@@ -489,7 +490,7 @@ TEST_CASE("a borrowing call does not reset or bypass a unit's publication chain"
     builder.addParserRoot(s.unit, parser);
     CHECK(verify(s.package).empty());
 
-    // The borrow does not publish the missing field on the unit's behalf.
+    // The borrow does not publish the missing fields on the unit's behalf, so they stay conditional.
     Cells incomplete;
     auto incomplete_builder = incomplete.package.builder();
     auto incomplete_read = incomplete.read();
@@ -501,7 +502,11 @@ TEST_CASE("a borrowing call does not reset or bypass a unit's publication chain"
     auto incomplete_cell = incomplete_builder.addUnitCreate(incomplete_block, incomplete.unit);
     incomplete_builder.addCall(incomplete_block, incomplete_read, {incomplete_cell});
     incomplete_builder.addParserFinish(incomplete_block, incomplete_state, incomplete_cell);
-    CHECK(hasInternalError(verify(incomplete.package), "missing-field-publication"));
+    incomplete_builder.addParserRoot(incomplete.unit, incomplete_parser);
+    REQUIRE(verify(incomplete.package).empty());
+    auto presence = spicy::detail::pir::analyses::fieldPresence(incomplete.package);
+    CHECK(presence.isConditional(incomplete.first));
+    CHECK(presence.isConditional(incomplete.second));
 }
 
 TEST_CASE("a parameter's type must suit its mode") {

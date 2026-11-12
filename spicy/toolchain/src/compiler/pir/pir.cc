@@ -46,13 +46,11 @@ pir::BuildResult pir::build(const hilti::ASTContext& ctx) {
     if ( ! errors.empty() )
         return BuildOutcome(Error{.package = std::move(package), .errors = std::move(errors)});
 
-    // Check for user mistakes before optimization changes the package.
+    // Unused fields are checked before optimization changes the package.
     std::vector<ir::Diagnostic> user_diags;
     {
         hilti::util::timing::Collector _("spicy/compiler/pir/build/analyze");
-        user_diags = analyses::checkFieldReads(package);
-        auto unused = analyses::checkUnusedFields(package);
-        user_diags.insert(user_diags.end(), unused.begin(), unused.end());
+        user_diags = analyses::checkUnusedFields(package);
     }
 
     HILTI_DEBUG(logging::debug::PIR, "before constant folding:");
@@ -75,6 +73,14 @@ pir::BuildResult pir::build(const hilti::ASTContext& ctx) {
 
     if ( ! errors.empty() )
         return BuildOutcome(Error{.package = std::move(package), .errors = std::move(errors)});
+
+    // Reads are checked against field presence after the last pass, because folding can make a conditional field always
+    // present, and the backend then stores it without a check.
+    {
+        hilti::util::timing::Collector _("spicy/compiler/pir/build/analyze");
+        auto reads = analyses::checkFieldReads(package);
+        user_diags.insert(user_diags.begin(), reads.begin(), reads.end());
+    }
 
     HILTI_DEBUG(logging::debug::PIR, "after constant folding:");
     HILTI_DEBUG(logging::debug::PIR, ir::print(package));

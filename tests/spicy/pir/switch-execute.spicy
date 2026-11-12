@@ -1,0 +1,70 @@
+# @TEST-EXEC: cp ${SCRIPTS}/pir-parse.h parse.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -p -D spicy-pir >/dev/null 2>pir.log
+# @TEST-EXEC: rg "attached PIR-produced|core.switch|core.phi" pir.log | sort -u >route
+# @TEST-EXEC: btest-diff route
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT -j driver.cc >legacy
+# @TEST-EXEC: cmp output legacy
+
+# @TEST-DOC: Parses a tag-length-value switch, the shape of the UnitSwitch benchmark: cases with one and two values,
+# a field name that two cases share, and a default. `%done` prints the fields that the tag sets. The output matches
+# the legacy build for whole and incremental input, and both fail alike for input that ends or has a gap inside a case.
+
+module Test;
+
+type Entry = unit {
+    tag: uint8;
+    switch ( self.tag ) {
+        1 -> a: uint8;
+        2, 5 -> b: uint16;
+        3 -> c: uint32;
+        4 -> a: uint8;
+        * -> d: uint64;
+    };
+
+    on %done {
+        if ( self.tag == 1 )
+            print "a", self.a;
+        if ( self.tag == 4 )
+            print "a again", self.a;
+        if ( self.tag == 2 )
+            print "b", self.b;
+        if ( self.tag == 5 )
+            print "b again", self.b;
+        if ( self.tag == 3 )
+            print "c", self.c;
+        if ( self.tag == 9 )
+            print "d", self.d;
+    }
+};
+
+public type Message = unit {
+    length: uint64;
+    entries: Entry[] &size=self.length;
+};
+
+@TEST-START-FILE driver.cc
+static constexpr unsigned error_style = 0;
+#include "parse.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    const std::string entries = std::string("\x01\x11"
+                                            "\x02\x01\x02"
+                                            "\x03\x00\x00\x01\x00"
+                                            "\x04\x44"
+                                            "\x05\x00\x05"
+                                            "\x09\x00\x00\x00\x00\x00\x00\x00\x09",
+                                            24);
+    const std::string input = be64(entries.size()) + entries;
+    run("Test::Message", "whole", {{input}});
+    for ( size_t chunk : {1, 2, 7} )
+        run("Test::Message", ("chunk-" + std::to_string(chunk)).c_str(), {{input}}, chunk);
+    run("Test::Message", "eod-in-case", {{input.substr(0, 13)}});
+    run("Test::Message", "gap-in-case", {{input.substr(0, 13)}, {"", 2}, {input.substr(15)}});
+    return 0;
+}
+
+@TEST-END-FILE

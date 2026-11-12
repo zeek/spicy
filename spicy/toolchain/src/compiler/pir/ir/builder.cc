@@ -298,6 +298,10 @@ InstId Builder::addIntConstant(BlockId block, TypeId type, uint64_t bits, Source
     return addInst(block, Opcode::IntConstant, {}, type, InstPayload(IntegerLiteral{bits}), span);
 }
 
+InstId Builder::addSwitch(BlockId block, InstId value, SwitchPayload payload, SourceSpanId span) {
+    return addInst(block, Opcode::Switch, {value}, _package._void_type, InstPayload(std::move(payload)), span);
+}
+
 InstId Builder::addPhi(BlockId block, TypeId type, SourceSpanId span) {
     return addInst(block, Opcode::Phi, {}, type, {}, span);
 }

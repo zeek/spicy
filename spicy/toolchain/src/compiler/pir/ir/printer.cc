@@ -51,7 +51,11 @@ std::string_view byteOrderName(ByteOrder order) {
 // Absent for `std::monostate` (no payload); otherwise the payload's canonical printed form, to be
 // joined alongside operands. A multi-field payload (e.g. `ReadIntegerPayload`) is already
 // comma-joined internally so it reads as one further element in that outer join.
-std::optional<std::string> renderPayload(const Package& package, const InstPayload& payload, TypeId result_type) {
+// `result_type` gives an integer constant its meaning, and `operand_type` does so for switch cases.
+std::optional<std::string> renderPayload(const Package& package,
+                                         const InstPayload& payload,
+                                         TypeId result_type,
+                                         TypeId operand_type = {}) {
     // A constant reads as a value of its type, so the type decides whether its bits are signed.
     if ( const auto* lit = std::get_if<IntegerLiteral>(&payload) ) {
         if ( package.isValid(result_type) && package.type(result_type).kind == TypeKind::Integer &&
@@ -123,6 +127,15 @@ std::optional<std::string> renderPayload(const Package& package, const InstPaylo
         }
     }
 
+    if ( const auto* cases = std::get_if<SwitchPayload>(&payload) ) {
+        std::string out;
+        for ( const auto& c : cases->cases )
+            out += fmt("%s -> %%%u, ",
+                       renderPayload(package, InstPayload(c.value), operand_type).value_or("?"),
+                       c.target.index);
+        return out + fmt("default -> %%%u", cases->default_target.index);
+    }
+
     if ( const auto* upsilon = std::get_if<UpsilonPayload>(&payload) )
         return fmt("^%%%u", upsilon->phi.index);
 
@@ -161,7 +174,12 @@ std::string printInst(const Package& package, InstId id) {
     for ( auto arg : inst.args )
         tokens.push_back(printOperand(arg));
 
-    if ( auto payload_text = renderPayload(package, inst.payload, inst.result_type) )
+    if ( auto payload_text = renderPayload(package,
+                                           inst.payload,
+                                           inst.result_type,
+                                           inst.args.empty() || ! package.isValid(inst.args[0]) ?
+                                               TypeId{} :
+                                               package.inst(inst.args[0]).result_type) )
         tokens.push_back(std::move(*payload_text));
 
     for ( size_t i = 0; i < tokens.size(); ++i )
@@ -348,15 +366,17 @@ std::string print(const Package& package) {
     auto reach = computeReachableIds(package);
 
     for ( size_t i = 0; i < package.regions().size(); ++i )
-        if ( ! reach.regions.contains(static_cast<uint32_t>(i)) )
+        if ( ! reach.regions.contains(static_cast<uint32_t>(i)) &&
+             ! package.isErased(RegionId{static_cast<uint32_t>(i)}) )
             out += fmt("orphan region %%%zu\n", i);
 
     for ( size_t i = 0; i < package.blocks().size(); ++i )
-        if ( ! reach.blocks.contains(static_cast<uint32_t>(i)) )
+        if ( ! reach.blocks.contains(static_cast<uint32_t>(i)) &&
+             ! package.isErased(BlockId{static_cast<uint32_t>(i)}) )
             out += fmt("orphan block %%%zu\n", i);
 
     for ( size_t i = 0; i < package.instructions().size(); ++i )
-        if ( ! reach.insts.contains(static_cast<uint32_t>(i)) )
+        if ( ! reach.insts.contains(static_cast<uint32_t>(i)) && ! package.isErased(InstId{static_cast<uint32_t>(i)}) )
             out += "orphan instruction " + printInst(package, InstId{static_cast<uint32_t>(i)}) + "\n";
 
     return out;

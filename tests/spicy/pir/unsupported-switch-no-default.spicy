@@ -1,0 +1,14 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: A switch without a default case falls back to the standard code generator.
+
+module Test;
+
+public type Message = unit {
+    tag: uint8;
+    switch ( self.tag ) {
+        1 -> a: uint8;
+        2 -> b: uint8;
+    };
+};

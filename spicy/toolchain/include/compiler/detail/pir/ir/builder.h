@@ -195,6 +195,8 @@ public:
     InstId addPhi(BlockId block, TypeId type, SourceSpanId span = {});
     /** Adds `core.upsilon`, which writes `value` into the shadow of `phi`. */
     InstId addUpsilon(BlockId block, InstId value, InstId phi, SourceSpanId span = {});
+    /** Adds the terminating `core.switch` on the integer `value`. */
+    InstId addSwitch(BlockId block, InstId value, SwitchPayload payload, SourceSpanId span = {});
     /** Adds the terminating `core.jump` to `target`. */
     InstId addJump(BlockId block, BlockId target, SourceSpanId span = {});
 

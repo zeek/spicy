@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <limits>
 
+#include <spicy/compiler/detail/pir/analyses/field-use.h>
 #include <spicy/compiler/detail/pir/ir/builder.h>
 #include <spicy/compiler/detail/pir/ir/cfg.h>
 #include <spicy/compiler/detail/pir/ir/package.h>
@@ -187,14 +188,11 @@ TEST_CASE("verifier rejects an unattached region and differentiates it from an e
     CHECK_NE(print(sample.package), print(empty.package));
 }
 
-TEST_CASE("verifier rejects a parser function whose region has more than one block") {
+TEST_CASE("verifier rejects a parser function whose body has no block") {
     Package package;
     auto builder = package.builder();
     auto unit = builder.createUnitDecl("Unit");
-    auto fn = builder.createParserFunction(unit, builder.parserStateType(), builder.unitType(unit));
-    auto region = package.function(fn).root_region;
-    builder.createBlock(region);
-    builder.createBlock(region);
+    builder.createParserFunction(unit, builder.parserStateType(), builder.unitType(unit));
 
     auto diags = verify(package);
     CHECK(hasInternalError(diags, "region-block-count-mismatch"));
@@ -1037,14 +1035,21 @@ TEST_CASE("verifier rejects core.equal on operands of different or non-comparabl
     CHECK(hasInternalError(verify(package), "equal-operand-type-mismatch"));
 }
 
-TEST_CASE("verifier rejects a branch or jump in a parser function") {
+TEST_CASE("verifier rejects a jump inside a structured region") {
     Package package;
     auto builder = package.builder();
     auto unit = builder.createUnitDecl("Unit");
     auto fn = builder.createParserFunction(unit, builder.parserStateType(), builder.unitType(unit));
-    auto region = package.function(fn).root_region;
-    auto first = builder.createBlock(region);
-    builder.addJump(first, first);
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto state = builder.addArgument(fn, block, 0);
+    auto self = builder.addUnitCreate(block, unit);
+    auto bounded = builder.addEnterBound(block, state, builder.addIntConstant(block, builder.uint64Type(), 1));
+    auto body = builder.createRegion();
+    auto body_block = builder.createBlock(body);
+    builder.addRegionArgument(body_block, 0, builder.parserStateType());
+    builder.addJump(body_block, body_block);
+    auto repeated = builder.addRepeatToBound(block, {bounded}, body);
+    builder.addParserFinish(block, builder.addLeaveBound(block, builder.addTupleGet(block, repeated, 0)), self);
 
     CHECK(hasInternalError(verify(package), "control-flow-outside-function-body"));
 }
@@ -1544,4 +1549,269 @@ TEST_CASE("Phi and Upsilon have shadow effects") {
     CHECK(effectsFor(Opcode::Upsilon).writes_shadow);
     CHECK_FALSE(schemaFor(Opcode::Phi)->is_pure);
     CHECK_FALSE(schemaFor(Opcode::Upsilon)->is_pure);
+}
+
+namespace {
+
+// A parser for a unit with fields `tag` (uint8) and `value` (uint8) that switches on the tag: tag 1 publishes `value`
+// in its own block, tag 2 shares the default's block, which publishes nothing. Both reach `join`, which merges the
+// parser state and unit and finishes.
+struct Switched {
+    Package package;
+    TypeDeclId unit;
+    DeclId tag;
+    DeclId value;
+    FunctionId function;
+    BlockId entry;
+    BlockId one;
+    BlockId other;
+    BlockId join;
+    InstId control;
+    InstId state;
+    InstId self;
+    InstId state_phi;
+    InstId unit_phi;
+};
+
+Switched makeSwitched(bool constant_control = false, bool finish = true) {
+    Switched s;
+    auto builder = s.package.builder();
+    s.unit = builder.createUnitDecl("U");
+    s.tag = builder.createFieldDecl(s.unit, "tag", builder.uint8Type());
+    s.value = builder.createFieldDecl(s.unit, "value", builder.uint8Type());
+    s.function = builder.createParserFunction(s.unit, builder.parserStateType(), builder.unitType(s.unit));
+    auto region = s.package.function(s.function).root_region;
+    s.entry = builder.createBlock(region);
+    s.one = builder.createBlock(region);
+    s.other = builder.createBlock(region);
+    s.join = builder.createBlock(region);
+
+    auto state = builder.addArgument(s.function, s.entry, 0);
+    auto created = builder.addUnitCreate(s.entry, s.unit);
+    auto read = builder.addReadInteger(s.entry, state, ReadIntegerPayload{.width = 8});
+    s.state = builder.addTupleGet(s.entry, read, 0);
+    auto tag = builder.addTupleGet(s.entry, read, 1);
+    s.self = builder.addPublishField(s.entry, created, tag, s.tag);
+    s.control = constant_control ? builder.addIntConstant(s.entry, builder.uint8Type(), 1) : tag;
+
+    s.state_phi = builder.addPhi(s.join, builder.parserStateType());
+    s.unit_phi = builder.addPhi(s.join, builder.unitType(s.unit));
+    if ( finish )
+        builder.addParserFinish(s.join, s.state_phi, s.unit_phi);
+    builder.addParserRoot(s.unit, s.function);
+    return s;
+}
+
+void addSwitch(Switched& s, std::vector<SwitchCase> cases) {
+    s.package.builder().addSwitch(s.entry,
+                                  s.control,
+                                  SwitchPayload{.cases = std::move(cases), .default_target = s.other});
+}
+
+// How the other arm is malformed, if at all.
+enum class OtherArm { Valid, NoStateUpsilon, FreshUnit, ConsumeTwice, OneWithoutState };
+
+// Tag 1 reads and publishes `value`; the other arm passes its state and unit through.
+void fillArms(Switched& s, OtherArm other = OtherArm::Valid) {
+    auto builder = s.package.builder();
+    auto read = builder.addReadInteger(s.one, s.state, ReadIntegerPayload{.width = 8});
+    auto unit = builder.addPublishField(s.one, s.self, builder.addTupleGet(s.one, read, 1), s.value);
+    if ( other != OtherArm::OneWithoutState )
+        builder.addUpsilon(s.one, builder.addTupleGet(s.one, read, 0), s.state_phi);
+    builder.addUpsilon(s.one, unit, s.unit_phi);
+    builder.addJump(s.one, s.join);
+    // The other arm consumes the state once to release input, and then once more when it merges.
+    if ( other == OtherArm::ConsumeTwice )
+        builder.addReleaseInput(s.other, s.state);
+    if ( other != OtherArm::NoStateUpsilon )
+        builder.addUpsilon(s.other, s.state, s.state_phi);
+    builder.addUpsilon(s.other,
+                       other == OtherArm::FreshUnit ? builder.addUnitCreate(s.other, s.unit) : s.self,
+                       s.unit_phi);
+    builder.addJump(s.other, s.join);
+}
+
+SwitchCase to(uint64_t value, BlockId target) { return SwitchCase{.value = IntegerLiteral{value}, .target = target}; }
+
+} // namespace
+
+TEST_CASE("a parser switches into arms whose Phis merge the state and unit at a join") {
+    auto s = makeSwitched();
+    addSwitch(s, {to(1, s.one), to(2, s.other)});
+    fillArms(s);
+    CHECK(verify(s.package).empty());
+    CHECK_NE(print(s.package).find("core.switch %"), std::string::npos);
+    CHECK_NE(print(s.package).find("1 -> %" + std::to_string(s.one.index) + ", 2 -> %" + std::to_string(s.other.index) +
+                                   ", default -> %" + std::to_string(s.other.index)),
+             std::string::npos);
+
+    // A field published on only one arm is conditional; one published before the switch is always present.
+    auto presence = spicy::detail::pir::analyses::fieldPresence(s.package);
+    CHECK(presence.isConditional(s.value));
+    CHECK_FALSE(presence.isConditional(s.tag));
+}
+
+TEST_CASE("a switch whose cases share a target writes a Phi's shadow once per path") {
+    auto s = makeSwitched();
+    addSwitch(s, {to(1, s.one), to(2, s.one)});
+    fillArms(s);
+    CHECK(verify(s.package).empty());
+
+    // The shared arm forgets to merge the state.
+    auto missing = makeSwitched();
+    addSwitch(missing, {to(1, missing.one), to(2, missing.one)});
+    fillArms(missing, OtherArm::OneWithoutState);
+    auto errors = verify(missing.package);
+    CHECK(hasInternalError(errors, "phi-shadow-unset"));
+    CHECK_EQ(errors.size(), 1U);
+
+    // The default arm forgets to merge the state.
+    auto default_missing = makeSwitched();
+    addSwitch(default_missing, {to(1, default_missing.one)});
+    fillArms(default_missing, OtherArm::NoStateUpsilon);
+    CHECK(hasInternalError(verify(default_missing.package), "phi-shadow-unset"));
+}
+
+TEST_CASE("verifier rejects switch cases that do not fit the operand or repeat a value") {
+    auto range = makeSwitched();
+    addSwitch(range, {to(256, range.one)});
+    fillArms(range);
+    CHECK(hasInternalError(verify(range.package), "switch-case-out-of-range"));
+
+    auto twice = makeSwitched();
+    addSwitch(twice, {to(1, twice.one), to(1, twice.other)});
+    fillArms(twice);
+    CHECK(hasInternalError(verify(twice.package), "switch-duplicate-case"));
+}
+
+TEST_CASE("an affine state consumed in two switch arms is fine, but twice in one arm is not") {
+    // Each arm consumes the state that the switch's block produced, once.
+    auto once = makeSwitched();
+    addSwitch(once, {to(1, once.one)});
+    fillArms(once);
+    CHECK(verify(once.package).empty());
+
+    auto twice = makeSwitched();
+    addSwitch(twice, {to(1, twice.one)});
+    fillArms(twice, OtherArm::ConsumeTwice);
+    auto errors = verify(twice.package);
+    CHECK(hasInternalError(errors, "parser-state-reused"));
+    CHECK(std::ranges::all_of(errors, [](const auto& e) { return e.tag == "parser-state-reused"; }));
+}
+
+TEST_CASE("verifier rejects a Phi or Upsilon in a structured region, and a switch there") {
+    Package package;
+    auto builder = package.builder();
+    auto unit = builder.createUnitDecl("Unit");
+    auto fn = builder.createParserFunction(unit, builder.parserStateType(), builder.unitType(unit));
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto state = builder.addArgument(fn, block, 0);
+    auto self = builder.addUnitCreate(block, unit);
+    auto bounded = builder.addEnterBound(block, state, builder.addIntConstant(block, builder.uint64Type(), 1));
+    auto body = builder.createRegion();
+    auto body_block = builder.createBlock(body);
+    auto body_state = builder.addRegionArgument(body_block, 0, builder.parserStateType());
+    auto phi = builder.addPhi(body_block, builder.parserStateType());
+    builder.addUpsilon(body_block, body_state, phi);
+    builder.addSwitch(body_block,
+                      builder.addIntConstant(body_block, builder.uint8Type(), 1),
+                      SwitchPayload{.cases = {}, .default_target = body_block});
+    auto repeated = builder.addRepeatToBound(block, {bounded}, body);
+    builder.addParserFinish(block, builder.addLeaveBound(block, builder.addTupleGet(block, repeated, 0)), self);
+
+    auto errors = verify(package);
+    CHECK(hasInternalError(errors, "phi-outside-function-body"));
+    CHECK(hasInternalError(errors, "control-flow-outside-function-body"));
+}
+
+TEST_CASE("verifier rejects a switch whose target belongs to another function body") {
+    auto s = makeSwitched();
+    addSwitch(s, {to(1, s.one)});
+    fillArms(s);
+    // A block id of the right range but in no region of this function.
+    auto builder = s.package.builder();
+    auto stray_region = builder.createRegion();
+    auto stray = builder.createBlock(stray_region);
+    auto& switch_inst = s.package.inst(s.package.block(s.entry).insts.back());
+    auto payload = std::get<SwitchPayload>(switch_inst.payload);
+    payload.cases[0].target = stray;
+    s.package.replaceInst(s.package.block(s.entry).insts.back(), Opcode::Switch, switch_inst.args, payload);
+    CHECK(hasInternalError(verify(s.package), "invalid-successor"));
+}
+
+TEST_CASE("verifier rejects a structured region with two blocks") {
+    Package package;
+    auto builder = package.builder();
+    auto unit = builder.createUnitDecl("Unit");
+    auto fn = builder.createParserFunction(unit, builder.parserStateType(), builder.unitType(unit));
+    auto block = builder.createBlock(package.function(fn).root_region);
+    auto state = builder.addArgument(fn, block, 0);
+    auto self = builder.addUnitCreate(block, unit);
+    auto bounded = builder.addEnterBound(block, state, builder.addIntConstant(block, builder.uint64Type(), 1));
+    auto body = builder.createRegion();
+    auto first = builder.createBlock(body);
+    builder.addYield(first, {builder.addRegionArgument(first, 0, builder.parserStateType())});
+    auto second = builder.createBlock(body);
+    builder.addYield(second, {builder.addRegionArgument(second, 0, builder.parserStateType())});
+    auto repeated = builder.addRepeatToBound(block, {bounded}, body);
+    builder.addParserFinish(block, builder.addLeaveBound(block, builder.addTupleGet(block, repeated, 0)), self);
+
+    CHECK(hasInternalError(verify(package), "region-block-count-mismatch"));
+}
+
+TEST_CASE("verifier rejects a Phi that merges units of two unit.create") {
+    auto s = makeSwitched();
+    addSwitch(s, {to(1, s.one)});
+    fillArms(s, OtherArm::FreshUnit);
+    CHECK(hasInternalError(verify(s.package), "unit-phi-mixed-origin"));
+}
+
+TEST_CASE("verifier reports a field published twice on one path through a switch") {
+    auto s = makeSwitched(false, false);
+    addSwitch(s, {to(1, s.one)});
+    fillArms(s);
+    // The join publishes `value` again, which the path through `one` already did.
+    auto builder = s.package.builder();
+    auto read = builder.addReadInteger(s.join, s.state_phi, ReadIntegerPayload{.width = 8});
+    auto unit = builder.addPublishField(s.join, s.unit_phi, builder.addTupleGet(s.join, read, 1), s.value);
+    builder.addParserFinish(s.join, builder.addTupleGet(s.join, read, 0), unit);
+    auto errors = verify(s.package);
+    CHECK(hasInternalError(errors, "duplicate-field-publication"));
+}
+
+TEST_CASE("constant folding turns a switch on a constant into a jump and erases the skipped arm") {
+    auto s = makeSwitched(true);
+    addSwitch(s, {to(1, s.one)});
+    fillArms(s);
+    REQUIRE(verify(s.package).empty());
+    CHECK(spicy::detail::pir::analyses::fieldPresence(s.package).isConditional(s.value));
+
+    CHECK(foldConstants(s.package, s.function));
+    REQUIRE(verify(s.package).empty());
+    const auto& terminator = s.package.inst(s.package.block(s.entry).insts.back());
+    CHECK_EQ(terminator.opcode, Opcode::Jump);
+    CHECK_EQ(std::get<JumpPayload>(terminator.payload).target, s.one);
+    CHECK(s.package.isErased(s.other));
+    CHECK(print(s.package).find("orphan") == std::string::npos);
+    // Only one path finishes now, and it publishes the field.
+    CHECK_FALSE(spicy::detail::pir::analyses::fieldPresence(s.package).isConditional(s.value));
+}
+
+TEST_CASE("constant folding turns a branch on a constant into a jump") {
+    auto d = makeDiamond();
+    auto builder = d.package.builder();
+    auto phi = builder.addPhi(d.join, builder.int64Type());
+    builder.addUpsilon(d.then_, builder.addIntConstant(d.then_, builder.int64Type(), 1), phi);
+    builder.addUpsilon(d.else_, builder.addIntConstant(d.else_, builder.int64Type(), 2), phi);
+    auto constant = builder.addBoolConstant(d.entry, false);
+    builder.addBranch(d.entry, constant, d.then_, d.else_);
+    builder.addJump(d.then_, d.join);
+    builder.addJump(d.else_, d.join);
+    builder.addReturn(d.join, phi);
+    REQUIRE(verify(d.package).empty());
+
+    CHECK(foldConstants(d.package, d.function));
+    REQUIRE(verify(d.package).empty());
+    CHECK(d.package.isErased(d.then_));
+    CHECK_FALSE(d.package.isErased(d.else_));
 }

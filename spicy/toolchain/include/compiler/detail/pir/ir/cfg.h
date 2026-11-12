@@ -16,7 +16,8 @@ inline constexpr size_t NoPosition = static_cast<size_t>(-1);
 
 /**
  * The control-flow graph of one region. Positions index `blocks`, whose first entry is the entry block.
- * Successor edges that leave the region are omitted; the verifier reports them separately.
+ * Successor edges that leave the region are omitted; the verifier reports them separately. Each edge appears once in
+ * `successors` and `predecessors`, in the order of `successorBlocks()`.
  */
 struct Cfg {
     std::vector<BlockId> blocks;
@@ -42,7 +43,10 @@ struct PostDominator {
     size_t position = NoPosition; /**< set only for `Kind::Block` */
 };
 
-/** The successor blocks named by a block's terminator, in payload order; empty for a return or finish. */
+/**
+ * The successor blocks named by a block's terminator, in payload order: a switch's cases, then its default. A block
+ * may appear more than once. Empty for a return or finish.
+ */
 std::vector<BlockId> successorBlocks(const Package& package, BlockId block);
 
 /** Builds the graph of `region`, whose first block is the entry. */
