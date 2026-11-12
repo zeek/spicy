@@ -1516,6 +1516,11 @@ private:
             }
 
             case Opcode::ReadBytes:
+                if ( inst.args.size() == 2 && _package.isValid(inst.args[1]) &&
+                     _package.inst(inst.args[1]).result_type != _uint64() )
+                    _emitter.emit("read-bytes-length-type-mismatch",
+                                  "parser.read_bytes's length must be a uint64",
+                                  inst_id);
                 if ( ! _package.isValid(inst.result_type) || _package.type(inst.result_type).kind != TypeKind::Tuple ||
                      _package.type(inst.result_type).type_arguments.size() != 2 ||
                      ! _package.isValid(_package.type(inst.result_type).type_arguments[0]) ||
@@ -1529,6 +1534,18 @@ private:
 
             default: return;
         }
+    }
+
+    // The `uint64` type, if the package has one. The verifier does not add types.
+    TypeId _uint64() const {
+        for ( size_t i = 0; i < _package.types().size(); ++i ) {
+            TypeId id{static_cast<uint32_t>(i)};
+            const auto& type = _package.type(id);
+            if ( type.kind == TypeKind::Integer &&
+                 type.integer == IntegerType{.width = 64, .signedness = Signedness::Unsigned} )
+                return id;
+        }
+        return {};
     }
 
     // The types that `core.equal` compares.

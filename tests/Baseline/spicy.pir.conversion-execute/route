@@ -3,5 +3,8 @@
       %27 = core.convert %26, integer_widen : int32
       %3 = core.convert %2, integer_to_bool : bool
       %31 = core.convert %30, integer_widen : int64
+      %73 = core.convert %72, integer_widen : uint64
       %8 = core.convert %7, integer_widen : uint64
+      %86 = core.convert %85, integer_widen : uint64
+      %99 = core.convert %98, integer_widen : uint64
 [debug/spicy-pir] attached PIR-produced HILTI module

@@ -1,0 +1,27 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -p -D spicy-pir >/dev/null 2>pir.log
+# @TEST-EXEC: rg 'attached PIR-produced' pir.log >route
+# @TEST-EXEC: btest-diff route
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j -o pir.hlto
+# @TEST-EXEC: printf abc | spicy-driver -p Test::Message pir.hlto >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: printf abc | spicy-driver -i 1 -p Test::Message pir.hlto >incremental
+# @TEST-EXEC: cmp output incremental
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j -o unoptimized.hlto
+# @TEST-EXEC: printf abc | spicy-driver -i 1 -p Test::Message unoptimized.hlto >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: printf abc | spicy-driver -i 1 -p Test::Message %INPUT >legacy
+# @TEST-EXEC: cmp output legacy
+
+# @TEST-DOC: A context tuple projection used as a computed bytes length lowers as an ordinary tuple,
+# including the explicit integer widening. It must execute through PIR without a backend exception.
+
+module Test;
+
+type Context = tuple<n: uint8>;
+
+public type Message = unit {
+    %context = Context;
+    on %init { self.context().n = 3; }
+    payload: bytes &size=self.context().n;
+    on %done { print self.payload; }
+};

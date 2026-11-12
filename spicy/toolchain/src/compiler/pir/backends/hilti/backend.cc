@@ -1,6 +1,7 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
 #include <cassert>
+#include <functional>
 #include <limits>
 #include <optional>
 #include <string>
@@ -708,10 +709,13 @@ private:
                     meta);
     }
 
-    void _checkBound(LocalBuilder& b, uint64_t bytes, const ::hilti::Meta& meta) {
+    // An expression of a byte count. Each use needs its own expression node.
+    using ByteCount = std::function<::hilti::Expression*(LocalBuilder&)>;
+
+    void _checkBound(LocalBuilder& b, const ByteCount& bytes, const ::hilti::Meta& meta) {
         auto inside = b.addIf(b.id(::hilti::ID("bound_end")), meta);
         auto over =
-            inside->addIf(inside->greater(inside->integer(bytes),
+            inside->addIf(inside->greater(bytes(*inside),
                                           inside->difference(inside->deref(inside->id(::hilti::ID("bound_end"))),
                                                              inside->memberCall(inside->id(::hilti::ID("cursor")),
                                                                                 "offset",
@@ -720,18 +724,16 @@ private:
         _return(*over, "ParseError", nullptr, meta);
     }
 
-    void _wait(LocalBuilder& b, uint64_t bytes, const ::hilti::Meta& meta) {
+    void _wait(LocalBuilder& b, const ByteCount& bytes, const ::hilti::Meta& meta) {
         // Keep the common case in generated code, just like the runtime's inline waitForInput wrapper.
-        auto slow = b.addIf(b.greater(b.integer(bytes), b.size(b.id(::hilti::ID("cursor")))), meta);
+        auto slow = b.addIf(b.greater(bytes(b), b.size(b.id(::hilti::ID("cursor")))), meta);
         // EnterBound limits the cursor, and subunits inherit that limited view. Available bytes therefore also
         // satisfy the bound. On insufficient input, check the bound before waiting to preserve failure outcomes.
         _checkBound(*slow, bytes, meta);
-        auto* call = b.call(::hilti::ID("spicy_rt::waitForInputOrEod"),
-                            {b.id(::hilti::ID("data")),
-                             b.id(::hilti::ID("cursor")),
-                             b.integer(bytes),
-                             b.id(::hilti::ID("filters_"))},
-                            meta);
+        auto* call =
+            b.call(::hilti::ID("spicy_rt::waitForInputOrEod"),
+                   {b.id(::hilti::ID("data")), b.id(::hilti::ID("cursor")), bytes(b), b.id(::hilti::ID("filters_"))},
+                   meta);
         auto eod = slow->addIf(b.not_(call), meta);
         _return(*eod, "UnexpectedEod", nullptr, meta);
     }
@@ -810,8 +812,11 @@ private:
     void _lowerRead(LocalBuilder& b, ir::InstId id, bool integer) {
         const auto& inst = package_.inst(id);
         auto meta = metaFor(package_, inst.span);
-        uint64_t bytes = integer ? std::get<ir::ReadIntegerPayload>(inst.payload).width / 8 :
-                                   std::get<ir::ReadBytesPayload>(inst.payload).length;
+        ByteCount bytes = [&](LocalBuilder& lb) {
+            return integer ?
+                       lb.integer(static_cast<uint64_t>(std::get<ir::ReadIntegerPayload>(inst.payload).width / 8)) :
+                       _value(lb, inst.args[1]);
+        };
         _wait(b, bytes, meta);
         auto value_name = fmt("v_%u", id.index);
         auto* value_type = targetType(b, package_, package_.type(inst.result_type).type_arguments[1]);
@@ -833,14 +838,14 @@ private:
                          tb.call(::hilti::ID("spicy_rt::extractBytes"),
                                  {tb.id(::hilti::ID("data")),
                                   tb.id(::hilti::ID("cursor")),
-                                  tb.integer(bytes),
+                                  _value(tb, inst.args[1]),
                                   tb.bool_(false),
                                   tb.stringLiteral(""),
                                   tb.id(::hilti::ID("filters_"))},
                                  meta),
                          meta);
             tb.addAssign(tb.id(::hilti::ID("cursor")),
-                         tb.memberCall(tb.id(::hilti::ID("cursor")), "advance", {tb.integer(bytes)}, meta),
+                         tb.memberCall(tb.id(::hilti::ID("cursor")), "advance", {_value(tb, inst.args[1])}, meta),
                          meta);
         }
         _gapCatch(b, try_body, meta);
@@ -861,7 +866,10 @@ private:
                 return;
             case ir::Opcode::TupleGet: {
                 auto index = std::get<ir::TupleGetPayload>(inst.payload).index;
-                values_[id.index] = _tuples.at(inst.args[0].index).at(index);
+                if ( auto tuple = _tuples.find(inst.args[0].index); tuple != _tuples.end() )
+                    values_[id.index] = tuple->second.at(index);
+                else
+                    _lowerProcedural(b, id);
                 return;
             }
             case ir::Opcode::UnitCreate: {
@@ -880,7 +888,12 @@ private:
             }
             case ir::Opcode::PublishField: {
                 auto field = std::get<ir::FieldPayload>(inst.payload).field;
-                b.addAssign(b.member(_value(b, inst.args[0]), fieldName(field)), _value(b, inst.args[1]), meta);
+                // Publishing consumes an affine value, so the field takes over its storage.
+                auto* published = _value(b, inst.args[1]);
+                if ( ir::typeDiscipline(package_, package_.inst(inst.args[1]).result_type) ==
+                     ir::ValueDiscipline::Affine )
+                    published = b.move(published, meta);
+                b.addAssign(b.member(_value(b, inst.args[0]), fieldName(field)), published, meta);
                 values_[id.index] = values_.at(inst.args[0].index);
                 if ( held_by_reference_.contains(inst.args[0].index) )
                     held_by_reference_.insert(id.index);

@@ -686,3 +686,58 @@ TEST_CASE("constant folding converts constants and merges widenings") {
     CHECK_EQ(package.inst(wide).opcode, Opcode::Convert);
     CHECK_EQ(package.inst(wide).args, std::vector<InstId>{arg});
 }
+
+namespace {
+
+// A parser function that reads bytes of a length computed by `make_length`, then finishes.
+struct BytesRead {
+    Package package;
+    InstId read;
+};
+
+template<typename MakeLength>
+BytesRead makeBytesRead(MakeLength make_length) {
+    BytesRead r;
+    auto builder = r.package.builder();
+    auto unit = builder.createUnitDecl("U");
+    auto fn = builder.createParserFunction(unit, builder.parserStateType(), builder.unitType(unit));
+    auto block = builder.createBlock(r.package.function(fn).root_region);
+    auto state = builder.addArgument(fn, block, 0);
+    auto self = builder.addUnitCreate(block, unit);
+    r.read = builder.addReadBytes(block, state, make_length(builder, block));
+    builder.addParserFinish(block, builder.addTupleGet(block, r.read, 0), self);
+    builder.addParserRoot(unit, fn);
+    return r;
+}
+
+} // namespace
+
+TEST_CASE("parser.read_bytes takes a uint64 length and knows its consumption only for a constant") {
+    auto constant = makeBytesRead([](Builder& b, BlockId block) { return b.addIntConstant(block, b.uint64Type(), 3); });
+    REQUIRE(verify(constant.package).empty());
+    auto contract = parserContractFor(constant.package, constant.package.inst(constant.read));
+    REQUIRE(contract);
+    CHECK_EQ(contract->success_consumption_bytes, 3);
+    CHECK_EQ(contract->bound, FailureOutcome::BoundExceeded);
+
+    auto computed = makeBytesRead([](Builder& b, BlockId block) {
+        return b.addAdd(block, b.addIntConstant(block, b.uint64Type(), 1), b.addIntConstant(block, b.uint64Type(), 2));
+    });
+    REQUIRE(verify(computed.package).empty());
+    CHECK_EQ(parserContractFor(computed.package, computed.package.inst(computed.read))->success_consumption_bytes, -1);
+
+    auto narrow = makeBytesRead([](Builder& b, BlockId block) { return b.addIntConstant(block, b.uint8Type(), 3); });
+    auto errors = verify(narrow.package);
+    CHECK(std::ranges::any_of(errors, [](auto& e) { return e.tag == "read-bytes-length-type-mismatch"; }));
+
+    auto flag = makeBytesRead([](Builder& b, BlockId block) { return b.addBoolConstant(block, true); });
+    errors = verify(flag.package);
+    CHECK(std::ranges::any_of(errors, [](auto& e) { return e.tag == "operand-type-mismatch"; }));
+}
+
+TEST_CASE("parser.read_integer's consumption is its width") {
+    auto p = makeOneBytePipeline();
+    auto read = p.package.builder().addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 32});
+    CHECK_EQ(parserContractFor(p.package, p.package.inst(read))->success_consumption_bytes, 4);
+    CHECK_FALSE(parserContractFor(p.package, p.package.inst(p.state0)));
+}

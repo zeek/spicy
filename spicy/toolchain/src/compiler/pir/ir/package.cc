@@ -54,6 +54,26 @@ ValueDiscipline typeDiscipline(const Package& package, TypeId id) {
     return typeDiscipline(package, id, visiting);
 }
 
+std::optional<ParserOperationContract> parserContractFor(const Package& package, const Inst& inst) {
+    const auto* schema = schemaFor(inst.opcode);
+    if ( ! schema || ! schema->parser_contract )
+        return std::nullopt;
+
+    auto contract = *schema->parser_contract;
+    if ( inst.opcode == Opcode::ReadInteger ) {
+        if ( const auto* read = std::get_if<ReadIntegerPayload>(&inst.payload) )
+            contract.success_consumption_bytes = read->width / 8;
+    }
+    else if ( inst.opcode == Opcode::ReadBytes && inst.args.size() == 2 && package.isValid(inst.args[1]) ) {
+        const auto& length = package.inst(inst.args[1]);
+        const auto* literal = std::get_if<IntegerLiteral>(&length.payload);
+        if ( length.opcode == Opcode::IntConstant && literal && literal->bits <= INT64_MAX )
+            contract.success_consumption_bytes = static_cast<int64_t>(literal->bits);
+    }
+
+    return contract;
+}
+
 bool conversionAccepts(const Package& package, ConversionRule rule, TypeId from, TypeId to) {
     if ( ! package.isValid(from) || ! package.isValid(to) || package.type(from).kind != TypeKind::Integer )
         return false;

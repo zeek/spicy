@@ -1537,16 +1537,15 @@ std::variant<ir::InstId, UnsupportedFeature> BodyLowerer::_lowerCall(hilti::expr
     return _builder.addCall(_block, std::get<ir::FunctionId>(ordinary), std::move(values), span);
 }
 
-enum class FieldForm { Integer, Bytes, Vector };
+enum class FieldForm { Integer, Bytes, Vector, Unit };
 
 struct FieldSpec {
     type::unit::item::Field* source = nullptr;
     FieldForm form = FieldForm::Integer;
     uint8_t width = 0;
     ir::Signedness signedness = ir::Signedness::Unsigned;
-    uint64_t byte_count = 0;
-    hilti::Expression* bound = nullptr; /**< a vector's `&size` */
-    type::Unit* child = nullptr;
+    hilti::Expression* size = nullptr; /**< the `&size` of a vector or bytes */
+    type::Unit* child = nullptr;       /**< the unit of a vector's elements or of a sub-unit */
     ir::DeclId declaration;
     ir::TypeId type;
     std::vector<spicy::declaration::Hook*> source_hooks; /**< hooks written inside the field */
@@ -1603,6 +1602,7 @@ public:
                     case FieldForm::Vector:
                         field_type = _builder.vectorType(_builder.unitType(_spec(field.child).declaration));
                         break;
+                    case FieldForm::Unit: field_type = _builder.unitType(_spec(field.child).declaration); break;
                 }
                 field.type = field_type;
                 field.declaration = _builder.createFieldDecl(spec.declaration,
@@ -1749,14 +1749,12 @@ private:
                 f.signedness = integer->signedness;
             }
             else if ( parse_type && parse_type->isA<hilti::type::Bytes>() ) {
-                if ( ! size )
-                    return reject("bytes require a nonnegative constant &size", field_loc);
-                auto length = size->valueAsInteger();
-                if ( ! length || *length < 0 || field->repeatCount() || ! item_type ||
-                     ! item_type->isA<hilti::type::Bytes>() || ! _onlySize(attrs) || field->item() )
-                    return reject("bytes require a nonnegative constant &size", field_loc);
+                auto length = size ? size->valueAsExpression() : nullptr;
+                if ( ! length || field->repeatCount() || ! item_type || ! item_type->isA<hilti::type::Bytes>() ||
+                     ! _onlySize(attrs) || field->item() )
+                    return reject("bytes require a &size and no other attributes", field_loc);
                 f.form = FieldForm::Bytes;
-                f.byte_count = static_cast<uint64_t>(*length);
+                f.size = *length;
             }
             else if ( auto* vector = parse_type ? parse_type->tryAs<hilti::type::Vector>() : nullptr ) {
                 auto* item_vector = item_type ? item_type->tryAs<hilti::type::Vector>() : nullptr;
@@ -1765,9 +1763,7 @@ private:
                      ! field->repeatCount()->as<hilti::expression::Ctor>()->ctor()->isA<hilti::ctor::Null>() ||
                      ! _root_units.contains(unit) )
                     return reject("unsupported vector field form", field_loc);
-                auto* element = vector->elementType()->type();
-                auto* named = element->tryAs<hilti::type::Name>();
-                f.child = named ? named->resolvedType()->tryAs<type::Unit>() : element->tryAs<type::Unit>();
+                f.child = _unitOf(vector->elementType()->type());
                 if ( ! f.child )
                     return reject("only vectors of units are supported", field_loc);
                 if ( _root_units.contains(f.child) )
@@ -1775,13 +1771,26 @@ private:
                 auto expr = size->valueAsExpression();
                 if ( ! expr )
                     return reject("vector &size must be an expression", field_loc);
-                f.bound = *expr;
+                f.size = *expr;
                 auto* child_decl = _declaration(f.child);
                 if ( ! child_decl )
                     return reject("vector child unit has no source declaration", field_loc);
                 if ( auto error = _discover(child_decl) )
                     return error;
                 f.form = FieldForm::Vector;
+            }
+            else if ( auto* child = parse_type ? _unitOf(parse_type) : nullptr ) {
+                if ( (attrs && *attrs) || field->repeatCount() || field->item() )
+                    return reject("sub-unit fields with attributes are not supported yet", field_loc);
+                if ( _root_units.contains(child) )
+                    return reject("sub-unit must be a private unit", field_loc);
+                auto* child_decl = _declaration(child);
+                if ( ! child_decl )
+                    return reject("sub-unit has no source declaration", field_loc);
+                if ( auto error = _discover(child_decl) )
+                    return error;
+                f.form = FieldForm::Unit;
+                f.child = child;
             }
             else
                 return reject("unsupported field type", field_loc);
@@ -1943,6 +1952,13 @@ private:
         return id;
     }
 
+    // The unit that `type` is, directly or by name.
+    static type::Unit* _unitOf(hilti::UnqualifiedType* type) {
+        if ( auto* named = type->tryAs<hilti::type::Name>() )
+            return named->resolvedType() ? named->resolvedType()->tryAs<type::Unit>() : nullptr;
+        return type->tryAs<type::Unit>();
+    }
+
     static bool _onlySize(const hilti::AttributeSet* attrs) {
         return attrs && attrs->attributes().size() == 1 && attrs->find(attribute::kind::Size);
     }
@@ -1967,51 +1983,78 @@ private:
             fields.emplace(std::string(f.source->id().local()), f.declaration);
         for ( const auto& field : spec.fields ) {
             auto span = internSpan(_package, field.source->meta().location());
-            ir::InstId value;
-            if ( field.form == FieldForm::Integer || field.form == FieldForm::Bytes ) {
-                auto read = field.form == FieldForm::Integer ?
-                                _builder.addReadInteger(block,
-                                                        state,
-                                                        ir::ReadIntegerPayload{.width = field.width,
-                                                                               .signedness = field.signedness,
-                                                                               .byte_order = ir::ByteOrder::Network},
-                                                        span) :
-                                _builder.addReadBytes(block, state, field.byte_count, span);
-                state = _builder.addTupleGet(block, read, 0, span);
-                value = _builder.addTupleGet(block, read, 1, span);
-            }
-            else {
+            // A size is an expression, so it never adds blocks and needs no region.
+            auto size = [&]() -> std::variant<ir::InstId, UnsupportedFeature> {
                 auto feature = fmt("parser unit '%s'", std::string(spec.source->id()));
-                // A bound is an expression, so it never adds blocks and needs no region.
-                BodyLowerer bound(_procedures, _package, ir::RegionId(), block, feature);
-                bound.setSelf(unit_value, fields, false);
+                BodyLowerer lowerer(_procedures, _package, ir::RegionId(), block, feature);
+                lowerer.setSelf(unit_value, fields, false);
                 if ( context )
-                    bound.setContext(*context, spec.context_names);
-                auto length = bound.lower(field.bound);
+                    lowerer.setContext(*context, spec.context_names);
+                auto length = lowerer.lower(field.size);
                 if ( auto* unsupported_feature = std::get_if<UnsupportedFeature>(&length) )
                     return *unsupported_feature;
 
-                auto length_value = std::get<ir::InstId>(length);
-                if ( _package.inst(length_value).result_type != _builder.uint64Type() )
+                if ( _package.inst(std::get<ir::InstId>(length)).result_type != _builder.uint64Type() )
                     return unsupported(feature,
-                                       "vector &size must be an unsigned 64-bit integer",
+                                       "&size must be an unsigned 64-bit integer",
                                        field.source->meta().location());
+                return length;
+            };
 
-                state = _builder.addEnterBound(block, state, length_value, span);
-                auto vector = _builder.addVectorEmpty(block, _builder.unitType(_spec(field.child).declaration), span);
-                auto body = _builder.createRegion();
-                auto body_block = _builder.createBlock(body);
-                auto body_state = _builder.addRegionArgument(body_block, 0, _builder.parserStateType(), span);
-                auto body_vector = _builder.addRegionArgument(body_block, 1, _package.inst(vector).result_type, span);
-                auto child = _builder.addParseSubunit(body_block, body_state, _spec(field.child).function, span);
-                auto next_state = _builder.addTupleGet(body_block, child, 0, span);
-                auto element = _builder.addTupleGet(body_block, child, 1, span);
-                auto next_vector = _builder.addVectorAppend(body_block, body_vector, element, span);
-                _builder.addYield(body_block, {next_state, next_vector}, span);
-                auto repeated = _builder.addRepeatToBound(block, {state, vector}, body, span);
-                state = _builder.addTupleGet(block, repeated, 0, span);
-                value = _builder.addTupleGet(block, repeated, 1, span);
-                state = _builder.addLeaveBound(block, state, span);
+            ir::InstId value;
+            switch ( field.form ) {
+                case FieldForm::Integer:
+                case FieldForm::Bytes: {
+                    ir::InstId read;
+                    if ( field.form == FieldForm::Integer )
+                        read = _builder.addReadInteger(block,
+                                                       state,
+                                                       ir::ReadIntegerPayload{.width = field.width,
+                                                                              .signedness = field.signedness,
+                                                                              .byte_order = ir::ByteOrder::Network},
+                                                       span);
+                    else {
+                        auto length = size();
+                        if ( auto* unsupported_feature = std::get_if<UnsupportedFeature>(&length) )
+                            return *unsupported_feature;
+                        read = _builder.addReadBytes(block, state, std::get<ir::InstId>(length), span);
+                    }
+                    state = _builder.addTupleGet(block, read, 0, span);
+                    value = _builder.addTupleGet(block, read, 1, span);
+                    break;
+                }
+
+                case FieldForm::Unit: {
+                    auto child = _builder.addParseSubunit(block, state, _spec(field.child).function, span);
+                    state = _builder.addTupleGet(block, child, 0, span);
+                    value = _builder.addTupleGet(block, child, 1, span);
+                    break;
+                }
+
+                case FieldForm::Vector: {
+                    auto length = size();
+                    if ( auto* unsupported_feature = std::get_if<UnsupportedFeature>(&length) )
+                        return *unsupported_feature;
+
+                    state = _builder.addEnterBound(block, state, std::get<ir::InstId>(length), span);
+                    auto vector =
+                        _builder.addVectorEmpty(block, _builder.unitType(_spec(field.child).declaration), span);
+                    auto body = _builder.createRegion();
+                    auto body_block = _builder.createBlock(body);
+                    auto body_state = _builder.addRegionArgument(body_block, 0, _builder.parserStateType(), span);
+                    auto body_vector =
+                        _builder.addRegionArgument(body_block, 1, _package.inst(vector).result_type, span);
+                    auto child = _builder.addParseSubunit(body_block, body_state, _spec(field.child).function, span);
+                    auto next_state = _builder.addTupleGet(body_block, child, 0, span);
+                    auto element = _builder.addTupleGet(body_block, child, 1, span);
+                    auto next_vector = _builder.addVectorAppend(body_block, body_vector, element, span);
+                    _builder.addYield(body_block, {next_state, next_vector}, span);
+                    auto repeated = _builder.addRepeatToBound(block, {state, vector}, body, span);
+                    state = _builder.addTupleGet(block, repeated, 0, span);
+                    value = _builder.addTupleGet(block, repeated, 1, span);
+                    state = _builder.addLeaveBound(block, state, span);
+                    break;
+                }
             }
             // Nothing later reads the input before the cursor: values are extracted and `self` holds the fields.
             state = _builder.addReleaseInput(block, state, span);
@@ -2019,7 +2062,7 @@ private:
             // Completed-field consumers observe the published field, and `$$` is the value as it was parsed.
             for ( auto hook : field.hooks ) {
                 std::vector<ir::InstId> args = {unit_value};
-                if ( field.form != FieldForm::Vector )
+                if ( field.form == FieldForm::Integer || field.form == FieldForm::Bytes )
                     args.push_back(value);
                 if ( context )
                     args.push_back(*context);

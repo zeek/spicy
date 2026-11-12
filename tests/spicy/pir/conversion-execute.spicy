@@ -10,8 +10,8 @@
 # @TEST-EXEC: cmp output legacy
 
 # @TEST-DOC: Lowers the frontend's integer coercions to explicit conversions: widening for a function
-# argument and a local of a wider signed type, and an integer used as a condition. The output matches the
-# legacy build.
+# argument, a local of a wider signed type, and `&size` lengths of narrower types, and an integer used as a
+# condition. The output matches the legacy build.
 
 module Test;
 
@@ -35,6 +35,19 @@ public type X = unit {
     }
 };
 
+public type Sizes = unit {
+    l8: uint8;
+    p8: bytes &size=self.l8;
+    l16: uint16;
+    p16: bytes &size=self.l16;
+    l32: uint32;
+    p32: bytes &size=self.l32;
+
+    on %done {
+        print self.p8, self.p16, self.p32;
+    }
+};
+
 @TEST-START-FILE driver.cc
 static constexpr unsigned error_style = 0;
 #include "parse.h"
@@ -42,6 +55,7 @@ static constexpr unsigned error_style = 0;
 extern "C" int HILTI_EXPORT hilti_main() {
     run("Test::X", "nonzero", {{std::string("\xfe\xfe", 2)}});
     run("Test::X", "zero", {{std::string("\x00\x05", 2)}});
+    run("Test::Sizes", "sizes", {{std::string("\x01" "a" "\x00\x02" "bc" "\x00\x00\x00\x03" "def", 13)}});
     return 0;
 }
 

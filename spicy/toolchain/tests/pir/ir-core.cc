@@ -774,7 +774,9 @@ TEST_CASE("a native any formal accepts any copyable operand, and a tuple formal 
     builder.addOpaqueOp(block, show, {builder.addIntConstant(block, builder.int64Type(), 1)});
     builder.addOpaqueOp(block, show, {builder.addBoolConstant(block, false)});
     builder.addOpaqueOp(block, show_pointer, {builder.addIntConstant(block, builder.int64Type(), 3)});
-    builder.addOpaqueOp(block, show_tuple, {builder.addTuple(block, {builder.addIntConstant(block, builder.int64Type(), 2)})});
+    builder.addOpaqueOp(block,
+                        show_tuple,
+                        {builder.addTuple(block, {builder.addIntConstant(block, builder.int64Type(), 2)})});
     builder.addReturnVoid(block);
     CHECK(verify(package).empty());
 
@@ -1011,7 +1013,9 @@ TEST_CASE("core.equal compares two integers or two bools of one type and yields 
     auto builder = package.builder();
     auto fn = builder.createFunction("compare", builder.int64Type());
     auto block = builder.createBlock(package.function(fn).root_region);
-    builder.addEqual(block, builder.addIntConstant(block, builder.int64Type(), 1), builder.addIntConstant(block, builder.int64Type(), 2));
+    builder.addEqual(block,
+                     builder.addIntConstant(block, builder.int64Type(), 1),
+                     builder.addIntConstant(block, builder.int64Type(), 2));
     builder.addEqual(block, builder.addBoolConstant(block, true), builder.addBoolConstant(block, false));
     builder.addReturn(block, builder.addIntConstant(block, builder.int64Type(), 0));
 
@@ -1024,7 +1028,9 @@ TEST_CASE("verifier rejects core.equal on operands of different or non-comparabl
     auto builder = package.builder();
     auto fn = builder.createFunction("bad", builder.int64Type());
     auto block = builder.createBlock(package.function(fn).root_region);
-    builder.addEqual(block, builder.addIntConstant(block, builder.int64Type(), 1), builder.addBoolConstant(block, true));
+    builder.addEqual(block,
+                     builder.addIntConstant(block, builder.int64Type(), 1),
+                     builder.addBoolConstant(block, true));
     builder.addEqual(block, builder.addBytesConstant(block, "a"), builder.addBytesConstant(block, "a"));
     builder.addReturn(block, builder.addIntConstant(block, builder.int64Type(), 0));
 

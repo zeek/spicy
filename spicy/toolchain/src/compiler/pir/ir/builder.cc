@@ -541,13 +541,8 @@ InstId Builder::addJump(BlockId block, BlockId target, SourceSpanId span) {
     return addInst(block, Opcode::Jump, {}, _package._void_type, JumpPayload{.target = target}, span);
 }
 
-InstId Builder::addReadBytes(BlockId block, InstId state, uint64_t length, SourceSpanId span) {
-    return addInst(block,
-                   Opcode::ReadBytes,
-                   {state},
-                   tupleType({parserStateType(), bytesType()}),
-                   InstPayload(ReadBytesPayload{length}),
-                   span);
+InstId Builder::addReadBytes(BlockId block, InstId state, InstId length, SourceSpanId span) {
+    return addInst(block, Opcode::ReadBytes, {state, length}, tupleType({parserStateType(), bytesType()}), {}, span);
 }
 
 } // namespace spicy::detail::pir::ir

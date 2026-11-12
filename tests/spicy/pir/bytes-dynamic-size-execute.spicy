@@ -1,0 +1,57 @@
+# @TEST-EXEC: cp ${SCRIPTS}/pir-parse.h parse.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -p -D spicy-pir >/dev/null 2>pir.log
+# @TEST-EXEC: rg "attached PIR-produced|parser.read_bytes|core.convert" pir.log | sort -u >route
+# @TEST-EXEC: btest-diff route
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT -j driver.cc >legacy
+# @TEST-EXEC: cmp output legacy
+
+# @TEST-DOC: Parses bytes whose `&size` is computed from earlier fields of narrower types, inside the
+# elements of a bounded vector and at the top level. The output matches the legacy build for whole and
+# incremental input, and both fail alike for input that ends or has a gap inside a payload, and for a payload
+# that crosses its vector's bound.
+
+module Test;
+
+type Entry = unit {
+    len: uint8;
+    payload: bytes &size=self.len;
+};
+
+on Entry::payload {
+    print "entry", self.len, $$;
+}
+
+public type Message = unit {
+    length: uint64;
+    entries: Entry[] &size=self.length;
+    tail_len: uint16;
+    tail: bytes &size=self.tail_len;
+
+    on %done {
+        print "tail", self.tail;
+    }
+};
+
+@TEST-START-FILE driver.cc
+static constexpr unsigned error_style = 0;
+#include "parse.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    const std::string entries = std::string("\x03" "abc" "\x00" "\x02" "xy", 8);
+    const std::string input = be64(entries.size()) + entries + std::string("\x00\x02ZZ", 4);
+    run("Test::Message", "whole", {{input}});
+    for ( size_t chunk : {1, 2, 7} )
+        run("Test::Message", ("chunk-" + std::to_string(chunk)).c_str(), {{input}}, chunk);
+    run("Test::Message", "eod-in-payload", {{input.substr(0, 10)}});
+    run("Test::Message", "gap-in-payload", {{input.substr(0, 10)}, {"", 1}, {input.substr(11)}});
+    const std::string crossing = std::string("\x05" "abcde", 6);
+    run("Test::Message", "crossing-bound", {{be64(4) + crossing + std::string("\x00\x00", 2)}});
+    run("Test::Message", "crossing-bound-chunked", {{be64(4) + crossing + std::string("\x00\x00", 2)}}, 1);
+    return 0;
+}
+
+@TEST-END-FILE

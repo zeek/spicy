@@ -101,7 +101,8 @@ enum class Opcode {
      */
     ParseSubunit,
     /**
-     * Parses bytes. Returns a tuple with the updated parser state and the parsed value.
+     * Parses as many bytes as its `uint64` length operand says. Returns a tuple with the updated parser state and the
+     * parsed value.
      */
     ReadBytes,
     /**
@@ -387,12 +388,6 @@ struct BytesLiteral {
     friend bool operator==(const BytesLiteral&, const BytesLiteral&) = default;
 };
 
-struct ReadBytesPayload {
-    uint64_t length = 0;
-
-    friend constexpr bool operator==(ReadBytesPayload, ReadBytesPayload) = default;
-};
-
 /**
  * A primitive conversion. Each rule states which operand and result types it accepts.
  *
@@ -415,7 +410,6 @@ using InstPayload = std::variant<std::monostate,
                                  UnitPayload,
                                  FieldPayload,
                                  FunctionPayload,
-                                 ReadBytesPayload,
                                  ForeignFunctionPayload,
                                  BoolLiteral,
                                  StringLiteral,
@@ -435,7 +429,6 @@ enum class PayloadKind {
     Unit,
     Field,
     Function,
-    ReadBytes,
     ForeignFunction,
     BoolLiteral,
     StringLiteral,
@@ -499,7 +492,6 @@ constexpr bool payloadMatchesKind(const InstPayload& payload, PayloadKind kind) 
         case PayloadKind::Unit: return std::holds_alternative<UnitPayload>(payload);
         case PayloadKind::Field: return std::holds_alternative<FieldPayload>(payload);
         case PayloadKind::Function: return std::holds_alternative<FunctionPayload>(payload);
-        case PayloadKind::ReadBytes: return std::holds_alternative<ReadBytesPayload>(payload);
         case PayloadKind::ForeignFunction: return std::holds_alternative<ForeignFunctionPayload>(payload);
         case PayloadKind::BoolLiteral: return std::holds_alternative<BoolLiteral>(payload);
         case PayloadKind::StringLiteral: return std::holds_alternative<StringLiteral>(payload);
@@ -545,6 +537,11 @@ inline constexpr OperandRole KSetInsertOperandRoles[] = {OperandRole::Consume, O
 
 inline constexpr TypeConstraint KEnterBoundOperandTypes[] = {fixedType(TypeKind::ParserState), anyType()};
 inline constexpr OperandRole KEnterBoundOperandRoles[] = {OperandRole::Consume, OperandRole::Borrow};
+
+// The length is a `uint64`, which the verifier checks.
+inline constexpr TypeConstraint KReadBytesOperandTypes[] = {fixedType(TypeKind::ParserState),
+                                                            fixedType(TypeKind::Integer)};
+inline constexpr OperandRole KReadBytesOperandRoles[] = {OperandRole::Consume, OperandRole::Borrow};
 
 inline constexpr TypeConstraint KParseStateOperandTypes[] = {fixedType(TypeKind::ParserState)};
 inline constexpr OperandRole KParseStateOperandRoles[] = {OperandRole::Consume};
@@ -759,10 +756,10 @@ inline constexpr std::array<OpcodeSchema, 39> KSchemas{{
                  .parser_contract = KSubunitContract},
     OpcodeSchema{.opcode = Opcode::ReadBytes,
                  .spelling = "parser.read_bytes",
-                 .operand_types = KParseStateOperandTypes,
-                 .operand_roles = KParseStateOperandRoles,
+                 .operand_types = KReadBytesOperandTypes,
+                 .operand_roles = KReadBytesOperandRoles,
                  .result_type = fixedType(TypeKind::Tuple),
-                 .payload_kind = PayloadKind::ReadBytes,
+                 .payload_kind = PayloadKind::None,
                  .is_terminator = false,
                  .is_pure = false,
                  .parser_contract = KReadBytesContract},
@@ -1034,23 +1031,6 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
             .publishes = true,
             .may_suspend = true,
             .may_fail = true};
-}
-
-/** Returns the per-instance input contract for operations with immediate byte counts. */
-constexpr std::optional<ParserOperationContract> parserContractFor(Opcode opcode, const InstPayload& payload) {
-    const auto* schema = schemaFor(opcode);
-    if ( ! schema || ! schema->parser_contract )
-        return std::nullopt;
-    auto contract = *schema->parser_contract;
-    if ( opcode == Opcode::ReadInteger ) {
-        if ( const auto* read = std::get_if<ReadIntegerPayload>(&payload) )
-            contract.success_consumption_bytes = read->width / 8;
-    }
-    else if ( opcode == Opcode::ReadBytes ) {
-        if ( const auto* read = std::get_if<ReadBytesPayload>(&payload) )
-            contract.success_consumption_bytes = read->length <= INT64_MAX ? static_cast<int64_t>(read->length) : -1;
-    }
-    return contract;
 }
 
 } // namespace spicy::detail::pir::ir

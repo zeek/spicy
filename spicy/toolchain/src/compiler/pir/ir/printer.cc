@@ -100,9 +100,6 @@ std::optional<std::string> renderPayload(const Package& package, const InstPaylo
         return fmt("@foreign %%%u \"%s\"", foreign->function.index, package.foreignFunction(foreign->function).name);
     }
 
-    if ( const auto* bytes = std::get_if<ReadBytesPayload>(&payload) )
-        return fmt("length=%u", bytes->length);
-
     if ( const auto* boolean = std::get_if<BoolLiteral>(&payload) )
         return std::string(boolean->value ? "true" : "false");
 

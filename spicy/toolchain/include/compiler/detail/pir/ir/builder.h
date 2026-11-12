@@ -162,7 +162,8 @@ public:
     InstId addReleaseInput(BlockId block, InstId state, SourceSpanId span = {});
     InstId addRepeatToBound(BlockId block, std::vector<InstId> carried, RegionId body, SourceSpanId span = {});
     InstId addParseSubunit(BlockId block, InstId state, FunctionId child, SourceSpanId span = {});
-    InstId addReadBytes(BlockId block, InstId state, uint64_t length, SourceSpanId span = {});
+    /** Adds `parser.read_bytes` of as many bytes as the `uint64` value `length`. */
+    InstId addReadBytes(BlockId block, InstId state, InstId length, SourceSpanId span = {});
     /** Adds `opaque.op` calling `function` with `args`; its result type is the declaration's. */
     InstId addOpaqueOp(BlockId block, ForeignFunctionId function, std::vector<InstId> args, SourceSpanId span = {});
     /** Adds `core.call` calling `function` with `args`; its result type is the function's. */

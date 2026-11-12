@@ -251,6 +251,12 @@ constexpr uint8_t readIntegerValueWidth(uint32_t read_width) {
 /** Whether `width` is the width of a PIR integer type. */
 constexpr bool isIntegerWidth(unsigned width) { return width == 8 || width == 16 || width == 32 || width == 64; }
 
+/**
+ * The input contract of one parser operation. An exact byte count comes from the payload of `parser.read_integer`
+ * and from a constant length operand of `parser.read_bytes`; any other length is not exactly known.
+ */
+std::optional<ParserOperationContract> parserContractFor(const Package& package, const Inst& inst);
+
 /** Whether `rule` converts a value of type `from` to type `to`. */
 bool conversionAccepts(const Package& package, ConversionRule rule, TypeId from, TypeId to);
 

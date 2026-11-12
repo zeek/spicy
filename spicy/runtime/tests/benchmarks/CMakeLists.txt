@@ -18,7 +18,11 @@ set(BENCH_MODULE
     BenchmarkNested
     BenchmarkBytes
 )
-set(PIR_BENCH_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/unit-vector-size.spicy")
+set(PIR_BENCH_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/unit-vector-size.spicy"
+    "${CMAKE_CURRENT_SOURCE_DIR}/unit-nested.spicy"
+    "${CMAKE_CURRENT_SOURCE_DIR}/unit-bytes.spicy"
+)
 
 set(_generated_sources)
 set(_legacy_commands)

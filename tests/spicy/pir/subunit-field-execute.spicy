@@ -1,0 +1,68 @@
+# @TEST-EXEC: cp ${SCRIPTS}/pir-parse.h parse.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -p -D spicy-pir >/dev/null 2>pir.log
+# @TEST-EXEC: rg "attached PIR-produced|parser.parse_subunit" pir.log | sort -u >route
+# @TEST-EXEC: btest-diff route
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT -j driver.cc >legacy
+# @TEST-EXEC: cmp output legacy
+
+# @TEST-DOC: Parses sub-unit fields nested three deep, directly in the root and inside the elements of a
+# bounded vector, with hooks on a sub-unit field and inside the children. The output matches the legacy
+# build for whole and incremental input and for input that ends inside a child.
+
+module Test;
+
+type Leaf = unit {
+    a: uint8;
+    b: uint8;
+
+    on %done {
+        print "leaf", self.a, self.b;
+    }
+};
+
+type Inner = unit {
+    x: Leaf;
+    y: Leaf;
+};
+
+type Middle = unit {
+    m: Inner {
+        print "inner done";
+    }
+    n: uint16;
+
+    on n {
+        print "n", $$;
+    }
+};
+
+public type Nested = unit {
+    head: Middle;
+    length: uint64;
+    items: Middle[] &size=self.length;
+
+    on %done {
+        print "done", self.length;
+    }
+};
+
+@TEST-START-FILE driver.cc
+static constexpr unsigned error_style = 0;
+#include "parse.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    const std::string middle1 = std::string("\x01\x02\x03\x04\x00\x05", 6);
+    const std::string middle2 = std::string("\x11\x12\x13\x14\x01\x00", 6);
+    const std::string input = middle1 + be64(12) + middle2 + middle1;
+    run("Test::Nested", "whole", {{input}});
+    run("Test::Nested", "chunk-1", {{input}}, 1);
+    run("Test::Nested", "chunk-5", {{input}}, 5);
+    run("Test::Nested", "eod-in-child", {{input.substr(0, 17)}});
+    return 0;
+}
+
+@TEST-END-FILE

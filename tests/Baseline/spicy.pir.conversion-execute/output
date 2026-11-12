@@ -5,3 +5,5 @@ nonzero ok offset=2
 zero, 0
 0, 5
 zero ok offset=2
+a, bc, def
+sizes ok offset=13
