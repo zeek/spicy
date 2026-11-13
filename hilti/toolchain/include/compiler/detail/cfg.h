@@ -236,6 +236,8 @@ private:
     cfg::GraphNode _addWhile(cfg::GraphNode predecessor, const statement::While& while_, cfg::GraphNode scope_end);
     cfg::GraphNode _addIf(cfg::GraphNode predecessor, const statement::If& if_);
     cfg::GraphNode _addSwitch(cfg::GraphNode predecessor, const statement::Switch& switch_);
+    cfg::GraphNode _walkExpression(cfg::GraphNode predecessor, Expression* expr, bool add_node = true);
+    cfg::GraphNode _addNodeForExpression(cfg::GraphNode predecessor, cfg::GraphNode node, Expression* expr);
     cfg::GraphNode _addTryCatch(cfg::GraphNode predecessor, const statement::Try& try_);
     cfg::GraphNode _addReturn(cfg::GraphNode predecessor, const statement::Return& return_);
     cfg::GraphNode _addThrow(cfg::GraphNode predecessor, statement::Throw& throw_, cfg::GraphNode scope_end);
@@ -276,6 +278,9 @@ private:
 };
 
 namespace cfg {
+
+/** Returns true if `inner` is inside the subtree of a CFG node other than `root`. */
+bool isInsideSubCFGNode(const Node* inner, const Node* root, const CFG::Graph& graph);
 
 /**
  * A cache storing CFGs already computed for blocks of an AST. This computes
