@@ -139,6 +139,7 @@ public:
             .result_doc = "uint",
             .ns = "unsigned_integer",
             .doc = "Inverts the sign of the integer.",
+            .pure = true,
         };
     }
 
@@ -162,6 +163,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the difference between the two integers.",
+            .pure = true,
         };
     }
 
@@ -216,6 +218,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Divides the first integer by the second.",
+            .pure = true,
         };
     }
 
@@ -270,6 +273,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Compares the two integers.",
+            .pure = true,
         };
     }
 
@@ -293,6 +297,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Compares the two integers.",
+            .pure = true,
         };
     }
 
@@ -316,6 +321,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Compares the two integers.",
+            .pure = true,
         };
     }
 
@@ -339,6 +345,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Compares the two integers.",
+            .pure = true,
         };
     }
 
@@ -362,6 +369,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Compares the two integers.",
+            .pure = true,
         };
     }
 
@@ -385,6 +393,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the modulus of the first integer divided by the second.",
+            .pure = true,
         };
     }
 
@@ -412,6 +421,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Multiplies the first integer by the second.",
+            .pure = true,
         };
     }
 
@@ -466,6 +476,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the first integer raised to the power of the second.",
+            .pure = true,
         };
     }
 
@@ -493,6 +504,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the sum of the integers.",
+            .pure = true,
         };
     }
 
@@ -547,6 +559,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Compares the two integers.",
+            .pure = true,
         };
     }
 
@@ -569,6 +582,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the bit-wise negation of the integer.",
+            .pure = true,
         };
     }
 
@@ -590,6 +604,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the bit-wise 'and' of the two integers.",
+            .pure = true,
         };
     }
 
@@ -617,6 +632,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the bit-wise 'or' of the two integers.",
+            .pure = true,
         };
     }
 
@@ -644,6 +660,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Computes the bit-wise 'xor' of the two integers.",
+            .pure = true,
         };
     }
 
@@ -671,6 +688,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Shifts the integer to the left by the given number of bits.",
+            .pure = true,
         };
     }
 
@@ -694,6 +712,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Shifts the integer to the right by the given number of bits.",
+            .pure = true,
         };
     }
 
@@ -719,6 +738,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "unsigned_integer",
             .doc = "Converts the value into a different unsigned integer type, accepting any loss of information.",
+            .pure = true,
         };
     }
 
@@ -742,6 +762,7 @@ public:
             .result_doc = "int<*>",
             .ns = "unsigned_integer",
             .doc = "Converts the value into a signed integer type, accepting any loss of information.",
+            .pure = true,
         };
     }
 
@@ -764,6 +785,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "unsigned_integer",
             .doc = "Converts the value into a real, accepting any loss of information.",
+            .pure = true,
         };
     }
 
@@ -785,6 +807,7 @@ public:
             .doc =
                 "Converts the value into an enum instance. The value does *not* need to correspond to "
                 "any of the target type's enumerator labels.",
+            .pure = true,
         };
     }
 
@@ -807,6 +830,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeInterval()},
             .ns = "unsigned_integer",
             .doc = "Interprets the value as number of seconds.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, unsigned_integer::CastToInterval)
@@ -824,6 +848,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeTime()},
             .ns = "unsigned_integer",
             .doc = "Interprets the value as number of seconds.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, unsigned_integer::CastToTime)
@@ -841,6 +866,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "unsigned_integer",
             .doc = "Converts the value to a boolean by comparing against zero",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, unsigned_integer::CastToBool)

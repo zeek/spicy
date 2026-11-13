@@ -20,6 +20,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bool_",
             .doc = "Compares two boolean values.",
+            .pure = true,
         };
     }
 
@@ -37,6 +38,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bool_",
             .doc = "Compares two boolean values.",
+            .pure = true,
         };
     }
 
@@ -54,6 +56,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bool_",
             .doc = "Computes the bit-wise 'and' of the two boolean values.",
+            .pure = true,
         };
     }
 
@@ -71,6 +74,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bool_",
             .doc = "Computes the bit-wise 'or' of the two boolean values.",
+            .pure = true,
         };
     }
 
@@ -88,6 +92,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bool_",
             .doc = "Computes the bit-wise 'xor' of the two boolean values.",
+            .pure = true,
         };
     }
 

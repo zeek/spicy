@@ -22,6 +22,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "real",
             .doc = "Inverts the sign of the real.",
+            .pure = true,
         };
     }
 
@@ -39,6 +40,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "real",
             .doc = "Returns the difference between the two values.",
+            .pure = true,
         };
     }
 
@@ -74,6 +76,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "real",
             .doc = "Divides the first value by the second.",
+            .pure = true,
         };
     }
 
@@ -108,6 +111,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "real",
             .doc = "Compares the two reals.",
+            .pure = true,
         };
     }
 
@@ -125,6 +129,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "real",
             .doc = "Compares the two reals.",
+            .pure = true,
         };
     }
 
@@ -142,6 +147,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "real",
             .doc = "Compares the two reals.",
+            .pure = true,
         };
     }
 
@@ -159,6 +165,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "real",
             .doc = "Compares the two reals.",
+            .pure = true,
         };
     }
 
@@ -176,6 +183,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "real",
             .doc = "Compares the two reals.",
+            .pure = true,
         };
     }
 
@@ -193,6 +201,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "real",
             .doc = "Computes the modulus of the first real divided by the second.",
+            .pure = true,
         };
     }
 
@@ -211,6 +220,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "real",
             .doc = "Multiplies the first real by the second.",
+            .pure = true,
         };
     }
 
@@ -246,6 +256,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "real",
             .doc = "Computes the first real raised to the power of the second.",
+            .pure = true,
         };
     }
 
@@ -264,6 +275,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeReal()},
             .ns = "real",
             .doc = "Returns the sum of the reals.",
+            .pure = true,
         };
     }
 
@@ -298,6 +310,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "real",
             .doc = "Compares the two reals.",
+            .pure = true,
         };
     }
 
@@ -317,6 +330,7 @@ public:
             .result_doc = "uint<*>",
             .ns = "real",
             .doc = "Converts the value to an unsigned integer type, accepting any loss of information.",
+            .pure = true,
         };
     }
 
@@ -340,6 +354,7 @@ public:
             .result_doc = "int<*>",
             .ns = "real",
             .doc = "Converts the value to a signed integer type, accepting any loss of information.",
+            .pure = true,
         };
     }
 
@@ -362,6 +377,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeTime()},
             .ns = "real",
             .doc = "Interprets the value as number of seconds since the UNIX epoch.",
+            .pure = true,
         };
     }
 
@@ -380,6 +396,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeInterval()},
             .ns = "real",
             .doc = "Interprets the value as number of seconds.",
+            .pure = true,
         };
     }
 

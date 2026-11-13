@@ -75,6 +75,7 @@ public:
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same stream "
                 "value.",
+            .pure = true,
         };
     }
 
@@ -94,6 +95,7 @@ public:
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same stream "
                 "value.",
+            .pure = true,
         };
     }
 
@@ -113,6 +115,7 @@ public:
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same stream "
                 "value.",
+            .pure = true,
         };
     }
 
@@ -132,6 +135,7 @@ public:
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same stream "
                 "value.",
+            .pure = true,
         };
     }
 
@@ -151,6 +155,7 @@ public:
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same stream "
                 "value.",
+            .pure = true,
         };
     }
 
@@ -170,6 +175,7 @@ public:
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same stream "
                 "value.",
+            .pure = true,
         };
     }
 
@@ -192,6 +198,7 @@ public:
                 "to a location before the first. The result is undefined if the iterators do not refer to the same "
                 "stream "
                 "instance.",
+            .pure = true,
         };
     }
 
@@ -209,6 +216,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeStreamIterator()},
             .ns = "stream::iterator",
             .doc = "Advances the iterator by the given number of stream.",
+            .pure = true,
         };
     }
 
@@ -285,6 +293,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "stream::view",
             .doc = "Returns the number of stream the view contains.",
+            .pure = true,
         };
     }
 
@@ -302,6 +311,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream::view",
             .doc = "Returns true if the right-hand-side view contains the left-hand-side bytes as a subsequence.",
+            .pure = true,
         };
     }
 
@@ -319,6 +329,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream::view",
             .doc = "Returns true if the right-hand-side bytes contains the left-hand-side view as a subsequence.",
+            .pure = true,
         };
     }
 
@@ -336,6 +347,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream::view",
             .doc = "Compares the views lexicographically.",
+            .pure = true,
         };
     }
 
@@ -353,6 +365,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream::view",
             .doc = "Compares a stream view and a bytes instance lexicographically.",
+            .pure = true,
         };
     }
 
@@ -370,6 +383,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream::view",
             .doc = "Compares two views lexicographically.",
+            .pure = true,
         };
     }
 
@@ -387,6 +401,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream::view",
             .doc = "Compares a stream view and a bytes instance lexicographically.",
+            .pure = true,
         };
     }
 
@@ -733,6 +748,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "stream",
             .doc = "Returns the number of stream the value contains.",
+            .pure = true,
         };
     }
 
@@ -750,6 +766,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "stream",
             .doc = "Compares two stream values lexicographically.",
+            .pure = true,
         };
     }
 

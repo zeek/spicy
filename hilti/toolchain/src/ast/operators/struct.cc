@@ -122,6 +122,7 @@ Retrieves the value of a struct's field. If the field does not have a value assi
 it returns its ``&default`` expression if that has been defined; otherwise it
 triggers an exception.
 )",
+            .pure = true,
         };
     }
 
@@ -150,6 +151,7 @@ Retrieves the value of a struct's field. If the field does not have a value assi
 it returns its ``&default`` expression if that has been defined; otherwise it
 triggers an exception.
 )",
+            .pure = true,
         };
     }
 
@@ -180,6 +182,7 @@ otherwise it signals a special non-error exception to the host application
 dereference operator, unless the host application specifically handles this
 exception differently).
 )",
+            .pure = true,
         };
     }
 
@@ -203,6 +206,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "struct",
             .doc = "Returns true if the struct's field has a value assigned (not counting any ``&default``).",
+            .pure = true,
         };
     }
 

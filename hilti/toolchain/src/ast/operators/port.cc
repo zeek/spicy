@@ -21,6 +21,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "port",
             .doc = "Compares two port values.",
+            .pure = true,
         };
     }
 
@@ -38,6 +39,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "port",
             .doc = "Compares two port values.",
+            .pure = true,
         };
     }
 

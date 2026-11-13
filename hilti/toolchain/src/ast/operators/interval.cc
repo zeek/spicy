@@ -21,6 +21,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "interval",
             .doc = "Compares two interval values.",
+            .pure = true,
         };
     }
 
@@ -38,6 +39,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "interval",
             .doc = "Compares two interval values.",
+            .pure = true,
         };
     }
 
@@ -55,6 +57,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeInterval()},
             .ns = "interval",
             .doc = "Returns the sum of the intervals.",
+            .pure = true,
         };
     }
 
@@ -72,6 +75,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeInterval()},
             .ns = "interval",
             .doc = "Returns the difference of the intervals.",
+            .pure = true,
         };
     }
 
@@ -89,6 +93,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "interval",
             .doc = "Compares the intervals.",
+            .pure = true,
         };
     }
 
@@ -106,6 +111,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "interval",
             .doc = "Compares the intervals.",
+            .pure = true,
         };
     }
 
@@ -123,6 +129,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "interval",
             .doc = "Compares the intervals.",
+            .pure = true,
         };
     }
 
@@ -140,6 +147,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "interval",
             .doc = "Compares the intervals.",
+            .pure = true,
         };
     }
 
@@ -157,6 +165,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeInterval()},
             .ns = "interval",
             .doc = "Multiples the interval with the given factor.",
+            .pure = true,
         };
     }
 
@@ -174,6 +183,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeInterval()},
             .ns = "interval",
             .doc = "Multiplies the interval with the given factor.",
+            .pure = true,
         };
     }
 
