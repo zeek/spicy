@@ -1,3 +1,11 @@
+1.18.0-dev.91 | 2026-11-13 17:10:06 +0100
+
+  * GH-2542: Fix `atoi_n` so it requires numeral in addition to sign (Benjamin Bannier, Corelight)
+
+    `atoi_n` would previously incorrectly parse sign-only strings `-` and
+    `+`. With this patch we now reject them. This issue was pointed out by
+    suraiya-ctrl who also provided the test case used here, see #2542.
+
 1.18.0-dev.89 | 2026-11-13 10:23:15 -0500
 
   * Fix typo with too many parens in error (Evan Typanski, Corelight)

@@ -503,29 +503,37 @@ inline uint8_t atoi_n(std::string_view input, uint8_t base, Result* result)
     // integer when iterating digits. We pick `uint64_t` since it is large
     // enough to handle any type we need to handle.
     static_assert(max_value <= std::numeric_limits<uint64_t>::max());
+
+    // `uint8_t` is sufficient to store any digit up to max base 36.
+    static auto to_digit = [](char c, uint8_t base) -> std::optional<uint8_t> {
+        if ( c >= '0' && c < '0' + base )
+            return c - '0';
+
+        if ( c >= 'a' && c < 'a' - 10 + base )
+            return c - 'a' + 10;
+
+        if ( c >= 'A' && c < 'A' - 10 + base )
+            return c - 'A' + 10;
+
+        return {};
+    };
+
+    if ( it == input.end() || ! to_digit(*it, base) )
+        return 0;
+
     uint64_t n = 0;
     for ( ; it != input.end(); ++it ) {
         auto c = *it;
 
-        // `uint8_t` is sufficient to store any digit up to max base 36.
-        uint8_t d;
-        if ( c >= '0' && c < '0' + base )
-            d = c - '0';
-        else if ( c >= 'a' && c < 'a' - 10 + base )
-            d = c - 'a' + 10;
-        else if ( c >= 'A' && c < 'A' - 10 + base )
-            d = c - 'A' + 10;
-        else
+        auto d = to_digit(c, base);
+        if ( ! d )
             break;
 
-        if ( n > static_cast<uint64_t>(max_value / base) || d > max_value - (n * base) )
+        if ( n > static_cast<uint64_t>(max_value / base) || *d > max_value - (n * base) )
             throw OutOfRange("cannot decode value in chosen base");
 
-        n = (n * base) + d;
+        n = (n * base) + *d;
     }
-
-    if ( it == input.begin() )
-        return 0;
 
     auto s = std::distance(input.begin(), it);
 
