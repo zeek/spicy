@@ -101,7 +101,9 @@ void checkRegion(const ir::Package& package,
                     }
                     break;
                 case ir::Opcode::ParseSubunit:
-                case ir::Opcode::ReadBytes: break;
+                case ir::Opcode::ReadBytes:
+                case ir::Opcode::ExpectBytes:
+                case ir::Opcode::Fail: break;
                 case ir::Opcode::ReadInteger: {
                     const auto* p = std::get_if<ir::ReadIntegerPayload>(&inst.payload);
                     if ( ! p || ! ir::isIntegerWidth(p->width) || p->byte_order != ir::ByteOrder::Network )
@@ -124,7 +126,10 @@ void checkRegion(const ir::Package& package,
                 case ir::Opcode::Jump:
                 case ir::Opcode::Switch:
                 case ir::Opcode::Equal:
-                case ir::Opcode::BoolConstant: break;
+                case ir::Opcode::BoolConstant:
+                // The message of a failure, such as an unmatched switch's, is formatted from these.
+                case ir::Opcode::StringConstant:
+                case ir::Opcode::Tuple: break;
                 case ir::Opcode::Return:
                 case ir::Opcode::GlobalPlace:
                 case ir::Opcode::SetEmpty:
@@ -133,8 +138,6 @@ void checkRegion(const ir::Package& package,
                 case ir::Opcode::PortConstant:
                 case ir::Opcode::LocalPlace:
                 case ir::Opcode::Store:
-                case ir::Opcode::Tuple:
-                case ir::Opcode::StringConstant:
                 case ir::Opcode::BytesConstant: unsupported("procedural lowering is not supported"); break;
             }
             for ( auto child : inst.regions )

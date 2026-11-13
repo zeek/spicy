@@ -298,6 +298,19 @@ InstId Builder::addIntConstant(BlockId block, TypeId type, uint64_t bits, Source
     return addInst(block, Opcode::IntConstant, {}, type, InstPayload(IntegerLiteral{bits}), span);
 }
 
+InstId Builder::addExpectBytes(BlockId block, InstId state, std::string literal, SourceSpanId span) {
+    return addInst(block,
+                   Opcode::ExpectBytes,
+                   {state},
+                   tupleType({parserStateType(), bytesType()}),
+                   InstPayload(BytesLiteral{std::move(literal)}),
+                   span);
+}
+
+InstId Builder::addFail(BlockId block, InstId state, InstId description, SourceSpanId span) {
+    return addInst(block, Opcode::Fail, {state, description}, _package._void_type, {}, span);
+}
+
 InstId Builder::addSwitch(BlockId block, InstId value, SwitchPayload payload, SourceSpanId span) {
     return addInst(block, Opcode::Switch, {value}, _package._void_type, InstPayload(std::move(payload)), span);
 }

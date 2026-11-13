@@ -1538,7 +1538,7 @@ std::variant<ir::InstId, UnsupportedFeature> BodyLowerer::_lowerCall(hilti::expr
     return _builder.addCall(_block, std::get<ir::FunctionId>(ordinary), std::move(values), span);
 }
 
-enum class FieldForm { Integer, Bytes, Vector, Unit };
+enum class FieldForm { Integer, Bytes, Vector, Unit, Literal };
 
 struct FieldSpec {
     type::unit::item::Field* source = nullptr;
@@ -1548,6 +1548,8 @@ struct FieldSpec {
     hilti::Expression* size = nullptr; /**< the `&size` of a vector or bytes */
     hilti::Location size_location;     /**< where that `&size` is, which legacy reports when it is not consumed */
     hilti::Location type_location;     /**< where the field's type is, which legacy reports for an integer read */
+    std::string literal;               /**< the bytes that a literal field expects */
+    bool anonymous = false;            /**< a literal without a name, which nothing can refer to */
     type::Unit* child = nullptr;       /**< the unit of a vector's elements or of a sub-unit */
     ir::DeclId declaration;
     ir::TypeId type;
@@ -1630,8 +1632,17 @@ public:
                         field_type = _builder.vectorType(_builder.unitType(_spec(field.child).declaration));
                         break;
                     case FieldForm::Unit: field_type = _builder.unitType(_spec(field.child).declaration); break;
+                    case FieldForm::Literal: field_type = _builder.bytesType(); break;
                 }
                 field.type = field_type;
+                if ( field.anonymous ) {
+                    field.declaration = _builder.createFieldDecl(spec.declaration,
+                                                                 "",
+                                                                 field_type,
+                                                                 internSpan(_package, field.source->meta().location()));
+                    continue;
+                }
+
                 auto name = std::string(field.source->id().local());
                 if ( auto it = fields.find(name); it != fields.end() ) {
                     if ( _package.declaration(it->second).type != field_type )
@@ -1828,9 +1839,6 @@ private:
                 sw.cases.push_back(std::move(case_));
             }
 
-            if ( std::ranges::none_of(sw.cases, &CaseSpec::is_default) )
-                return reject("a switch without a default case is not supported yet", loc);
-
             spec.switches.push_back(std::move(sw));
             out.push_back(ItemSpec{.switch_ = spec.switches.size() - 1});
         }
@@ -1848,9 +1856,30 @@ private:
         };
 
         auto field_loc = field->meta().location();
-        if ( field->isAnonymous() || field->isSkip() || field->isTransient() || field->isForwarding() ||
-             field->condition() || field->ctor() || ! field->arguments().empty() || ! field->sinks().empty() )
-            return reject("field modifiers and constructors are not supported", field_loc);
+        // A bytes literal may stay anonymous, since nothing refers to it.
+        auto* ctor = field->ctor();
+        if ( auto* coerced = ctor ? ctor->tryAs<hilti::ctor::Coerced>() : nullptr )
+            ctor = coerced->coercedCtor();
+        auto* literal = ctor ? ctor->tryAs<hilti::ctor::Bytes>() : nullptr;
+        if ( (field->isAnonymous() && ! literal) || field->isSkip() || field->isForwarding() || field->condition() ||
+             (field->isTransient() && ! field->isAnonymous()) || (ctor && ! literal) || ! field->arguments().empty() ||
+             ! field->sinks().empty() )
+            return reject("field modifiers and constructors other than bytes literals are not supported", field_loc);
+
+        if ( literal ) {
+            if ( (field->attributes() && *field->attributes()) || field->repeatCount() )
+                return reject("bytes literals with attributes are not supported yet", field_loc);
+            // Legacy reports a literal's failures at the literal itself.
+            FieldSpec f{.source = field,
+                        .form = FieldForm::Literal,
+                        .type_location = ctor->meta().location(),
+                        .literal = literal->value(),
+                        .anonymous = field->isAnonymous()};
+            for ( auto* hook : field->hooks() )
+                f.source_hooks.push_back(hook);
+            spec.fields.push_back(f);
+            return std::nullopt;
+        }
 
         FieldSpec f{.source = field};
         for ( auto* hook : field->hooks() )
@@ -1977,7 +2006,7 @@ private:
                 return Points{&done};
             Points points;
             for ( size_t i = 0; i < spec.fields.size(); ++i )
-                if ( target == std::string(spec.fields[i].source->id().local()) )
+                if ( ! spec.fields[i].anonymous && target == std::string(spec.fields[i].source->id().local()) )
                     points.push_back(&fields[i]);
             if ( points.empty() )
                 return reject(fmt("hooks on '%s' are not supported yet", target), loc);
@@ -2050,7 +2079,8 @@ private:
         auto span = internSpan(_package, hook->meta().location());
         auto unit = _builder.unitType(spec.declaration);
         std::vector<ir::Parameter> params = {ir::Parameter(unit, ir::ParameterMode::BorrowMut)};
-        bool has_value = field && (field->form == FieldForm::Integer || field->form == FieldForm::Bytes);
+        bool has_value = field && (field->form == FieldForm::Integer || field->form == FieldForm::Bytes ||
+                                   field->form == FieldForm::Literal);
         if ( has_value )
             params.emplace_back(field->type, ir::ParameterMode::Take);
         if ( spec.context )
@@ -2067,7 +2097,8 @@ private:
         BodyLowerer body(_procedures, _package, region, block, feature);
         std::unordered_map<std::string, ir::DeclId> fields;
         for ( const auto& f : spec.fields )
-            fields.emplace(std::string(f.source->id().local()), f.declaration);
+            if ( ! f.anonymous )
+                fields.emplace(std::string(f.source->id().local()), f.declaration);
         body.setSelf(self, std::move(fields), complete);
         if ( has_value && hook->dd() )
             body.bind(hook->dd(), Variable{.value = _builder.addArgument(id, block, 1, span)});
@@ -2151,7 +2182,8 @@ private:
         // The expression may address any field.
         std::unordered_map<std::string, ir::DeclId> fields;
         for ( const auto& f : spec.fields )
-            fields.emplace(std::string(f.source->id().local()), f.declaration);
+            if ( ! f.anonymous )
+                fields.emplace(std::string(f.source->id().local()), f.declaration);
         BodyLowerer lowerer(_procedures, _package, ir::RegionId(), at.block, feature);
         lowerer.setSelf(at.unit, std::move(fields), false);
         if ( context )
@@ -2199,6 +2231,16 @@ private:
                 break;
             }
 
+            case FieldForm::Literal: {
+                auto read = _builder.addExpectBytes(at.block,
+                                                    at.state,
+                                                    field.literal,
+                                                    internSpan(_package, field.type_location));
+                at.state = _builder.addTupleGet(at.block, read, 0, span);
+                value = _builder.addTupleGet(at.block, read, 1, span);
+                break;
+            }
+
             case FieldForm::Unit: {
                 auto child = _builder.addParseSubunit(at.block, at.state, _spec(field.child).function, span);
                 at.state = _builder.addTupleGet(at.block, child, 0, span);
@@ -2236,7 +2278,8 @@ private:
         // Completed-field consumers observe the published field, and `$$` is the value as it was parsed.
         for ( auto hook : field.hooks ) {
             std::vector<ir::InstId> args = {at.unit};
-            if ( field.form == FieldForm::Integer || field.form == FieldForm::Bytes )
+            if ( field.form == FieldForm::Integer || field.form == FieldForm::Bytes ||
+                 field.form == FieldForm::Literal )
                 args.push_back(value);
             if ( context )
                 args.push_back(*context);
@@ -2280,7 +2323,22 @@ private:
                 payload.cases.push_back(ir::SwitchCase{.value = ir::IntegerLiteral{*bits}, .target = block});
             }
         }
+        // Without a default case, an unmatched value fails as legacy reports it.
+        std::optional<ir::BlockId> unmatched;
+        if ( ! payload.default_target.isSet() ) {
+            unmatched = _builder.createBlock(region);
+            payload.default_target = *unmatched;
+        }
         _builder.addSwitch(at.block, value, std::move(payload), span);
+        if ( unmatched ) {
+            auto format =
+                _builder.addStringConstant(*unmatched, "no matching case in switch statement for value '%s'", span);
+            auto message = _builder.addOpaqueOp(*unmatched,
+                                                _procedures.formatter(),
+                                                {format, _builder.addTuple(*unmatched, {value}, span)},
+                                                span);
+            _builder.addFail(*unmatched, at.state, message, span);
+        }
 
         auto join = _builder.createBlock(region);
         auto state_phi = _builder.addPhi(join, _package.inst(at.state).result_type, span);

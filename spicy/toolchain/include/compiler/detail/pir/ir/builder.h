@@ -197,6 +197,10 @@ public:
     InstId addUpsilon(BlockId block, InstId value, InstId phi, SourceSpanId span = {});
     /** Adds the terminating `core.switch` on the integer `value`. */
     InstId addSwitch(BlockId block, InstId value, SwitchPayload payload, SourceSpanId span = {});
+    /** Adds `parser.expect_bytes` of `literal` over `state`. */
+    InstId addExpectBytes(BlockId block, InstId state, std::string literal, SourceSpanId span = {});
+    /** Adds the terminating `parser.fail` that consumes `state` and fails with the string `description`. */
+    InstId addFail(BlockId block, InstId state, InstId description, SourceSpanId span = {});
     /** Adds the terminating `core.jump` to `target`. */
     InstId addJump(BlockId block, BlockId target, SourceSpanId span = {});
 

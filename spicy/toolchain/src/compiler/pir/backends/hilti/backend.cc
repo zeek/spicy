@@ -469,6 +469,7 @@ protected:
                 switch ( package_.inst(tuple).opcode ) {
                     case ir::Opcode::ReadInteger:
                     case ir::Opcode::ReadBytes:
+                    case ir::Opcode::ExpectBytes:
                         return index == 0 ?
                                    cursor :
                                    Storage{.name = fmt("v_%u", tuple.index), .owner = tuple, .type = inst.result_type};
@@ -1097,7 +1098,11 @@ private:
         _return(*eod, "UnexpectedEod", nullptr, meta, describe(*eod, in_input));
     }
 
-    void _gapCatch(LocalBuilder& b, ::hilti::Statement* try_body, const ::hilti::Meta& meta) {
+    // Wraps `try_body` in a `try` that turns a gap into a gap outcome. `extra` are more catch clauses of that `try`.
+    void _gapCatch(LocalBuilder& b,
+                   ::hilti::Statement* try_body,
+                   const ::hilti::Meta& meta,
+                   ::hilti::statement::try_::Catches extra = {}) {
         auto* catch_body = _b.statementBlock(meta);
         LocalBuilder cb(_b.context(), catch_body);
         cb.addLocal(::hilti::ID("gap_probe"),
@@ -1168,7 +1173,8 @@ private:
                                          _b.typeName(::hilti::ID("hilti::MissingData")),
                                          ::hilti::parameter::Kind::In);
         auto* catch_clause = _b.statementTryCatch(catch_param, catch_body, meta);
-        b.block()->_add(b.context(), _b.statementTry(try_body, ::hilti::statement::try_::Catches{catch_clause}, meta));
+        extra.insert(extra.begin(), catch_clause);
+        b.block()->_add(b.context(), _b.statementTry(try_body, extra, meta));
     }
 
     void _lowerRead(LocalBuilder& b, ir::InstId id, bool integer) {
@@ -1228,6 +1234,49 @@ private:
         _tuples[id.index] = {"cursor", value_name};
     }
 
+    // The runtime's literal check waits for input and formats mismatches exactly as legacy. Its parse error becomes
+    // this parser's failure; a C++ exception costs nothing on success.
+    void _lowerExpectBytes(LocalBuilder& b, ir::InstId id) {
+        const auto& inst = package_.inst(id);
+        auto meta = metaFor(package_, inst.span);
+        const auto& literal = std::get<ir::BytesLiteral>(inst.payload).value;
+        auto value_name = fmt("v_%u", id.index);
+        _local(b,
+               value_name,
+               b.qualifiedType(b.typeBytes(), ::hilti::Constness::Mutable),
+               b.bytes(literal, meta),
+               meta);
+
+        auto* try_body = _b.statementBlock(meta);
+        LocalBuilder tb(_b.context(), try_body);
+        tb.addExpression(tb.call(::hilti::ID("spicy_rt::expectBytesLiteral"),
+                                 {tb.id(::hilti::ID("data")),
+                                  tb.id(::hilti::ID("cursor")),
+                                  tb.id(::hilti::ID(value_name)),
+                                  tb.stringLiteral(""),
+                                  tb.id(::hilti::ID("filters_"))},
+                                 meta));
+        tb.addAssign(tb.id(::hilti::ID("cursor")),
+                     tb.memberCall(tb.id(::hilti::ID("cursor")),
+                                   "advance",
+                                   {tb.integer(uint64_t{literal.size()})},
+                                   meta),
+                     meta);
+
+        auto* mismatch_body = _b.statementBlock(meta);
+        LocalBuilder mb(_b.context(), mismatch_body);
+        _return(mb,
+                "ParseError",
+                nullptr,
+                meta,
+                mb.memberCall(mb.id(::hilti::ID("e")), "description", ::hilti::Expressions{}, meta));
+        auto* parameter = _b.parameter(::hilti::ID("e"),
+                                       _b.typeName(::hilti::ID("spicy_rt::ParseError")),
+                                       ::hilti::parameter::Kind::In);
+        _gapCatch(b, try_body, meta, {_b.statementTryCatch(parameter, mismatch_body, meta)});
+        _tuples[id.index] = {"cursor", value_name};
+    }
+
     void _lowerInst(LocalBuilder& b, ir::InstId id) {
         const auto& inst = package_.inst(id);
         auto meta = metaFor(package_, inst.span);
@@ -1280,6 +1329,8 @@ private:
             }
             case ir::Opcode::ReadInteger: _lowerRead(b, id, true); return;
             case ir::Opcode::ReadBytes: _lowerRead(b, id, false); return;
+            case ir::Opcode::ExpectBytes: _lowerExpectBytes(b, id); return;
+            case ir::Opcode::Fail: _return(b, "ParseError", nullptr, meta, _value(b, inst.args[1])); return;
             case ir::Opcode::EnterBound: {
                 auto* length = _value(b, inst.args[1]);
                 auto overflow = b.addIf(b.greater(length,

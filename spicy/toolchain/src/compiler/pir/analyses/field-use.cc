@@ -99,7 +99,8 @@ std::vector<Diagnostic> analyses::checkUnusedFields(const Package& package) {
             continue;
 
         for ( auto field : unit.fields ) {
-            if ( ! used_fields.contains(field.index) )
+            // An anonymous literal has no name to use it by.
+            if ( ! used_fields.contains(field.index) && ! package.declaration(field).name.empty() )
                 emitter.emit(diag::UnusedField,
                              field,
                              hilti::util::fmt("%s::%s", unit.name, package.declaration(field).name));

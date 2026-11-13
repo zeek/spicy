@@ -85,6 +85,10 @@ std::optional<ParserOperationContract> parserContractFor(const Package& package,
         if ( const auto* read = std::get_if<ReadIntegerPayload>(&inst.payload) )
             contract.success_consumption_bytes = read->width / 8;
     }
+    else if ( inst.opcode == Opcode::ExpectBytes ) {
+        if ( const auto* literal = std::get_if<BytesLiteral>(&inst.payload) )
+            contract.success_consumption_bytes = static_cast<int64_t>(literal->value.size());
+    }
     else if ( inst.opcode == Opcode::ReadBytes && inst.args.size() == 2 && package.isValid(inst.args[1]) ) {
         const auto& length = package.inst(inst.args[1]);
         const auto* literal = std::get_if<IntegerLiteral>(&length.payload);

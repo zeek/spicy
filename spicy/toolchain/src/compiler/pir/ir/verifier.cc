@@ -474,7 +474,7 @@ private:
                     bounded_states.insert(inst_id.index);
             }
             else if ( inst.opcode == Opcode::ReadInteger || inst.opcode == Opcode::ReadBytes ||
-                      inst.opcode == Opcode::ParseSubunit ) {
+                      inst.opcode == Opcode::ExpectBytes || inst.opcode == Opcode::ParseSubunit ) {
                 if ( ! inst.args.empty() && bounded_states.contains(inst.args[0].index) )
                     bounded_tuples.insert(inst_id.index);
             }
@@ -981,6 +981,24 @@ private:
                                   inst_id);
                 return;
             }
+
+            case Opcode::Fail: {
+                if ( _package.isValid(function_id) && _package.function(function_id).kind != FunctionKind::Parser )
+                    _emitter.emit("fail-in-normal-function",
+                                  "parser.fail may only terminate a parser function",
+                                  inst_id);
+                return;
+            }
+
+            case Opcode::ExpectBytes:
+                if ( ! _package.isValid(inst.result_type) || _package.type(inst.result_type).kind != TypeKind::Tuple ||
+                     _package.type(inst.result_type).type_arguments.size() != 2 ||
+                     _package.type(inst.result_type).type_arguments[0] != _typeOfKind(TypeKind::ParserState) ||
+                     _package.type(inst.result_type).type_arguments[1] != _typeOfKind(TypeKind::Bytes) )
+                    _emitter.emit("invalid-parser-operation",
+                                  "parser operation has inconsistent types, payload, or region signature",
+                                  inst_id);
+                return;
 
             case Opcode::Argument: {
                 const auto* payload = std::get_if<ArgumentPayload>(&inst.payload);
@@ -1683,6 +1701,16 @@ private:
             auto state = *in[pos];
             transfer(cfg.blocks[pos], state, true);
         }
+    }
+
+    // The interned type of `kind`, for a kind that has only one type, if the package has it.
+    TypeId _typeOfKind(TypeKind kind) const {
+        for ( size_t i = 0; i < _package.types().size(); ++i ) {
+            TypeId id{static_cast<uint32_t>(i)};
+            if ( _package.type(id).kind == kind )
+                return id;
+        }
+        return {};
     }
 
     // The `uint64` type, if the package has one. The verifier does not add types.

@@ -740,3 +740,45 @@ TEST_CASE("parser.read_integer's consumption is its width") {
     CHECK_EQ(parserContractFor(p.package, p.package.inst(read))->success_consumption_bytes, 4);
     CHECK_FALSE(parserContractFor(p.package, p.package.inst(p.state0)));
 }
+
+TEST_CASE("parser.expect_bytes yields its literal and knows its consumption and mismatch outcome") {
+    auto p = makeOneBytePipeline();
+    auto builder = p.package.builder();
+    auto expect = builder.addExpectBytes(p.block, p.state0, "END");
+    auto state = builder.addTupleGet(p.block, expect, 0);
+    CHECK_EQ(p.package.inst(builder.addTupleGet(p.block, expect, 1)).result_type, builder.bytesType());
+    builder.addParserFinish(p.block, state, p.unit0);
+    CHECK(verify(p.package).empty());
+
+    auto contract = parserContractFor(p.package, p.package.inst(expect));
+    REQUIRE(contract);
+    CHECK_EQ(contract->success_consumption_bytes, 3);
+    CHECK_EQ(contract->mismatch, FailureOutcome::Mismatch);
+    CHECK_FALSE(parserContractFor(p.package, p.package.inst(state)));
+    CHECK(effectsFor(Opcode::ExpectBytes).may_fail);
+}
+
+TEST_CASE("parser.fail ends a parser function with its message, and only a parser function") {
+    auto p = makeOneBytePipeline();
+    auto builder = p.package.builder();
+    builder.addFail(p.block, p.state0, builder.addStringConstant(p.block, "no"));
+    CHECK(verify(p.package).empty());
+    CHECK(schemaFor(Opcode::Fail)->is_terminator);
+
+    Package package;
+    auto b = package.builder();
+    auto unit = b.createUnitDecl("U");
+    auto fn = b.createFunction("f", {b.parserStateType()}, b.voidType());
+    auto block = b.createBlock(package.function(fn).root_region);
+    b.addFail(block, b.addArgument(fn, block, 0), b.addStringConstant(block, "no"));
+    (void)unit;
+    auto diags = verify(package);
+    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "fail-in-normal-function"; }));
+
+    // The message must be a string.
+    auto q = makeOneBytePipeline();
+    auto qb = q.package.builder();
+    qb.addInstForTesting(q.block, Opcode::Fail, {q.state0, qb.addBoolConstant(q.block, true)}, qb.voidType());
+    diags = verify(q.package);
+    CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "operand-type-mismatch"; }));
+}

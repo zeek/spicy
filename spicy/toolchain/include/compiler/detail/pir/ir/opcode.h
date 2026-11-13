@@ -225,6 +225,17 @@ enum class Opcode {
      * no case does. Several cases may share a target.
      */
     Switch,
+    /**
+     * Parses the bytes literal of its payload. Returns a tuple with the updated parser state and the literal.
+     *
+     * Fails at the end of input or its bound with `expected N bytes for bytes literal "L" (A available)`, and with
+     * `expected bytes literal "L" but input starts with "I"` on other input.
+     */
+    ExpectBytes,
+    /**
+     * Ends the parser function with a parse error whose description is its string operand.
+     */
+    Fail,
 };
 
 enum class TypeKind { Void, Integer, Bytes, ParserState, Unit, Tuple, Vector, Set, Opaque, Place, Bool, String };
@@ -498,7 +509,7 @@ enum class PayloadKind {
 enum class SuspendBehavior { SuspendAndRetry };
 
 /** How a parser operation completes when its outcome is a failure rather than a value. */
-enum class FailureOutcome { UnexpectedEod, Gap, BoundExceeded, InvalidBound };
+enum class FailureOutcome { UnexpectedEod, Gap, BoundExceeded, InvalidBound, Mismatch };
 enum class FailureCursor { OperationStart, Current };
 
 /**
@@ -516,6 +527,8 @@ struct ParserOperationContract {
     FailureOutcome eod = FailureOutcome::UnexpectedEod;
     FailureOutcome gap = FailureOutcome::Gap;
     FailureOutcome bound = FailureOutcome::BoundExceeded;
+    /** The outcome when the input does not match what the operation expects, if it expects anything. */
+    std::optional<FailureOutcome> mismatch;
     FailureCursor failure_cursor = FailureCursor::OperationStart;
 
     friend constexpr bool operator==(const ParserOperationContract&, const ParserOperationContract&) = default;
@@ -624,6 +637,8 @@ inline constexpr TypeConstraint KUpsilonOperandTypes[] = {anyType()};
 inline constexpr OperandRole KUpsilonOperandRoles[] = {OperandRole::Consume};
 inline constexpr TypeConstraint KSwitchOperandTypes[] = {fixedType(TypeKind::Integer)};
 inline constexpr OperandRole KSwitchOperandRoles[] = {OperandRole::Borrow};
+inline constexpr TypeConstraint KFailOperandTypes[] = {fixedType(TypeKind::ParserState), fixedType(TypeKind::String)};
+inline constexpr OperandRole KFailOperandRoles[] = {OperandRole::Consume, OperandRole::Borrow};
 inline constexpr TypeConstraint KVariadicOperandTypes[] = {anyType()};
 inline constexpr OperandRole KVariadicOperandRoles[] = {OperandRole::Consume};
 
@@ -643,6 +658,16 @@ inline constexpr ParserOperationContract KReadBytesContract{
     .failure_cursor = FailureCursor::OperationStart,
 };
 
+inline constexpr ParserOperationContract KExpectBytesContract{
+    .success_consumption_bytes = -1,
+    .insufficient_input = SuspendBehavior::SuspendAndRetry,
+    .eod = FailureOutcome::UnexpectedEod,
+    .gap = FailureOutcome::Gap,
+    .bound = FailureOutcome::BoundExceeded,
+    .mismatch = FailureOutcome::Mismatch,
+    .failure_cursor = FailureCursor::OperationStart,
+};
+
 inline constexpr ParserOperationContract KSubunitContract{
     .success_consumption_bytes = -1,
     .insufficient_input = SuspendBehavior::SuspendAndRetry,
@@ -654,7 +679,7 @@ inline constexpr ParserOperationContract KSubunitContract{
 
 // One entry per `Opcode` value, in declaration order, so `schemaFor()` can index directly without
 // per-call allocation.
-inline constexpr std::array<OpcodeSchema, 42> KSchemas{{
+inline constexpr std::array<OpcodeSchema, 44> KSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Add,
         .spelling = "core.add",
@@ -1029,6 +1054,23 @@ inline constexpr std::array<OpcodeSchema, 42> KSchemas{{
                  .payload_kind = PayloadKind::Switch,
                  .is_terminator = true,
                  .is_pure = false},
+    OpcodeSchema{.opcode = Opcode::ExpectBytes,
+                 .spelling = "parser.expect_bytes",
+                 .operand_types = KParseStateOperandTypes,
+                 .operand_roles = KParseStateOperandRoles,
+                 .result_type = fixedType(TypeKind::Tuple),
+                 .payload_kind = PayloadKind::BytesLiteral,
+                 .is_terminator = false,
+                 .is_pure = false,
+                 .parser_contract = KExpectBytesContract},
+    OpcodeSchema{.opcode = Opcode::Fail,
+                 .spelling = "parser.fail",
+                 .operand_types = KFailOperandTypes,
+                 .operand_roles = KFailOperandRoles,
+                 .result_type = fixedType(TypeKind::Void),
+                 .payload_kind = PayloadKind::None,
+                 .is_terminator = true,
+                 .is_pure = false},
 }};
 
 } // namespace detail
@@ -1065,6 +1107,7 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
     switch ( opcode ) {
         case Opcode::ReadInteger:
         case Opcode::ReadBytes:
+        case Opcode::ExpectBytes:
         case Opcode::ParseSubunit:
             return {.reads_input = true, .changes_parser_state = true, .may_suspend = true, .may_fail = true};
         case Opcode::RepeatToBound:
@@ -1092,6 +1135,7 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
                     .writes_places = true};
         case Opcode::LocalPlace: return {.allocates = true};
         case Opcode::Phi: return {.reads_shadow = true};
+        case Opcode::Fail: return {.may_fail = true};
         case Opcode::Upsilon: return {.writes_shadow = true};
         // HILTI integers are checked, so an overflow fails at runtime. That is a logic error, not a parse error.
         case Opcode::Add: return {.may_fail = true};
