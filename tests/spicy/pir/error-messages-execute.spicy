@@ -1,0 +1,65 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -p -D spicy-pir >/dev/null 2>pir.log
+# @TEST-EXEC: rg "attached PIR-produced" pir.log >route
+# @TEST-EXEC: btest-diff route
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j -o pir.hlto
+# @TEST-EXEC: python3 ${SCRIPTS}/pir-errors.py pir.hlto >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j -o unoptimized.hlto
+# @TEST-EXEC: python3 ${SCRIPTS}/pir-errors.py unoptimized.hlto >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT -j -o legacy.hlto
+# @TEST-EXEC: python3 ${SCRIPTS}/pir-errors.py legacy.hlto >legacy
+# @TEST-EXEC: cmp output legacy
+
+# @TEST-DOC: Each parser fails one way, and PIR reports the failure exactly as legacy does: an integer or bytes read
+# that hits the end of input or crosses its vector's `&size` bound, and a vector element that consumes nothing. Each
+# runs on whole input and one byte at a time, which changes how many bytes are available when a bound is crossed.
+
+module Test;
+
+public type IntegerEod = unit {
+    a: uint32;
+};
+
+public type BytesEod = unit {
+    len: uint8;
+    payload: bytes &size=self.len;
+};
+
+type IntegerElement = unit {
+    a: uint32;
+};
+
+public type IntegerBound = unit {
+    length: uint64;
+    items: IntegerElement[] &size=self.length;
+};
+
+type BytesElement = unit {
+    payload: bytes &size=3;
+};
+
+public type BytesBound = unit {
+    length: uint64;
+    items: BytesElement[] &size=self.length;
+};
+
+type Empty = unit {};
+
+public type NoProgress = unit {
+    length: uint64;
+    items: Empty[] &size=self.length;
+};
+
+@TEST-START-FILE inputs.py
+import struct
+
+cases = [
+    ("Test::IntegerEod", "integer-eod", b"\x01\x02"),
+    ("Test::IntegerEod", "integer-empty", b""),
+    ("Test::BytesEod", "bytes-eod", b"\x05ab"),
+    ("Test::IntegerBound", "integer-bound", struct.pack(">Q", 6) + bytes(range(1, 9))),
+    ("Test::BytesBound", "bytes-bound", struct.pack(">Q", 5) + b"abcdefgh"),
+    ("Test::NoProgress", "no-progress", struct.pack(">Q", 2) + b"xy"),
+]
+@TEST-END-FILE

@@ -1546,6 +1546,8 @@ struct FieldSpec {
     uint8_t width = 0;
     ir::Signedness signedness = ir::Signedness::Unsigned;
     hilti::Expression* size = nullptr; /**< the `&size` of a vector or bytes */
+    hilti::Location size_location;     /**< where that `&size` is, which legacy reports when it is not consumed */
+    hilti::Location type_location;     /**< where the field's type is, which legacy reports for an integer read */
     type::Unit* child = nullptr;       /**< the unit of a vector's elements or of a sub-unit */
     ir::DeclId declaration;
     ir::TypeId type;
@@ -1865,6 +1867,7 @@ private:
                  field->item() )
                 return reject("unsupported integer field form", field_loc);
             f.form = FieldForm::Integer;
+            f.type_location = field->parseType()->meta().location();
             f.width = integer->width;
             f.signedness = integer->signedness;
         }
@@ -1892,6 +1895,7 @@ private:
             if ( ! expr )
                 return reject("vector &size must be an expression", field_loc);
             f.size = *expr;
+            f.size_location = size->meta().location();
             auto* child_decl = _declaration(f.child);
             if ( ! child_decl )
                 return reject("vector child unit has no source declaration", field_loc);
@@ -2183,7 +2187,7 @@ private:
                                                    ir::ReadIntegerPayload{.width = field.width,
                                                                           .signedness = field.signedness,
                                                                           .byte_order = ir::ByteOrder::Network},
-                                                   span);
+                                                   internSpan(_package, field.type_location));
                 else {
                     auto length = size();
                     if ( auto* unsupported_feature = std::get_if<UnsupportedFeature>(&length) )
@@ -2222,7 +2226,7 @@ private:
                 auto repeated = _builder.addRepeatToBound(at.block, {at.state, vector}, body, span);
                 at.state = _builder.addTupleGet(at.block, repeated, 0, span);
                 value = _builder.addTupleGet(at.block, repeated, 1, span);
-                at.state = _builder.addLeaveBound(at.block, at.state, span);
+                at.state = _builder.addLeaveBound(at.block, at.state, internSpan(_package, field.size_location));
                 break;
             }
         }

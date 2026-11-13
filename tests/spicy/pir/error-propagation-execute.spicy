@@ -1,0 +1,38 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -p -D spicy-pir >/dev/null 2>pir.log
+# @TEST-EXEC: rg "attached PIR-produced" pir.log >route
+# @TEST-EXEC: btest-diff route
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j -o pir.hlto
+# @TEST-EXEC: python3 ${SCRIPTS}/pir-errors.py pir.hlto >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j -o unoptimized.hlto
+# @TEST-EXEC: python3 ${SCRIPTS}/pir-errors.py unoptimized.hlto >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT -j -o legacy.hlto
+# @TEST-EXEC: python3 ${SCRIPTS}/pir-errors.py legacy.hlto >legacy
+# @TEST-EXEC: cmp output legacy
+
+# @TEST-DOC: A failure three sub-units deep reports the innermost operation's description and location.
+
+module Test;
+
+type Leaf = unit {
+    a: uint8;
+    b: uint32;
+};
+
+type Inner = unit {
+    leaf: Leaf;
+};
+
+type Middle = unit {
+    inner: Inner;
+};
+
+public type Outer = unit {
+    middle: Middle;
+};
+
+@TEST-START-FILE inputs.py
+typed = True
+cases = [("Test::Outer", "deep", b"\x01\x02\x03")]
+@TEST-END-FILE

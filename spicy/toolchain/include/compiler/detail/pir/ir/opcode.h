@@ -46,6 +46,8 @@ enum class Opcode {
     /**
      * Parses an integer from the provided parser state. Returns a tuple with the updated
      * parser state and the parsed value.
+     *
+     * Fails at the end of input or its bound with `expecting N bytes for unpacking value (A byte(s) available)`.
      */
     ReadInteger,
     /**
@@ -84,16 +86,22 @@ enum class Opcode {
      * Enters a bounded region, where the parser state is bounded to a certain byte
      * length. The returned bounded parser state is used for various other bounded
      * operations.
+     *
+     * Fails with `&size value N exceeds the remaining stream offset range` if the bound is past the largest offset.
      */
     EnterBound,
     /**
      * Leaves a bounded region, which was entered via EnterBound. Must consume the full
      * bounded parser state.
+     *
+     * Fails with `&size amount not consumed: expected N bytes, but got M bytes` otherwise.
      */
     LeaveBound,
     /**
      * Repeats until a bound is reached. Returns a tuple containing the parser state and
      * the carried value.
+     *
+     * Fails with `loop body did not change input position, possible infinite loop` if an iteration consumes nothing.
      */
     RepeatToBound,
     /**
@@ -104,6 +112,8 @@ enum class Opcode {
     /**
      * Parses as many bytes as its `uint64` length operand says. Returns a tuple with the updated parser state and the
      * parsed value.
+     *
+     * Fails at the end of input or its bound with `expected N bytes (A available)`.
      */
     ReadBytes,
     /**
@@ -493,7 +503,9 @@ enum class FailureCursor { OperationStart, Current };
 
 /**
  * Each opcode has a contract for how it behaves on success, insufficient
- * input, etc. This is high-level in the parser rather than modelled as procedural
+ * input, etc. A failure carries a description, which each opcode's documentation gives as legacy parsing words it, and
+ * the location of the failing operation. A read that crosses a bound fails as if the input ended there, with the bytes
+ * up to the bound available. This is high-level in the parser rather than modelled as procedural
  * code. The same contract applies to ALL opcodes of the same type. Any new
  * contract expectations may be added as the need arises.
  */

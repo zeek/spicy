@@ -106,7 +106,7 @@ NameMap makeNames(const ir::Package& package, const std::vector<TargetBinding>& 
         entry = FunctionNames{.function = fmt("parse_root_%zu", i), .result = fmt("ParseResult_%zu", i), .root = true};
     }
 
-    std::unordered_set<std::string> taken = {"OutcomeKind", "hilti", "spicy_rt"};
+    std::unordered_set<std::string> taken = {"OutcomeKind", "hilti", "spicy_rt", "exception_where"};
     for ( const auto& [_, entry] : names ) {
         taken.insert(entry.function);
         if ( ! entry.result.empty() )
@@ -271,6 +271,13 @@ NameMap makeNames(const ir::Package& package, const std::vector<TargetBinding>& 
         b.declarationField(::hilti::ID("gap_length"),
                            b.qualifiedType(b.typeUnsignedInteger(64), ::hilti::Constness::Mutable),
                            static_cast<::hilti::AttributeSet*>(nullptr)),
+        // A failure's description and location, as legacy parsing reports them.
+        b.declarationField(::hilti::ID("description"),
+                           b.qualifiedType(b.typeString(), ::hilti::Constness::Mutable),
+                           static_cast<::hilti::AttributeSet*>(nullptr)),
+        b.declarationField(::hilti::ID("location"),
+                           b.qualifiedType(b.typeString(), ::hilti::Constness::Mutable),
+                           static_cast<::hilti::AttributeSet*>(nullptr)),
     };
     return b.declarationType(::hilti::ID(names.result),
                              b.qualifiedType(b.typeStruct(fields), ::hilti::Constness::Const),
@@ -283,13 +290,17 @@ NameMap makeNames(const ir::Package& package, const std::vector<TargetBinding>& 
                                 ::hilti::Expression* cursor,
                                 ::hilti::Expression* gap_offset,
                                 ::hilti::Expression* gap_length,
-                                const ::hilti::Meta& meta) {
+                                const ::hilti::Meta& meta,
+                                ::hilti::Expression* description = nullptr,
+                                ::hilti::Expression* location = nullptr) {
     ::hilti::ctor::struct_::Fields fields = {
         b.ctorStructField(::hilti::ID("kind"), kind),
         b.ctorStructField(::hilti::ID("unit"), unit ? unit : b.null()),
         b.ctorStructField(::hilti::ID("cursor"), cursor),
         b.ctorStructField(::hilti::ID("gap_offset"), gap_offset),
         b.ctorStructField(::hilti::ID("gap_length"), gap_length),
+        b.ctorStructField(::hilti::ID("description"), description ? description : b.stringLiteral("")),
+        b.ctorStructField(::hilti::ID("location"), location ? location : b.stringLiteral("")),
     };
     return b.struct_(fields, meta);
 }
@@ -1029,44 +1040,61 @@ private:
         return b.member(b.id(::hilti::ID(base)), std::string(member));
     }
 
-    void _return(LocalBuilder& b, std::string_view kind, ::hilti::Expression* unit, const ::hilti::Meta& meta) {
+    // Returns an outcome. A failure carries its description and the location of the operation that failed.
+    void _return(LocalBuilder& b,
+                 std::string_view kind,
+                 ::hilti::Expression* unit,
+                 const ::hilti::Meta& meta,
+                 ::hilti::Expression* description = nullptr) {
+        auto* location = description ? b.stringLiteral(std::string(meta.location())) : nullptr;
         b.addReturn(makeResult(b,
                                b.id(::hilti::ID(fmt("OutcomeKind::%s", kind))),
                                unit,
                                b.id(::hilti::ID("cursor")),
                                b.integer(0U),
                                b.integer(0U),
-                               meta),
+                               meta,
+                               description,
+                               location),
                     meta);
     }
 
     // An expression of a byte count. Each use needs its own expression node.
     using ByteCount = std::function<::hilti::Expression*(LocalBuilder&)>;
 
-    void _checkBound(LocalBuilder& b, const ByteCount& bytes, const ::hilti::Meta& meta) {
-        auto inside = b.addIf(b.id(::hilti::ID("bound_end")), meta);
-        auto over =
-            inside->addIf(inside->greater(bytes(*inside),
-                                          inside->difference(inside->deref(inside->id(::hilti::ID("bound_end"))),
-                                                             inside->memberCall(inside->id(::hilti::ID("cursor")),
-                                                                                "offset",
-                                                                                ::hilti::Expressions{}))),
-                          meta);
-        _return(*over, "ParseError", nullptr, meta);
+    // The description of a read that failed with `available` bytes left before the end of input or the bound.
+    using Describe = std::function<::hilti::Expression*(LocalBuilder&, const ByteCount& available)>;
+
+    // `format % (values...)`, the HILTI formatting that legacy parsing uses for its messages.
+    static ::hilti::Expression* _format(LocalBuilder& b, const std::string& format, ::hilti::Expressions values) {
+        return b.modulo(b.stringLiteral(format), b.tuple(values));
     }
 
-    void _wait(LocalBuilder& b, const ByteCount& bytes, const ::hilti::Meta& meta) {
+    // A crossing read sees the bound as the end of input, as legacy does with its limited view. Its available count
+    // is measured to the bound.
+    void _checkBound(LocalBuilder& b, const ByteCount& bytes, const Describe& describe, const ::hilti::Meta& meta) {
+        auto inside = b.addIf(b.id(::hilti::ID("bound_end")), meta);
+        ByteCount to_bound = [](LocalBuilder& lb) {
+            return lb.difference(lb.deref(lb.id(::hilti::ID("bound_end"))),
+                                 lb.memberCall(lb.id(::hilti::ID("cursor")), "offset", ::hilti::Expressions{}));
+        };
+        auto over = inside->addIf(inside->greater(bytes(*inside), to_bound(*inside)), meta);
+        _return(*over, "ParseError", nullptr, meta, describe(*over, to_bound));
+    }
+
+    void _wait(LocalBuilder& b, const ByteCount& bytes, const Describe& describe, const ::hilti::Meta& meta) {
         // Keep the common case in generated code, just like the runtime's inline waitForInput wrapper.
         auto slow = b.addIf(b.greater(bytes(b), b.size(b.id(::hilti::ID("cursor")))), meta);
         // EnterBound limits the cursor, and subunits inherit that limited view. Available bytes therefore also
         // satisfy the bound. On insufficient input, check the bound before waiting to preserve failure outcomes.
-        _checkBound(*slow, bytes, meta);
+        _checkBound(*slow, bytes, describe, meta);
         auto* call =
             b.call(::hilti::ID("spicy_rt::waitForInputOrEod"),
                    {b.id(::hilti::ID("data")), b.id(::hilti::ID("cursor")), bytes(b), b.id(::hilti::ID("filters_"))},
                    meta);
         auto eod = slow->addIf(b.not_(call), meta);
-        _return(*eod, "UnexpectedEod", nullptr, meta);
+        ByteCount in_input = [](LocalBuilder& lb) { return lb.size(lb.id(::hilti::ID("cursor"))); };
+        _return(*eod, "UnexpectedEod", nullptr, meta, describe(*eod, in_input));
     }
 
     void _gapCatch(LocalBuilder& b, ::hilti::Statement* try_body, const ::hilti::Meta& meta) {
@@ -1131,7 +1159,10 @@ private:
                                                             "offset",
                                                             ::hilti::Expressions{},
                                                             meta)),
-                                meta),
+                                meta,
+                                // The runtime's own description and location, as legacy reports them.
+                                cb.memberCall(cb.id(::hilti::ID("e")), "description", ::hilti::Expressions{}, meta),
+                                cb.call(moduleLevel("exception_where"), {cb.id(::hilti::ID("e"))}, meta)),
                      meta);
         auto* catch_param = _b.parameter(::hilti::ID("e"),
                                          _b.typeName(::hilti::ID("hilti::MissingData")),
@@ -1148,7 +1179,19 @@ private:
                        lb.integer(static_cast<uint64_t>(std::get<ir::ReadIntegerPayload>(inst.payload).width / 8)) :
                        _value(lb, inst.args[1]);
         };
-        _wait(b, bytes, meta);
+        // The descriptions of `waitForInput` and `extractBytes` in the runtime.
+        Describe describe = [&](LocalBuilder& lb, const ByteCount& available) {
+            if ( integer )
+                return _format(lb,
+                               fmt("expecting %u bytes for unpacking value (%%u byte%%s available)",
+                                   std::get<ir::ReadIntegerPayload>(inst.payload).width / 8),
+                               {available(lb),
+                                lb.ternary(lb.unequal(available(lb), lb.integer(1U)),
+                                           lb.stringLiteral("s"),
+                                           lb.stringLiteral(""))});
+            return _format(lb, "expected %u bytes (%u available)", {bytes(lb), available(lb)});
+        };
+        _wait(b, bytes, describe, meta);
         auto value_name = fmt("v_%u", id.index);
         auto* value_type = targetType(b, package_, package_.type(inst.result_type).type_arguments[1]);
         // Keep the field location on the statement as well as its declaration, so this temporary does not
@@ -1246,7 +1289,13 @@ private:
                                                                             ::hilti::Expressions{},
                                                                             meta))),
                                         meta);
-                _return(*overflow, "ParseError", nullptr, meta);
+                _return(*overflow,
+                        "ParseError",
+                        nullptr,
+                        meta,
+                        _format(*overflow,
+                                "&size value %u exceeds the remaining stream offset range",
+                                {_value(*overflow, inst.args[1])}));
                 b.addAssign(b.id(::hilti::ID("outer_cursor")), b.id(::hilti::ID("cursor")), meta);
                 b.addAssign(b.id(::hilti::ID("bound_end")),
                             b.sum(b.memberCall(b.id(::hilti::ID("cursor")), "offset", ::hilti::Expressions{}, meta),
@@ -1263,7 +1312,19 @@ private:
                     b.addIf(b.unequal(b.memberCall(b.id(::hilti::ID("cursor")), "offset", ::hilti::Expressions{}, meta),
                                       b.deref(b.id(::hilti::ID("bound_end")))),
                             meta);
-                _return(*incomplete, "ParseError", nullptr, meta);
+                auto offset = [&](LocalBuilder& lb, const char* view) {
+                    return lb.memberCall(lb.id(::hilti::ID(view)), "offset", ::hilti::Expressions{}, meta);
+                };
+                _return(*incomplete,
+                        "ParseError",
+                        nullptr,
+                        meta,
+                        _format(*incomplete,
+                                "&size amount not consumed: expected %u bytes, but got %u bytes",
+                                {incomplete->difference(incomplete->deref(incomplete->id(::hilti::ID("bound_end"))),
+                                                        offset(*incomplete, "outer_cursor")),
+                                 incomplete->difference(offset(*incomplete, "cursor"),
+                                                        offset(*incomplete, "outer_cursor"))}));
                 b.addAssign(b.id(::hilti::ID("cursor")),
                             b.memberCall(b.id(::hilti::ID("outer_cursor")),
                                          "advance",
@@ -1304,7 +1365,9 @@ private:
                                              _member(*failed, name, "cursor"),
                                              _member(*failed, name, "gap_offset"),
                                              _member(*failed, name, "gap_length"),
-                                             meta),
+                                             meta,
+                                             _member(*failed, name, "description"),
+                                             _member(*failed, name, "location")),
                                   meta);
                 b.addAssign(b.id(::hilti::ID("cursor")), b.move(_member(b, name, "cursor")), meta);
                 auto unit_value = fmt("v_%u_unit", id.index);
@@ -1371,7 +1434,11 @@ private:
                                                                           meta),
                                                          loop->id(::hilti::ID("old_offset")))),
                                 meta);
-                _return(*no_progress, "ParseError", nullptr, meta);
+                _return(*no_progress,
+                        "ParseError",
+                        nullptr,
+                        meta,
+                        no_progress->stringLiteral("loop body did not change input position, possible infinite loop"));
                 _tuples[id.index] = std::move(carried);
                 return;
             }
@@ -1528,8 +1595,16 @@ void lowerParserEntry(::hilti::Builder& builder,
                                      fb.id(::hilti::ID("OutcomeKind::Gap")),
                                      meta),
                             meta);
-        gap->addThrow(gap->exception(gap->typeName("hilti::MissingData"), "gap in input", meta), meta);
-        fb.addThrow(fb.exception(fb.typeName("spicy_rt::ParseError"), "parsing did not complete", meta), meta);
+        gap->addThrow(gap->exception(gap->typeName("hilti::MissingData"),
+                                     gap->member(gap->id(::hilti::ID("result")), "description"),
+                                     gap->member(gap->id(::hilti::ID("result")), "location"),
+                                     meta),
+                      meta);
+        fb.addThrow(fb.exception(fb.typeName("spicy_rt::ParseError"),
+                                 fb.member(fb.id(::hilti::ID("result")), "description"),
+                                 fb.member(fb.id(::hilti::ID("result")), "location"),
+                                 meta),
+                    meta);
         decls.push_back(builder.function(::hilti::ID(parsed_unit ? entry.parse3 : parse1),
                                          view_type,
                                          params,
@@ -1660,6 +1735,22 @@ LoweringResult lower(::hilti::Builder& builder,
         auto id = ir::FunctionId{static_cast<uint32_t>(i)};
         if ( package.function(id).kind == ir::FunctionKind::Parser )
             decls.push_back(lowerResultType(builder, package, id, names.at(id.index)));
+    }
+    // The location that a caught gap's exception carries, which the runtime's HILTI declaration only offers for other
+    // exception types.
+    {
+        auto* attrs = builder.attributeSet(
+            {builder.attribute(::hilti::attribute::kind::Cxxname, builder.stringLiteral("hilti::rt::exception::where")),
+             builder.attribute(::hilti::attribute::kind::HavePrototype)});
+        decls.push_back(builder.function(::hilti::ID("exception_where"),
+                                         builder.qualifiedType(builder.typeString(), ::hilti::Constness::Mutable),
+                                         {builder.parameter(::hilti::ID("e"),
+                                                            builder.typeName(::hilti::ID("hilti::MissingData")),
+                                                            ::hilti::parameter::Kind::In)},
+                                         ::hilti::type::function::Flavor::Function,
+                                         ::hilti::declaration::Linkage::Private,
+                                         ::hilti::type::function::CallingConvention::Extern,
+                                         attrs));
     }
     for ( size_t i = 0; i < package.foreignFunctions().size(); ++i )
         if ( ! names.bound.contains(static_cast<uint32_t>(i)) )
