@@ -1,3 +1,11 @@
+1.18.0-dev.85 | 2026-11-13 14:24:52 +0100
+
+  * Bump docker/login-action from 4.7.0 to 4.8.0 (dependabot[bot])
+
+  * Bump softprops/action-gh-release from 3.0.3 to 3.0.4 (dependabot[bot])
+
+  * Bump CodSpeedHQ/action from 5.6.1 to 5.6.3 (dependabot[bot])
+
 1.18.0-dev.81 | 2026-11-13 14:18:22 +0100
 
   * Honor UTF error strategy on truncated input and invalid code points (suraiya sulthana)
