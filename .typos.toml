@@ -6,6 +6,15 @@ extend-exclude = [
   "doc/Doxyfile",
 ]
 
+[type.git-commit]
+extend-glob = ["COMMIT_EDITMSG", "MERGE_MSG"]
+extend-ignore-re = [
+  # Ignore below snip
+  '(?ms)^# ------------------------ >8 ------------------------\r?\n.*\z',
+  # Ignore comments
+  '(?m)^#.*$',
+]
+
 [default.extend-words]
 inout = "inout"
 ocur = "ocur"
