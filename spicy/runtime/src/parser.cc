@@ -301,7 +301,7 @@ void detail::expectBytesLiteral(hilti::rt::ValueReference<hilti::rt::Stream>& da
                                 const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters) {
     if ( ! detail::waitForInputNoThrow(data, cur, literal.size(), filters) ) {
         auto msg = hilti::rt::fmt("expected %" PRIu64 R"( bytes for bytes literal "%s")"
-                                  " (%" PRIu64 " available))",
+                                  " (%" PRIu64 " available)",
                                   literal.size(),
                                   literal,
                                   cur.size());

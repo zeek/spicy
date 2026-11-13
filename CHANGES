@@ -1,3 +1,10 @@
+1.18.0-dev.89 | 2026-11-13 10:23:15 -0500
+
+  * Fix typo with too many parens in error (Evan Typanski, Corelight)
+
+    An LLM was trying to "keep parity" with error messages and mentioned
+    that this had a typo. So I fixed the typo.
+
 1.18.0-dev.87 | 2026-11-13 14:55:40 +0100
 
   * Fix host byte order conversion of bytes with the high bit set (suraiya sulthana)
