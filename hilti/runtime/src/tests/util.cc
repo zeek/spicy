@@ -69,6 +69,12 @@ TEST_CASE("atoi_n") {
 
         SUBCASE("invalid chars") { CHECK_EQ(atoi_n("abc", 10, &x), 0); }
 
+        SUBCASE("sign only") {
+            CHECK_EQ(atoi_n("-", 10, &x), 0);
+            CHECK_EQ(atoi_n("+", 10, &x), 0);
+            CHECK_EQ(atoi_n("-abc", 10, &x), 0);
+        }
+
         CHECK_EQ(x, -42);
     }
 
