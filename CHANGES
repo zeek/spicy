@@ -1,3 +1,16 @@
+1.18.0-dev.81 | 2026-11-13 14:18:22 +0100
+
+  * Honor UTF error strategy on truncated input and invalid code points (suraiya sulthana)
+
+    `Bytes::decode()` applied the error strategy only to utfcpp's
+    `invalid_utf8`/`invalid_utf16`. utfcpp reports a sequence cut off by
+    the end of the input as `not_enough_room`, and UTF-8 encoded
+    surrogates or code points above U+10FFFF as `invalid_code_point`.
+    Those skipped the strategy and ended up as "could not decode bytes",
+    even with `REPLACE` or `IGNORE`. `string::encode()` and
+    `string::size()` had the same catch clause. Catch the common
+    `utf8::exception` base instead.
+
 1.18.0-dev.79 | 2026-11-12 10:44:08 +0100
 
   * Use full names to link to 3rdparty targets (Benjamin Bannier, Corelight)
