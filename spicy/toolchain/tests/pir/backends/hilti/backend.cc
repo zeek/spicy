@@ -456,8 +456,8 @@ TEST_CASE("parser read results crossing blocks hoist only their physical value s
 TEST_CASE("a failing read returns the legacy description and its location") {
     auto sample = makeOneByte();
     auto text = lowered(sample.package);
-    CHECK(text.find("string description;") != std::string::npos);
-    CHECK(text.find("string location;") != std::string::npos);
+    // Success leaves the failure unset, so it carries no strings.
+    CHECK(text.find("optional<tuple<string, string>> failure;") != std::string::npos);
     CHECK(text.find("expecting 1 bytes for unpacking value (%u byte%s available)") != std::string::npos);
     CHECK(text.find("one-byte.spicy:4:5-4:17") != std::string::npos);
     CHECK(text.find("parsing did not complete") == std::string::npos);

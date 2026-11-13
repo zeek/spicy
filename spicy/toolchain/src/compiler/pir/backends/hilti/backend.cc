@@ -271,12 +271,17 @@ NameMap makeNames(const ir::Package& package, const std::vector<TargetBinding>& 
         b.declarationField(::hilti::ID("gap_length"),
                            b.qualifiedType(b.typeUnsignedInteger(64), ::hilti::Constness::Mutable),
                            static_cast<::hilti::AttributeSet*>(nullptr)),
-        // A failure's description and location, as legacy parsing reports them.
-        b.declarationField(::hilti::ID("description"),
-                           b.qualifiedType(b.typeString(), ::hilti::Constness::Mutable),
-                           static_cast<::hilti::AttributeSet*>(nullptr)),
-        b.declarationField(::hilti::ID("location"),
-                           b.qualifiedType(b.typeString(), ::hilti::Constness::Mutable),
+        // A failure's description and location. Success, which every child call returns, leaves them unset, so it
+        // builds and copies no strings.
+        b.declarationField(::hilti::ID("failure"),
+                           b.qualifiedType(b.typeOptional(
+                                               b.qualifiedType(b.typeTuple(::hilti::QualifiedTypes{
+                                                                   b.qualifiedType(b.typeString(),
+                                                                                   ::hilti::Constness::Mutable),
+                                                                   b.qualifiedType(b.typeString(),
+                                                                                   ::hilti::Constness::Mutable)}),
+                                                               ::hilti::Constness::Mutable)),
+                                           ::hilti::Constness::Mutable),
                            static_cast<::hilti::AttributeSet*>(nullptr)),
     };
     return b.declarationType(::hilti::ID(names.result),
@@ -291,18 +296,29 @@ NameMap makeNames(const ir::Package& package, const std::vector<TargetBinding>& 
                                 ::hilti::Expression* gap_offset,
                                 ::hilti::Expression* gap_length,
                                 const ::hilti::Meta& meta,
-                                ::hilti::Expression* description = nullptr,
-                                ::hilti::Expression* location = nullptr) {
+                                ::hilti::Expression* failure = nullptr) {
     ::hilti::ctor::struct_::Fields fields = {
         b.ctorStructField(::hilti::ID("kind"), kind),
         b.ctorStructField(::hilti::ID("unit"), unit ? unit : b.null()),
         b.ctorStructField(::hilti::ID("cursor"), cursor),
         b.ctorStructField(::hilti::ID("gap_offset"), gap_offset),
         b.ctorStructField(::hilti::ID("gap_length"), gap_length),
-        b.ctorStructField(::hilti::ID("description"), description ? description : b.stringLiteral("")),
-        b.ctorStructField(::hilti::ID("location"), location ? location : b.stringLiteral("")),
+        b.ctorStructField(::hilti::ID("failure"), failure ? failure : b.null()),
     };
     return b.struct_(fields, meta);
+}
+
+// A failure's `(description, location)`.
+::hilti::Expression* makeFailure(::hilti::Builder& b,
+                                 ::hilti::Expression* description,
+                                 ::hilti::Expression* location,
+                                 const ::hilti::Meta& meta) {
+    return b.tuple({description, location}, meta);
+}
+
+// Element `index` of a result's failure, which must be set.
+::hilti::Expression* failurePart(::hilti::Builder& b, ::hilti::Expression* result, unsigned index) {
+    return b.index(b.deref(b.member(result, "failure")), b.integer(index));
 }
 
 using LocalBuilder = ::hilti::ExtendedBuilderTemplate<::hilti::Builder>;
@@ -689,6 +705,15 @@ protected:
         return targetType(b, package_, storage.type);
     }
 
+    // The value of an operand that the operation consumes. An affine value moves, since nothing uses it again.
+    ::hilti::Expression* _consumed(LocalBuilder& b, ir::InstId id, const ::hilti::Meta& meta) {
+        auto* value = _value(b, id);
+        if ( ir::typeDiscipline(package_, package_.inst(id).result_type) == ir::ValueDiscipline::Affine &&
+             ! held_by_reference_.contains(id.index) )
+            return b.move(value, meta);
+        return value;
+    }
+
     // Lowers one procedural operation, returning false for an operation that is not procedural.
     bool _lowerProcedural(LocalBuilder& b, ir::InstId id) {
         const auto& inst = package_.inst(id);
@@ -786,7 +811,8 @@ protected:
             }
             case ir::Opcode::VectorAppend:
                 // The vector is affine, so the append extends the storage its operand names.
-                b.addExpression(b.memberCall(_value(b, inst.args[0]), "push_back", {_value(b, inst.args[1])}, meta));
+                b.addExpression(
+                    b.memberCall(_value(b, inst.args[0]), "push_back", {_consumed(b, inst.args[1], meta)}, meta));
                 values_[id.index] = values_.at(inst.args[0].index);
                 return true;
             case ir::Opcode::SetEmpty: {
@@ -1047,7 +1073,8 @@ private:
                  ::hilti::Expression* unit,
                  const ::hilti::Meta& meta,
                  ::hilti::Expression* description = nullptr) {
-        auto* location = description ? b.stringLiteral(std::string(meta.location())) : nullptr;
+        auto* failure =
+            description ? makeFailure(b, description, b.stringLiteral(std::string(meta.location())), meta) : nullptr;
         b.addReturn(makeResult(b,
                                b.id(::hilti::ID(fmt("OutcomeKind::%s", kind))),
                                unit,
@@ -1055,8 +1082,7 @@ private:
                                b.integer(0U),
                                b.integer(0U),
                                meta,
-                               description,
-                               location),
+                               failure),
                     meta);
     }
 
@@ -1166,8 +1192,13 @@ private:
                                                             meta)),
                                 meta,
                                 // The runtime's own description and location, as legacy reports them.
-                                cb.memberCall(cb.id(::hilti::ID("e")), "description", ::hilti::Expressions{}, meta),
-                                cb.call(moduleLevel("exception_where"), {cb.id(::hilti::ID("e"))}, meta)),
+                                makeFailure(cb,
+                                            cb.memberCall(cb.id(::hilti::ID("e")),
+                                                          "description",
+                                                          ::hilti::Expressions{},
+                                                          meta),
+                                            cb.call(moduleLevel("exception_where"), {cb.id(::hilti::ID("e"))}, meta),
+                                            meta)),
                      meta);
         auto* catch_param = _b.parameter(::hilti::ID("e"),
                                          _b.typeName(::hilti::ID("hilti::MissingData")),
@@ -1417,15 +1448,14 @@ private:
                                              _member(*failed, name, "gap_offset"),
                                              _member(*failed, name, "gap_length"),
                                              meta,
-                                             _member(*failed, name, "description"),
-                                             _member(*failed, name, "location")),
+                                             _member(*failed, name, "failure")),
                                   meta);
                 b.addAssign(b.id(::hilti::ID("cursor")), b.move(_member(b, name, "cursor")), meta);
                 auto unit_value = fmt("v_%u_unit", id.index);
                 _local(b,
                        unit_value,
                        targetType(b, package_, package_.type(inst.result_type).type_arguments[1]),
-                       b.deref(_member(b, name, "unit")),
+                       b.move(b.deref(_member(b, name, "unit")), meta),
                        meta);
                 _tuples[id.index] = {"cursor", unit_value};
                 return;
@@ -1493,7 +1523,9 @@ private:
                 _tuples[id.index] = std::move(carried);
                 return;
             }
-            case ir::Opcode::Finish: _return(b, "Success", _value(b, inst.args[1]), meta); return;
+            // A child's unit is a value that finishing consumes, so the result takes it over. A root's unit is a
+            // reference, which is cheap to copy.
+            case ir::Opcode::Finish: _return(b, "Success", _consumed(b, inst.args[1], meta), meta); return;
             case ir::Opcode::Yield: return;
             default:
                 if ( ! _lowerProcedural(b, id) )
@@ -1582,6 +1614,11 @@ void lowerParserEntry(::hilti::Builder& builder,
     const auto& root_function = package.function(root.function);
     const bool has_context = root_function.parameters.size() == 2;
     ::hilti::QualifiedType* context_value = nullptr;
+    if ( has_context )
+        context_value =
+            builder.qualifiedType(builder.typeName(::hilti::ID(
+                                      names.context_types[names.root_context_type.at(root.function.index)])),
+                                  ::hilti::Constness::Mutable);
 
     for ( bool parsed_unit : {false, true} ) {
         ::hilti::declaration::Parameters params = {
@@ -1613,10 +1650,6 @@ void lowerParserEntry(::hilti::Builder& builder,
         // the instance that the connection's first parser created, and a parser run without one makes its own.
         ::hilti::Expressions arguments = {fb.id(::hilti::ID("data")), fb.id(::hilti::ID("initial_cursor"))};
         if ( has_context ) {
-            context_value =
-                builder.qualifiedType(builder.typeName(::hilti::ID(
-                                          names.context_types[names.root_context_type.at(root.function.index)])),
-                                      ::hilti::Constness::Mutable);
             fb.addLocal(::hilti::ID("context_ref"), fb.strongReference(context_value), meta);
             auto* unit_context_id = fb.id(::hilti::ID("unit_context"));
             auto* created = fb.call("spicy_rt::createContext", {fb.new_(context_value->type(), meta)}, meta);
@@ -1647,13 +1680,13 @@ void lowerParserEntry(::hilti::Builder& builder,
                                      meta),
                             meta);
         gap->addThrow(gap->exception(gap->typeName("hilti::MissingData"),
-                                     gap->member(gap->id(::hilti::ID("result")), "description"),
-                                     gap->member(gap->id(::hilti::ID("result")), "location"),
+                                     failurePart(*gap, gap->id(::hilti::ID("result")), 0),
+                                     failurePart(*gap, gap->id(::hilti::ID("result")), 1),
                                      meta),
                       meta);
         fb.addThrow(fb.exception(fb.typeName("spicy_rt::ParseError"),
-                                 fb.member(fb.id(::hilti::ID("result")), "description"),
-                                 fb.member(fb.id(::hilti::ID("result")), "location"),
+                                 failurePart(fb, fb.id(::hilti::ID("result")), 0),
+                                 failurePart(fb, fb.id(::hilti::ID("result")), 1),
                                  meta),
                     meta);
         decls.push_back(builder.function(::hilti::ID(parsed_unit ? entry.parse3 : parse1),
