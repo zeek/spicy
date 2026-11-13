@@ -37,6 +37,7 @@
 #include <hilti/ast/expressions/logical-not.h>
 #include <hilti/ast/expressions/logical-or.h>
 #include <hilti/ast/expressions/member.h>
+#include <hilti/ast/expressions/move.h>
 #include <hilti/ast/expressions/name.h>
 #include <hilti/ast/expressions/resolved-operator.h>
 #include <hilti/ast/function.h>
@@ -1373,6 +1374,14 @@ bool cfg::Cache::mayHaveSideEffects(const Expression* expr) {
 
     if ( expr->isA<expression::Name>() )
         return false;
+
+    if ( const auto* move_ = expr->tryAs<expression::Move>() )
+        return mayHaveSideEffects(move_->expression());
+
+    if ( const auto* resolved = expr->tryAs<expression::ResolvedOperator>() ) {
+        return ! resolved->operator_().isPure() ||
+               std::ranges::any_of(resolved->operands(), [&](const auto* op) { return op && mayHaveSideEffects(op); });
+    }
 
     const auto* transfer = dataflow(expr);
     if ( ! transfer )

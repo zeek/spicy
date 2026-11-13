@@ -24,6 +24,7 @@ public:
             .result_doc = "<dereferenced type>",
             .ns = "set::iterator",
             .doc = "Returns the set element that the iterator refers to.",
+            .pure = true,
         };
     }
 
