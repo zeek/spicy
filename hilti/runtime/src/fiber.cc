@@ -152,7 +152,7 @@ void __fiber_switch_trampoline(void* argsp) {
         if ( ! ::fiber_stack(to->_fiber.get()) ) {
             auto* shared_stack = context::detail::get()->fiber.shared_stack.get();
             ::fiber_init(to->_fiber.get(), shared_stack->stack, shared_stack->stack_size, fiber_bottom_abort, to);
-            void* dummy_args; // not used, but need a non-null pointer
+            void* dummy_args = nullptr; // not used, but need a non-null pointer
             ::fiber_reserve_return(to->_fiber.get(), __fiber_run_trampoline, &dummy_args, 0);
 
             // For fibers with their own or shared stacks, set boundaries from the
@@ -297,7 +297,7 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
             {
                 // For the individual stack case, the fiber owns the stack,
                 // so can push __fiber_run_trampoline directly.
-                void* dummy_args; // not used, but need a non-null pointer
+                void* dummy_args = nullptr; // not used, but need a non-null pointer
                 ::fiber_reserve_return(_fiber.get(), __fiber_run_trampoline, &dummy_args, 0);
             }
 

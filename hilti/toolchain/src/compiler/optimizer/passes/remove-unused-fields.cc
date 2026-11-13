@@ -195,7 +195,7 @@ struct Mutator : public optimizer::visitor::Mutator {
                         replaceNode(read, default_, "replacing read of unwritten optional field with default");
 
                     else {
-                        Expression* throw_;
+                        Expression* throw_ = nullptr;
                         if ( read->isA<operator_::struct_::TryMember>() )
                             throw_ = builder()->call("hilti::throw_attribute_not_set", {});
                         else

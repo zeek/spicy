@@ -240,7 +240,7 @@ constexpr std::pair<uintmax_t, uintmax_t> unsignedIntegerRange(unsigned int widt
 template<typename Error>
 uint64_t charsToUInt64(const char* dgts, int base, Error handler) {
     errno = 0;
-    char* cp;
+    char* cp = nullptr;
     auto u = strtoull(dgts, &cp, base);
     if ( cp == dgts || *cp != '\0' || (u == ULLONG_MAX && errno == ERANGE) ) {
         errno = 0;
@@ -258,7 +258,7 @@ uint64_t charsToUInt64(const char* dgts, int base, Error handler) {
 template<typename Error>
 double charsToDouble(const char* dgts, Error handler) {
     errno = 0;
-    char* cp;
+    char* cp = nullptr;
     auto d = strtod(dgts, &cp);
     if ( cp == dgts || *cp != '\0' || (d == HUGE_VAL && errno == ERANGE) ) {
         errno = 0;
