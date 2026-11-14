@@ -51,7 +51,7 @@ String string::upper(const String& s, unicode::DecodeErrorStrategy errors) {
     std::string rval;
 
     while ( p < e ) {
-        utf8proc_int32_t cp;
+        utf8proc_int32_t cp = 0;
         auto n = utf8proc_iterate(p, e - p, &cp);
 
         if ( n < 0 ) {
@@ -82,7 +82,7 @@ String string::lower(const String& s, unicode::DecodeErrorStrategy errors) {
     std::string rval;
 
     while ( p < e ) {
-        utf8proc_int32_t cp;
+        utf8proc_int32_t cp = 0;
         auto n = utf8proc_iterate(p, e - p, &cp);
 
         if ( n < 0 ) {
