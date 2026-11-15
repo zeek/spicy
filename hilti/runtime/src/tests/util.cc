@@ -147,6 +147,20 @@ TEST_CASE("atoi_n") {
         CHECK_THROWS_WITH_AS(atoi_n_<int32_t>("-9901090097", 10, 0),
                              "cannot decode value in chosen base",
                              const OutOfRange&);
+
+        // The magnitude of the minimum of a signed type is one larger than its maximum.
+        CHECK_THROWS_WITH_AS(atoi_n_<int64_t>("9223372036854775808", 10, 0),
+                             "cannot decode value in chosen base",
+                             const OutOfRange&);
+        CHECK_THROWS_WITH_AS(atoi_n_<int32_t>("2147483648", 10, 0),
+                             "cannot decode value in chosen base",
+                             const OutOfRange&);
+
+        // Types narrower than `int`.
+        CHECK_THROWS_WITH_AS(atoi_n_<int8_t>("128", 10, 0), "cannot decode value in chosen base", const OutOfRange&);
+        CHECK_THROWS_WITH_AS(atoi_n_<int8_t>("-129", 10, 0), "cannot decode value in chosen base", const OutOfRange&);
+        CHECK_THROWS_WITH_AS(atoi_n_<int16_t>("40000", 10, 0), "cannot decode value in chosen base", const OutOfRange&);
+        CHECK_THROWS_WITH_AS(atoi_n_<uint8_t>("256", 10, 0), "cannot decode value in chosen base", const OutOfRange&);
     }
 }
 
@@ -337,6 +351,7 @@ TEST_CASE("expandUTF8Escapes") {
     CHECK_THROWS_WITH_AS(expandUTF8Escapes("\\xAZ"), "cannot decode character", const Exception&);
     CHECK_EQ(expandUTF8Escapes("\\xABC"), std::string("\xAB") + "C");
     CHECK_EQ(expandUTF8Escapes("\\x01"), "\x01");
+    CHECK_EQ(expandUTF8Escapes("\\xff"), "\xff");
 }
 
 TEST_CASE("getenv") {

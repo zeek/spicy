@@ -432,6 +432,9 @@ TEST_CASE("toInt") {
         CHECK_THROWS_WITH_AS("12a"_b.toInt(), "cannot parse bytes as signed integer", const RuntimeError&);
         CHECK_THROWS_WITH_AS("-"_b.toInt(), "cannot parse bytes as signed integer", const RuntimeError&);
         CHECK_THROWS_WITH_AS("+"_b.toInt(), "cannot parse bytes as signed integer", const RuntimeError&);
+
+        CHECK_EQ("-9223372036854775808"_b.toInt(), std::numeric_limits<int64_t>::min());
+        CHECK_THROWS_WITH_AS("9223372036854775808"_b.toInt(), "cannot decode value in chosen base", const OutOfRange&);
     }
 
     SUBCASE("with byte order") {
