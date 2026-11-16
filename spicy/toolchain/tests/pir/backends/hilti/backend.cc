@@ -414,7 +414,7 @@ TEST_CASE("unreachable blocks and their Upsilons are not lowered") {
     auto text = lowered(makeSwitchingParser(true));
     // Only the default publishes nothing, so `value` is conditional, and the unreachable case leaves no read behind.
     CHECK(text.find("field_1 &optional;") != std::string::npos);
-    CHECK(text.find("unpack<uint<8>>") != std::string::npos);
+    CHECK(text.find("begin(cursor)") != std::string::npos);
 }
 
 TEST_CASE("parser read results crossing blocks hoist only their physical value storage") {

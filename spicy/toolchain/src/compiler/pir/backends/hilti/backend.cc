@@ -1239,7 +1239,20 @@ private:
         }
         auto* try_body = _b.statementBlock(meta);
         LocalBuilder tb(_b.context(), try_body);
-        if ( integer ) {
+        const auto* read = std::get_if<ir::ReadIntegerPayload>(&inst.payload);
+        if ( read && read->width == 8 ) {
+            // Availability is established above; dereferencing still detects gaps. A byte needs neither
+            // byte-order handling nor unpack's temporary buffer, result tuple, and copied stream view.
+            // Iterator dereferences have HILTI type uint<64>. The constructors narrow to eight bits,
+            // preserving the signed bit pattern; a cast to int<8> would range-check it instead.
+            const auto* ctor = read->signedness == ir::Signedness::Signed ? "int8" : "uint8";
+            auto* value = tb.namedCtor(ctor, {tb.deref(tb.begin(tb.id(::hilti::ID("cursor"))))}, meta);
+            tb.addAssign(tb.id(::hilti::ID(value_name)), value, meta);
+            tb.addAssign(tb.id(::hilti::ID("cursor")),
+                         tb.memberCall(tb.id(::hilti::ID("cursor")), "advance", {tb.integer(1U)}, meta),
+                         meta);
+        }
+        else if ( integer ) {
             auto* unpacked =
                 tb.deref(tb.unpack(value_type,
                                    {tb.id(::hilti::ID("cursor")), tb.id(::hilti::ID("hilti::ByteOrder::Network"))},
