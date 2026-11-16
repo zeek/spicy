@@ -352,6 +352,7 @@ add_executable(
     tests/main.cc
     tests/goto.cc
     tests/direct-initialization.cc
+    tests/location-tracking.cc
     tests/id-base.cc
     tests/visitor.cc
     tests/util.cc

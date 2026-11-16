@@ -25,12 +25,21 @@ public:
     auto attributes() const { return child<AttributeSet>(2); }
     auto isStatic() const { return attributes()->find(hilti::attribute::kind::Static) != nullptr; }
 
+    /**
+     * Suppresses automatic per-statement runtime location updates, keeping metadata and debug traces.
+     * For compiler-generated functions that place their own SetLocation statements.
+     */
+    void setUsesExplicitLocationTracking() { _explicit_location_tracking = true; }
+    bool usesExplicitLocationTracking() const { return _explicit_location_tracking; }
+
     void setBody(ASTContext* ctx, statement::Block* b) { setChild(ctx, 1, b); }
     void setID(ID id) { _id = std::move(id); }
     void setResultType(ASTContext* ctx, QualifiedType* t) { ftype()->setResultType(ctx, t); }
 
     node::Properties properties() const override {
         auto p = node::Properties{{"id", _id}};
+        if ( _explicit_location_tracking )
+            p.emplace("explicit_location_tracking", true);
         return Node::properties() + std::move(p);
     }
 
@@ -59,6 +68,7 @@ protected:
 
 private:
     ID _id;
+    bool _explicit_location_tracking = false;
 };
 
 } // namespace hilti

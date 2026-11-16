@@ -20,7 +20,9 @@ static auto traceStatement(CodeGen* cg, cxx::Block* b, Statement* s, bool skip_l
     if ( s->isA<statement::Block>() )
         return;
 
-    if ( cg->options().track_location && s->meta().location() && ! skip_location )
+    const auto* function = s->parent<Function>();
+    const bool explicit_locations = function && function->usesExplicitLocationTracking();
+    if ( cg->options().track_location && ! explicit_locations && s->meta().location() && ! skip_location )
         b->addStatement(fmt("  ::hilti::rt::location(\"%s\")", s->meta().location()));
 
     if ( cg->options().debug_trace ) {
