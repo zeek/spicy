@@ -284,8 +284,13 @@ NameMap makeNames(const ir::Package& package, const std::vector<TargetBinding>& 
                                            ::hilti::Constness::Mutable),
                            static_cast<::hilti::AttributeSet*>(nullptr)),
     };
+    auto* result = b.typeStruct(fields);
+    // Every outcome explicitly supplies all fields, including empty optionals. Child calls need no extra
+    // optional constructor arguments to represent omitted initializers, nor default-then-assign construction.
+    if ( ! names.root )
+        result->setUsesDirectFieldInitialization();
     return b.declarationType(::hilti::ID(names.result),
-                             b.qualifiedType(b.typeStruct(fields), ::hilti::Constness::Const),
+                             b.qualifiedType(result, ::hilti::Constness::Const),
                              ::hilti::declaration::Linkage::Public);
 }
 
