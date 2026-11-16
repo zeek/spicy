@@ -1,0 +1,99 @@
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -p -D spicy-pir >/dev/null 2>pir.log
+# @TEST-EXEC: rg "attached PIR-produced" pir.log >route
+# @TEST-EXEC: btest-diff route
+# @TEST-EXEC: HILTI_CXX_FLAGS="-I. -include observe.h" spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: HILTI_CXX_FLAGS="-I. -include observe.h" spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: HILTI_CXX_FLAGS="-I. -include observe.h" spicyc %INPUT -j driver.cc >legacy
+# @TEST-EXEC: cmp output legacy
+
+# @TEST-DOC: The host receives the same root instance whose field the completion hook borrowed, with
+# its completed vector intact. Covers whole and incremental input through the public parse3 endpoint.
+
+module Test;
+
+function observe(inout tag: uint8) &cxxname="observe" &have_prototype;
+
+type Item = unit {
+    value: uint8;
+};
+
+public type Message = unit {
+    tag: uint8;
+    items: Item[] &size=3;
+
+    on %done { observe(self.tag); }
+};
+
+@TEST-START-FILE observe.h
+#pragma once
+#include <hilti/rt/libhilti.h>
+
+void observe(hilti::rt::integer::safe<uint8_t>& tag);
+@TEST-END-FILE
+
+@TEST-START-FILE driver.cc
+#include <iostream>
+
+#include <hilti/rt/libhilti.h>
+#include <spicy/rt/libspicy.h>
+
+static const void* observed = nullptr;
+
+void observe(hilti::rt::integer::safe<uint8_t>& tag) {
+    observed = &tag;
+    tag += 10;
+}
+
+static bool run(const spicy::rt::Parser* parser, bool incremental) {
+    observed = nullptr;
+    auto unit = hilti::rt::reference::make_value<spicy::rt::ParsedUnit>();
+    auto data = hilti::rt::reference::make_value<hilti::rt::Stream>();
+    const char input[] = {1, 2, 3, 4};
+    data->append(hilti::rt::Bytes(input, incremental ? 2 : sizeof(input)));
+    if ( ! incremental )
+        data->freeze();
+    auto result = parser->parse3(unit, data, {}, {});
+    if ( incremental ) {
+        if ( result )
+            return false;
+        data->append(hilti::rt::Bytes(input + 2, 2));
+        data->freeze();
+        result.resume();
+    }
+    if ( ! result || result.get<hilti::rt::stream::View>().offset() != sizeof(input) )
+        return false;
+
+    const auto value = unit->value();
+    const auto fields = value.type().struct_->iterate(value);
+    const auto& tag = fields.at(0).second;
+    const auto same = observed && tag.pointer() == observed;
+    const auto& items = fields.at(1).second;
+    size_t count = 0;
+    for ( const auto& item : items.type().vector->iterate(items) ) {
+        (void)item;
+        ++count;
+    }
+    std::cout << (incremental ? "incremental" : "whole")
+              << " same field=" << same << " tag=" << tag.to_string() << " items=" << count << '\n';
+    return same && count == 3 && tag.to_string() == "11";
+}
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    auto parser = spicy::rt::lookupParser(hilti::rt::String("Test::Message"));
+    if ( ! parser || ! (*parser)->parse3 )
+        return 1;
+    const auto whole = run(*parser, false);
+    const auto incremental = run(*parser, true);
+    return whole && incremental ? 0 : 1;
+}
+
+int main() {
+    hilti::rt::init();
+    spicy::rt::init();
+    const auto result = hilti_main();
+    hilti::rt::done();
+    return result;
+}
+@TEST-END-FILE

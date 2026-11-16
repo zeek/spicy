@@ -1523,9 +1523,9 @@ private:
                 _tuples[id.index] = std::move(carried);
                 return;
             }
-            // A child's unit is a value that finishing consumes, so the result takes it over. A root's unit is a
-            // reference, which is cheap to copy.
-            case ir::Opcode::Finish: _return(b, "Success", _consumed(b, inst.args[1], meta), meta); return;
+            // Finishing consumes the unit, including a root's value reference: copying that reference would
+            // deep-copy the completed unit rather than transfer it to the result.
+            case ir::Opcode::Finish: _return(b, "Success", b.move(_value(b, inst.args[1]), meta), meta); return;
             case ir::Opcode::Yield: return;
             default:
                 if ( ! _lowerProcedural(b, id) )
