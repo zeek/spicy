@@ -302,7 +302,8 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
                                            .members = std::move(fields),
                                            .type_name = cxx::ID(id.local()),
                                            .ctor = std::move(ctor),
-                                           .add_ctors = true};
+                                           .add_ctors = true,
+                                           .direct_field_initialization = n->usesDirectFieldInitialization()};
 
                 // Only emit full inline code if we are generating the unit declaring this type.
                 if ( n->typeID().namespace_() == cg->unit()->module()->id() )

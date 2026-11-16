@@ -455,6 +455,7 @@ struct Struct {
     std::optional<cxx::Type> self;
     cxx::Block ctor;
     bool add_ctors = false;
+    bool direct_field_initialization = false;
     std::string str() const;
     std::string code() const;
 

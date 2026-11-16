@@ -12,6 +12,7 @@
 #include <hilti/ast/ctors/list.h>
 #include <hilti/ast/ctors/map.h>
 #include <hilti/ast/ctors/set.h>
+#include <hilti/ast/ctors/struct.h>
 #include <hilti/ast/ctors/tuple.h>
 #include <hilti/ast/ctors/vector.h>
 #include <hilti/ast/declarations/constant.h>
@@ -892,7 +893,22 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
             error(fmt("type %s cannot be used inside result", *t), n);
     }
 
+    void operator()(ctor::Struct* n) final {
+        auto* t = n->type()->type()->tryAs<type::Struct>();
+        if ( ! t || ! t->usesDirectFieldInitialization() )
+            return;
+
+        for ( const auto& f : t->fields() ) {
+            // The optimizer marks unused fields `&no-emit` and drops their initializers.
+            if ( ! f->isNoEmit() && ! n->field(f->id()) )
+                error(fmt("direct struct initialization requires an initializer for field '%s'", f->id()), n);
+        }
+    }
+
     void operator()(type::Struct* n) final {
+        if ( n->usesDirectFieldInitialization() && ! n->parameters().empty() )
+            error("direct struct initialization does not support type parameters", n);
+
         std::map<ID, type::Function*> seen;
 
         for ( const auto& f : n->fields() ) {
@@ -908,6 +924,10 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
             }
 
             seen.insert({f->id(), func});
+
+            if ( n->usesDirectFieldInitialization() &&
+                 (func || f->isStatic() || f->isInternal() || f->isOptional() || f->default_()) )
+                error("direct struct initialization requires ordinary fields without defaults or attributes", f);
 
             if ( f->isStatic() && f->default_() )
                 error("&default is currently not supported for static fields", n);

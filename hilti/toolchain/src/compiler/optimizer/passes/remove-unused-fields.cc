@@ -234,8 +234,9 @@ struct Mutator : public optimizer::visitor::Mutator {
 
     // Removes writes to a given field. Handles all write cases identified by
     // the collector (and only those), and assumes there are no writes to the
-    // field.
-    void removeWrites(const Collector::Field& field) {
+    // field. Returns true if no write remains.
+    bool removeWrites(const Collector::Field& field) {
+        bool all_removed = true;
         for ( auto* write : field.writes ) {
             if ( auto* n = write->tryAs<ctor::struct_::Field>() ) {
                 // Remove field initialization from struct constructor. We
@@ -257,6 +258,8 @@ struct Mutator : public optimizer::visitor::Mutator {
                         // when printing the AST.
                         coerced->originalCtor()->as<ctor::Struct>()->removeField(n->id());
                 }
+                else
+                    all_removed = false;
             }
 
             else if ( auto* n = write->tryAs<operator_::struct_::MemberNonConst>() ) {
@@ -324,6 +327,8 @@ struct Mutator : public optimizer::visitor::Mutator {
                 // All cases identified by the collector should be handled above.
                 hilti::rt::cannot_be_reached();
         }
+
+        return all_removed;
     }
 
     // Removes unsets of a given field.
@@ -347,8 +352,14 @@ struct Mutator : public optimizer::visitor::Mutator {
                 removeUnsets(field);
             }
 
-            else if ( field.reads.empty() && ! field.writes.empty() )
-                removeWrites(field);
+            else if ( field.reads.empty() && ! field.writes.empty() ) {
+                // Mark the field right away: a struct with direct field initialization is only valid without the
+                // initializer once the field is `&no-emit`, and the AST is validated after each round.
+                if ( removeWrites(field) ) {
+                    removeField(field);
+                    removeUnsets(field);
+                }
+            }
 
             else if ( ! field.reads.empty() && field.writes.empty() )
                 removeReads(field);

@@ -144,8 +144,6 @@
 [debug/optimizer]       - updating function: foo::P2::_t_parse_foo__P2_stage2
 [debug/optimizer]       - updating function: foo::P2::_t_parse_foo__P2_stage2
 [debug/optimizer]       - updating function: foo::P2::_t_parse_foo__P2_stage2
-[debug/optimizer]       - updating function: foo::P2::_t_parse_foo__P2_stage2
-[debug/optimizer]       - updating function: foo::P2::_t_parse_foo__P2_stage2
 [debug/optimizer]       - updating function: foo::P2::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::P2::_t_parse_stage1
 [debug/optimizer]       - updating function: foo::P2::_t_parse_stage1
@@ -192,8 +190,6 @@
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]     * computed CFGs
 [debug/optimizer]     * computed CFGs
-[debug/optimizer]     * computed CFGs
-[debug/optimizer]     * constant-folder
 [debug/optimizer]     * constant-folder
 [debug/optimizer]     * constant-folder
 [debug/optimizer]     * constant-folder
@@ -357,8 +353,6 @@
 [debug/optimizer]     * resolver
 [debug/optimizer]     * resolver
 [debug/optimizer]     * resolver
-[debug/optimizer]     * resolver
-[debug/optimizer]     -> modified
 [debug/optimizer]     -> modified
 [debug/optimizer]     -> modified
 [debug/optimizer]     -> modified
@@ -869,7 +863,6 @@
 [debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]   re-processing AST, round 1
-[debug/optimizer]   re-processing AST, round 1
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded,resolved>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
@@ -892,7 +885,6 @@
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
-[debug/optimizer]   re-resolving AST assuming guarantees <none>
 [debug/optimizer]   re-resolving AST assuming guarantees <none>
 [debug/optimizer]   re-resolving AST assuming guarantees <none>
 [debug/optimizer]   re-resolving AST assuming guarantees <none>

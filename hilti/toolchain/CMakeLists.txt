@@ -351,6 +351,7 @@ add_executable(
     EXCLUDE_FROM_ALL
     tests/main.cc
     tests/goto.cc
+    tests/direct-initialization.cc
     tests/id-base.cc
     tests/visitor.cc
     tests/util.cc

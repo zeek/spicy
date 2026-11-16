@@ -43,6 +43,21 @@ public:
 
     auto hasFinalizer() const { return field("~finally") != nullptr; }
 
+    /**
+     * Opts a compiler-generated record into direct C++ member initialization. Such records must have only
+     * ordinary fields, no parameters or field defaults, and an explicit initializer for every field in every
+     * struct constructor. Optional-typed fields still retain their optional payloads.
+     */
+    void setUsesDirectFieldInitialization() { _direct_field_initialization = true; }
+    bool usesDirectFieldInitialization() const { return _direct_field_initialization; }
+
+    node::Properties properties() const final {
+        auto p = UnqualifiedType::properties();
+        if ( _direct_field_initialization )
+            p.emplace("direct_field_initialization", true);
+        return p;
+    }
+
     auto self() const {
         assert(! isWildcard());
         return child<declaration::Expression>(0);
@@ -104,6 +119,8 @@ protected:
 
 private:
     void _setSelf(ASTContext* ctx);
+
+    bool _direct_field_initialization = false;
 };
 
 } // namespace hilti::type

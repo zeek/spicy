@@ -500,7 +500,9 @@ std::string cxx::type::Struct::str() const {
         if ( ! locals_user.empty() ) {
             auto locals_ctor_args = util::join(locals_user | std::views::transform([&](const auto& x) {
                                                    auto& l = std::get<declaration::Local>(x);
-                                                   return fmt("::hilti::rt::Optional<%s> %s", l.type, l.id);
+                                                   return direct_field_initialization ?
+                                                              fmt("%s %s", l.type, l.id) :
+                                                              fmt("::hilti::rt::Optional<%s> %s", l.type, l.id);
                                                }),
                                                ", ");
             auto locals_ctor = fmt("explicit %s(::hilti::rt::struct_::tag::Inits, %s);", type_name, locals_ctor_args);
@@ -631,9 +633,22 @@ std::string cxx::type::Struct::code() const {
         // Create constructor taking the struct's (non-function) fields.
         auto ctor_args = util::join(locals_user | std::views::transform([&](const auto& x) {
                                         auto& l = std::get<declaration::Local>(x);
-                                        return fmt("::hilti::rt::Optional<%s> %s", l.type, l.id);
+                                        return direct_field_initialization ?
+                                                   fmt("%s %s", l.type, l.id) :
+                                                   fmt("::hilti::rt::Optional<%s> %s", l.type, l.id);
                                     }),
                                     ", ");
+
+        if ( direct_field_initialization ) {
+            auto inits = util::join(locals_user | std::views::transform([](const auto& x) {
+                                        auto& l = std::get<declaration::Local>(x);
+                                        return fmt("%s(std::move(%s))", l.id, l.id);
+                                    }),
+                                    ", ");
+            code +=
+                fmt("%s::%s(::hilti::rt::struct_::tag::Inits, %s) : %s {}\n\n", type_name, type_name, ctor_args, inits);
+            return code;
+        }
 
         auto ctor_inits = util::join(locals_user | std::views::transform([&](const auto& x) {
                                          auto& l = std::get<declaration::Local>(x);
