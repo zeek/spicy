@@ -15,6 +15,7 @@
 #include <hilti/ast/declarations/module.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/util.h>
+#include <hilti/compiler/context.h>
 
 #include <spicy/compiler/detail/pir/analyses/field-use.h>
 #include <spicy/compiler/detail/pir/backends/hilti/backend.h>
@@ -1048,19 +1049,32 @@ public:
             arguments_.emplace(1, Storage{.name = "context"});
         _emitBody(fb, fn.root_region, [this](LocalBuilder& b, ir::InstId id) { _lowerInst(b, id); });
 
-        return _b.function(::hilti::ID(names.function),
-                           _b.qualifiedType(_b.typeName(::hilti::ID(names.result)), ::hilti::Constness::Mutable),
-                           params,
-                           body,
-                           ::hilti::type::function::Flavor::Function,
-                           ::hilti::declaration::Linkage::Public,
-                           names.root ? ::hilti::type::function::CallingConvention::Extern :
-                                        ::hilti::type::function::CallingConvention::Standard,
-                           {},
-                           meta);
+        auto* function =
+            _b.function(::hilti::ID(names.function),
+                        _b.qualifiedType(_b.typeName(::hilti::ID(names.result)), ::hilti::Constness::Mutable),
+                        params,
+                        body,
+                        ::hilti::type::function::Flavor::Function,
+                        ::hilti::declaration::Linkage::Public,
+                        names.root ? ::hilti::type::function::CallingConvention::Extern :
+                                     ::hilti::type::function::CallingConvention::Standard,
+                        {},
+                        meta);
+        function->function()->setUsesExplicitLocationTracking();
+        return function;
     }
 
 private:
+    // Updates the runtime location unless it is known to be current already. The function opts out of
+    // HILTI's automatic per-statement updates, so generated bookkeeping adds no writes.
+    void _location(LocalBuilder& b, const ::hilti::Meta& meta) {
+        if ( ! _b.options().track_location || (_known_location && *_known_location == meta.location()) )
+            return;
+        if ( meta.location() )
+            b.block()->_add(b.context(), b.statementSetLocation(b.stringLiteral(std::string(meta.location()))));
+        _known_location = meta.location();
+    }
+
     // A root holds the unit it creates through a reference.
     ::hilti::QualifiedType* _storageType(LocalBuilder& b, const Storage& storage) final {
         if ( names_.at(_id.index).root && package_.inst(storage.owner).opcode == ir::Opcode::UnitCreate )
@@ -1328,6 +1342,44 @@ private:
 
     void _lowerInst(LocalBuilder& b, ir::InstId id) {
         const auto& inst = package_.inst(id);
+        if ( _location_block != inst.parent ) {
+            _known_location.reset(); // Labels, branches, and loop backedges may enter with another location.
+            _location_block = inst.parent;
+        }
+        // Constants, storage aliases, and successful result construction cannot report a source-level runtime
+        // failure. Every other operation keeps its own boundary.
+        switch ( inst.opcode ) {
+            case ir::Opcode::Argument:
+            case ir::Opcode::RegionArgument:
+            case ir::Opcode::IntConstant:
+            case ir::Opcode::BoolConstant:
+            case ir::Opcode::StringConstant:
+            case ir::Opcode::ForeignConstant:
+            case ir::Opcode::FieldPlace:
+            case ir::Opcode::GlobalPlace:
+            case ir::Opcode::TupleGet:
+            case ir::Opcode::Phi:
+            case ir::Opcode::Upsilon:
+            case ir::Opcode::UnitCreate:
+            case ir::Opcode::VectorEmpty:
+            case ir::Opcode::SetEmpty:
+            case ir::Opcode::Finish: break;
+            default: _location(b, metaFor(package_, inst.span)); break;
+        }
+        _lowerInstBody(b, id);
+        // Callees set their own location, and a loop exits with its body's. Waiting for input does not change
+        // it: each fiber keeps its own.
+        switch ( inst.opcode ) {
+            case ir::Opcode::Call:
+            case ir::Opcode::OpaqueOp:
+            case ir::Opcode::ParseSubunit:
+            case ir::Opcode::RepeatToBound: _known_location.reset(); break;
+            default: break;
+        }
+    }
+
+    void _lowerInstBody(LocalBuilder& b, ir::InstId id) {
+        const auto& inst = package_.inst(id);
         auto meta = metaFor(package_, inst.span);
         switch ( inst.opcode ) {
             case ir::Opcode::Argument: values_[id.index] = _storage(id).name; return;
@@ -1339,8 +1391,10 @@ private:
                 auto index = std::get<ir::TupleGetPayload>(inst.payload).index;
                 if ( auto tuple = _tuples.find(inst.args[0].index); tuple != _tuples.end() )
                     values_[id.index] = tuple->second.at(index);
-                else
+                else {
+                    _location(b, meta);
                     _lowerProcedural(b, id);
+                }
                 return;
             }
             case ir::Opcode::UnitCreate: {
@@ -1554,6 +1608,8 @@ private:
 
     ::hilti::Builder& _b;
     ir::FunctionId _id;
+    ir::BlockId _location_block;
+    std::optional<::hilti::Location> _known_location;
     std::unordered_map<uint32_t, std::vector<std::string>> _tuples;
 };
 

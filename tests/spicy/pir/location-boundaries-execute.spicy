@@ -1,0 +1,54 @@
+# @TEST-EXEC: cp ${SCRIPTS}/pir-parse.h parse.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -p -D spicy-pir >/dev/null 2>pir.log
+# @TEST-EXEC: rg "attached PIR-produced" pir.log >route
+# @TEST-EXEC: btest-diff route
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT -j driver.cc >legacy
+# @TEST-EXEC: cmp output legacy
+
+# @TEST-DOC: Runtime error locations survive child completion hooks, vector backedges, switch arms, and
+# suspension. Gaps at every position and truncations outside the vector are compared with legacy,
+# optimized and unoptimized. At vector element boundaries, legacy instead reports an unconsumed &size.
+
+module Test;
+
+type Child = unit {
+    tag: uint8;
+    on %done { print "child", self.tag; }
+};
+
+public type Message = unit {
+    length: uint8 { print "length", self.length; }
+    items: Child[] &size=self.length;
+    selector: uint8;
+    switch ( self.selector ) {
+        1 -> a: uint16;
+        * -> b: uint32;
+    };
+    tail: uint16;
+};
+
+@TEST-START-FILE driver.cc
+static constexpr unsigned error_style = 2;
+#include "parse.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    for ( auto input : {std::string("\x02\x04\x05\x01\x01\x02\x03\x04", 8),
+                       std::string("\x02\x04\x05\x02\x01\x02\x03\x04\x05\x06", 10)} ) {
+        run("Test::Message", "whole", {{input}});
+        run("Test::Message", "bytewise", {{input}}, 1);
+        for ( size_t offset = 0; offset < input.size(); ++offset ) {
+            const auto label = std::to_string(input.size()) + "-" + std::to_string(offset);
+            if ( offset == 0 || offset >= 3 )
+                run("Test::Message", ("eod-" + label).c_str(), {{input.substr(0, offset)}});
+            run("Test::Message", ("gap-" + label).c_str(),
+                {{input.substr(0, offset)}, {"", 1}, {input.substr(offset + 1)}}, 1);
+        }
+    }
+    return 0;
+}
+
+@TEST-END-FILE
