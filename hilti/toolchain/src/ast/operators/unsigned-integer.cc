@@ -43,10 +43,9 @@ inline void validateShiftAmount(expression::ResolvedOperator* n) {
         if ( auto* coerced = ctor->tryAs<ctor::Coerced>() )
             ctor = coerced->coercedCtor();
 
-        if ( auto* i = ctor->tryAs<ctor::UnsignedInteger>() ) {
-            if ( i->value() >= n->op0()->type()->type()->as<type::UnsignedInteger>()->width() )
-                n->addError("shift amount must be smaller than operand's width", n->location());
-        }
+        if ( auto* i = ctor->tryAs<ctor::UnsignedInteger>();
+             i && i->value() >= n->op0()->type()->type()->as<type::UnsignedInteger>()->width() )
+            n->addError("shift amount must be smaller than operand's width", n->location());
     }
 }
 

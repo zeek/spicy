@@ -55,7 +55,7 @@ struct VisitorDeclaration : hilti::visitor::PreOrder {
 
         result = cache->getOrCreate(
             id,
-            []() {
+            [] {
                 // Just return an empty dummy for now to avoid cyclic recursion.
                 return cxx::declaration::Type();
             },
@@ -629,7 +629,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
 
         result = cache->getOrCreate(
             sid,
-            [&]() { return CxxTypes{.base_type = std::string(sid)}; },
+            [&] { return CxxTypes{.base_type = std::string(sid)}; },
             [&](auto& cxx_types) {
                 auto render_body = cxx::Block();
                 render_body.addStatement("o << ::hilti::rt::to_string(x); return o");
@@ -739,7 +739,7 @@ struct VisitorStorage : hilti::visitor::PreOrder {
 
         result = cache->getOrCreate(
             sid,
-            [&]() { return CxxTypes{.base_type = std::string(sid)}; },
+            [&] { return CxxTypes{.base_type = std::string(sid)}; },
             [&](auto& cxx_types) {
                 auto render_body = cxx::Block();
                 render_body.addStatement("return o << ::hilti::rt::to_string(x);");
@@ -1240,7 +1240,7 @@ const CxxTypeInfo& CodeGen::_getOrCreateTypeInfo(QualifiedType* t) {
 
     return _cache_type_info.getOrCreate(
         tid,
-        [&]() {
+        [&] {
             auto v = VisitorTypeInfoPredefined(this);
 
             if ( auto x = hilti::visitor::dispatch(v, t->type(), [](const auto& v) -> const auto& { return v.result; });

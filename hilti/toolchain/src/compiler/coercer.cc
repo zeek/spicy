@@ -172,10 +172,8 @@ struct VisitorCtor : visitor::PreOrder {
             result = builder->ctorSet(dt, nexprs, n->meta());
         }
 
-        if ( dst->type()->isA<type::Struct>() ) {
-            if ( n->value().empty() )
-                result = builder->ctorStruct({}, dst, n->meta());
-        }
+        if ( dst->type()->isA<type::Struct>() && n->value().empty() )
+            result = builder->ctorStruct({}, dst, n->meta());
     }
 
     void operator()(ctor::Real* n) final {
@@ -585,17 +583,14 @@ struct VisitorType : visitor::PreOrder {
             return;
         }
 
-        if ( dst->type()->isReferenceType() ) {
-            if ( type::sameExceptForConstness(n->dereferencedType(), dst->type()->dereferencedType()) ) {
-                result = dst->type()->dereferencedType()->isWildcard() ? src : dst;
-                return;
-            }
+        if ( dst->type()->isReferenceType() &&
+             type::sameExceptForConstness(n->dereferencedType(), dst->type()->dereferencedType()) ) {
+            result = dst->type()->dereferencedType()->isWildcard() ? src : dst;
+            return;
         }
 
-        if ( ! (style & CoercionStyle::Assignment) ) {
-            if ( type::same(n->dereferencedType(), dst) ) {
-                result = dst;
-            }
+        if ( ! (style & CoercionStyle::Assignment) && type::same(n->dereferencedType(), dst) ) {
+            result = dst;
         }
     }
 
@@ -624,10 +619,8 @@ struct VisitorType : visitor::PreOrder {
         if ( dst->type()->isA<type::Bool>() && (style & CoercionStyle::ContextualConversion) )
             result = dst;
 
-        else if ( auto* t = dst->type()->tryAs<type::SignedInteger>() ) {
-            if ( n->width() <= t->width() )
-                result = dst;
-        }
+        else if ( auto* t = dst->type()->tryAs<type::SignedInteger>(); t && n->width() <= t->width() )
+            result = dst;
     }
 
     void operator()(type::Stream* /*n*/) final {
@@ -644,10 +637,9 @@ struct VisitorType : visitor::PreOrder {
         if ( auto* lt = dst->type()->tryAs<type::Library>(); lt && lt->cxxName() == "::hilti::rt::TypeInfo*" )
             result = dst->recreateAsConst(builder->context());
 
-        else if ( auto* t = dst->type()->tryAs<type::Type_>() ) {
-            if ( type::sameExceptForConstness(n->typeValue(), t->typeValue()) )
-                result = src;
-        }
+        else if ( auto* t = dst->type()->tryAs<type::Type_>();
+                  t && type::sameExceptForConstness(n->typeValue(), t->typeValue()) )
+            result = src;
 
         // Allow ctor calls.
         if ( auto x = hilti::coerceType(builder, n->typeValue(), dst, CoercionStyle::TryDirectForMatching) )
@@ -665,26 +657,20 @@ struct VisitorType : visitor::PreOrder {
             return;
         }
 
-        if ( auto* t = dst->type()->tryAs<type::UnsignedInteger>() ) {
-            if ( n->width() <= t->width() ) {
-                result = dst;
-                return;
-            }
+        if ( auto* t = dst->type()->tryAs<type::UnsignedInteger>(); t && n->width() <= t->width() ) {
+            result = dst;
+            return;
         }
 
-        if ( auto* t = dst->type()->tryAs<type::SignedInteger>() ) {
-            // As long as the target type has more bits, we can coerce.
-            if ( n->width() < t->width() ) {
-                result = dst;
-                return;
-            }
+        // As long as the target type has more bits, we can coerce.
+        if ( auto* t = dst->type()->tryAs<type::SignedInteger>(); t && n->width() < t->width() ) {
+            result = dst;
+            return;
         }
 
-        if ( auto* t = dst->type()->tryAs<type::Bitfield>() ) {
-            if ( n->width() <= t->width() ) {
-                result = dst;
-                return;
-            }
+        if ( auto* t = dst->type()->tryAs<type::Bitfield>(); t && n->width() <= t->width() ) {
+            result = dst;
+            return;
         }
     }
 
@@ -713,11 +699,10 @@ struct VisitorType : visitor::PreOrder {
             return;
         }
 
-        if ( dst->type()->isReferenceType() ) {
-            if ( type::sameExceptForConstness(n->dereferencedType(), dst->type()->dereferencedType()) ) {
-                result = dst;
-                return;
-            }
+        if ( dst->type()->isReferenceType() &&
+             type::sameExceptForConstness(n->dereferencedType(), dst->type()->dereferencedType()) ) {
+            result = dst;
+            return;
         }
 
         if ( type::same(n->dereferencedType(), dst) ) {
@@ -732,18 +717,15 @@ struct VisitorType : visitor::PreOrder {
             return;
         }
 
-        if ( dst->type()->isReferenceType() ) {
-            if ( type::sameExceptForConstness(n->dereferencedType(), dst->type()->dereferencedType()) ) {
-                result = dst;
-                return;
-            }
+        if ( dst->type()->isReferenceType() &&
+             type::sameExceptForConstness(n->dereferencedType(), dst->type()->dereferencedType()) ) {
+            result = dst;
+            return;
         }
 
-        if ( ! (style & CoercionStyle::Assignment) ) {
-            if ( type::same(n->dereferencedType(), dst) ) {
-                result = dst;
-                return;
-            }
+        if ( ! (style & CoercionStyle::Assignment) && type::same(n->dereferencedType(), dst) ) {
+            result = dst;
+            return;
         }
     }
 };

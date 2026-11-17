@@ -206,7 +206,7 @@ struct ProductionVisitor : public production::Visitor {
         auto* missing =
             builder()->lower(builder()->memberCall(state().cur, "offset"), builder()->memberCall(ncur, "offset"));
         auto insufficient = builder()->addIf(missing);
-        pushBuilder(std::move(insufficient), [&]() {
+        pushBuilder(std::move(insufficient), [&] {
             if ( field && ! field->isAnonymous() && ! field->isSkip() )
                 // Clear the field in case the type parsing has started
                 // to fill it.
@@ -227,7 +227,7 @@ struct ProductionVisitor : public production::Visitor {
         // operation for productions that recurse.
         const auto& id = parse_functions.getOrCreate(
             p.symbol(),
-            [&]() {
+            [&] {
                 return unit ? ID(HILTI_INTERNAL_ID("parse_stage1")) :
                               ID(fmt(HILTI_INTERNAL_ID("parse_%s_stage1"), p.symbol()));
             },
@@ -249,7 +249,7 @@ struct ProductionVisitor : public production::Visitor {
                 // filter support); or into just a single joint function
                 // doing both (w/o filtering).
 
-                auto run_finally = [&]() {
+                auto run_finally = [&] {
                     pb->beforeHook();
                     builder()->addMemberCall(state().self, HILTI_INTERNAL_ID("on_0x25_finally"), {}, p.location());
                     pb->afterHook();
@@ -288,7 +288,7 @@ struct ProductionVisitor : public production::Visitor {
                     auto catch_ = try_->addCatch(builder()->parameter(HILTI_INTERNAL_ID("except"),
                                                                       builder()->typeName("hilti::SystemException")));
 
-                    pushBuilder(std::move(catch_), [&]() {
+                    pushBuilder(std::move(catch_), [&] {
                         pb->finalizeUnit(false, p.location());
                         run_finally();
                         builder()->addRethrow();
@@ -297,7 +297,7 @@ struct ProductionVisitor : public production::Visitor {
 
                 // First stage parse functionality implementing
                 // initialization and potentially filtering.
-                auto build_parse_stage1_logic = [&]() {
+                auto build_parse_stage1_logic = [&] {
                     if ( unit ) {
                         auto* field = p.meta().field();
                         auto* type = p.type();
@@ -326,7 +326,7 @@ struct ProductionVisitor : public production::Visitor {
                     }
                 };
 
-                auto build_parse_stage1 = [&]() {
+                auto build_parse_stage1 = [&] {
                     pushBuilder();
 
                     builder()->setLocation(p.location());
@@ -373,7 +373,7 @@ struct ProductionVisitor : public production::Visitor {
 
                     // Disable trimming for random-access units.
                     pushBuilder(builder()->addIf(pb->featureConstant(unit, "uses_random_access")),
-                                [&]() { builder()->addAssign(state().trim, builder()->bool_(false)); });
+                                [&] { builder()->addAssign(state().trim, builder()->bool_(false)); });
 
                     build_parse_stage1_logic();
 
@@ -395,7 +395,7 @@ struct ProductionVisitor : public production::Visitor {
                                                                      hilti::Constness::Mutable)));
 
                     if ( unit ) {
-                        pb->guardFeatureCode(unit, {"supports_filters"}, [&]() {
+                        pb->guardFeatureCode(unit, {"supports_filters"}, [&] {
                             // If we have a filter attached, we initialize it and change to parse from its output.
                             auto* offset1 = builder()->addTmp("offset1",
                                                               builder()->memberCall(builder()->begin(
@@ -465,7 +465,7 @@ struct ProductionVisitor : public production::Visitor {
 
                 // Second stage parse functionality implementing the main
                 // part of the unit's parsing.
-                auto build_parse_stage2_logic = [&]() {
+                auto build_parse_stage2_logic = [&] {
                     if ( ! unit && p.meta().field() )
                         pushDestination(builder()->id(HILTI_INTERNAL_ID("dst")));
                     else
@@ -681,12 +681,11 @@ struct ProductionVisitor : public production::Visitor {
 
         bool use_full_field_parsing = true;
 
-        if ( is_field_owner && p->tryAs<production::Variable>() ) {
-            // Try optimized field parsing first. If this works, we can skip
-            // the full machinery below.
-            if ( pb->parseType(p->type()->type(), p->meta(), destination(true), TypesMode::Optimize) )
-                use_full_field_parsing = false; // parsed through optimized means
-        }
+        // Try optimized field parsing first. If this works, we can skip
+        // the full machinery below.
+        if ( is_field_owner && p->tryAs<production::Variable>() &&
+             pb->parseType(p->type()->type(), p->meta(), destination(true), TypesMode::Optimize) )
+            use_full_field_parsing = false; // parsed through optimized means
 
         Expression* ncur = nullptr;
         Expression* ncur_max_size = nullptr;
@@ -763,7 +762,7 @@ struct ProductionVisitor : public production::Visitor {
             auto catch_ = try_->second.addCatch(
                 builder()->parameter(HILTI_INTERNAL_ID("except"), builder()->typeName("hilti::SystemException")));
 
-            pushBuilder(std::move(catch_), [&]() {
+            pushBuilder(std::move(catch_), [&] {
                 auto* what = builder()->call("hilti::exception_what", {builder()->id(HILTI_INTERNAL_ID("except"))});
                 builder()->addMemberCall(state().self,
                                          ID(fmt(HILTI_INTERNAL_ID("on_%s_error"), field->id().local())),
@@ -929,7 +928,7 @@ struct ProductionVisitor : public production::Visitor {
             auto* cond = builder()->greaterEqual(builder()->memberCall(state().cur, "offset"),
                                                  builder()->memberCall(state().ncur, "offset"));
             auto exceeded = builder()->addIf(cond);
-            pushBuilder(std::move(exceeded), [&]() {
+            pushBuilder(std::move(exceeded), [&] {
                 // We didn't finish parsing the data, which is an error.
                 if ( ! field->isAnonymous() && ! field->isSkip() )
                     // Clear the field in case the type parsing has started to fill it.
@@ -983,7 +982,7 @@ struct ProductionVisitor : public production::Visitor {
                                                         builder()->member(state().self, HILTI_INTERNAL_ID("offset")),
                                                         builder()->integer(0)));
 
-            pb->guardFeatureCode(state().unit, {"uses_offset"}, [&]() {
+            pb->guardFeatureCode(state().unit, {"uses_offset"}, [&] {
                 builder()->addAssign(builder()->member(state().self, HILTI_INTERNAL_ID("offset")),
                                      pre_container_offset);
             });
@@ -1031,16 +1030,15 @@ struct ProductionVisitor : public production::Visitor {
             builder()->addAssign(dst, need_copy_from);
         }
 
-        if ( ! meta.container() ) {
-            if ( pb->isEnabledDefaultNewValueForField() && state().literal_mode == LiteralMode::Default )
-                pb->newValueForField(meta, destination(), val);
-        }
+        if ( ! meta.container() && pb->isEnabledDefaultNewValueForField() &&
+             state().literal_mode == LiteralMode::Default )
+            pb->newValueForField(meta, destination(), val);
 
         if ( state().captures )
             popState();
 
         if ( prev )
-            pb->guardFeatureCode(state().unit, {"uses_offset"}, [&]() {
+            pb->guardFeatureCode(state().unit, {"uses_offset"}, [&] {
                 builder()->addAssign(builder()->member(state().self, HILTI_INTERNAL_ID("offset")), prev);
             });
 
@@ -1144,7 +1142,7 @@ struct ProductionVisitor : public production::Visitor {
             return p->type()->type()->template isA<hilti::type::RegExp>();
         });
 
-        auto parse = [&]() {
+        auto parse = [&] {
             bool first_token = true;
 
             // Construct a `try`/`catch` block to guard code in
@@ -1161,7 +1159,7 @@ struct ProductionVisitor : public production::Visitor {
                 auto [body, try_] = builder()->addTry();
 
                 pushBuilder(try_.addCatch(builder()->parameter(ID("e"), builder()->typeName("hilti::MissingData"))),
-                            [&]() {
+                            [&] {
                                 // `advance` has failed, retry at the next non-gap block.
                                 pb->advanceToNextData();
 
@@ -1203,12 +1201,12 @@ struct ProductionVisitor : public production::Visitor {
                 auto* ms = builder()->local("ms", builder()->memberCall(re, "token_matcher"));
 
                 // Create loop for incremental matching.
-                pushBuilder(builder()->addWhile(ms, builder()->bool_(true)), [&]() {
+                pushBuilder(builder()->addWhile(ms, builder()->bool_(true)), [&] {
                     builder()->addLocal(ID("rc"),
                                         builder()->qualifiedType(builder()->typeSignedInteger(32),
                                                                  hilti::Constness::Const));
 
-                    auto guarded_search = guard_search([&]() {
+                    auto guarded_search = guard_search([&] {
                         // We operate on `ncur` while `advanceToNextData`
                         // updates `cur`; copy its result over.
                         builder()->addAssign(ID("ncur"), state().cur);
@@ -1225,7 +1223,7 @@ struct ProductionVisitor : public production::Visitor {
                     auto switch_ = builder()->addSwitch(builder()->id("rc"), location);
 
                     // No match, try again.
-                    pushBuilder(switch_.addCase(builder()->integer(-1)), [&]() {
+                    pushBuilder(switch_.addCase(builder()->integer(-1)), [&] {
                         auto ok = builder()->addIf(pb->waitForInputOrEod());
                         ok->addContinue();
                         builder()->addAssign(state().lahead, builder()->integer(look_ahead::Eod));
@@ -1234,14 +1232,14 @@ struct ProductionVisitor : public production::Visitor {
                     });
 
                     // No match, error.
-                    pushBuilder(switch_.addCase(builder()->integer(0)), [&]() {
+                    pushBuilder(switch_.addCase(builder()->integer(0)), [&] {
                         pb->state().printDebug(builder());
                         builder()->addAssign(state().lahead, builder()->integer(look_ahead::None));
                         builder()->addAssign(state().lahead_end, builder()->begin(state().cur));
                         builder()->addBreak();
                     });
 
-                    pushBuilder(switch_.addDefault(), [&]() {
+                    pushBuilder(switch_.addDefault(), [&] {
                         builder()->addAssign(state().lahead, builder()->id("rc"));
                         builder()->addAssign(state().lahead_end, builder()->begin(builder()->id("ncur")));
                         builder()->addBreak();
@@ -1260,7 +1258,7 @@ struct ProductionVisitor : public production::Visitor {
                 pstate.literal_mode = mode;
                 pushState(std::move(pstate));
 
-                auto guarded_search = guard_search([]() {});
+                auto guarded_search = guard_search([] {});
 
                 auto* match = builder()->addTmp("literal", pb->parseLiteral(*p, {}));
 
@@ -1312,12 +1310,12 @@ struct ProductionVisitor : public production::Visitor {
 
             case LiteralMode::Search: {
                 // Create a loop for search mode.
-                pushBuilder(builder()->addWhile(builder()->bool_(true)), [&]() {
+                pushBuilder(builder()->addWhile(builder()->bool_(true)), [&] {
                     parse();
 
                     auto [if_, else_] = builder()->addIfElse(builder()->or_(pb->atEod(), state().lahead));
-                    pushBuilder(std::move(if_), [&]() { builder()->addBreak(); });
-                    pushBuilder(std::move(else_), [&]() { pb->advanceToNextData(); });
+                    pushBuilder(std::move(if_), [&] { builder()->addBreak(); });
+                    pushBuilder(std::move(else_), [&] { pb->advanceToNextData(); });
                 });
 
                 break;
@@ -1345,13 +1343,13 @@ struct ProductionVisitor : public production::Visitor {
         Expression* profiler = nullptr;
 
         // Helper to validate the parser state after search for a lookahead.
-        auto validate_search_result = [&]() {
+        auto validate_search_result = [&] {
             if ( profiler ) {
                 auto* offset = builder()->memberCall(state().cur, "offset");
                 builder()->stopProfiler(profiler, offset);
             }
 
-            pushBuilder(builder()->addIf(builder()->or_(pb->atEod(), builder()->not_(state().lahead))), [&]() {
+            pushBuilder(builder()->addIf(builder()->or_(pb->atEod(), builder()->not_(state().lahead))), [&] {
                 // We land here if we failed to find successfully find any sync
                 // token in the input stream, or because we ran into EOD. We cannot
                 // recover from this and directly trigger a parse error.
@@ -1452,7 +1450,7 @@ struct ProductionVisitor : public production::Visitor {
         // is followed by other unexpected data. Without loop we would end up
         // resynchronizing at the same input position again.
         auto* search_start = builder()->local("search_start", state().cur);
-        pushBuilder(builder()->addWhile(search_start, builder()->bool_(true)), [&]() {
+        pushBuilder(builder()->addWhile(search_start, builder()->bool_(true)), [&] {
             // Generate code which synchronizes the input. This will throw a parse error
             // if we hit EOD which will implicitly break from the loop.
 
@@ -1464,7 +1462,7 @@ struct ProductionVisitor : public production::Visitor {
             pb->advanceToNextData();
             syncProduction(p);
 
-            pushBuilder(builder()->addIf(builder()->equal(builder()->id("search_start"), state().cur)), [&]() {
+            pushBuilder(builder()->addIf(builder()->equal(builder()->id("search_start"), state().cur)), [&] {
                 builder()->addDebugMsg("spicy",
                                        "search for sync token did not advance "
                                        "input, advancing explicitly");
@@ -1549,7 +1547,7 @@ struct ProductionVisitor : public production::Visitor {
         // Variable storing whether we actually entered trial mode.
         auto* is_trial_mode = builder()->addTmp("is_trial_mode", builder()->bool_(false));
 
-        pushBuilder(builder()->addIf(state().error), [&]() {
+        pushBuilder(builder()->addIf(state().error), [&] {
             builder()->addComment("Synchronize input");
 
             // Call any `%sync_advance` hook as we enter sync mode.
@@ -1567,10 +1565,10 @@ struct ProductionVisitor : public production::Visitor {
 
         auto [body, try_] = builder()->addTry();
         pushBuilder(try_.addCatch(builder()->parameter(ID("e"), builder()->typeName("hilti::RecoverableFailure"))),
-                    [&]() {
+                    [&] {
                         pushBuilder(builder()->addIf(
                                         builder()->or_(builder()->not_(is_trial_mode), builder()->not_(state().error))),
-                                    [&]() { builder()->addRethrow(); });
+                                    [&] { builder()->addRethrow(); });
 
                         builder()->addDebugMsg("spicy",
                                                "parse error during trial mode, resynchronizing: %s",
@@ -1694,7 +1692,7 @@ struct ProductionVisitor : public production::Visitor {
         pushBuilder(body);
         body->addExpression(builder()->decrementPostfix(builder()->id(HILTI_INTERNAL_ID("i"))));
 
-        auto parse = [&]() {
+        auto parse = [&] {
             auto* stop = parseProduction(*p->body());
             auto b = builder()->addIf(stop);
             b->addBreak();
@@ -1705,11 +1703,11 @@ struct ProductionVisitor : public production::Visitor {
         // element fails to parse, we will return `n-1` elements.
         if ( auto* f = p->body()->meta().field(); f && f->attributes()->find(attribute::kind::Synchronize) ) {
             auto try_ = builder()->addTry();
-            pushBuilder(try_.first, [&]() { parse(); });
+            pushBuilder(try_.first, [&] { parse(); });
 
             pushBuilder(try_.second.addCatch(
                             builder()->parameter(ID("e"), builder()->typeName("hilti::RecoverableFailure"))),
-                        [&]() {
+                        [&] {
                             // Remember the original error so we can report it in case the sync failed.
                             builder()->addAssign(state().error, builder()->id("e"));
 
@@ -1767,16 +1765,16 @@ struct ProductionVisitor : public production::Visitor {
 
         for ( const auto& [exprs, prod] : p->cases() ) {
             auto case_ = switch_.addCase(exprs, prod->location());
-            pushBuilder(std::move(case_), [&, &prod = prod]() { parseProduction(*prod); });
+            pushBuilder(std::move(case_), [&, &prod = prod] { parseProduction(*prod); });
         }
 
         if ( const auto* prod = p->default_() ) {
             auto default_ = switch_.addDefault(prod->location());
-            pushBuilder(std::move(default_), [&]() { parseProduction(*prod); });
+            pushBuilder(std::move(default_), [&] { parseProduction(*prod); });
         }
         else {
             auto default_ = switch_.addDefault(p->location());
-            pushBuilder(std::move(default_), [&]() {
+            pushBuilder(std::move(default_), [&] {
                 pb->parseError("no matching case in switch statement for value '%s'", {p->expression()}, p->location());
             });
         }
@@ -1883,14 +1881,14 @@ struct ProductionVisitor : public production::Visitor {
             else {
                 auto try_ = builder()->addTry();
 
-                pushBuilder(try_.first, [&]() {
+                pushBuilder(try_.first, [&] {
                     for ( auto field : fields )
                         parse_field(p->fields()[field]);
                 });
 
                 pushBuilder(try_.second.addCatch(
                                 builder()->parameter(ID("e"), builder()->typeName("hilti::RecoverableFailure"))),
-                            [&]() {
+                            [&] {
                                 // There is a sync point; run its production w/o consuming input until parsing
                                 // succeeds or we run out of data.
                                 builder()->addDebugMsg("spicy-verbose",
@@ -1920,7 +1918,7 @@ struct ProductionVisitor : public production::Visitor {
                                                  builder()->memberCall(state().ncur, "offset"));
             auto exceeded = builder()->addIf(cond);
             pushBuilder(std::move(exceeded),
-                        [&]() { pb->parseError("parsing not done within &max-size bytes", a->meta()); });
+                        [&] { pb->parseError("parsing not done within &max-size bytes", a->meta()); });
 
             // Restore parser state.
             auto* limited = state().cur;
@@ -2020,7 +2018,7 @@ struct ProductionVisitor : public production::Visitor {
         popBuilder();
 
         pushBuilder(std::move(builder_default),
-                    [&]() { pb->parseError("no expected look-ahead token found", p->location()); });
+                    [&] { pb->parseError("no expected look-ahead token found", p->location()); });
     }
 
     void operator()(const production::Sequence* p) final {
@@ -2047,7 +2045,7 @@ struct ProductionVisitor : public production::Visitor {
             if ( eod_attr ) {
                 builder()->addDebugMsg("spicy-verbose", "- skipping to eod");
                 auto loop = builder()->addWhile(pb->waitForInputOrEod());
-                pushBuilder(std::move(loop), [&]() { pb->advanceInput(builder()->size(state().cur)); });
+                pushBuilder(std::move(loop), [&] { pb->advanceInput(builder()->size(state().cur)); });
                 pb->advanceInput(builder()->size(state().cur));
             }
 
@@ -2059,7 +2057,7 @@ struct ProductionVisitor : public production::Visitor {
                 auto* until_bytes_size_var = builder()->addTmp("until_bytes_sz", builder()->size(until_bytes_var));
 
                 auto body = builder()->addWhile(builder()->bool_(true));
-                pushBuilder(std::move(body), [&]() {
+                pushBuilder(std::move(body), [&] {
                     pb->waitForInput(until_bytes_size_var,
                                      "end-of-data reached before &until expression found",
                                      until_expr->meta());
@@ -2078,13 +2076,13 @@ struct ProductionVisitor : public production::Visitor {
 
                     auto [found_branch, not_found_branch] = builder()->addIfElse(found);
 
-                    pushBuilder(std::move(found_branch), [&]() {
+                    pushBuilder(std::move(found_branch), [&] {
                         auto* new_it = builder()->sum(it, until_bytes_size_var);
                         pb->advanceInput(new_it);
                         builder()->addBreak();
                     });
 
-                    pushBuilder(std::move(not_found_branch), [&]() { pb->advanceInput(it); });
+                    pushBuilder(std::move(not_found_branch), [&] { pb->advanceInput(it); });
                 });
             }
         }
@@ -2106,7 +2104,7 @@ struct ProductionVisitor : public production::Visitor {
         else {
             // Look-ahead based loop.
             auto body = builder()->addWhile(builder()->bool_(true));
-            pushBuilder(std::move(body), [&]() {
+            pushBuilder(std::move(body), [&] {
                 // If we don't have any input right now, we suspend because
                 // we might get an EOD next, in which case we need to abort the loop.
                 builder()->addExpression(pb->waitForInputOrEod(builder()->integer(1)));
@@ -2116,9 +2114,7 @@ struct ProductionVisitor : public production::Visitor {
                 std::shared_ptr<Builder> builder_alt1;
                 std::shared_ptr<Builder> builder_alt2;
                 std::shared_ptr<Builder> builder_default;
-                auto parse = [&]() {
-                    std::tie(builder_alt1, builder_alt2, builder_default) = parseLookAhead(*lah_prod);
-                };
+                auto parse = [&] { std::tie(builder_alt1, builder_alt2, builder_default) = parseLookAhead(*lah_prod); };
 
                 // If the list field generating this While is a synchronization point, set up a try/catch block
                 // for internal list synchronization (failure to parse a list element tries to synchronize at
@@ -2127,11 +2123,11 @@ struct ProductionVisitor : public production::Visitor {
                      field && field->attributes() && field->attributes()->find(attribute::kind::Synchronize) ) {
                     auto try_ = builder()->addTry();
 
-                    pushBuilder(try_.first, [&]() { parse(); });
+                    pushBuilder(try_.first, [&] { parse(); });
 
                     pushBuilder(try_.second.addCatch(
                                     builder()->parameter(ID("e"), builder()->typeName("hilti::RecoverableFailure"))),
-                                [&]() {
+                                [&] {
                                     // Remember the original error so we can report it in case the sync failed.
                                     builder()->addAssign(state().error, builder()->id("e"));
 
@@ -2143,23 +2139,23 @@ struct ProductionVisitor : public production::Visitor {
                                 });
 
                     pushBuilder(std::move(builder_default),
-                                [&]() { pb->parseError("no expected look-ahead token found", p->location()); });
+                                [&] { pb->parseError("no expected look-ahead token found", p->location()); });
                 }
                 else {
                     parse();
 
-                    pushBuilder(std::move(builder_default), [&]() {
+                    pushBuilder(std::move(builder_default), [&] {
                         // Terminate loop.
                         builder()->addBreak();
                     });
                 }
 
-                pushBuilder(std::move(builder_alt1), [&]() {
+                pushBuilder(std::move(builder_alt1), [&] {
                     // Terminate loop.
                     builder()->addBreak();
                 });
 
-                pushBuilder(std::move(builder_alt2), [&]() {
+                pushBuilder(std::move(builder_alt2), [&] {
                     // Parse body.
                     auto* cookie = pb->initLoopBody();
                     auto* stop = parseProduction(*p->body());
@@ -2378,7 +2374,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
         // Helper to initialize a unit's `$context` attribute. We use
         // a parse functions "context" argument if that was provided,
         // and otherwise create a default instanc of the unit's context type.
-        auto init_context = [&]() {
+        auto init_context = [&] {
             auto* context = t->contextType();
             if ( ! context )
                 return;
@@ -2447,7 +2443,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
             visitor.parseProduction(*grammar->root(), true);
 
             // Check if the unit never left trial mode.
-            pushBuilder(builder()->addIf(state().error), [&]() {
+            pushBuilder(builder()->addIf(state().error), [&] {
                 builder()->addDebugMsg("spicy", "successful sync never confirmed, failing unit");
                 auto* original_error = builder()->deref(state().error);
                 parseError("successful synchronization never confirmed: %s", original_error);
@@ -2510,7 +2506,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
             visitor.parseProduction(*grammar->root(), true);
 
             // Check if the unit never left trial mode.
-            pushBuilder(builder()->addIf(state().error), [&]() {
+            pushBuilder(builder()->addIf(state().error), [&] {
                 builder()->addDebugMsg("spicy", "successful sync never confirmed, failing unit");
                 auto* original_error = builder()->deref(state().error);
                 parseError("successful synchronization never confirmed: %s", original_error);
@@ -2563,7 +2559,7 @@ void ParserBuilder::addParserMethods(hilti::type::Struct* s, type::Unit* t, bool
         visitor.parseProduction(*grammar->root(), true);
 
         // Check if the unit never left trial mode.
-        pushBuilder(builder()->addIf(state().error), [&]() {
+        pushBuilder(builder()->addIf(state().error), [&] {
             builder()->addDebugMsg("spicy", "successful sync never confirmed, failing unit");
             auto* original_error = builder()->deref(state().error);
             parseError("successful synchronization never confirmed: %s", original_error);
@@ -2639,7 +2635,7 @@ void ParserBuilder::newValueForField(const production::Meta& meta, Expression* v
 
         auto* cond = block->addTmp("requires", *a->valueAsExpression());
         pushBuilder(block->addIf(builder()->not_(cond)),
-                    [&]() { parseError(builder()->memberCall(cond, "error"), a->location()); });
+                    [&] { parseError(builder()->memberCall(cond, "error"), a->location()); });
     }
 
     if ( ! field->originalType()->type()->isA<hilti::type::Bitfield>() &&
@@ -2688,15 +2684,15 @@ Expression* ParserBuilder::newContainerItem(const type::unit::item::Field* field
                                             bool need_value) {
     auto* stop = builder()->addTmp("stop", builder()->bool_(false));
 
-    auto push_element = [&]() {
+    auto push_element = [&] {
         if ( need_value )
             pushBuilder(builder()->addIf(builder()->not_(stop)),
-                        [&]() { builder()->addExpression(builder()->memberCall(self, "push_back", {item})); });
+                        [&] { builder()->addExpression(builder()->memberCall(self, "push_back", {item})); });
     };
 
-    auto run_hook = [&]() {
+    auto run_hook = [&] {
         builder()->addDebugMsg("spicy-verbose", "- got container item");
-        pushBuilder(builder()->addIf(builder()->not_(stop)), [&]() {
+        pushBuilder(builder()->addIf(builder()->not_(stop)), [&] {
             if ( container->emitHook() ) {
                 beforeHook();
                 builder()->addMemberCall(state().self,
@@ -2709,19 +2705,19 @@ Expression* ParserBuilder::newContainerItem(const type::unit::item::Field* field
     };
 
     auto eval_condition = [&](Expression* cond) {
-        pushBuilder(builder()->addBlock(), [&]() {
+        pushBuilder(builder()->addBlock(), [&] {
             builder()->addLocal(HILTI_INTERNAL_ID("dd"), item);
             builder()->addAssign(stop, builder()->or_(stop, cond));
         });
     };
 
-    auto check_requires = [&]() {
+    auto check_requires = [&] {
         for ( const auto& a : field->attributes()->findAll(attribute::kind::Requires) ) {
-            pushBuilder(builder()->addBlock(), [&]() {
+            pushBuilder(builder()->addBlock(), [&] {
                 builder()->addLocal(HILTI_INTERNAL_ID("dd"), item);
                 auto* cond = evaluateAttributeExpression(a, "requires");
                 pushBuilder(builder()->addIf(builder()->not_(cond)),
-                            [&]() { parseError(builder()->memberCall(cond, "error"), a->location()); });
+                            [&] { parseError(builder()->memberCall(cond, "error"), a->location()); });
             });
         }
     };
@@ -2793,7 +2789,7 @@ void ParserBuilder::trimInput(bool force) {
 }
 
 void ParserBuilder::initializeUnit(const Location& l) {
-    guardFeatureCode(state().unit, {"uses_stream"}, [&]() {
+    guardFeatureCode(state().unit, {"uses_stream"}, [&] {
         builder()->addAssign(builder()->member(state().self, ID(HILTI_INTERNAL_ID("stream"))), state().data);
     });
 
@@ -2834,7 +2830,7 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
         for ( const auto& attr : unit->attributes()->findAll(attribute::kind::Requires) ) {
             auto* cond = evaluateAttributeExpression(attr, "requires");
             pushBuilder(builder()->addIf(builder()->not_(cond)),
-                        [&]() { parseError(builder()->memberCall(cond, "error"), attr->value()->meta()); });
+                        [&] { parseError(builder()->memberCall(cond, "error"), attr->value()->meta()); });
         }
     }
 
@@ -2848,16 +2844,16 @@ void ParserBuilder::finalizeUnit(bool success, const Location& l) {
         builder()->addMemberCall(state().self, HILTI_INTERNAL_ID("on_0x25_error"), {what}, l);
     }
 
-    guardFeatureCode(state().unit, {"supports_filters"}, [&]() {
+    guardFeatureCode(state().unit, {"supports_filters"}, [&] {
         builder()->addCall("spicy_rt::filter_disconnect", {state().self});
     });
 
     if ( unit->isFilter() )
-        guardFeatureCode(state().unit, {"is_filter"}, [&]() {
+        guardFeatureCode(state().unit, {"is_filter"}, [&] {
             builder()->addCall("spicy_rt::filter_forward_eod", {state().self});
         });
 
-    guardFeatureCode(state().unit, {"supports_sinks"}, [&]() {
+    guardFeatureCode(state().unit, {"supports_sinks"}, [&] {
         for ( const auto& s : unit->items<type::unit::item::Sink>() )
             builder()->addMemberCall(builder()->member(state().self, s->id()), "close", {}, l);
     });
@@ -2969,7 +2965,7 @@ void ParserBuilder::skip(Expression* size, const Meta& location) {
 
     auto* n = builder()->addTmp("skip", size);
     auto loop = builder()->addWhile(builder()->greater(n, builder()->integer(0U)));
-    pushBuilder(std::move(loop), [&]() {
+    pushBuilder(std::move(loop), [&] {
         waitForInput(builder()->integer(1U), "not enough bytes for skipping", location);
         auto* consume = builder()->addTmp("consume", builder()->min(builder()->size(state().cur), n));
         advanceInput(consume);
@@ -3029,7 +3025,7 @@ void ParserBuilder::beforeHook() {
     // https://github.com/zeek/spicy/issues/1108 is fixed.
     builder()->addAssign(builder()->member(state().self, ID(HILTI_INTERNAL_ID("error"))), state().error);
 
-    guardFeatureCode(state().unit, {"uses_random_access", "uses_offset"}, [&]() {
+    guardFeatureCode(state().unit, {"uses_random_access", "uses_offset"}, [&] {
         builder()->addAssign(builder()->member(state().self, ID(HILTI_INTERNAL_ID("position_update"))),
                              builder()->optional(
                                  builder()->qualifiedType(builder()->typeStreamIterator(), hilti::Constness::Mutable)));
@@ -3037,7 +3033,7 @@ void ParserBuilder::beforeHook() {
 }
 
 void ParserBuilder::afterHook() {
-    guardFeatureCode(state().unit, {"uses_random_access", "uses_offset"}, [&]() {
+    guardFeatureCode(state().unit, {"uses_random_access", "uses_offset"}, [&] {
         auto* position_update = builder()->member(state().self, ID(HILTI_INTERNAL_ID("position_update")));
         auto advance = builder()->addIf(position_update);
         auto* ncur = builder()->memberCall(state().cur, "advance", {builder()->deref(position_update)});
@@ -3061,11 +3057,11 @@ void ParserBuilder::afterHook() {
 }
 
 void ParserBuilder::saveParsePosition() {
-    guardFeatureCode(state().unit, {"uses_random_access"}, [&]() {
+    guardFeatureCode(state().unit, {"uses_random_access"}, [&] {
         builder()->addAssign(builder()->member(state().self, ID(HILTI_INTERNAL_ID("begin"))), state().begin);
     });
 
-    guardFeatureCode(state().unit, {"uses_offset"}, [&]() {
+    guardFeatureCode(state().unit, {"uses_offset"}, [&] {
         auto* cur = builder()->memberCall(builder()->begin(state().cur), "offset");
         auto* begin = builder()->memberCall(state().begin, "offset"); // XX
 
@@ -3096,7 +3092,7 @@ void ParserBuilder::initBacktracking() {
     auto* try_cur = builder()->addTmp("try_cur", state().cur);
     auto [body, try_] = builder()->addTry();
     auto catch_ = try_.addCatch(builder()->parameter(ID("e"), builder()->typeName("spicy_rt::Backtrack")));
-    pushBuilder(std::move(catch_), [&]() { builder()->addAssign(state().cur, try_cur); });
+    pushBuilder(std::move(catch_), [&] { builder()->addAssign(state().cur, try_cur); });
 
     auto pstate = state();
     pstate.trim = builder()->bool_(false);
@@ -3117,18 +3113,18 @@ void ParserBuilder::finishLoopBody(Expression* cookie, const Location& l) {
         builder()->and_(builder()->equal(builder()->begin(state().cur), cookie), builder()->not_(atEod()));
     auto body = builder()->addIf(not_moved);
     pushBuilder(std::move(body),
-                [&]() { parseError("loop body did not change input position, possible infinite loop", l); });
+                [&] { parseError("loop body did not change input position, possible infinite loop", l); });
 }
 
 void ParserBuilder::syncAdvanceHook(std::shared_ptr<Builder> cond) {
-    auto body = [&]() {
+    auto body = [&] {
         beforeHook();
         auto* offset = builder()->memberCall(state().cur, "offset");
         builder()->addMemberCall(state().self, HILTI_INTERNAL_ID("on_0x25_sync_advance"), {offset});
         afterHook();
     };
 
-    guardFeatureCode(state().unit, {"uses_sync_advance"}, [&]() {
+    guardFeatureCode(state().unit, {"uses_sync_advance"}, [&] {
         if ( cond )
             pushBuilder(std::move(cond), body);
         else

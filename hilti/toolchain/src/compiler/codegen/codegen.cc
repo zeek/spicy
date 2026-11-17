@@ -693,7 +693,7 @@ cxx::declaration::Function CodeGen::compile(Declaration* decl,
                                             declaration::Linkage linkage,
                                             AttributeSet* /*fattrs*/,
                                             std::optional<cxx::ID> namespace_) {
-    auto result_ = [&]() {
+    auto result_ = [&] {
         auto rt = compile(ft->result(), codegen::TypeUsage::FunctionResult);
 
         switch ( ft->flavor() ) {
@@ -704,7 +704,7 @@ cxx::declaration::Function CodeGen::compile(Declaration* decl,
         }
     };
 
-    auto linkage_ = [&]() {
+    auto linkage_ = [&] {
         // For struct methods, never emit a linkage specifier regardless of
         // calling convention. MSVC treats `extern` on an out-of-line static
         // member function definition as a separate free function, disconnecting
@@ -730,12 +730,10 @@ cxx::declaration::Function CodeGen::compile(Declaration* decl,
     const auto& id = decl->id();
     auto cxx_id = cxx::ID(id);
 
-    if ( linkage == declaration::Linkage::Struct ) {
-        // For method implementations, check if the ID is fully scoped with
-        // the module name; if so, remove.
-        if ( id.sub(0).str() == _hilti_module->uid().str() )
-            cxx_id = id.sub(1, -1);
-    }
+    // For method implementations, check if the ID is fully scoped with
+    // the module name; if so, remove.
+    if ( linkage == declaration::Linkage::Struct && id.sub(0).str() == _hilti_module->uid().str() )
+        cxx_id = id.sub(1, -1);
 
     auto ns = ID(options().cxx_namespace_intern);
 

@@ -295,7 +295,7 @@ struct Visitor : hilti::visitor::PreOrder {
         };
 
         // Emit a C++ switch for integral condition values.
-        auto add_cxx_case_switch = [&]() {
+        auto add_cxx_case_switch = [&] {
             std::vector<std::pair<std::vector<cxx::Expression>, cxx::Block>> cases;
 
             for ( const auto& c : n->cases() ) {
@@ -338,7 +338,7 @@ struct Visitor : hilti::visitor::PreOrder {
         };
 
         // Emit a C++ if/else chain for complex condition values.
-        auto add_cxx_if_else_chain = [&]() {
+        auto add_cxx_if_else_chain = [&] {
             bool first = true;
             for ( const auto& c : n->cases() ) {
                 if ( c->isDefault() )

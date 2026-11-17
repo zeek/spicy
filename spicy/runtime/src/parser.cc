@@ -106,7 +106,7 @@ void detail::printParserState(std::string_view unit_id,
                               std::string_view literal_mode,
                               bool trim,
                               const hilti::rt::Optional<hilti::rt::RecoverableFailure>& error) {
-    auto msg = [&]() {
+    auto msg = [&] {
         auto str = [&](const hilti::rt::stream::SafeConstIterator& begin,
                        const hilti::rt::stream::SafeConstIterator& end) {
             auto i = begin + 10;

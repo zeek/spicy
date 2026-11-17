@@ -13,10 +13,9 @@ Expressions statement::switch_::Case::preprocessedExpressions() const {
     Expressions result;
 
     for ( const auto* e : preprocessedComparisonOperators() ) {
-        if ( const auto* op = e->template tryAs<expression::ResolvedOperator>() ) {
-            if ( type::sameExceptForConstness(op->op0()->type(), op->op1()->type()) )
-                result.push_back(op->op1());
-        }
+        if ( const auto* op = e->template tryAs<expression::ResolvedOperator>();
+             op && type::sameExceptForConstness(op->op0()->type(), op->op1()->type()) )
+            result.push_back(op->op1());
     }
 
     return result;

@@ -249,7 +249,7 @@ TEST_CASE("waitForEod") {
         detail::waitForEod(data, view, filters);
         return Nothing();
     };
-    auto waitForEod = [&]() { return hilti::rt::fiber::execute(_waitForEod); };
+    auto waitForEod = [&] { return hilti::rt::fiber::execute(_waitForEod); };
 
     SUBCASE("open ended") { view = data->view(true); }
     SUBCASE("closed view") { view = hilti::rt::stream::View{data->begin(), data->begin() + 1}; }
@@ -277,7 +277,7 @@ TEST_CASE("waitForInput") {
         return Nothing();
     };
 
-    auto waitForInput = [&]() { return hilti::rt::fiber::execute(_waitForInput); };
+    auto waitForInput = [&] { return hilti::rt::fiber::execute(_waitForInput); };
 
     SUBCASE("not enough data") {
         // `waitForInput` yields if not enough data available. We
@@ -318,7 +318,7 @@ TEST_CASE("waitForInput with min") {
         return true;
     };
 
-    auto waitForInput = [&]() { return hilti::rt::fiber::execute(_waitForInput); };
+    auto waitForInput = [&] { return hilti::rt::fiber::execute(_waitForInput); };
 
     SUBCASE("not enough data") {
         // `waitForInput` yields if not enough data available. We
@@ -368,7 +368,7 @@ TEST_CASE("waitForInputOrEod with min") {
         return detail::waitForInputOrEod(data, view, 3, filters);
     };
 
-    auto waitForInputOrEod = [&]() { return hilti::rt::fiber::execute(_waitForInputOrEod); };
+    auto waitForInputOrEod = [&] { return hilti::rt::fiber::execute(_waitForInputOrEod); };
 
     SUBCASE("wait for nothing") {
         // We can always successfully get "no data".

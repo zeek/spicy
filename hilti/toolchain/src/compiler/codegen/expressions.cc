@@ -174,20 +174,20 @@ struct Visitor : hilti::visitor::PreOrder {
             return;
         }
 
-        if ( auto* f = decl->tryAs<declaration::Function>() ) {
-            // If we're referring to, but not calling, an "external" function
-            // or static method, bind to the externally visible name.
-            if ( (f->function()->ftype()->callingConvention() == type::function::CallingConvention::Extern ||
-                  f->function()->ftype()->callingConvention() == type::function::CallingConvention::ExternNoSuspend) &&
-                 (! n->parent() || ! n->parent()->isA<operator_::function::Call>()) ) {
-                if ( fqid.namespace_().empty() )
-                    // Call to local function, don't qualify it.
-                    result = {cxx::ID(fqid), Side::LHS};
-                else
-                    result = {cxx::ID(cg->options().cxx_namespace_extern, fqid), Side::LHS};
+        // If we're referring to, but not calling, an "external" function
+        // or static method, bind to the externally visible name.
+        if ( auto* f = decl->tryAs<declaration::Function>();
+             f &&
+             (f->function()->ftype()->callingConvention() == type::function::CallingConvention::Extern ||
+              f->function()->ftype()->callingConvention() == type::function::CallingConvention::ExternNoSuspend) &&
+             (! n->parent() || ! n->parent()->isA<operator_::function::Call>()) ) {
+            if ( fqid.namespace_().empty() )
+                // Call to local function, don't qualify it.
+                result = {cxx::ID(fqid), Side::LHS};
+            else
+                result = {cxx::ID(cg->options().cxx_namespace_extern, fqid), Side::LHS};
 
-                return;
-            }
+            return;
         }
 
         if ( auto* f = decl->tryAs<declaration::Field>() ) {

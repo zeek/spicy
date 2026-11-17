@@ -72,7 +72,7 @@ hilti::rt::Library::~Library() {
 
 hilti::rt::Result<hilti::rt::library::Version> hilti::rt::Library::open() const {
     // Set the current library path while this method is running.
-    auto _ = hilti::rt::scope_exit([&]() { hilti::rt::Library::_current_path.reset(); });
+    auto _ = hilti::rt::scope_exit([&] { hilti::rt::Library::_current_path.reset(); });
     hilti::rt::Library::_current_path = hilti::rt::filesystem::absolute(_path);
 
     if ( ! _handle ) {
