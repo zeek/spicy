@@ -9,7 +9,7 @@
 
 using namespace hilti::rt;
 
-using json = nlohmann::json;
+using nlohmann::json;
 
 void JSONPrinter::print(const hilti::rt::type_info::Value& v) { out() << convert(v) << '\n'; }
 

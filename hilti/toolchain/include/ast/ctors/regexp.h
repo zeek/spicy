@@ -15,8 +15,8 @@
 namespace hilti::ctor {
 
 namespace regexp {
-using Pattern = hilti::rt::regexp::Pattern;
-using Patterns = hilti::rt::regexp::Patterns;
+using hilti::rt::regexp::Pattern;
+using hilti::rt::regexp::Patterns;
 } // namespace regexp
 
 /**

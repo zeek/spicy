@@ -187,13 +187,11 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
         if ( ! n->unitTypeIndex() || ! n->unitFieldIndex() ) {
             // A`%print` hook returns a string as the rendering to print, need
             // to adjust its return type, which defaults to void.
-            if ( n->id().local().str() == "0x25_print" ) {
-                if ( n->ftype()->result()->type()->isA<hilti::type::Void>() ) {
-                    recordChange(n, "setting %print result to string");
-                    auto* optional = builder()->typeOptional(
-                        builder()->qualifiedType(builder()->typeString(), hilti::Constness::Const));
-                    n->setResult(context(), builder()->qualifiedType(optional, hilti::Constness::Const));
-                }
+            if ( n->id().local().str() == "0x25_print" && n->ftype()->result()->type()->isA<hilti::type::Void>() ) {
+                recordChange(n, "setting %print result to string");
+                auto* optional =
+                    builder()->typeOptional(builder()->qualifiedType(builder()->typeString(), hilti::Constness::Const));
+                n->setResult(context(), builder()->qualifiedType(optional, hilti::Constness::Const));
             }
 
             // If an `%error` hook doesn't provide the optional string argument,

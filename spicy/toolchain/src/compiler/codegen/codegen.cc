@@ -563,19 +563,17 @@ struct VisitorPass3 : public visitor::MutatingPostOrder {
     }
 
     void operator()(hilti::expression::Name* n) final {
-        if ( auto* d = n->resolvedDeclaration() ) {
-            // We need to re-resolve IDs (except function calls) during
-            // subsequent HILTI pass, so we clear out the current resolution.
-            // Because these IDs may now reside in a different context than
-            // originally, we record their fully qualified name for subsequent
-            // resolutions. If it's a scoped ID, that subsequent lookup will be
-            // relative to the AST root, so that we get around any visibility
-            // restrictions due to indirect imports.
-            if ( ! n->parent()->isA<hilti::operator_::function::Call>() ) {
-                recordChange(n, "reverted to unresolved");
-                n->setFullyQualifiedID(d->fullyQualifiedID());
-                n->clearResolvedDeclarationIndex(context());
-            }
+        // We need to re-resolve IDs (except function calls) during
+        // subsequent HILTI pass, so we clear out the current resolution.
+        // Because these IDs may now reside in a different context than
+        // originally, we record their fully qualified name for subsequent
+        // resolutions. If it's a scoped ID, that subsequent lookup will be
+        // relative to the AST root, so that we get around any visibility
+        // restrictions due to indirect imports.
+        if ( auto* d = n->resolvedDeclaration(); d && ! n->parent()->isA<hilti::operator_::function::Call>() ) {
+            recordChange(n, "reverted to unresolved");
+            n->setFullyQualifiedID(d->fullyQualifiedID());
+            n->clearResolvedDeclarationIndex(context());
         }
     }
 };
@@ -717,17 +715,16 @@ hilti::declaration::Function* CodeGen::compileHook(const type::Unit& unit,
     else {
         // Try to locate field by ID.
         if ( auto* i = unit.itemByName(id.local()) ) {
-            if ( auto* f = i->tryAs<type::unit::item::Field>() ) {
-                if ( ! f->parseType()->type()->isA<hilti::type::Void>() && ! f->isSkip() ) {
-                    is_container = f->isContainer();
-                    field = f;
-                    original_field_type = f->originalType();
-                }
+            if ( auto* f = i->tryAs<type::unit::item::Field>();
+                 f && ! f->parseType()->type()->isA<hilti::type::Void>() && ! f->isSkip() ) {
+                is_container = f->isContainer();
+                field = f;
+                original_field_type = f->originalType();
             }
         }
     }
 
-    auto assert_field = [&]() {
+    auto assert_field = [&] {
         if ( ! field )
             hilti::logger().internalError(fmt("cannot find field '%s' in unit '%'", id, unit.typeID()));
     };
@@ -808,7 +805,7 @@ Expression* CodeGen::addGlobalConstant(Ctor* ctor) {
     auto type = hilti::util::toIdentifier(hilti::util::tolower(ctor->typename_()));
     auto& [uniquer, cache] = _global_constants[type];
 
-    return cache.getOrCreate(ctor->print(), [&, &uniquer = uniquer]() { // need to capture `u` explicitly with C++17
+    return cache.getOrCreate(ctor->print(), [&, &uniquer = uniquer] { // need to capture `u` explicitly with C++17
         auto id = uniquer.get(ID(fmt(HILTI_INTERNAL_ID("%s"), type)));
         auto* d = builder()->constant(id, builder()->expression(ctor));
         _hilti_module->add(context(), d);

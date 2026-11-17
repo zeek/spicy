@@ -29,7 +29,7 @@ class Type;
 } // namespace declaration
 
 namespace type::function {
-using Parameter = declaration::Parameter;
+using declaration::Parameter;
 } // namespace type::function
 
 namespace type {

@@ -21,7 +21,7 @@ namespace spicy::detail::codegen {
 class Production;
 using ProductionPtr = std::shared_ptr<Production>;
 
-using Location = hilti::Location;
+using hilti::Location;
 namespace location {
 using hilti::location::None;
 } // namespace location

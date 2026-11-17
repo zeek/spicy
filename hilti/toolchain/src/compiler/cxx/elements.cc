@@ -553,7 +553,7 @@ std::string cxx::type::Struct::code() const {
                                return l && l->emitted && l->isInternal();
                            });
 
-    auto init_locals_user = [&]() {
+    auto init_locals_user = [&] {
         cxx::Formatter init;
         init.compact_block = false;
         init.ensure_braces_for_block = false;
@@ -566,7 +566,7 @@ std::string cxx::type::Struct::code() const {
                                        "");
     };
 
-    auto init_locals_non_user = [&]() {
+    auto init_locals_non_user = [&] {
         return util::join(locals_non_user | std::views::transform([&](const auto& x) {
                               auto& l = std::get<declaration::Local>(x);
                               return l.init ? fmt("    %s = %s;\n", l.id, *l.init) : std::string();
@@ -574,7 +574,7 @@ std::string cxx::type::Struct::code() const {
                           "");
     };
 
-    auto init_parameters = [&]() {
+    auto init_parameters = [&] {
         return util::join(args | std::views::transform([&](const auto& x) {
                               return x.default_ ? fmt("    %s = %s;\n", x.id, *x.default_) : std::string();
                           }),

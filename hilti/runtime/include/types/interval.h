@@ -38,7 +38,7 @@ public:
      * @throws OutOfRange if *secs* cannot be represented with the internal resolution
      */
     explicit Interval(double secs, SecondTag /*unused*/)
-        : _nsecs([&]() {
+        : _nsecs([&] {
               auto x = secs * 1'000'000'000;
 
               using limits = std::numeric_limits<int64_t>;

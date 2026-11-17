@@ -697,11 +697,11 @@ struct VisitorPass2 : visitor::MutatingPostOrder {
             assert(module);
 
             for ( const auto& x : module->scope()->lookupAll(n->id()) ) {
-                if ( auto* f = x.node->tryAs<declaration::Function>(); f && f != n && ! f->function()->body() ) {
-                    if ( areEquivalent(n->function()->ftype(), f->function()->ftype()) ) {
-                        linked_prototype = f;
-                        break;
-                    }
+                if ( auto* f = x.node->tryAs<declaration::Function>();
+                     f && f != n && ! f->function()->body() &&
+                     areEquivalent(n->function()->ftype(), f->function()->ftype()) ) {
+                    linked_prototype = f;
+                    break;
                 }
             }
         }
@@ -1275,13 +1275,12 @@ struct VisitorPass3 : visitor::MutatingPostOrder {
         // tuple's custom by-element assign operator. We need this to get
         // constness right.
         auto* lhs_ctor = n->target()->tryAs<expression::Ctor>();
-        if ( lhs_ctor && lhs_ctor->ctor()->isA<ctor::Tuple>() ) {
-            if ( n->source()->isResolved() && n->target()->isResolved() ) {
-                const auto* op = operator_::registry().byName("tuple::CustomAssign");
-                assert(op);
-                auto* x = *op->instantiate(builder(), {n->target(), n->source()}, n->meta());
-                replaceNode(n, x);
-            }
+        if ( lhs_ctor && lhs_ctor->ctor()->isA<ctor::Tuple>() && n->source()->isResolved() &&
+             n->target()->isResolved() ) {
+            const auto* op = operator_::registry().byName("tuple::CustomAssign");
+            assert(op);
+            auto* x = *op->instantiate(builder(), {n->target(), n->source()}, n->meta());
+            replaceNode(n, x);
         }
 
         if ( auto* x = coerceTo(n, n->source(), n->target()->type(), false, true) ) {
@@ -1580,13 +1579,11 @@ struct VisitorPass3 : visitor::MutatingPostOrder {
                 return t;
         };
 
-        if ( auto* t = skip_ref(n->type()); t->isResolved() ) {
-            if ( ! t->type()->parameters().empty() ) {
-                if ( auto x = n->typeArguments(); x.size() ) {
-                    if ( auto coerced = coerceCallArguments(x, t->type()->parameters()); coerced && *coerced ) {
-                        recordChange(n, builder()->ctorTuple(**coerced), "call arguments");
-                        n->setTypeArguments(context(), **coerced);
-                    }
+        if ( auto* t = skip_ref(n->type()); t && t->isResolved() && ! t->type()->parameters().empty() ) {
+            if ( auto x = n->typeArguments(); x.size() ) {
+                if ( auto coerced = coerceCallArguments(x, t->type()->parameters()); coerced && *coerced ) {
+                    recordChange(n, builder()->ctorTuple(**coerced), "call arguments");
+                    n->setTypeArguments(context(), **coerced);
                 }
             }
         }

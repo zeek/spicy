@@ -34,7 +34,7 @@ namespace linker {
  * meta data from all HILTI modules and generated additional C++ code from it
  * for use by the HILTI runtime library.
  */
-using MetaData = detail::cxx::linker::MetaData;
+using detail::cxx::linker::MetaData;
 } // namespace linker
 
 /**

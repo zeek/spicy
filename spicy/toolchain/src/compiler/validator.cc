@@ -379,10 +379,9 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                     return;
             }
 
-            if ( auto* field = n->parent<spicy::type::unit::item::Field>() ) {
-                if ( field->isContainer() && field->isTransient() )
-                    error("cannot use $$ with container inside transient field", n);
-            }
+            if ( auto* field = n->parent<spicy::type::unit::item::Field>();
+                 field && field->isContainer() && field->isTransient() )
+                error("cannot use $$ with container inside transient field", n);
         }
     }
 
@@ -400,7 +399,7 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
 
                     if ( auto v = hilti::util::split(s->value(), "."); v.size() >= 2 && v.size() <= 3 ) {
                         auto parse_number = [&ok](const std::string& s) {
-                            return hilti::util::charsToUInt64(s.c_str(), 10, [&ok]() { ok = false; });
+                            return hilti::util::charsToUInt64(s.c_str(), 10, [&ok] { ok = false; });
                         };
 
                         ok = true;
@@ -718,23 +717,19 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         }
 
         else if ( n->kind() == attribute::kind::Eod ) {
-            if ( auto* f = get_attr_field(n) ) {
-                if ( ! (f->parseType()->type()->isA<hilti::type::Bytes>() ||
-                        f->parseType()->type()->isA<hilti::type::Vector>()) ||
-                     f->ctor() )
-                    error("&eod is only valid for bytes and vector fields", n);
-            }
+            if ( auto* f = get_attr_field(n); f && (! (f->parseType()->type()->isA<hilti::type::Bytes>() ||
+                                                       f->parseType()->type()->isA<hilti::type::Vector>()) ||
+                                                    f->ctor()) )
+                error("&eod is only valid for bytes and vector fields", n);
         }
 
         else if ( hilti::attribute::isOneOf(n->kind(),
                                             {attribute::kind::While,
                                              attribute::kind::UntilIncluding,
                                              attribute::kind::Until}) ) {
-            if ( auto* f = get_attr_field(n) ) {
-                if ( ! (f->parseType()->type()->isA<hilti::type::Bytes>() ||
-                        f->parseType()->type()->isA<hilti::type::Vector>()) )
-                    error(fmt("%s is only valid for fields of type bytes or vector", to_string(n->kind())), n);
-            }
+            if ( auto* f = get_attr_field(n); f && (! (f->parseType()->type()->isA<hilti::type::Bytes>() ||
+                                                       f->parseType()->type()->isA<hilti::type::Vector>())) )
+                error(fmt("%s is only valid for fields of type bytes or vector", to_string(n->kind())), n);
         }
 
         else if ( n->kind() == attribute::kind::Chunked ) {
@@ -869,10 +864,8 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
                                   n);
                     }
                 }
-                else if ( a->kind() == attribute::kind::Convert ) {
-                    if ( ! a->hasValue() )
-                        error("&convert must provide an expression", n);
-                }
+                else if ( a->kind() == attribute::kind::Convert && ! a->hasValue() )
+                    error("&convert must provide an expression", n);
             }
         }
 
@@ -941,10 +934,8 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
         auto* type = n->parseType()->type();
         validateFieldTypeAttributes(type->nodeTag(), n->attributes(), type->typeClass());
 
-        if ( n->isSkip() ) {
-            if ( ! n->sinks().empty() )
-                error("skip field cannot have sinks attached", n);
-        }
+        if ( n->isSkip() && ! n->sinks().empty() )
+            error("skip field cannot have sinks attached", n);
 
         auto* const count_attr = n->attributes()->find(attribute::kind::Count);
         auto* const repeat = n->repeatCount();
@@ -1233,17 +1224,13 @@ struct VisitorPost : visitor::PreOrder, hilti::validator::VisitorMixIn {
     }
 
     void operator()(operator_::sink::ConnectMIMETypeBytes* n) final {
-        if ( auto* x = n->op0()->type()->type()->tryAs<type::Unit>() ) {
-            if ( x->parameters().size() )
-                error("unit types with parameters cannot be connected through MIME type", n);
-        }
+        if ( auto* x = n->op0()->type()->type()->tryAs<type::Unit>(); x && x->parameters().size() )
+            error("unit types with parameters cannot be connected through MIME type", n);
     }
 
     void operator()(operator_::sink::ConnectMIMETypeString* n) final {
-        if ( auto* x = n->op0()->type()->type()->tryAs<type::Unit>() ) {
-            if ( x->parameters().size() )
-                error("unit types with parameters cannot be connected through MIME type", n);
-        }
+        if ( auto* x = n->op0()->type()->type()->tryAs<type::Unit>(); x && x->parameters().size() )
+            error("unit types with parameters cannot be connected through MIME type", n);
     }
 
     void operator()(operator_::unit::ConnectFilter* n) final {

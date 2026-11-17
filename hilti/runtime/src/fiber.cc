@@ -3,6 +3,7 @@
 #include <fiber/fiber.h>
 
 #include <memory>
+#include <string_view>
 
 #if defined(_MSC_VER)
 #include <intrin.h>
@@ -352,7 +353,7 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
 // that it will bubble back up to the fiber code, without being caught by any
 // intermediary catch handlers.
 namespace {
-struct AbortException {};
+struct AbortException : public std::exception {};
 } // namespace
 
 detail::Fiber::~Fiber() {
@@ -619,7 +620,7 @@ void detail::Fiber::_yield(const char* tag) {
         _executeSwitch(tag, this, _caller);
 }
 
-std::string detail::Fiber::tag() const {
+std::string_view detail::Fiber::tag() const {
     switch ( _type ) {
         case Type::Main: return "main";
         case Type::SwitchTrampoline: return "switcher";
