@@ -573,4 +573,100 @@ TEST_CASE("a call stays an ordered effect that reads and writes places") {
     CHECK_EQ(schemaFor(Opcode::Call)->is_pure, false);
 }
 
+namespace {
+
+// A function that takes a unit and loops from `head` through `body`, and returns from `exit`.
+struct UnitLoop {
+    Cells cells;
+    FunctionId fn;
+    BlockId head, body, exit;
+    InstId cell;
+
+    UnitLoop() {
+        auto builder = cells.package.builder();
+        fn = cells.owner("loop");
+        auto region = cells.package.function(fn).root_region;
+        auto pre = builder.createBlock(region);
+        head = builder.createBlock(region);
+        body = builder.createBlock(region);
+        exit = builder.createBlock(region);
+        cell = builder.addArgument(fn, pre, 0);
+        builder.addJump(pre, head);
+    }
+
+    // Closes the loop once the tests have added their operations, which end `exit` too.
+    void close() {
+        auto builder = cells.package.builder();
+        builder.addBranch(head, builder.addBoolConstant(head, true), body, exit);
+        builder.addJump(body, head);
+        builder.addReturnVoid(exit);
+    }
+};
+
+} // namespace
+
+TEST_CASE("one call that takes and borrows the same unit verifies the same in either operand order") {
+    auto verify_order = [](bool take_first) {
+        Cells cells;
+        auto builder = cells.package.builder();
+        auto param = [&](ParameterMode mode) { return Parameter(cells.unit_type, mode); };
+        auto modes = take_first ? std::vector{param(ParameterMode::Take), param(ParameterMode::Borrow)} :
+                                  std::vector{param(ParameterMode::Borrow), param(ParameterMode::Take)};
+        auto both = builder.createFunction("both", modes, builder.voidType());
+        auto callee = builder.createBlock(cells.package.function(both).root_region);
+        builder.addArgument(both, callee, 0);
+        builder.addArgument(both, callee, 1);
+        builder.addReturnVoid(callee);
+
+        auto fn = cells.owner();
+        auto block = builder.createBlock(cells.package.function(fn).root_region);
+        auto cell = builder.addArgument(fn, block, 0);
+        builder.addCall(block, both, {cell, cell});
+        builder.addReturnVoid(block);
+        return verify(cells.package);
+    };
+
+    auto take_first = verify_order(true);
+    auto borrow_first = verify_order(false);
+    CHECK_FALSE(hasInternalError(take_first, "use-after-consume"));
+    CHECK_FALSE(hasInternalError(borrow_first, "use-after-consume"));
+    CHECK_EQ(take_first.size(), borrow_first.size());
+}
+
+TEST_CASE("a value defined before a loop cannot be consumed inside it") {
+    UnitLoop loop;
+    auto builder = loop.cells.package.builder();
+    builder.addCall(loop.body, loop.cells.take(), {loop.cell});
+    loop.close();
+    CHECK(hasInternalError(verify(loop.cells.package), "parser-state-reused"));
+}
+
+TEST_CASE("a value defined inside a loop may be consumed once per iteration") {
+    UnitLoop loop;
+    auto builder = loop.cells.package.builder();
+    auto fresh = builder.addUnitCreate(loop.body, loop.cells.unit);
+    builder.addCall(loop.body, loop.cells.take(), {fresh});
+    builder.addCall(loop.exit, loop.cells.take(), {loop.cell});
+    loop.close();
+    CHECK(verify(loop.cells.package).empty());
+}
+
+TEST_CASE("a borrow is rejected when a consumption reaches it over the back edge") {
+    UnitLoop loop;
+    auto builder = loop.cells.package.builder();
+    builder.addCall(loop.head, loop.cells.read(), {loop.cell});
+    builder.addCall(loop.body, loop.cells.take(), {loop.cell});
+    loop.close();
+    CHECK(hasInternalError(verify(loop.cells.package), "use-after-consume"));
+}
+
+TEST_CASE("a borrow in a loop is fine when the consumption comes after the loop") {
+    UnitLoop loop;
+    auto builder = loop.cells.package.builder();
+    builder.addCall(loop.head, loop.cells.read(), {loop.cell});
+    builder.addCall(loop.exit, loop.cells.take(), {loop.cell});
+    loop.close();
+    CHECK(verify(loop.cells.package).empty());
+}
+
 TEST_SUITE_END();

@@ -52,9 +52,6 @@ std::vector<BlockId> successorBlocks(const Package& package, BlockId block);
 /** Builds the graph of `region`, whose first block is the entry. */
 Cfg buildCfg(const Package& package, RegionId region);
 
-/** Whether no path through `cfg` returns to a block it has already passed. */
-bool isAcyclic(const Cfg& cfg);
-
 /**
  * The positions reachable from `entry` in depth-first postorder, following successors in their order. Cycles are
  * tolerated, and each reachable position appears once. Reversing the result gives a topological order for acyclic

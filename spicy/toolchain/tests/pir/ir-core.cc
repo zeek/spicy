@@ -1004,17 +1004,73 @@ TEST_CASE("verifier rejects a successor that belongs to another function body") 
     CHECK(hasInternalError(verify(package), "invalid-successor"));
 }
 
-TEST_CASE("verifier rejects a cycle in an ordinary function's control flow") {
-    Package package;
-    auto builder = package.builder();
-    auto fn = builder.createFunction("loop", builder.int64Type());
-    auto region = package.function(fn).root_region;
-    auto first = builder.createBlock(region);
-    auto second = builder.createBlock(region);
-    builder.addJump(first, second);
-    builder.addJump(second, first);
+namespace {
 
-    CHECK(hasInternalError(verify(package), "control-flow-cycle"));
+// A loop that appends to a vector Phi: `pre` writes the empty vector, `body` appends and writes it again, and `head`
+// leaves for `exit` or `body`. The tests below change which Upsilons it has.
+struct VectorLoop {
+    Package package;
+    FunctionId fn;
+    BlockId pre, head, body, exit;
+    InstId phi, empty, next;
+
+    VectorLoop(bool preheader_write, int latch_writes) {
+        auto builder = package.builder();
+        fn = builder.createFunction("loop", builder.voidType());
+        auto region = package.function(fn).root_region;
+        pre = builder.createBlock(region);
+        head = builder.createBlock(region);
+        body = builder.createBlock(region);
+        exit = builder.createBlock(region);
+
+        empty = builder.addVectorEmpty(pre, builder.int64Type());
+        phi = builder.addPhi(head, package.inst(empty).result_type);
+        if ( preheader_write )
+            builder.addUpsilon(pre, empty, phi);
+        builder.addJump(pre, head);
+
+        builder.addBranch(head, builder.addBoolConstant(head, true), body, exit);
+        next = builder.addVectorAppend(body, phi, builder.addIntConstant(body, builder.int64Type(), 1));
+        for ( int i = 0; i < latch_writes; ++i )
+            builder.addUpsilon(body, next, phi);
+        builder.addJump(body, head);
+
+        builder.addCall(exit, dropper(), {phi});
+        builder.addReturnVoid(exit);
+    }
+
+    FunctionId dropper() {
+        auto builder = package.builder();
+        auto drop = builder.createFunction("drop",
+                                           {Parameter(package.inst(empty).result_type, ParameterMode::Take)},
+                                           builder.voidType());
+        auto block = builder.createBlock(package.function(drop).root_region);
+        builder.addArgument(drop, block, 0);
+        builder.addReturnVoid(block);
+        return drop;
+    }
+};
+
+} // namespace
+
+TEST_CASE("a loop's header Phi merges the preheader's and the latch's values, and each iteration consumes it once") {
+    VectorLoop loop(true, 1);
+    CHECK(verify(loop.package).empty());
+}
+
+TEST_CASE("verifier rejects a loop header Phi without an Upsilon in the preheader") {
+    VectorLoop loop(false, 1);
+    CHECK(hasInternalError(verify(loop.package), "phi-shadow-unset"));
+}
+
+TEST_CASE("verifier rejects two Upsilons on the latch path of one Phi") {
+    VectorLoop loop(true, 2);
+    CHECK(hasInternalError(verify(loop.package), "phi-shadow-overwritten"));
+}
+
+TEST_CASE("verifier rejects a loop that never writes the Phi's shadow from the latch") {
+    VectorLoop loop(true, 0);
+    CHECK(hasInternalError(verify(loop.package), "phi-shadow-unset"));
 }
 
 TEST_CASE("verifier rejects a value used in a block that its defining block does not dominate") {
@@ -1146,7 +1202,6 @@ TEST_CASE("the dominator tree and post-dominators of a diamond") {
     builder.addReturn(join, builder.addIntConstant(join, builder.int64Type(), 0));
 
     auto cfg = buildCfg(package, region);
-    CHECK(isAcyclic(cfg));
     auto ipdom = immediatePostDominators(cfg);
     CHECK(ipdom[0].kind == PostDominator::Kind::Block);
     CHECK(ipdom[0].position == 3);

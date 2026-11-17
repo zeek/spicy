@@ -56,30 +56,6 @@ Cfg buildCfg(const Package& package, RegionId region) {
     return cfg;
 }
 
-bool isAcyclic(const Cfg& cfg) {
-    // Kahn's algorithm: every position is removed exactly when all of its predecessors have been.
-    std::vector<size_t> pending(cfg.blocks.size());
-    std::vector<size_t> ready;
-    for ( size_t i = 0; i < cfg.blocks.size(); ++i ) {
-        pending[i] = cfg.predecessors[i].size();
-        if ( pending[i] == 0 )
-            ready.emplace_back(i);
-    }
-
-    size_t removed = 0;
-    while ( ! ready.empty() ) {
-        auto current = ready.back();
-        ready.pop_back();
-        ++removed;
-
-        for ( auto next : cfg.successors[current] )
-            if ( --pending[next] == 0 )
-                ready.emplace_back(next);
-    }
-
-    return removed == cfg.blocks.size();
-}
-
 std::vector<size_t> postorder(const std::vector<std::vector<size_t>>& successors, size_t entry) {
     std::vector<size_t> order;
     std::vector<bool> visited(successors.size(), false);

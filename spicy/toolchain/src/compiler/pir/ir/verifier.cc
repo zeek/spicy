@@ -208,7 +208,7 @@ public:
 
         // A function's body is a CFG, so its blocks are checked against the dominator tree and its affine values
         // against all of its paths.
-        _beginBody(id, fn);
+        _beginBody(fn);
         _verifyRegion(id, fn.root_region, fn, {});
         if ( ! _cfg.blocks.empty() )
             _verifyBodyAffinity();
@@ -239,16 +239,12 @@ public:
         return false;
     }
 
-    void _beginBody(FunctionId id, const Function& fn) {
+    void _beginBody(const Function& fn) {
         _cfg = buildCfg(_package, fn.root_region);
         _in_body = true;
         if ( _cfg.blocks.empty() )
             return;
 
-        if ( ! isAcyclic(_cfg) )
-            _emitter.emit("control-flow-cycle",
-                          "function's control flow contains a cycle, which PIR does not support yet",
-                          id);
         _idom = immediateDominators(_cfg.successors, 0);
     }
 
@@ -1792,129 +1788,115 @@ private:
         return dominates(_idom, _cfg.position.at(def.index), use_position);
     }
 
-    // Affine values in an ordinary function may flow through several blocks, so each must be consumed at most once
-    // along any path. Two consumers conflict unless neither can reach the other.
+    // Affine values in an ordinary function may flow through several blocks, and around loops. A forward dataflow
+    // tracks the values that may already be consumed on some path: a definition clears its value, since a loop gives
+    // the definition a fresh one per iteration, and a consumption adds it. Consuming or borrowing a value that is
+    // already in the set is an error. A projected slot of a tuple is tracked like a value that the tuple defines.
     void _verifyBodyAffinity() {
-        const auto count = _cfg.blocks.size();
-        std::vector<std::vector<bool>> reaches(count, std::vector<bool>(count, false));
-        for ( size_t from = 0; from < count; ++from ) {
-            std::vector<size_t> pending = _cfg.successors[from];
-            while ( ! pending.empty() ) {
-                auto next = pending.back();
-                pending.pop_back();
-                if ( reaches[from][next] )
+        using Consumed = std::set<uint64_t>;
+        constexpr uint64_t slot_bit = uint64_t(1) << 63U;
+        auto slot_of = [](InstId tuple, uint32_t index) { return slot_bit | slotKey(tuple, index); };
+
+        // Slots of each tuple, so that the tuple's definition can clear them.
+        std::unordered_map<uint32_t, std::vector<uint64_t>> slots;
+        for ( auto block : _cfg.blocks )
+            for ( auto id : _package.block(block).insts ) {
+                if ( ! _package.isValid(id) )
                     continue;
-
-                reaches[from][next] = true;
-                pending.insert(pending.end(), _cfg.successors[next].begin(), _cfg.successors[next].end());
+                const auto& inst = _package.inst(id);
+                const auto* payload = inst.opcode == Opcode::TupleGet ? std::get_if<TupleGetPayload>(&inst.payload) :
+                                                                        nullptr;
+                if ( payload && ! inst.args.empty() && _package.isValid(inst.args[0]) &&
+                     typeDiscipline(_package, inst.result_type) == ValueDiscipline::Affine )
+                    slots[inst.args[0].index].push_back(slot_of(inst.args[0], payload->index));
             }
-        }
 
-        struct Consumer {
-            InstId inst;
-            size_t block;
-        };
-        std::unordered_map<uint32_t, std::vector<Consumer>> consumed_values;
-        std::unordered_map<uint64_t, std::vector<Consumer>> projected_slots;
-        // The operations that only borrow an affine value, with the operand that does so, and where each is in its
-        // block.
-        struct Borrower {
-            InstId inst;
-            size_t block;
-            size_t position;
-            size_t operand;
-        };
-        std::unordered_map<uint32_t, std::vector<Borrower>> borrowed_values;
-        std::unordered_map<uint32_t, std::pair<size_t, size_t>> positions;
+        auto transfer = [&](BlockId block, Consumed& consumed, bool report) {
+            auto consume = [&](uint64_t key, InstId user) {
+                if ( ! consumed.insert(key).second && report )
+                    _emitter.emit("parser-state-reused",
+                                  "parser state value is consumed by more than one state-transforming operation",
+                                  user);
+            };
+            auto borrow = [&](uint64_t key, InstId user, size_t operand) {
+                if ( consumed.contains(key) && report )
+                    _emitter.emit("use-after-consume",
+                                  "operand %zu uses an affine value after an operation consumed it",
+                                  user,
+                                  operand);
+            };
 
-        for ( size_t block = 0; block < count; ++block ) {
-            const auto& block_insts = _package.block(_cfg.blocks[block]).insts;
-            for ( size_t position = 0; position < block_insts.size(); ++position ) {
-                auto inst_id = block_insts[position];
+            for ( auto inst_id : _package.block(block).insts ) {
                 if ( ! _package.isValid(inst_id) )
                     continue;
 
-                positions[inst_id.index] = {block, position};
                 const auto& inst = _package.inst(inst_id);
                 if ( inst.opcode == Opcode::TupleGet ) {
                     const auto* payload = std::get_if<TupleGetPayload>(&inst.payload);
-                    if ( ! payload || inst.args.empty() || ! _package.isValid(inst.args[0]) )
-                        continue;
-
-                    if ( typeDiscipline(_package, inst.result_type) == ValueDiscipline::Affine )
-                        projected_slots[slotKey(inst.args[0], payload->index)].push_back(
-                            {.inst = inst_id, .block = block});
-                    continue;
+                    if ( payload && ! inst.args.empty() && _package.isValid(inst.args[0]) &&
+                         typeDiscipline(_package, inst.result_type) == ValueDiscipline::Affine )
+                        consume(slot_of(inst.args[0], payload->index), inst_id);
                 }
+                else if ( schemaFor(inst.opcode) ) {
+                    // An instruction reads all of its operands before it consumes any, so operand order does not
+                    // matter.
+                    std::vector<uint64_t> consumes;
+                    for ( size_t a = 0; a < inst.args.size(); ++a ) {
+                        auto arg = inst.args[a];
+                        if ( ! _package.isValid(arg) )
+                            continue;
 
-                if ( ! schemaFor(inst.opcode) )
-                    continue;
+                        if ( typeDiscipline(_package, _package.inst(arg).result_type) != ValueDiscipline::Affine ) {
+                            // A place derived from a unit is an access to that unit.
+                            if ( auto owner = _derivedOwner(arg); owner.isSet() )
+                                borrow(owner.index, inst_id, a);
+                            continue;
+                        }
 
-                for ( size_t a = 0; a < inst.args.size(); ++a ) {
-                    auto arg = inst.args[a];
-                    if ( ! _package.isValid(arg) )
-                        continue;
-
-                    if ( typeDiscipline(_package, _package.inst(arg).result_type) != ValueDiscipline::Affine ) {
-                        // A place derived from a unit is an access to that unit.
-                        if ( auto owner = _derivedOwner(arg); owner.isSet() )
-                            borrowed_values[owner.index].push_back(
-                                {.inst = inst_id, .block = block, .position = position, .operand = a});
-                        continue;
+                        auto role = operandRole(_package, inst, a);
+                        if ( role == OperandRole::Consume )
+                            consumes.push_back(arg.index);
+                        else if ( role == OperandRole::Borrow )
+                            borrow(arg.index, inst_id, a);
                     }
-
-                    auto role = operandRole(_package, inst, a);
-                    if ( role == OperandRole::Consume )
-                        consumed_values[arg.index].push_back({.inst = inst_id, .block = block});
-                    else if ( role == OperandRole::Borrow )
-                        borrowed_values[arg.index].push_back(
-                            {.inst = inst_id, .block = block, .position = position, .operand = a});
+                    for ( auto key : consumes )
+                        consume(key, inst_id);
                 }
-            }
-        }
 
-        auto check = [&](const std::vector<Consumer>& consumers) {
-            for ( size_t later = 1; later < consumers.size(); ++later ) {
-                for ( size_t earlier = 0; earlier < later; ++earlier ) {
-                    const auto& a = consumers[earlier];
-                    const auto& b = consumers[later];
-                    bool same_path = a.block == b.block || reaches[a.block][b.block] || reaches[b.block][a.block];
-                    if ( same_path ) {
-                        _emitter.emit("parser-state-reused",
-                                      "parser state value is consumed by more than one state-transforming operation",
-                                      b.inst);
-                        break;
-                    }
-                }
+                // The definition runs after its operands.
+                consumed.erase(inst_id.index);
+                if ( auto it = slots.find(inst_id.index); it != slots.end() )
+                    for ( auto key : it->second )
+                        consumed.erase(key);
             }
         };
 
-        for ( const auto& [_, consumers] : consumed_values )
-            check(consumers);
-
-        // A borrow must not follow a consumption on any path.
-        for ( const auto& [value, consumers] : consumed_values ) {
-            auto borrowers = borrowed_values.find(value);
-            if ( borrowers == borrowed_values.end() )
-                continue;
-
-            for ( const auto& borrower : borrowers->second ) {
-                for ( const auto& consumer : consumers ) {
-                    bool after = consumer.block == borrower.block ?
-                                     positions.at(consumer.inst.index).second < borrower.position :
-                                     reaches[consumer.block][borrower.block];
-                    if ( after ) {
-                        _emitter.emit("use-after-consume",
-                                      "operand %zu uses an affine value after an operation consumed it",
-                                      borrower.inst,
-                                      borrower.operand);
-                        break;
-                    }
+        std::vector<std::optional<Consumed>> in(_cfg.blocks.size());
+        in[0] = Consumed{};
+        std::vector<size_t> worklist = {0};
+        while ( ! worklist.empty() ) {
+            auto pos = worklist.back();
+            worklist.pop_back();
+            auto state = *in[pos];
+            transfer(_cfg.blocks[pos], state, false);
+            for ( auto next : _cfg.successors[pos] ) {
+                if ( ! in[next] )
+                    in[next] = state;
+                else {
+                    auto before = in[next]->size();
+                    in[next]->insert(state.begin(), state.end());
+                    if ( in[next]->size() == before )
+                        continue;
                 }
+                worklist.push_back(next);
             }
         }
-        for ( const auto& [_, consumers] : projected_slots )
-            check(consumers);
+
+        // Blocks that the entry does not reach are still checked, as if entered with nothing consumed.
+        for ( size_t pos = 0; pos < _cfg.blocks.size(); ++pos ) {
+            auto state = in[pos].value_or(Consumed{});
+            transfer(_cfg.blocks[pos], state, true);
+        }
     }
 
     void _verifyOperand(FunctionId function_id,
