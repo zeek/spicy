@@ -89,7 +89,7 @@ TEST_CASE("Visitor, pre-order") {
             if ( x.size() == old )
                 x += hilti::util::fmt("[%s]", i->typename_());
 
-            x += ",";
+            x += ',';
         }
 
         std::string x;
@@ -123,7 +123,7 @@ TEST_CASE("Visitor, pre-order") {
             if ( x.size() == old )
                 x += hilti::util::fmt("[%s]", i->typename_());
 
-            x += ",";
+            x += ',';
         }
 
         std::string x;

@@ -308,11 +308,11 @@ std::string hilti::rt::escapeUTF8(std::string_view s, bitmask<render_style::UTF8
 
         if ( cp == '\\' ) {
             if ( (style & render_style::UTF8::NoEscapeHex) && (p + n) < e && *(p + n) == 'x' )
-                esc += "\\";
+                esc += '\\';
             else if ( ! (style & render_style::UTF8::NoEscapeBackslash) )
                 esc += "\\\\";
             else
-                esc += "\\";
+                esc += '\\';
         }
 
         else if ( cp == '"' && (style & render_style::UTF8::EscapeQuotes) )
