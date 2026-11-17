@@ -16,8 +16,8 @@ namespace hilti::type {
 
 namespace function {
 
-using Parameter = declaration::Parameter;
-using Parameters = declaration::Parameters;
+using declaration::Parameter;
+using declaration::Parameters;
 
 /**
  * A function's flavor differentiates between a set of "function-like"

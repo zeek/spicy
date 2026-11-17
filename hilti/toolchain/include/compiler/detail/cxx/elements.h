@@ -463,7 +463,7 @@ struct Struct {
 };
 
 namespace union_ {
-using Member = struct_::Member;
+using struct_::Member;
 } // namespace union_
 
 /** A C++ union type. */

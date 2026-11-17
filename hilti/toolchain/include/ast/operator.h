@@ -176,8 +176,8 @@ constexpr auto to_string(Kind m) { return util::enum_::to_string(m, detail::Kind
 /** Operator priority during resolving relative to others of the same kind. */
 enum class Priority { Low, Normal };
 
-using Operand = type::operand_list::Operand;
-using Operands = type::operand_list::Operands;
+using type::operand_list::Operand;
+using type::operand_list::Operands;
 
 /** Helper for defining operator signatures. */
 struct Signature {
