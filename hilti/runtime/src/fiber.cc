@@ -353,7 +353,7 @@ detail::Fiber::Fiber(Type type) : _type(type), _fiber(std::make_unique<::Fiber>(
 // that it will bubble back up to the fiber code, without being caught by any
 // intermediary catch handlers.
 namespace {
-struct AbortException {};
+struct AbortException : public std::exception {};
 } // namespace
 
 detail::Fiber::~Fiber() {
