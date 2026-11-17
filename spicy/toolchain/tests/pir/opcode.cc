@@ -782,3 +782,38 @@ TEST_CASE("parser.fail ends a parser function with its message, and only a parse
     diags = verify(q.package);
     CHECK(std::ranges::any_of(diags, [](auto& d) { return d.tag == "operand-type-mismatch"; }));
 }
+
+TEST_CASE("parser.match_regexp yields the matched bytes and continues a suspended match") {
+    auto p = makeOneBytePipeline();
+    auto builder = p.package.builder();
+    auto regexp = builder.internRegExp({RegExpPattern{.value = "A*"}}, true);
+    auto match = builder.addMatchRegExp(p.block, p.state0, regexp);
+    auto state = builder.addTupleGet(p.block, match, 0);
+    CHECK_EQ(p.package.inst(builder.addTupleGet(p.block, match, 1)).result_type, builder.bytesType());
+    builder.addParserFinish(p.block, state, p.unit0);
+    CHECK(verify(p.package).empty());
+    CHECK_NE(print(p.package).find("parser.match_regexp %0, @re%0 : tuple<parser.state, bytes>"), std::string::npos);
+
+    auto contract = parserContractFor(p.package, p.package.inst(match));
+    REQUIRE(contract);
+    CHECK_EQ(contract->success_consumption_bytes, -1);
+    CHECK_EQ(contract->insufficient_input, SuspendBehavior::SuspendAndContinue);
+    CHECK_EQ(contract->eod, FailureOutcome::Mismatch);
+    CHECK_EQ(contract->bound, FailureOutcome::Mismatch);
+    CHECK_EQ(contract->mismatch, FailureOutcome::Mismatch);
+    CHECK_EQ(contract->gap, FailureOutcome::Gap);
+
+    auto effects = effectsFor(Opcode::MatchRegExp);
+    CHECK(effects.reads_input);
+    CHECK(effects.may_suspend);
+    CHECK(effects.may_fail);
+    CHECK(effects.allocates);
+}
+
+TEST_CASE("parser.match_regexp needs a valid regular expression") {
+    auto p = makeOneBytePipeline();
+    auto builder = p.package.builder();
+    auto match = builder.addMatchRegExp(p.block, p.state0, RegExpId{7});
+    builder.addParserFinish(p.block, builder.addTupleGet(p.block, match, 0), p.unit0);
+    CHECK(std::ranges::any_of(verify(p.package), [](auto& d) { return d.tag == "regexp-invalid-id"; }));
+}

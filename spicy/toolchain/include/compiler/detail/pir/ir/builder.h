@@ -204,6 +204,8 @@ public:
     InstId addSwitch(BlockId block, InstId value, SwitchPayload payload, SourceSpanId span = {});
     /** Adds `parser.expect_bytes` of `literal` over `state`. */
     InstId addExpectBytes(BlockId block, InstId state, std::string literal, SourceSpanId span = {});
+    /** Adds `parser.match_regexp` of `regexp` over `state`. */
+    InstId addMatchRegExp(BlockId block, InstId state, RegExpId regexp, SourceSpanId span = {});
     /** Adds the terminating `parser.fail` that consumes `state` and fails with the string `description`. */
     InstId addFail(BlockId block, InstId state, InstId description, SourceSpanId span = {});
     /** Adds the terminating `core.jump` to `target`. */

@@ -119,6 +119,8 @@ std::optional<std::string> renderPayload(const Package& package,
             return std::string("@<invalid-global>");
         return fmt("@global %%%u \"%s\"", global->global.index, package.global(global->global).name);
     }
+    if ( const auto* regexp = std::get_if<RegExpPayload>(&payload) )
+        return fmt("@re%%%u", regexp->regexp.index);
     if ( const auto* port = std::get_if<PortLiteral>(&payload) ) {
         switch ( port->transport ) {
             case Transport::TCP: return fmt("%u/tcp", port->number);

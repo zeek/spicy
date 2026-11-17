@@ -23,6 +23,7 @@ set(PIR_BENCH_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/unit-nested.spicy"
     "${CMAKE_CURRENT_SOURCE_DIR}/unit-bytes.spicy"
     "${CMAKE_CURRENT_SOURCE_DIR}/unit-switch.spicy"
+    "${CMAKE_CURRENT_SOURCE_DIR}/regex.spicy"
 )
 
 set(_generated_sources)

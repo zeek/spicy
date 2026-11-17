@@ -1,0 +1,82 @@
+# @TEST-EXEC: cp ${SCRIPTS}/pir-parse.h parse.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -p -D spicy-pir >/dev/null 2>pir.log
+# @TEST-EXEC: rg "attached PIR-produced|parser.match_regexp" pir.log | sort -u >route
+# @TEST-EXEC: btest-diff route
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT -j driver.cc >legacy
+# @TEST-EXEC: cmp output legacy
+
+# @TEST-DOC: Regular expressions that the minimal and the standard matcher of the runtime treat differently match as legacy does. A pattern with groups uses the standard matcher unless it says `&nosub`. The `&nosub` variants of the inputs in rsmmr/justrx#7 record the current mismatch on both routes, so a later fix changes both baselines together.
+
+module Test;
+
+public type Groups = unit {
+    x: /(aa)*/;
+    y: b"b";
+
+    on %done {
+        print "done", self.x;
+    }
+};
+
+public type GroupsNosub = unit {
+    x: /(aa)*/ &nosub;
+    y: b"b";
+
+    on %done {
+        print "done", self.x;
+    }
+};
+
+public type Alternation = unit {
+    x: /(a|ab)(c|bcd)/;
+
+    on %done {
+        print "done", self.x;
+    }
+};
+
+public type Incremental = unit {
+    x: /([^a]|(aa))*/;
+    y: b"ab";
+
+    on %done {
+        print "done", self.x, self.y;
+    }
+};
+
+public type IncrementalNosub = unit {
+    x: /([^a]|(aa))*/ &nosub;
+    y: b"ab";
+
+    on %done {
+        print "done", self.x, self.y;
+    }
+};
+
+@TEST-START-FILE driver.cc
+static constexpr unsigned error_style = 1;
+#include "parse.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    auto both = [](const char* unit, const char* label, const std::string& input) {
+        run(unit, label, {{input}});
+        run(unit, (std::string(label) + "-chunked").c_str(), {{input}}, 1);
+    };
+
+    both("Test::Groups", "groups", "ab");
+    both("Test::Groups", "groups-two", "aaaab");
+    both("Test::GroupsNosub", "groups-nosub", "ab");
+    both("Test::GroupsNosub", "groups-nosub-two", "aaaab");
+    both("Test::Alternation", "alternation", "abcd");
+    both("Test::Incremental", "incremental", "aaab");
+    both("Test::Incremental", "incremental-short", "ab");
+    both("Test::IncrementalNosub", "incremental-nosub", "aaab");
+    both("Test::IncrementalNosub", "incremental-nosub-short", "ab");
+    return 0;
+}
+
+@TEST-END-FILE

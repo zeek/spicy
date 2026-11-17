@@ -483,7 +483,8 @@ private:
                     bounded_states.insert(inst_id.index);
             }
             else if ( inst.opcode == Opcode::ReadInteger || inst.opcode == Opcode::ReadBytes ||
-                      inst.opcode == Opcode::ExpectBytes || inst.opcode == Opcode::ParseSubunit ) {
+                      inst.opcode == Opcode::ExpectBytes || inst.opcode == Opcode::MatchRegExp ||
+                      inst.opcode == Opcode::ParseSubunit ) {
                 if ( ! inst.args.empty() && bounded_states.contains(inst.args[0].index) )
                     bounded_tuples.insert(inst_id.index);
             }
@@ -999,6 +1000,14 @@ private:
                 return;
             }
 
+            case Opcode::MatchRegExp: {
+                const auto* payload = std::get_if<RegExpPayload>(&inst.payload);
+                if ( payload && ! _package.isValid(payload->regexp) )
+                    _emitter.emit("regexp-invalid-id",
+                                  "parser.match_regexp does not reference a valid regular expression",
+                                  inst_id);
+            }
+                [[fallthrough]];
             case Opcode::ExpectBytes:
                 if ( ! _package.isValid(inst.result_type) || _package.type(inst.result_type).kind != TypeKind::Tuple ||
                      _package.type(inst.result_type).type_arguments.size() != 2 ||

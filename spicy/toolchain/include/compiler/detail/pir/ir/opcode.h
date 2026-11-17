@@ -236,6 +236,15 @@ enum class Opcode {
      * Ends the parser function with a parse error whose description is its string operand.
      */
     Fail,
+    /**
+     * Matches the regular expression of its payload at the start of the input. Returns a tuple with the updated
+     * parser state and the matched bytes, which end at the cursor.
+     *
+     * The match is anchored and the longest one. It is decided as soon as no transition is possible from the current
+     * state, or at the end of input or its bound, whichever comes first. An empty match succeeds. Suspending for more
+     * input continues the match instead of retrying it. Fails with `failed to match regular expression`.
+     */
+    MatchRegExp,
 };
 
 enum class TypeKind { Void, Integer, Bytes, ParserState, Unit, Tuple, Vector, Set, Opaque, Place, Bool, String };
@@ -365,6 +374,13 @@ struct FieldPayload {
     friend constexpr bool operator==(FieldPayload, FieldPayload) = default;
 };
 
+/** The regular expression that `parser.match_regexp` matches. */
+struct RegExpPayload {
+    RegExpId regexp;
+
+    friend constexpr bool operator==(RegExpPayload, RegExpPayload) = default;
+};
+
 struct GlobalPayload {
     GlobalId global;
 
@@ -481,7 +497,8 @@ using InstPayload = std::variant<std::monostate,
                                  PortLiteral,
                                  ConversionPayload,
                                  UpsilonPayload,
-                                 SwitchPayload>;
+                                 SwitchPayload,
+                                 RegExpPayload>;
 
 enum class PayloadKind {
     None,
@@ -503,10 +520,16 @@ enum class PayloadKind {
     Conversion,
     Upsilon,
     Switch,
+    RegExp,
 };
 
 /** Whether a suspending parser read consumes bytes and how it resumes. */
-enum class SuspendBehavior { SuspendAndRetry };
+enum class SuspendBehavior {
+    /** The operation starts over on resumption, so it only needs the input that it has not yet consumed. */
+    SuspendAndRetry,
+    /** The operation resumes with its internal progress intact. Only the backend holds that progress. */
+    SuspendAndContinue,
+};
 
 /** How a parser operation completes when its outcome is a failure rather than a value. */
 enum class FailureOutcome { UnexpectedEod, Gap, BoundExceeded, InvalidBound, Mismatch };
@@ -572,6 +595,7 @@ constexpr bool payloadMatchesKind(const InstPayload& payload, PayloadKind kind) 
         case PayloadKind::Conversion: return std::holds_alternative<ConversionPayload>(payload);
         case PayloadKind::Upsilon: return std::holds_alternative<UpsilonPayload>(payload);
         case PayloadKind::Switch: return std::holds_alternative<SwitchPayload>(payload);
+        case PayloadKind::RegExp: return std::holds_alternative<RegExpPayload>(payload);
     }
 
     return false;
@@ -668,6 +692,17 @@ inline constexpr ParserOperationContract KExpectBytesContract{
     .failure_cursor = FailureCursor::OperationStart,
 };
 
+// The end of input and the bound finish the match instead of failing it, so a failure there is a mismatch.
+inline constexpr ParserOperationContract KMatchRegExpContract{
+    .success_consumption_bytes = -1,
+    .insufficient_input = SuspendBehavior::SuspendAndContinue,
+    .eod = FailureOutcome::Mismatch,
+    .gap = FailureOutcome::Gap,
+    .bound = FailureOutcome::Mismatch,
+    .mismatch = FailureOutcome::Mismatch,
+    .failure_cursor = FailureCursor::OperationStart,
+};
+
 inline constexpr ParserOperationContract KSubunitContract{
     .success_consumption_bytes = -1,
     .insufficient_input = SuspendBehavior::SuspendAndRetry,
@@ -679,7 +714,7 @@ inline constexpr ParserOperationContract KSubunitContract{
 
 // One entry per `Opcode` value, in declaration order, so `schemaFor()` can index directly without
 // per-call allocation.
-inline constexpr std::array<OpcodeSchema, 44> KSchemas{{
+inline constexpr std::array<OpcodeSchema, 45> KSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Add,
         .spelling = "core.add",
@@ -1071,6 +1106,15 @@ inline constexpr std::array<OpcodeSchema, 44> KSchemas{{
                  .payload_kind = PayloadKind::None,
                  .is_terminator = true,
                  .is_pure = false},
+    OpcodeSchema{.opcode = Opcode::MatchRegExp,
+                 .spelling = "parser.match_regexp",
+                 .operand_types = KParseStateOperandTypes,
+                 .operand_roles = KParseStateOperandRoles,
+                 .result_type = fixedType(TypeKind::Tuple),
+                 .payload_kind = PayloadKind::RegExp,
+                 .is_terminator = false,
+                 .is_pure = false,
+                 .parser_contract = KMatchRegExpContract},
 }};
 
 } // namespace detail
@@ -1110,6 +1154,13 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
         case Opcode::ExpectBytes:
         case Opcode::ParseSubunit:
             return {.reads_input = true, .changes_parser_state = true, .may_suspend = true, .may_fail = true};
+        // The runtime's matcher is allocated for each match.
+        case Opcode::MatchRegExp:
+            return {.reads_input = true,
+                    .changes_parser_state = true,
+                    .allocates = true,
+                    .may_suspend = true,
+                    .may_fail = true};
         case Opcode::RepeatToBound:
             return {.reads_input = true,
                     .changes_parser_state = true,

@@ -14,6 +14,7 @@
 #include <hilti/ast/ctors/integer.h>
 #include <hilti/ast/ctors/null.h>
 #include <hilti/ast/ctors/port.h>
+#include <hilti/ast/ctors/regexp.h>
 #include <hilti/ast/ctors/string.h>
 #include <hilti/ast/ctors/tuple.h>
 #include <hilti/ast/ctors/vector.h>
@@ -55,6 +56,7 @@
 #include <hilti/ast/types/library.h>
 #include <hilti/ast/types/name.h>
 #include <hilti/ast/types/reference.h>
+#include <hilti/ast/types/regexp.h>
 #include <hilti/ast/types/set.h>
 #include <hilti/ast/types/string.h>
 #include <hilti/ast/types/tuple.h>
@@ -1538,19 +1540,21 @@ std::variant<ir::InstId, UnsupportedFeature> BodyLowerer::_lowerCall(hilti::expr
     return _builder.addCall(_block, std::get<ir::FunctionId>(ordinary), std::move(values), span);
 }
 
-enum class FieldForm { Integer, Bytes, Vector, Unit, Literal };
+enum class FieldForm { Integer, Bytes, Vector, Unit, Literal, RegExp };
 
 struct FieldSpec {
     type::unit::item::Field* source = nullptr;
     FieldForm form = FieldForm::Integer;
     uint8_t width = 0;
     ir::Signedness signedness = ir::Signedness::Unsigned;
-    hilti::Expression* size = nullptr; /**< the `&size` of a vector or bytes */
-    hilti::Location size_location;     /**< where that `&size` is, which legacy reports when it is not consumed */
-    hilti::Location type_location;     /**< where the field's type is, which legacy reports for an integer read */
-    std::string literal;               /**< the bytes that a literal field expects */
-    bool anonymous = false;            /**< a literal without a name, which nothing can refer to */
-    type::Unit* child = nullptr;       /**< the unit of a vector's elements or of a sub-unit */
+    hilti::Expression* size = nullptr;       /**< the `&size` of a vector or bytes */
+    hilti::Location size_location;           /**< where that `&size` is, which legacy reports when it is not consumed */
+    hilti::Location type_location;           /**< where the field's type is, which legacy reports for an integer read */
+    std::string literal;                     /**< the bytes that a literal field expects */
+    bool anonymous = false;                  /**< a literal without a name, which nothing can refer to */
+    std::vector<ir::RegExpPattern> patterns; /**< the patterns of a regexp field */
+    bool no_sub = true;                      /**< whether a regexp field needs no capture groups */
+    type::Unit* child = nullptr;             /**< the unit of a vector's elements or of a sub-unit */
     ir::DeclId declaration;
     ir::TypeId type;
     std::vector<spicy::declaration::Hook*> source_hooks; /**< hooks written inside the field */
@@ -1632,7 +1636,8 @@ public:
                         field_type = _builder.vectorType(_builder.unitType(_spec(field.child).declaration));
                         break;
                     case FieldForm::Unit: field_type = _builder.unitType(_spec(field.child).declaration); break;
-                    case FieldForm::Literal: field_type = _builder.bytesType(); break;
+                    case FieldForm::Literal:
+                    case FieldForm::RegExp: field_type = _builder.bytesType(); break;
                 }
                 field.type = field_type;
                 if ( field.anonymous ) {
@@ -1861,10 +1866,40 @@ private:
         if ( auto* coerced = ctor ? ctor->tryAs<hilti::ctor::Coerced>() : nullptr )
             ctor = coerced->coercedCtor();
         auto* literal = ctor ? ctor->tryAs<hilti::ctor::Bytes>() : nullptr;
-        if ( (field->isAnonymous() && ! literal) || field->isSkip() || field->isForwarding() || field->condition() ||
-             (field->isTransient() && ! field->isAnonymous()) || (ctor && ! literal) || ! field->arguments().empty() ||
-             ! field->sinks().empty() )
-            return reject("field modifiers and constructors other than bytes literals are not supported", field_loc);
+        auto* regexp = ctor ? ctor->tryAs<hilti::ctor::RegExp>() : nullptr;
+        if ( (field->isAnonymous() && ! literal && ! regexp) || field->isSkip() || field->isForwarding() ||
+             field->condition() || (field->isTransient() && ! field->isAnonymous()) ||
+             (ctor && ! literal && ! regexp) || ! field->arguments().empty() || ! field->sinks().empty() )
+            return reject("field modifiers and constructors other than bytes and regexp literals are not supported",
+                          field_loc);
+
+        if ( regexp ) {
+            auto* attrs = field->attributes();
+            auto* item_type = field->itemType() ? field->itemType()->type() : nullptr;
+            auto* parse_type = field->parseType() ? field->parseType()->type() : nullptr;
+            // Only `&nosub` is understood, and a conversion changes the type that hooks see.
+            if ( (attrs && attrs->attributes().size() > (attrs->find(attribute::kind::Nosub) ? 1U : 0U)) ||
+                 field->repeatCount() || field->isContainer() || field->item() ||
+                 ! (field->originalType()->type()->isA<hilti::type::RegExp>()) ||
+                 ! (parse_type && parse_type->isA<hilti::type::Bytes>()) ||
+                 ! (item_type && item_type->isA<hilti::type::Bytes>()) )
+                return reject("regexp fields with attributes or conversions are not supported yet", field_loc);
+            // As in legacy, captures are enabled unless a `&nosub` says that none are needed. Hooks that use them are
+            // rejected when they are lowered.
+            FieldSpec f{.source = field,
+                        .form = FieldForm::RegExp,
+                        .type_location = ctor->meta().location(),
+                        .anonymous = field->isAnonymous(),
+                        .no_sub = regexp->isNoSub() || (attrs && attrs->find(attribute::kind::Nosub))};
+            for ( const auto& pattern : regexp->patterns() )
+                f.patterns.push_back(ir::RegExpPattern{.value = pattern.value(),
+                                                       .case_insensitive = pattern.isCaseInsensitive(),
+                                                       .id = pattern.matchID()});
+            for ( auto* hook : field->hooks() )
+                f.source_hooks.push_back(hook);
+            spec.fields.push_back(f);
+            return std::nullopt;
+        }
 
         if ( literal ) {
             if ( (field->attributes() && *field->attributes()) || field->repeatCount() )
@@ -2080,7 +2115,7 @@ private:
         auto unit = _builder.unitType(spec.declaration);
         std::vector<ir::Parameter> params = {ir::Parameter(unit, ir::ParameterMode::BorrowMut)};
         bool has_value = field && (field->form == FieldForm::Integer || field->form == FieldForm::Bytes ||
-                                   field->form == FieldForm::Literal);
+                                   field->form == FieldForm::Literal || field->form == FieldForm::RegExp);
         if ( has_value )
             params.emplace_back(field->type, ir::ParameterMode::Take);
         if ( spec.context )
@@ -2104,6 +2139,15 @@ private:
             body.bind(hook->dd(), Variable{.value = _builder.addArgument(id, block, 1, span)});
         if ( spec.context )
             body.setContext(_builder.addArgument(id, block, has_value ? 2 : 1, span), spec.context_names);
+
+        // A hook sees the captures of its regexp field through `$@`, which PIR does not carry yet.
+        if ( field && field->form == FieldForm::RegExp && ! field->no_sub ) {
+            auto visitor = hilti::visitor::PreOrder();
+            for ( auto* node : hilti::visitor::range(visitor, hook->body(), {}) )
+                if ( auto* keyword = node->tryAs<hilti::expression::Keyword>();
+                     keyword && keyword->kind() == hilti::expression::keyword::Kind::Captures )
+                    return unsupported(feature, "regexp captures are not supported yet", hook->meta().location());
+        }
 
         if ( auto error = body.lowerStatements(hook->body()->statements()) )
             return *error;
@@ -2241,6 +2285,15 @@ private:
                 break;
             }
 
+            case FieldForm::RegExp: {
+                auto regexp = _builder.internRegExp(field.patterns, field.no_sub, span);
+                auto read =
+                    _builder.addMatchRegExp(at.block, at.state, regexp, internSpan(_package, field.type_location));
+                at.state = _builder.addTupleGet(at.block, read, 0, span);
+                value = _builder.addTupleGet(at.block, read, 1, span);
+                break;
+            }
+
             case FieldForm::Unit: {
                 auto child = _builder.addParseSubunit(at.block, at.state, _spec(field.child).function, span);
                 at.state = _builder.addTupleGet(at.block, child, 0, span);
@@ -2279,7 +2332,7 @@ private:
         for ( auto hook : field.hooks ) {
             std::vector<ir::InstId> args = {at.unit};
             if ( field.form == FieldForm::Integer || field.form == FieldForm::Bytes ||
-                 field.form == FieldForm::Literal )
+                 field.form == FieldForm::Literal || field.form == FieldForm::RegExp )
                 args.push_back(value);
             if ( context )
                 args.push_back(*context);

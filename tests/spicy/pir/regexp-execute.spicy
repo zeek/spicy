@@ -1,0 +1,98 @@
+# @TEST-EXEC: cp ${SCRIPTS}/pir-parse.h parse.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -p -D spicy-pir >/dev/null 2>pir.log
+# @TEST-EXEC: rg "attached PIR-produced|parser.match_regexp|regexp %" pir.log | sort -u >route
+# @TEST-EXEC: btest-diff route
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT -j driver.cc >legacy
+# @TEST-EXEC: cmp output legacy
+
+# @TEST-DOC: Matches regular expression fields as legacy does, whole and in small chunks: the longest match ends before the first byte that cannot continue it, at the end of input in an accepting state, or empty; a pattern that cannot match, or that is cut short by the end of input, fails with legacy's message; a pattern set matches any of its patterns; and a case-insensitive pattern ignores case.
+
+module Test;
+
+public type Run = unit {
+    length: uint64;
+    data: /A*/ {
+        print "data", $$;
+    }
+    end_: b"END";
+
+    on %done {
+        print "done", self.length, self.data, self.end_;
+    }
+};
+
+public type Open = unit {
+    data: /A*/;
+
+    on %done {
+        print "done", self.data;
+    }
+};
+
+public type Required = unit {
+    data: /AB/;
+
+    on %done {
+        print "done", self.data;
+    }
+};
+
+public type Several = unit {
+    first: /A+/ | /B+/;
+    second: /[0-9]+/ | /x/;
+
+    on %done {
+        print "done", self.first, self.second;
+    }
+};
+
+public type Folded = unit {
+    word: /abc/i;
+    rest: /[a-c]*/i;
+
+    on %done {
+        print "done", self.word, self.rest;
+    }
+};
+
+@TEST-START-FILE driver.cc
+static constexpr unsigned error_style = 1;
+#include "parse.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    auto both = [](const char* unit, const char* label, const std::string& input) {
+        run(unit, label, {{input}});
+        for ( size_t chunk : {1, 2, 7} )
+            run(unit, (std::string(label) + "-chunk" + std::to_string(chunk)).c_str(), {{input}}, chunk);
+    };
+
+    both("Test::Run", "run", be64(5) + "AAAAAEND");
+    both("Test::Run", "run-empty", be64(0) + "END");
+    both("Test::Run", "run-stops-early", be64(3) + "AAAENDEND");
+    both("Test::Run", "run-no-end", be64(2) + "AAEN");
+
+    both("Test::Open", "eod-accepting", "AAA");
+    both("Test::Open", "eod-empty", "");
+    both("Test::Open", "stops-at-other-byte", "AAAB");
+    both("Test::Open", "first-byte-other", "B");
+
+    both("Test::Required", "required-match", "AB");
+    both("Test::Required", "required-eod-in-prefix", "A");
+    both("Test::Required", "required-first-byte", "XB");
+    both("Test::Required", "required-second-byte", "AX");
+    both("Test::Required", "required-empty", "");
+
+    both("Test::Several", "several-first-second", "AAA42");
+    both("Test::Several", "several-other-first", "BBx");
+    both("Test::Several", "several-neither", "C1");
+
+    both("Test::Folded", "folded", "AbCaBc");
+    both("Test::Folded", "folded-mismatch", "abd");
+    return 0;
+}
+
+@TEST-END-FILE
