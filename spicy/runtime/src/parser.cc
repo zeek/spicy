@@ -173,7 +173,7 @@ void detail::waitForInputSlow(hilti::rt::ValueReference<hilti::rt::Stream>& data
                 hilti::rt::fmt("insufficient input at end of data for stream %p (which is not ok here)", data.get()));
             auto msg =
                 hilti::rt::fmt("%s (%" PRIu64 " byte%s available)", error_msg, cur.size(), cur.size() != 1 ? "s" : "");
-            throw ParseError(msg, std::string(location));
+            throw ParseError(msg, location);
         }
 }
 
@@ -244,7 +244,7 @@ void detail::waitForInput(hilti::rt::ValueReference<hilti::rt::Stream>& data,
             hilti::rt::fmt("insufficient input at end of data for stream %p (which is not ok here)", data.get()));
         auto msg =
             hilti::rt::fmt("%s (%" PRIu64 " byte%s available)", error_msg, cur.size(), cur.size() != 1 ? "s" : "");
-        throw ParseError(msg, std::string(location));
+        throw ParseError(msg, location);
     }
 }
 
@@ -288,7 +288,7 @@ hilti::rt::Bytes detail::extractBytes(hilti::rt::ValueReference<hilti::rt::Strea
         detail::waitForInputOrEod(data, cur, size, filters);
     else if ( ! detail::waitForInputNoThrow(data, cur, size, filters) ) {
         auto msg = hilti::rt::fmt("expected %" PRIu64 " bytes (%" PRIu64 " available)", size, cur.size());
-        throw ParseError(msg, std::string(location));
+        throw ParseError(msg, location);
     }
 
     return cur.sub(cur.begin() + size).data();
@@ -305,7 +305,7 @@ void detail::expectBytesLiteral(hilti::rt::ValueReference<hilti::rt::Stream>& da
                                   literal.size(),
                                   literal,
                                   cur.size());
-        throw ParseError(msg, std::string(location));
+        throw ParseError(msg, location);
     }
 
     if ( ! cur.startsWith(literal) ) {
