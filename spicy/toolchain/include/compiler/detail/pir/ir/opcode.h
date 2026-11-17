@@ -253,6 +253,22 @@ enum class Opcode {
      * It is `parser.match_regexp` of a single byte class repeated, without the matcher.
      */
     ScanBytes,
+    /**
+     * Looks at the input without consuming it, and returns an `int64` that tells which literal of its payload the input
+     * starts with: `k` in 1..n is the index of the longest literal that matches, `0` is no match, and `-1` is the end
+     * of input with no byte available. It waits until the longest literal's length is available or the input ends, and
+     * an active byte bound ends the input. Its only failure is a gap. Borrows the parser state.
+     */
+    PeekLiterals,
+    /**
+     * The offset of the cursor of its parser state, as a `uint64`. Borrows the parser state.
+     */
+    Offset,
+    /**
+     * Passes its parser state through, unless the state's offset equals its second operand, a `uint64` offset that was
+     * read earlier. Then it fails with `loop body did not change input position, possible infinite loop`.
+     */
+    RequireProgress,
 };
 
 enum class TypeKind { Void, Integer, Bytes, ParserState, Unit, Tuple, Vector, Set, Opaque, Place, Bool, String };
@@ -398,6 +414,13 @@ struct ScanBytesPayload {
     friend constexpr bool operator==(const ScanBytesPayload&, const ScanBytesPayload&) = default;
 };
 
+/** The literals that `parser.peek_literals` tells apart. They are distinct and not empty. */
+struct LiteralSetPayload {
+    std::vector<std::string> literals;
+
+    friend bool operator==(const LiteralSetPayload&, const LiteralSetPayload&) = default;
+};
+
 struct GlobalPayload {
     GlobalId global;
 
@@ -516,7 +539,8 @@ using InstPayload = std::variant<std::monostate,
                                  UpsilonPayload,
                                  SwitchPayload,
                                  RegExpPayload,
-                                 ScanBytesPayload>;
+                                 ScanBytesPayload,
+                                 LiteralSetPayload>;
 
 enum class PayloadKind {
     None,
@@ -540,6 +564,7 @@ enum class PayloadKind {
     Switch,
     RegExp,
     ScanBytes,
+    LiteralSet,
 };
 
 /** Whether a suspending parser read consumes bytes and how it resumes. */
@@ -551,7 +576,14 @@ enum class SuspendBehavior {
 };
 
 /** How a parser operation completes when its outcome is a failure rather than a value. */
-enum class FailureOutcome { UnexpectedEod, Gap, BoundExceeded, InvalidBound, Mismatch };
+enum class FailureOutcome {
+    UnexpectedEod,
+    Gap,
+    BoundExceeded,
+    InvalidBound,
+    Mismatch,
+    Result, /**< not a failure: the operation completes with a result that says so */
+};
 enum class FailureCursor { OperationStart, Current };
 
 /**
@@ -616,6 +648,7 @@ constexpr bool payloadMatchesKind(const InstPayload& payload, PayloadKind kind) 
         case PayloadKind::Switch: return std::holds_alternative<SwitchPayload>(payload);
         case PayloadKind::RegExp: return std::holds_alternative<RegExpPayload>(payload);
         case PayloadKind::ScanBytes: return std::holds_alternative<ScanBytesPayload>(payload);
+        case PayloadKind::LiteralSet: return std::holds_alternative<LiteralSetPayload>(payload);
     }
 
     return false;
@@ -660,6 +693,14 @@ inline constexpr OperandRole KReadBytesOperandRoles[] = {OperandRole::Consume, O
 
 inline constexpr TypeConstraint KParseStateOperandTypes[] = {fixedType(TypeKind::ParserState)};
 inline constexpr OperandRole KParseStateOperandRoles[] = {OperandRole::Consume};
+
+// These only look at the state, so it stays valid for the operations that follow.
+inline constexpr OperandRole KBorrowStateOperandRoles[] = {OperandRole::Borrow};
+
+// The offset is a `uint64`, which the verifier checks.
+inline constexpr TypeConstraint KRequireProgressOperandTypes[] = {fixedType(TypeKind::ParserState),
+                                                                  fixedType(TypeKind::Integer)};
+inline constexpr OperandRole KRequireProgressOperandRoles[] = {OperandRole::Consume, OperandRole::Borrow};
 
 inline constexpr TypeConstraint KPlaceOperandTypes[] = {anyType()};
 inline constexpr OperandRole KPlaceOperandRoles[] = {OperandRole::Borrow};
@@ -723,6 +764,15 @@ inline constexpr ParserOperationContract KMatchRegExpContract{
     .failure_cursor = FailureCursor::OperationStart,
 };
 
+// The end of input and the bound end the wait and make the result, so only a gap fails.
+inline constexpr ParserOperationContract KPeekLiteralsContract{
+    .success_consumption_bytes = 0,
+    .insufficient_input = SuspendBehavior::SuspendAndRetry,
+    .eod = FailureOutcome::Result,
+    .gap = FailureOutcome::Gap,
+    .bound = FailureOutcome::Result,
+};
+
 inline constexpr ParserOperationContract KSubunitContract{
     .success_consumption_bytes = -1,
     .insufficient_input = SuspendBehavior::SuspendAndRetry,
@@ -734,7 +784,7 @@ inline constexpr ParserOperationContract KSubunitContract{
 
 // One entry per `Opcode` value, in declaration order, so `schemaFor()` can index directly without
 // per-call allocation.
-inline constexpr std::array<OpcodeSchema, 46> KSchemas{{
+inline constexpr std::array<OpcodeSchema, 49> KSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Add,
         .spelling = "core.add",
@@ -1144,6 +1194,31 @@ inline constexpr std::array<OpcodeSchema, 46> KSchemas{{
                  .is_terminator = false,
                  .is_pure = false,
                  .parser_contract = KMatchRegExpContract},
+    OpcodeSchema{.opcode = Opcode::PeekLiterals,
+                 .spelling = "parser.peek_literals",
+                 .operand_types = KParseStateOperandTypes,
+                 .operand_roles = KBorrowStateOperandRoles,
+                 .result_type = fixedType(TypeKind::Integer),
+                 .payload_kind = PayloadKind::LiteralSet,
+                 .is_terminator = false,
+                 .is_pure = false,
+                 .parser_contract = KPeekLiteralsContract},
+    OpcodeSchema{.opcode = Opcode::Offset,
+                 .spelling = "parser.offset",
+                 .operand_types = KParseStateOperandTypes,
+                 .operand_roles = KBorrowStateOperandRoles,
+                 .result_type = fixedType(TypeKind::Integer),
+                 .payload_kind = PayloadKind::None,
+                 .is_terminator = false,
+                 .is_pure = false},
+    OpcodeSchema{.opcode = Opcode::RequireProgress,
+                 .spelling = "parser.require_progress",
+                 .operand_types = KRequireProgressOperandTypes,
+                 .operand_roles = KRequireProgressOperandRoles,
+                 .result_type = fixedType(TypeKind::ParserState),
+                 .payload_kind = PayloadKind::None,
+                 .is_terminator = false,
+                 .is_pure = false},
 }};
 
 } // namespace detail
@@ -1185,6 +1260,10 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
         // A scan reads input as a match does, but has no matcher to allocate.
         case Opcode::ScanBytes:
             return {.reads_input = true, .changes_parser_state = true, .may_suspend = true, .may_fail = true};
+        // A peek reads input and waits for it like a read, but consumes nothing.
+        case Opcode::PeekLiterals: return {.reads_input = true, .may_suspend = true, .may_fail = true};
+        case Opcode::Offset: return {};
+        case Opcode::RequireProgress: return {.changes_parser_state = true, .may_fail = true};
         // The runtime's matcher is allocated for each match.
         case Opcode::MatchRegExp:
             return {.reads_input = true,

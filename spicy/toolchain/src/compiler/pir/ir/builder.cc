@@ -336,6 +336,23 @@ InstId Builder::addScanBytes(BlockId block, InstId state, ScanBytesPayload paylo
                    span);
 }
 
+InstId Builder::addPeekLiterals(BlockId block, InstId state, std::vector<std::string> literals, SourceSpanId span) {
+    return addInst(block,
+                   Opcode::PeekLiterals,
+                   {state},
+                   int64Type(),
+                   InstPayload(LiteralSetPayload{std::move(literals)}),
+                   span);
+}
+
+InstId Builder::addOffset(BlockId block, InstId state, SourceSpanId span) {
+    return addInst(block, Opcode::Offset, {state}, uint64Type(), {}, span);
+}
+
+InstId Builder::addRequireProgress(BlockId block, InstId state, InstId offset, SourceSpanId span) {
+    return addInst(block, Opcode::RequireProgress, {state, offset}, parserStateType(), {}, span);
+}
+
 InstId Builder::addFail(BlockId block, InstId state, InstId description, SourceSpanId span) {
     return addInst(block, Opcode::Fail, {state, description}, _package._void_type, {}, span);
 }

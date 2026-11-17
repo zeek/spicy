@@ -295,6 +295,50 @@ TEST_CASE("a CFG whose arms share their tails lowers to labeled blocks and gotos
     CHECK((text.find("b1:") == std::string::npos) != (text.find("b2:") == std::string::npos));
 }
 
+TEST_CASE("a peek lowers to waits and prefix tests, longest literal first, and a progress check compares offsets") {
+    Package package;
+    auto builder = package.builder();
+    auto unit = builder.createUnitDecl("Peeked");
+    auto fn = builder.createParserFunction(unit, builder.parserStateType(), builder.unitType(unit));
+    auto region = package.function(fn).root_region;
+    auto entry = builder.createBlock(region);
+    auto head = builder.createBlock(region);
+    auto body = builder.createBlock(region);
+    auto exit = builder.createBlock(region);
+
+    auto state = builder.addArgument(fn, entry, 0);
+    auto created = builder.addUnitCreate(entry, unit);
+    auto pre_state = builder.addPhi(head, builder.parserStateType());
+    builder.addUpsilon(entry, state, pre_state);
+    builder.addJump(entry, head);
+
+    // `A` is index 1 and `END` index 2, but `END` is tried first.
+    auto peek = builder.addPeekLiterals(head, pre_state, {"A", "END"});
+    ir::SwitchPayload payload;
+    payload.cases.push_back({.value = IntegerLiteral{1}, .target = body});
+    payload.default_target = exit;
+    builder.addSwitch(head, peek, payload);
+
+    auto offset = builder.addOffset(body, pre_state);
+    auto read = builder.addReadInteger(body, pre_state, ReadIntegerPayload{.width = 8});
+    auto progressed = builder.addRequireProgress(body, builder.addTupleGet(body, read, 0), offset);
+    builder.addUpsilon(body, progressed, pre_state);
+    builder.addJump(body, head);
+    builder.addParserFinish(exit, pre_state, created);
+    builder.addParserRoot(unit, fn);
+
+    REQUIRE(verify(package).empty());
+    auto text = lowered(package);
+    auto end = text.find("starts_with(b\"END\")");
+    auto a = text.find("starts_with(b\"A\")");
+    REQUIRE_NE(end, std::string::npos);
+    REQUIRE_NE(a, std::string::npos);
+    CHECK_LT(end, a);
+    CHECK_NE(text.find("waitForInputOrEod(data, cursor, 3"), std::string::npos);
+    CHECK_NE(text.find("loop body did not change input position, possible infinite loop"), std::string::npos);
+    CHECK_NE(text.find("goto b"), std::string::npos);
+}
+
 TEST_CASE("a value used in a block other than its own is declared at function entry") {
     // Block 1 computes a value that the join reads after a diamond. A value used only in its block stays there.
     Package package;

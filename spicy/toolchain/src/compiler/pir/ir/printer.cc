@@ -166,6 +166,13 @@ std::optional<std::string> renderPayload(const Package& package,
     if ( const auto* bytes = std::get_if<BytesLiteral>(&payload) )
         return fmt("b\"%s\"", bytes->value);
 
+    if ( const auto* set = std::get_if<LiteralSetPayload>(&payload) ) {
+        std::vector<std::string> literals;
+        for ( const auto& literal : set->literals )
+            literals.push_back(fmt("b\"%s\"", literal));
+        return fmt("[%s]", hilti::util::join(literals, ", "));
+    }
+
     return std::nullopt;
 }
 

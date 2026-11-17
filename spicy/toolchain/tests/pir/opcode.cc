@@ -62,6 +62,13 @@ constexpr ExpectedSchema ExpectedSchemas[] = {
      .operand_count = 1,
      .payload_kind = PayloadKind::Conversion,
      .is_pure = true},
+    {.opcode = Opcode::PeekLiterals,
+     .spelling = "parser.peek_literals",
+     .operand_count = 1,
+     .payload_kind = PayloadKind::LiteralSet,
+     .has_parser_contract = true},
+    {.opcode = Opcode::Offset, .spelling = "parser.offset", .operand_count = 1},
+    {.opcode = Opcode::RequireProgress, .spelling = "parser.require_progress", .operand_count = 2},
 };
 
 } // namespace
@@ -891,4 +898,83 @@ TEST_CASE("the specialization pass rewrites a recognized match in place and leav
              std::string::npos);
     CHECK_FALSE(specializeRegExps(p.package, p.fn));
     CHECK_FALSE(effectsFor(Opcode::ScanBytes).allocates);
+}
+
+TEST_CASE("only parser.peek_literals and parser.offset borrow a parser state") {
+    for ( size_t i = 0;; ++i ) {
+        auto opcode = static_cast<Opcode>(i);
+        const auto* schema = schemaFor(opcode);
+        if ( ! schema )
+            break;
+
+        for ( size_t a = 0; a < schema->operand_types.size(); ++a ) {
+            if ( schema->operand_types[a].kind == TypeConstraintKind::Fixed &&
+                 schema->operand_types[a].fixed == TypeKind::ParserState &&
+                 schema->operand_roles[a] == OperandRole::Borrow )
+                CHECK((opcode == Opcode::PeekLiterals || opcode == Opcode::Offset));
+        }
+    }
+}
+
+TEST_CASE("a peek and an offset look at the state, which a read then consumes") {
+    auto p = makeOneBytePipeline();
+    auto builder = p.package.builder();
+    auto peek = builder.addPeekLiterals(p.block, p.state0, {"A", "END"});
+    auto offset = builder.addOffset(p.block, p.state0);
+    auto read = builder.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
+    auto state1 = builder.addTupleGet(p.block, read, 0);
+    auto state2 = builder.addRequireProgress(p.block, state1, offset);
+    auto unit1 = builder.addPublishField(p.block, p.unit0, builder.addTupleGet(p.block, read, 1), p.field);
+    builder.addParserFinish(p.block, state2, unit1);
+    CHECK(verify(p.package).empty());
+
+    CHECK_EQ(p.package.inst(peek).result_type, builder.int64Type());
+    CHECK_EQ(p.package.inst(offset).result_type, builder.uint64Type());
+    CHECK_NE(print(p.package).find("parser.peek_literals %"), std::string::npos);
+    CHECK_NE(print(p.package).find("[b\"A\", b\"END\"]"), std::string::npos);
+
+    auto contract = parserContractFor(p.package, p.package.inst(peek));
+    REQUIRE(contract);
+    CHECK_EQ(contract->success_consumption_bytes, 0);
+    CHECK_EQ(contract->insufficient_input, SuspendBehavior::SuspendAndRetry);
+    CHECK_EQ(contract->gap, FailureOutcome::Gap);
+    CHECK_EQ(contract->eod, FailureOutcome::Result);
+    CHECK_FALSE(effectsFor(Opcode::PeekLiterals).changes_parser_state);
+    CHECK(effectsFor(Opcode::PeekLiterals).may_suspend);
+    CHECK_FALSE(effectsFor(Opcode::Offset).may_fail);
+    CHECK(effectsFor(Opcode::RequireProgress).may_fail);
+}
+
+TEST_CASE("verifier rejects a peek of a state that a read already consumed") {
+    auto p = makeOneBytePipeline();
+    auto builder = p.package.builder();
+    auto read = builder.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
+    builder.addPeekLiterals(p.block, p.state0, {"A"});
+    auto unit1 = builder.addPublishField(p.block, p.unit0, builder.addTupleGet(p.block, read, 1), p.field);
+    builder.addParserFinish(p.block, builder.addTupleGet(p.block, read, 0), unit1);
+    CHECK(std::ranges::any_of(verify(p.package), [](auto& d) { return d.tag == "use-after-consume"; }));
+}
+
+TEST_CASE("verifier rejects literal sets that are empty or repeat a literal") {
+    for ( const auto& literals : std::vector<std::vector<std::string>>{{}, {"A", ""}, {"A", "B", "A"}} ) {
+        auto p = makeOneBytePipeline();
+        auto builder = p.package.builder();
+        builder.addPeekLiterals(p.block, p.state0, literals);
+        auto read = builder.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
+        auto unit1 = builder.addPublishField(p.block, p.unit0, builder.addTupleGet(p.block, read, 1), p.field);
+        builder.addParserFinish(p.block, builder.addTupleGet(p.block, read, 0), unit1);
+        CHECK(std::ranges::any_of(verify(p.package), [](auto& d) { return d.tag == "peek-literals-invalid"; }));
+    }
+}
+
+TEST_CASE("verifier rejects a progress check against an offset that is not a uint64") {
+    auto p = makeOneBytePipeline();
+    auto builder = p.package.builder();
+    auto read = builder.addReadInteger(p.block, p.state0, ReadIntegerPayload{.width = 8});
+    auto state1 = builder.addRequireProgress(p.block,
+                                             builder.addTupleGet(p.block, read, 0),
+                                             builder.addIntConstant(p.block, builder.int64Type(), 0));
+    auto unit1 = builder.addPublishField(p.block, p.unit0, builder.addTupleGet(p.block, read, 1), p.field);
+    builder.addParserFinish(p.block, state1, unit1);
+    CHECK(std::ranges::any_of(verify(p.package), [](auto& d) { return d.tag == "invalid-parser-operation"; }));
 }

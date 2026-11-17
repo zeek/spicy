@@ -208,6 +208,12 @@ public:
     InstId addMatchRegExp(BlockId block, InstId state, RegExpId regexp, SourceSpanId span = {});
     /** Adds `parser.scan_bytes` of the run of bytes in `payload`'s set over `state`. */
     InstId addScanBytes(BlockId block, InstId state, ScanBytesPayload payload, SourceSpanId span = {});
+    /** Adds `parser.peek_literals`, which tells which of `literals` the input of `state` starts with. */
+    InstId addPeekLiterals(BlockId block, InstId state, std::vector<std::string> literals, SourceSpanId span = {});
+    /** Adds `parser.offset`, the cursor's offset in `state`. */
+    InstId addOffset(BlockId block, InstId state, SourceSpanId span = {});
+    /** Adds `parser.require_progress`, which fails if `state` is still at `offset`. */
+    InstId addRequireProgress(BlockId block, InstId state, InstId offset, SourceSpanId span = {});
     /** Adds the terminating `parser.fail` that consumes `state` and fails with the string `description`. */
     InstId addFail(BlockId block, InstId state, InstId description, SourceSpanId span = {});
     /** Adds the terminating `core.jump` to `target`. */

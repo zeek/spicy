@@ -4,6 +4,8 @@
 #include <functional>
 #include <limits>
 #include <map>
+#include <memory>
+#include <numeric>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -535,6 +537,7 @@ protected:
             case ir::Opcode::FieldPlace: return _storage(inst.args[0]);
             case ir::Opcode::EnterBound:
             case ir::Opcode::LeaveBound:
+            case ir::Opcode::RequireProgress:
             case ir::Opcode::ReleaseInput: return cursor;
             case ir::Opcode::GlobalPlace:
                 return Storage{.name = names_.globals.at(std::get<ir::GlobalPayload>(inst.payload).global.index)};
@@ -1441,6 +1444,54 @@ private:
         _tuples[id.index] = {"cursor", value_name};
     }
 
+    // Waits as `expect_bytes` does and looks at the cursor without moving it, trying the longest literals first so that
+    // the longest match wins. Equal-length literals are distinct, so at most one of them matches.
+    void _lowerPeekLiterals(LocalBuilder& b, ir::InstId id) {
+        const auto& inst = package_.inst(id);
+        auto meta = metaFor(package_, inst.span);
+        const auto& literals = std::get<ir::LiteralSetPayload>(inst.payload).literals;
+        auto name = fmt("v_%u", id.index);
+
+        std::vector<size_t> order(literals.size());
+        std::iota(order.begin(), order.end(), size_t{0});
+        std::ranges::stable_sort(order, [&](auto a, auto b) { return literals[a].size() > literals[b].size(); });
+
+        _local(b, name, b.qualifiedType(b.typeSignedInteger(64), ::hilti::Constness::Mutable), b.integer(0), meta);
+
+        auto* try_body = _b.statementBlock(meta);
+        LocalBuilder tb(_b.context(), try_body);
+        auto longest = uint64_t{literals[order.front()].size()};
+        auto wait = tb.addIf(tb.greater(tb.integer(longest), tb.size(tb.id(::hilti::ID("cursor")))), meta);
+        wait->addExpression(wait->call(::hilti::ID("spicy_rt::waitForInputOrEod"),
+                                       {wait->id(::hilti::ID("data")),
+                                        wait->id(::hilti::ID("cursor")),
+                                        wait->integer(longest),
+                                        wait->id(::hilti::ID("filters_"))},
+                                       meta));
+
+        auto assign = [&](LocalBuilder& lb, int64_t value) {
+            lb.addAssign(lb.id(::hilti::ID(name)), lb.integer(value), meta);
+        };
+        LocalBuilder* at = &tb;
+        std::vector<std::shared_ptr<LocalBuilder>> keep;
+        for ( auto i : order ) {
+            auto arms = at->addIfElse(at->memberCall(at->id(::hilti::ID("cursor")),
+                                                     "starts_with",
+                                                     {at->bytes(literals[i], meta)},
+                                                     meta),
+                                      meta);
+            assign(*arms.first, static_cast<int64_t>(i) + 1);
+            keep.push_back(arms.second);
+            at = arms.second.get();
+        }
+        auto arms = at->addIfElse(at->equal(at->size(at->id(::hilti::ID("cursor"))), at->integer(uint64_t{0})), meta);
+        assign(*arms.first, -1);
+        assign(*arms.second, 0);
+
+        _gapCatch(b, try_body, meta);
+        values_[id.index] = std::move(name);
+    }
+
     void _lowerInst(LocalBuilder& b, ir::InstId id) {
         const auto& inst = package_.inst(id);
         if ( _location_block != inst.parent ) {
@@ -1536,6 +1587,30 @@ private:
             case ir::Opcode::ExpectBytes: _lowerExpectBytes(b, id); return;
             case ir::Opcode::MatchRegExp: _lowerMatchRegExp(b, id); return;
             case ir::Opcode::ScanBytes: _lowerScanBytes(b, id); return;
+            case ir::Opcode::PeekLiterals: _lowerPeekLiterals(b, id); return;
+            case ir::Opcode::Offset: {
+                auto name = fmt("v_%u", id.index);
+                _local(b,
+                       name,
+                       targetType(b, package_, inst.result_type),
+                       b.memberCall(b.id(::hilti::ID("cursor")), "offset", ::hilti::Expressions{}, meta),
+                       meta);
+                values_[id.index] = std::move(name);
+                return;
+            }
+            case ir::Opcode::RequireProgress: {
+                auto stalled =
+                    b.addIf(b.equal(b.memberCall(b.id(::hilti::ID("cursor")), "offset", ::hilti::Expressions{}, meta),
+                                    _value(b, inst.args[1])),
+                            meta);
+                _return(*stalled,
+                        "ParseError",
+                        nullptr,
+                        meta,
+                        stalled->stringLiteral("loop body did not change input position, possible infinite loop"));
+                values_[id.index] = "cursor";
+                return;
+            }
             case ir::Opcode::Fail: _return(b, "ParseError", nullptr, meta, _value(b, inst.args[1])); return;
             case ir::Opcode::EnterBound: {
                 auto* length = _value(b, inst.args[1]);

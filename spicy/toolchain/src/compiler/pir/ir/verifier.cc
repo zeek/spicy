@@ -473,8 +473,8 @@ private:
                 bounded_states.insert(inst_id.index);
             else if ( inst.opcode == Opcode::EnterBound )
                 bounded_states.insert(inst_id.index);
-            else if ( inst.opcode == Opcode::ReleaseInput ) {
-                // Releasing input keeps the position and bounds of the state it receives.
+            else if ( inst.opcode == Opcode::ReleaseInput || inst.opcode == Opcode::RequireProgress ) {
+                // These keep the position and bounds of the state they receive.
                 if ( ! inst.args.empty() && bounded_states.contains(inst.args[0].index) )
                     bounded_states.insert(inst_id.index);
             }
@@ -1010,6 +1010,40 @@ private:
                      _package.type(inst.result_type).type_arguments.size() != 2 ||
                      _package.type(inst.result_type).type_arguments[0] != _typeOfKind(TypeKind::ParserState) ||
                      _package.type(inst.result_type).type_arguments[1] != _typeOfKind(TypeKind::Bytes) )
+                    _emitter.emit("invalid-parser-operation",
+                                  "parser operation has inconsistent types, payload, or region signature",
+                                  inst_id);
+                return;
+
+            case Opcode::PeekLiterals: {
+                const auto* payload = std::get_if<LiteralSetPayload>(&inst.payload);
+                if ( payload ) {
+                    std::set<std::string> seen;
+                    bool valid = ! payload->literals.empty();
+                    for ( const auto& literal : payload->literals )
+                        valid = ! literal.empty() && seen.insert(literal).second && valid;
+                    if ( ! valid )
+                        _emitter.emit("peek-literals-invalid",
+                                      "parser.peek_literals needs distinct, non-empty literals",
+                                      inst_id);
+                }
+                if ( inst.result_type != _integer(64, Signedness::Signed) )
+                    _emitter.emit("invalid-parser-operation",
+                                  "parser operation has inconsistent types, payload, or region signature",
+                                  inst_id);
+                return;
+            }
+
+            case Opcode::Offset:
+                if ( inst.result_type != _uint64() )
+                    _emitter.emit("invalid-parser-operation",
+                                  "parser operation has inconsistent types, payload, or region signature",
+                                  inst_id);
+                return;
+
+            case Opcode::RequireProgress:
+                if ( inst.args.size() == 2 && _package.isValid(inst.args[1]) &&
+                     _package.inst(inst.args[1]).result_type != _uint64() )
                     _emitter.emit("invalid-parser-operation",
                                   "parser operation has inconsistent types, payload, or region signature",
                                   inst_id);
@@ -1728,17 +1762,19 @@ private:
         return {};
     }
 
-    // The `uint64` type, if the package has one. The verifier does not add types.
-    TypeId _uint64() const {
+    // The integer type of this width, if the package has one. The verifier does not add types.
+    TypeId _integer(uint8_t width, Signedness signedness) const {
         for ( size_t i = 0; i < _package.types().size(); ++i ) {
             TypeId id{static_cast<uint32_t>(i)};
             const auto& type = _package.type(id);
             if ( type.kind == TypeKind::Integer &&
-                 type.integer == IntegerType{.width = 64, .signedness = Signedness::Unsigned} )
+                 type.integer == IntegerType{.width = width, .signedness = signedness} )
                 return id;
         }
         return {};
     }
+
+    TypeId _uint64() const { return _integer(64, Signedness::Unsigned); }
 
     // The types that `core.equal` compares.
     static bool _isComparable(TypeKind kind) {
@@ -1804,8 +1840,8 @@ private:
                 if ( ! _package.isValid(id) )
                     continue;
                 const auto& inst = _package.inst(id);
-                const auto* payload = inst.opcode == Opcode::TupleGet ? std::get_if<TupleGetPayload>(&inst.payload) :
-                                                                        nullptr;
+                const auto* payload =
+                    inst.opcode == Opcode::TupleGet ? std::get_if<TupleGetPayload>(&inst.payload) : nullptr;
                 if ( payload && ! inst.args.empty() && _package.isValid(inst.args[0]) &&
                      typeDiscipline(_package, inst.result_type) == ValueDiscipline::Affine )
                     slots[inst.args[0].index].push_back(slot_of(inst.args[0], payload->index));
