@@ -297,7 +297,7 @@ std::string hilti::rt::escapeUTF8(std::string_view s, bitmask<render_style::UTF8
     std::string esc;
 
     while ( p < e ) {
-        utf8proc_int32_t cp;
+        utf8proc_int32_t cp = 0;
 
         ssize_t n = utf8proc_iterate(p, e - p, &cp);
 

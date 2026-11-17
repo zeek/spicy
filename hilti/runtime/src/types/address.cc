@@ -58,8 +58,8 @@ Address Address::mask(unsigned int width) const {
     if ( width == 0 )
         return Address{0, 0, _family};
 
-    uint64_t a1;
-    uint64_t a2;
+    uint64_t a1 = 0;
+    uint64_t a2 = 0;
 
     if ( width < 64 )
         a1 = _a1 & (0xffffffffffffffffU << (64U - width));

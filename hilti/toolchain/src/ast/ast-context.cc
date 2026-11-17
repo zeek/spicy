@@ -347,7 +347,7 @@ void ASTContext::garbageCollect() {
     size_t collected = 0;
     size_t retained = 0;
 
-    bool changed;
+    bool changed = false;
     unsigned int rounds = 0;
     do {
         ++rounds;
@@ -772,7 +772,7 @@ void ASTContext::clearScopes(Node* node) {
 }
 
 Result<Nothing> ASTContext::_buildScopes(Builder* builder, const Plugin& plugin) {
-    bool modified;
+    bool modified = false;
     if ( auto rc = runHook(&modified, plugin, &Plugin::ast_build_scopes, "building scopes", builder, _root); ! rc )
         return rc.error();
 

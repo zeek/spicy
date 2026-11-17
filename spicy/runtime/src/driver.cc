@@ -457,7 +457,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             auto id = m[1];
             auto parser_name = m[3];
 
-            driver::ParsingType type;
+            driver::ParsingType type = {};
 
             if ( m[2] == "stream" )
                 type = driver::ParsingType::Stream;
@@ -479,7 +479,7 @@ Result<hilti::rt::Nothing> Driver::processPreBatchedInput(std::istream& in) {
             auto resp_id = m[5];
             auto resp_parser_name = m[6];
 
-            driver::ParsingType type;
+            driver::ParsingType type = {};
 
             if ( m[2] == "stream" )
                 type = driver::ParsingType::Stream;

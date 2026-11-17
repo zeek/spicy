@@ -479,7 +479,7 @@ void Sink::write(hilti::rt::Bytes data, hilti::rt::Optional<uint64_t> seq, hilti
     if ( ! data.size() )
         return;
 
-    uint64_t n;
+    uint64_t n = 0;
 
     if ( len )
         n = *len;

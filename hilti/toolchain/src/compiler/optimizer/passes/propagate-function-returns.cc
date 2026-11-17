@@ -130,7 +130,7 @@ struct CollectorPlacements : public optimizer::visitor::Collector {
             if ( ! tup_assign )
                 return {};
 
-            expression::Ctor* ctor_expr;
+            expression::Ctor* ctor_expr = nullptr;
             if ( auto* call = use->tryAs<operator_::function::Call>() )
                 ctor_expr = call->op1()->tryAs<expression::Ctor>();
             else if ( auto* call = use->tryAs<operator_::struct_::MemberCall>() )

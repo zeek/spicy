@@ -16,6 +16,8 @@ Checks: '
   -bugprone-empty-catch,
   -bugprone-forward-declaration-namespace,
 
+  cppcoreguidelines-init-variables,
+
   cert-*,
   -cert-dcl37-c,
   -cert-dcl51-cpp,

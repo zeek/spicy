@@ -57,15 +57,14 @@ TEST_CASE("make-from-optionals") {
 TEST_CASE("assign") {
     auto t1 = tuple::make(1, true, 3.14);
 
-    int i;
-    bool b;
-    double d;
+    int i = 0;
+    bool b = false;
+    double d = 0;
     tuple::assign(std::tie(i, b, d), t1);
     CHECK_EQ(tuple::make(i, b, d), tuple::make(1, true, 3.14));
 
     auto t2 = tuple::make_from_optionals<int, bool, double>({1}, {true}, {});
     CHECK_THROWS_AS(tuple::assign(std::tie(i, b, d), t2), hilti::rt::UnsetTupleElement);
-    ;
 }
 
 // Returns reference to element at given index using "tuple::elementOffset()".

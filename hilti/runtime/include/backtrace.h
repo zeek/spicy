@@ -51,7 +51,7 @@ inline std::string demangle(const std::string& symbol) {
         return symbol.substr(5);
     return symbol;
 #else
-    int status;
+    int status = 0;
     char* dname = abi::__cxa_demangle(symbol.c_str(), nullptr, nullptr, &status);
     std::string x = (dname && status == 0) ? dname : symbol;
     if ( dname )
