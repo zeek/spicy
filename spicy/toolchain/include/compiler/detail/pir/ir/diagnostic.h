@@ -10,6 +10,7 @@
 
 #include <spicy/compiler/detail/pir/ir/diagnostic-definition.h>
 #include <spicy/compiler/detail/pir/ir/diagnostics/fields.h>
+#include <spicy/compiler/detail/pir/ir/diagnostics/grammar.h>
 #include <spicy/compiler/detail/pir/ir/package.h>
 #include <spicy/compiler/detail/pir/ir/source.h>
 

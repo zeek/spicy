@@ -84,12 +84,16 @@ Production* Grammar::resolved(const production::Deferred* r) const {
     throw UnknownReference(r->symbol());
 }
 
-hilti::Result<hilti::Nothing> Grammar::finalize() {
+hilti::Result<hilti::Nothing> Grammar::finalize(bool check) {
     if ( ! _root )
         return hilti::result::Error("grammar does not have a root production");
 
     _simplify();
-    return _computeTables();
+    _computeTables();
+    if ( check )
+        return _check();
+
+    return hilti::Nothing();
 }
 
 void Grammar::_addProduction(Production* p) {
@@ -230,7 +234,7 @@ std::set<std::string> Grammar::_getFirstOfRhs(const std::vector<Production*>& rh
     return first;
 }
 
-hilti::Result<hilti::Nothing> Grammar::_computeTables() {
+void Grammar::_computeTables() {
     // Computes FIRST, FOLLOW, & NULLABLE. This follows roughly the Algorithm
     // 3.13 from Modern Compiler Implementation in C by Appel/Ginsburg. See
     // http://books.google.com/books?id=A3yqQuLW5RsC&pg=PA49.
@@ -311,8 +315,6 @@ hilti::Result<hilti::Nothing> Grammar::_computeTables() {
                 _look_aheads_in_use.insert(x->tokenID());
         }
     }
-
-    return _check();
 }
 
 hilti::Result<hilti::Nothing> Grammar::_check() {

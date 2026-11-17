@@ -37,8 +37,10 @@ public:
     /**
      * Generates the grammar for a unit type. The grammar will afterwards be
      * available through `grammar()`.
+     *
+     * @param check if false, look-ahead ambiguities are not reported and the grammar is kept anyway
      */
-    hilti::Result<hilti::Nothing> run(type::Unit* unit);
+    hilti::Result<hilti::Nothing> run(type::Unit* unit, bool check = true);
 
     /**
      * Returns the grammar for a unit type. The type's grammar must have been

@@ -75,10 +75,11 @@ public:
      * `LookAhead` productions. If this method fails, grammar and production
      * will be left in an undefined state.
      *
+     * @param check if false, ambiguities are not reported; the caller then checks the look-ahead sets itself
      * @return error if the parsing tables couldn't be computed (e.g., due to
      * ambiguities); the error description will then be describing the issue.
      */
-    hilti::Result<hilti::Nothing> finalize();
+    hilti::Result<hilti::Nothing> finalize(bool check = true);
 
     /** Returns the root production, if set already. */
     Production* root() const { return _root.get(); }
@@ -118,7 +119,7 @@ public:
 private:
     void _addProduction(Production* p);
     void _simplify();
-    hilti::Result<hilti::Nothing> _computeTables();
+    void _computeTables();
     hilti::Result<hilti::Nothing> _check();
     production::Set _computeClosure(Production* p);
     bool _add(std::map<std::string, std::set<std::string>>* tbl,

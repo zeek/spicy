@@ -68,6 +68,7 @@ set(SOURCES_COMPILER
     src/compiler/pir/ir/verifier.cc
     src/compiler/pir/backends/hilti/backend.cc
     src/compiler/pir/backends/hilti/coverage.cc
+    src/compiler/pir/grammar-check.cc
     src/compiler/pir/lowerer.cc
     src/compiler/pir/passes/constant-fold.cc
     src/compiler/pir/passes/specialize-regexp.cc

@@ -17,6 +17,11 @@ TEST_SUITE("pir::ir::Diagnostic") {
             &diag::UnusedField,
             &diag::FieldReadBeforeParsed,
             &diag::FieldParsedHere,
+            &diag::AmbiguousLoopEnd,
+            &diag::AmbiguousSwitchCase,
+            &diag::NoLookAhead,
+            &diag::NonTerminalLookAhead,
+            &diag::LookAheadTokenHere,
         };
 
         for ( const auto* def : all ) {

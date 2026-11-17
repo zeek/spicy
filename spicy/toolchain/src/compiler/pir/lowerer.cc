@@ -204,6 +204,8 @@ struct VisitorRoots : public visitor::PreOrder {
     }
 };
 
+} // namespace
+
 ir::SourceSpanId internSpan(ir::Package& package, const hilti::Location& loc) {
     if ( ! loc )
         return {};
@@ -217,6 +219,8 @@ ir::SourceSpanId internSpan(ir::Package& package, const hilti::Location& loc) {
         .end_column = loc.toCharacter(),
     });
 }
+
+namespace {
 
 class ProcedureLowerer;
 

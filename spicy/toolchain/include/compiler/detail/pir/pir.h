@@ -11,6 +11,7 @@
 #include <hilti/base/logger.h>
 #include <hilti/base/result.h>
 
+#include <spicy/ast/forward.h>
 #include <spicy/compiler/detail/pir/ir/diagnostic.h>
 #include <spicy/compiler/detail/pir/ir/internal-error.h>
 #include <spicy/compiler/detail/pir/ir/package.h>
@@ -66,11 +67,17 @@ struct Error {
     std::vector<ir::InternalError> errors;
 };
 
+/** The source has errors, so compilation must stop without falling back. */
+struct Failed {
+    ir::Package package; /**< holds the diagnostics' source spans */
+    std::vector<ir::Diagnostic> diagnostics;
+};
+
 /**
  * Used to determine the status of PIR build, for diagnostics or to see if
  * we should keep going with the build versus fallback.
  */
-using BuildOutcome = std::variant<Success, Unsupported, Error>;
+using BuildOutcome = std::variant<Success, Unsupported, Error, Failed>;
 
 /**
  * Result of a PIR build. An error means PIR construction itself failed, which
@@ -90,10 +97,12 @@ using BuildResult = hilti::Result<BuildOutcome>;
  * The builder only reports what it was able to represent; deciding what to do
  * with an `Unsupported` outcome is up to the caller.
  *
- * @param ctx AST context holding the AST to build PIR for
- * @return the build's outcome; currently always `Unsupported`
+ * Look-ahead errors in the units' grammars end in `Failed`, before lowering.
+ *
+ * @param builder builder of the AST to build PIR for
+ * @return the build's outcome
  */
-BuildResult build(const hilti::ASTContext& ctx);
+BuildResult build(spicy::Builder* builder);
 
 /**
  * Logs user diagnostics with their source locations and IDs. Skips warnings listed in `suppressed`.

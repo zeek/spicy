@@ -108,10 +108,18 @@ hilti::Plugin spicy::detail::createSpicyPlugin() {
 
             // The experimental route either replaces the complete source compilation or falls back intact.
             if ( builder->options().getAuxOption<bool>("spicy.experimental_pir", false) ) {
-                auto result = pir::build(*spicy_builder->context());
+                auto result = pir::build(spicy_builder);
                 if ( ! result ) {
                     // A failure inside PIR is not a reason to fall back.
                     hilti::logger().error(hilti::util::fmt("PIR: %s", result.error().description()));
+                    return false;
+                }
+
+                auto suppressed =
+                    builder->options().getAuxOption<std::vector<std::string>>("spicy.suppressed_warnings", {});
+
+                if ( const auto* failed = std::get_if<pir::Failed>(&*result) ) {
+                    pir::report(failed->package, failed->diagnostics, suppressed);
                     return false;
                 }
 
@@ -134,8 +142,6 @@ hilti::Plugin spicy::detail::createSpicyPlugin() {
                     const auto& success = std::get<pir::Success>(*result);
 
                     // Report diagnostics even if the backend falls back. User errors stop compilation.
-                    auto suppressed =
-                        builder->options().getAuxOption<std::vector<std::string>>("spicy.suppressed_warnings", {});
                     if ( pir::report(success.package, success.diagnostics, suppressed) )
                         return false;
 

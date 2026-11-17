@@ -8,6 +8,8 @@
 #include <hilti/base/timing.h>
 #include <hilti/compiler/context.h>
 
+#include <spicy/ast/builder/builder.h>
+#include <spicy/compiler/detail/codegen/codegen.h>
 #include <spicy/compiler/detail/pir/analyses/field-use.h>
 #include <spicy/compiler/detail/pir/ir/printer.h>
 #include <spicy/compiler/detail/pir/ir/verifier.h>
@@ -20,13 +22,39 @@ using namespace spicy;
 using namespace spicy::detail;
 using hilti::util::fmt;
 
-pir::BuildResult pir::build(const hilti::ASTContext& ctx) {
+pir::BuildResult pir::build(spicy::Builder* builder) {
     hilti::util::timing::Collector _("spicy/compiler/pir/build");
 
+    const auto& ctx = *builder->context();
     auto discovery = discoverRoots(ctx);
     HILTI_DEBUG(logging::debug::PIR, fmt("found %d root(s)", discovery.roots.size()));
 
+    // The lowerer reads the units' grammars, which live in `cg`, so the units' pointers to them go away before `cg`
+    // does. Legacy's own grammar check is off; PIR reports look-ahead errors itself.
+    CodeGen cg(builder);
+    auto clear_grammars = hilti::util::scope_exit([&] {
+        for ( auto* decl : discovery.unit_declarations )
+            decl->type()->type()->as<type::Unit>()->setGrammar(nullptr);
+    });
+
     ir::Package package;
+    {
+        hilti::util::timing::Collector _("spicy/compiler/pir/build/grammar");
+        std::vector<ir::Diagnostic> grammar_diags;
+        for ( auto* decl : discovery.unit_declarations ) {
+            auto* unit = decl->type()->type()->as<type::Unit>();
+            if ( auto r = cg.grammarBuilder()->run(unit, false); ! r )
+                return hilti::result::Error(fmt("cannot build the grammar of '%s': %s", decl->id(), r.error()));
+
+            auto diags = checkLookAheads(unit->grammar(), package);
+            grammar_diags.insert(grammar_diags.end(), diags.begin(), diags.end());
+        }
+
+        // The lowerer assumes every look-ahead is decidable.
+        if ( ! grammar_diags.empty() )
+            return BuildOutcome(Failed{.package = std::move(package), .diagnostics = std::move(grammar_diags)});
+    }
+
     std::vector<TargetBinding> bindings;
     {
         hilti::util::timing::Collector _("spicy/compiler/pir/build/lower");

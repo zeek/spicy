@@ -377,7 +377,7 @@ std::unique_ptr<Production> ProductionFactory::createProduction(Node* node) {
 
 } // anonymous namespace
 
-hilti::Result<hilti::Nothing> GrammarBuilder::run(type::Unit* unit) {
+hilti::Result<hilti::Nothing> GrammarBuilder::run(type::Unit* unit, bool check) {
     assert(unit->canonicalID());
     auto id = unit->canonicalID();
     if ( _grammars.contains(id) )
@@ -391,7 +391,7 @@ hilti::Result<hilti::Nothing> GrammarBuilder::run(type::Unit* unit) {
     if ( auto rc = g.setRoot(std::move(root)); ! rc )
         return rc.error();
 
-    auto r = g.finalize();
+    auto r = g.finalize(check);
 
     if ( hilti::logger().isEnabled(spicy::logging::debug::Grammar) ) {
         hilti::logging::Stream dbg(spicy::logging::debug::Grammar);

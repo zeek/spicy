@@ -1,0 +1,24 @@
+# @TEST-GROUP: no-jit
+# @TEST-EXEC-FAIL: spicyc -c --experimental-pir %INPUT >output 2>&1
+# @TEST-EXEC: btest-diff output
+
+# @TEST-DOC: PIR rejects look-ahead decisions that one token cannot make, and reports each of them.
+
+module HTTP;
+
+type Item = unit {
+    x: uint8(0x01);
+    y: uint16;
+};
+
+public type Loop = unit {
+    a: Item[];
+    b: uint8(0x01);
+};
+
+public type Switch = unit {
+    switch {
+        -> a: b"A";
+        -> b: b"A";
+    };
+};
