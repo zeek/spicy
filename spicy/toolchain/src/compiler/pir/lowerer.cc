@@ -1586,6 +1586,7 @@ struct ItemSpec {
 
 struct CaseSpec {
     std::vector<hilti::Expression*> values; /**< the values that select the case */
+    std::vector<uint64_t> tokens;           /**< for look-ahead, the one-based literals that select it */
     bool is_default = false;
     std::vector<ItemSpec> items;
     hilti::Location location;
@@ -1593,7 +1594,8 @@ struct CaseSpec {
 
 struct SwitchSpec {
     type::unit::item::Switch* source = nullptr;
-    hilti::Expression* control = nullptr;
+    hilti::Expression* control = nullptr; /**< absent for a switch by look-ahead */
+    std::vector<std::string> literals;    /**< for look-ahead, the literals that tell the cases apart */
     std::vector<CaseSpec> cases;
 };
 
@@ -1830,16 +1832,19 @@ private:
             auto loc = switch_->meta().location();
             if ( in_case )
                 return reject("nested switches are not supported yet", loc);
-            if ( ! switch_->expression() )
-                return reject("a switch without a control expression is not supported yet", loc);
             if ( switch_->condition() || (switch_->attributes() && *switch_->attributes()) ||
                  ! switch_->hooks().empty() )
                 return reject("switch conditions, attributes, and hooks are not supported yet", loc);
 
             SwitchSpec sw{.source = switch_, .control = switch_->expression()};
+            std::vector<std::vector<uint64_t>> tokens;
+            if ( ! sw.control ) {
+                auto found = _lookAheadSwitch(spec.unit, sw, feature);
+                if ( auto* error = std::get_if<UnsupportedFeature>(&found) )
+                    return *error;
+                tokens = std::move(std::get<std::vector<std::vector<uint64_t>>>(found));
+            }
             for ( auto* c : switch_->cases() ) {
-                if ( c->isLookAhead() )
-                    return reject("look-ahead switch cases are not supported yet", c->meta().location());
                 auto* block = c->block();
                 if ( block->condition() || (block->attributes() && *block->attributes()) ||
                      ! block->elseItems().empty() )
@@ -1858,6 +1863,8 @@ private:
                                .location = c->meta().location()};
                 for ( auto* value : c->expressions() )
                     case_.values.push_back(value);
+                if ( ! sw.control )
+                    case_.tokens = std::move(tokens[sw.cases.size()]);
                 sw.cases.push_back(std::move(case_));
             }
 
@@ -2244,6 +2251,79 @@ private:
         return unsupported(feature, "the look-ahead of the loop is not in the grammar", loc);
     }
 
+    // The literals that tell the cases of a switch by look-ahead apart, as the grammar decides them, and the one-based
+    // literals that select each case. The grammar chains one look-ahead production per case after the first, the last
+    // one outermost and located at the last case. Its second alternative is the last case, and its first one holds
+    // all the cases before it.
+    //
+    // Legacy only sends a missing token to a default case that comes last, so no other default is supported.
+    std::variant<std::vector<std::vector<uint64_t>>, UnsupportedFeature> _lookAheadSwitch(type::Unit* unit,
+                                                                                          SwitchSpec& sw,
+                                                                                          const std::string& feature) {
+        auto cases = sw.source->cases();
+        auto loc = sw.source->meta().location();
+        if ( cases.size() < 2 )
+            return unsupported(feature, "a look-ahead switch needs at least two cases", loc);
+        for ( size_t i = 0; i + 1 < cases.size(); ++i )
+            if ( cases[i]->isDefault() )
+                return unsupported(feature, "only the last case of a look-ahead switch can be the default", loc);
+
+        const codegen::production::LookAhead* level = nullptr;
+        for ( const auto& [_, production] : unit->grammar().productions() ) {
+            auto* candidate = production->tryAs<codegen::production::LookAhead>();
+            if ( candidate && candidate->location() == cases.back()->meta().location() )
+                level = candidate;
+        }
+
+        std::vector<codegen::production::Set> sets(cases.size());
+        for ( size_t i = cases.size() - 1; i >= 1; --i ) {
+            if ( ! level )
+                return unsupported(feature, "the look-ahead of the switch is not in the grammar", loc);
+
+            sets[i] = level->lookAheads().second;
+            if ( i == 1 )
+                sets[0] = level->lookAheads().first;
+            else
+                level = level->alternatives().first->tryAs<codegen::production::LookAhead>();
+        }
+
+        std::vector<std::vector<uint64_t>> tokens(cases.size());
+        for ( size_t i = 0; i < cases.size(); ++i ) {
+            for ( const auto* token : sets[i] ) {
+                const auto* ctor_token = token->tryAs<codegen::production::Ctor>();
+                // Legacy does not look for other tokens, so a default case does not need them.
+                if ( ! ctor_token && cases[i]->isDefault() )
+                    continue;
+
+                auto* ctor = ctor_token ? ctor_token->ctor() : nullptr;
+                if ( auto* coerced = ctor ? ctor->tryAs<hilti::ctor::Coerced>() : nullptr )
+                    ctor = coerced->coercedCtor();
+                auto* bytes = ctor ? ctor->tryAs<hilti::ctor::Bytes>() : nullptr;
+                if ( ! bytes )
+                    return unsupported(feature, "only bytes literal look-ahead tokens are supported yet", loc);
+
+                auto it = std::ranges::find(sw.literals, bytes->value());
+                if ( it == sw.literals.end() )
+                    it = sw.literals.insert(it, bytes->value());
+                auto index = static_cast<uint64_t>(it - sw.literals.begin()) + 1;
+                // As for loops, legacy fails at runtime on a literal that repeats within a case.
+                if ( std::ranges::find(tokens[i], index) != tokens[i].end() )
+                    return unsupported(feature,
+                                       "a look-ahead literal that repeats within an alternative is not supported",
+                                       loc);
+                tokens[i].push_back(index);
+            }
+
+            if ( tokens[i].empty() && ! cases[i]->isDefault() )
+                return unsupported(feature, "only bytes literal look-ahead tokens are supported yet", loc);
+        }
+
+        // A default case that only parses a non-literal still needs a literal to look for.
+        if ( sw.literals.empty() )
+            return unsupported(feature, "a look-ahead switch needs a bytes literal token", loc);
+        return tokens;
+    }
+
     // The unit that `type` is, directly or by name.
     static type::Unit* _unitOf(hilti::UnqualifiedType* type) {
         if ( auto* named = type->tryAs<hilti::type::Name>() )
@@ -2495,11 +2575,17 @@ private:
         auto feature = fmt("parser unit '%s'", std::string(spec.source->id()));
         auto loc = sw.source->meta().location();
         auto span = internSpan(_package, loc);
-        auto control = _lowerUnitExpression(spec, sw.control, at, context);
-        if ( auto* error = std::get_if<UnsupportedFeature>(&control) )
-            return *error;
+        // By look-ahead, the control is which literal the input starts with, which only looks at the input.
+        ir::InstId value;
+        if ( sw.control ) {
+            auto control = _lowerUnitExpression(spec, sw.control, at, context);
+            if ( auto* error = std::get_if<UnsupportedFeature>(&control) )
+                return *error;
+            value = std::get<ir::InstId>(control);
+        }
+        else
+            value = _builder.addPeekLiterals(at.block, at.state, sw.literals, span);
 
-        auto value = std::get<ir::InstId>(control);
         auto type = _package.inst(value).result_type;
         if ( _package.type(type).kind != ir::TypeKind::Integer )
             return unsupported(feature, "only integer switch controls are supported yet", loc);
@@ -2512,6 +2598,8 @@ private:
             blocks.push_back(block);
             if ( c.is_default )
                 payload.default_target = block;
+            for ( auto token : c.tokens )
+                payload.cases.push_back(ir::SwitchCase{.value = ir::IntegerLiteral{token}, .target = block});
             for ( auto* expr : c.values ) {
                 auto bits = _caseValue(expr, _package.type(type).integer);
                 if ( ! bits )
@@ -2526,6 +2614,19 @@ private:
         if ( ! payload.default_target.isSet() ) {
             unmatched = _builder.createBlock(region);
             payload.default_target = *unmatched;
+        }
+        // Legacy fails the same way at the end of input as at a token that no case has, at the last case.
+        if ( ! sw.control ) {
+            auto fail_span = internSpan(_package, sw.cases.back().location);
+            auto fail = [&](ir::BlockId block, const char* text) {
+                _builder.addFail(block, at.state, _builder.addStringConstant(block, text, fail_span), fail_span);
+            };
+            if ( unmatched )
+                fail(*unmatched, "no expected look-ahead token found");
+            auto end_of_input = _builder.createBlock(region);
+            fail(end_of_input, "expected look-ahead token, but reached end-of-data");
+            payload.cases.push_back(ir::SwitchCase{.value = ir::IntegerLiteral{UINT64_MAX}, .target = end_of_input});
+            unmatched.reset();
         }
         _builder.addSwitch(at.block, value, std::move(payload), span);
         if ( unmatched ) {

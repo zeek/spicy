@@ -1,0 +1,54 @@
+# @TEST-EXEC: cp ${SCRIPTS}/pir-parse.h parse.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -p -D spicy-pir >/dev/null 2>pir.log
+# @TEST-EXEC: rg "attached PIR-produced|falling back" pir.log | sort -u >route
+# @TEST-EXEC: btest-diff route
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT -j driver.cc >legacy
+# @TEST-EXEC: cmp output legacy
+
+# @TEST-DOC: A switch without a control expression chooses its case by the literal that the input starts with, and without a default case fails as legacy does for a token that no case has and for the end of input.
+
+module Test;
+
+type A = unit {
+    a: b"A";
+};
+
+type B = unit {
+    b: b"BB";
+};
+
+public type Message = unit {
+    switch {
+        -> a: A;
+        -> b: B;
+        -> c: b"C";
+    };
+    tail: b"!";
+
+    on %done { print "done", self.tail; }
+};
+
+@TEST-START-FILE driver.cc
+static constexpr unsigned error_style = 2;
+#include "parse.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    for ( size_t chunk : {0, 1, 2} ) {
+        auto label = [&](const char* name) { return std::string(name) + "-" + std::to_string(chunk); };
+        run("Test::Message", label("first").c_str(), {{"A!"}}, chunk);
+        run("Test::Message", label("second").c_str(), {{"BB!"}}, chunk);
+        run("Test::Message", label("third").c_str(), {{"C!"}}, chunk);
+        run("Test::Message", label("no-case").c_str(), {{"D!"}}, chunk);
+        run("Test::Message", label("partial").c_str(), {{"B"}}, chunk);
+        run("Test::Message", label("empty").c_str(), {{""}}, chunk);
+        run("Test::Message", label("missing-tail").c_str(), {{"A"}}, chunk);
+        run("Test::Message", label("gap").c_str(), {{"A"}, {"", 1}}, chunk);
+    }
+    return 0;
+}
+
+@TEST-END-FILE

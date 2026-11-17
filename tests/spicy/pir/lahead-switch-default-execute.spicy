@@ -1,0 +1,50 @@
+# @TEST-EXEC: cp ${SCRIPTS}/pir-parse.h parse.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -p -D spicy-pir >/dev/null 2>pir.log
+# @TEST-EXEC: rg "attached PIR-produced|falling back" pir.log | sort -u >route
+# @TEST-EXEC: btest-diff route
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT -j driver.cc >legacy
+# @TEST-EXEC: cmp output legacy
+
+# @TEST-DOC: A default case of a look-ahead switch takes the input that no other case has, but not the end of input, and fields of a case are only present when the case ran.
+
+module Test;
+
+type A = unit {
+    a: b"AB";
+};
+
+type Other = unit {
+    x: bytes &size=2;
+};
+
+public type Message = unit {
+    switch {
+        -> a: A;
+        * -> other: Other;
+    };
+    tail: bytes &size=1;
+
+    on %done { print "done", self.tail; }
+};
+
+@TEST-START-FILE driver.cc
+static constexpr unsigned error_style = 2;
+#include "parse.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    for ( size_t chunk : {0, 1} ) {
+        auto label = [&](const char* name) { return std::string(name) + "-" + std::to_string(chunk); };
+        run("Test::Message", label("first").c_str(), {{"AB!"}}, chunk);
+        run("Test::Message", label("default").c_str(), {{"XY!"}}, chunk);
+        run("Test::Message", label("prefix-of-first").c_str(), {{"AX!"}}, chunk);
+        run("Test::Message", label("empty").c_str(), {{""}}, chunk);
+        run("Test::Message", label("default-short").c_str(), {{"X"}}, chunk);
+    }
+    return 0;
+}
+
+@TEST-END-FILE
