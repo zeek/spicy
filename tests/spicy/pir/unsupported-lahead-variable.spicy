@@ -1,0 +1,15 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: An element that starts with a non-literal field has no look-ahead token, which forces whole-compilation fallback.
+
+module Test;
+
+type Item = unit {
+    a: uint8;
+};
+
+public type Root = unit {
+    items: Item[];
+    end_: b"END";
+};

@@ -1,0 +1,48 @@
+# @TEST-EXEC: cp ${SCRIPTS}/pir-parse.h parse.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -p -D spicy-pir >/dev/null 2>pir.log
+# @TEST-EXEC: rg "attached PIR-produced|falling back" pir.log | sort -u >route
+# @TEST-EXEC: btest-diff route
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT -j driver.cc >legacy
+# @TEST-EXEC: cmp output legacy
+
+# @TEST-DOC: A look-ahead vector in a private child inside a vector with a size ends where its input ends, since the byte bound acts as the end of input for the look-ahead.
+
+module Test;
+
+type Inner = unit {
+    a: b"A";
+};
+
+type Element = unit {
+    inner: Inner[];
+    e: b"E";
+};
+
+public type Message = unit {
+    length: uint64;
+    elements: Element[] &size=self.length;
+    end_: b"END";
+};
+
+@TEST-START-FILE driver.cc
+static constexpr unsigned error_style = 2;
+#include "parse.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    for ( size_t chunk : {0, 1, 3} ) {
+        auto label = [&](const char* name) { return std::string(name) + "-" + std::to_string(chunk); };
+        run("Test::Message", label("two-elements").c_str(), {{be64(5) + "AAE" "AE" "END"}}, chunk);
+        run("Test::Message", label("empty-inner").c_str(), {{be64(1) + "E" "END"}}, chunk);
+        run("Test::Message", label("no-elements").c_str(), {{be64(0) + "END"}}, chunk);
+        // The bound ends inside the look-ahead loop, which then needs a token.
+        run("Test::Message", label("bound-ends-in-loop").c_str(), {{be64(2) + "AAE" "END"}}, chunk);
+        run("Test::Message", label("wrong-byte-in-bound").c_str(), {{be64(2) + "AX" "END"}}, chunk);
+    }
+    return 0;
+}
+
+@TEST-END-FILE

@@ -1,0 +1,19 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: A look-ahead literal that repeats within one alternative falls back, since legacy reports it as ambiguous at runtime.
+
+module Test;
+
+type Item = unit {
+    a: b"A";
+};
+
+public type Root = unit {
+    k: uint8;
+    items: Item[];
+    switch ( self.k ) {
+        1 -> one: b"END";
+        * -> other: b"END";
+    };
+};

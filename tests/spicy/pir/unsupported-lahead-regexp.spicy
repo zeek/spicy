@@ -1,0 +1,15 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: A regular expression as a look-ahead token forces whole-compilation fallback.
+
+module Test;
+
+type Item = unit {
+    a: /A+/;
+};
+
+public type Root = unit {
+    items: Item[];
+    end_: b"END";
+};

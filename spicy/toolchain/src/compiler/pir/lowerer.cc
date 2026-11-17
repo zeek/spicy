@@ -74,6 +74,10 @@
 #include <spicy/ast/types/unit-items/unit-hook.h>
 #include <spicy/ast/types/unit.h>
 #include <spicy/ast/visitor.h>
+#include <spicy/compiler/detail/codegen/grammar.h>
+#include <spicy/compiler/detail/codegen/productions/ctor.h>
+#include <spicy/compiler/detail/codegen/productions/look-ahead.h>
+#include <spicy/compiler/detail/codegen/productions/while.h>
 #include <spicy/compiler/detail/pir/ir/builder.h>
 #include <spicy/compiler/detail/pir/lowerer.h>
 
@@ -1546,6 +1550,14 @@ std::variant<ir::InstId, UnsupportedFeature> BodyLowerer::_lowerCall(hilti::expr
 
 enum class FieldForm { Integer, Bytes, Vector, Unit, Literal, RegExp };
 
+// What a look-ahead loop decides on: the literals of both alternatives, and the one-based indices that each leads to.
+struct LookAheadSpec {
+    std::vector<std::string> literals;
+    std::vector<uint64_t> body; /**< literals that start another element */
+    std::vector<uint64_t> exit; /**< literals that end the loop */
+    bool eod_exits = false;     /**< whether the end of input ends the loop instead of failing it */
+};
+
 struct FieldSpec {
     type::unit::item::Field* source = nullptr;
     FieldForm form = FieldForm::Integer;
@@ -1559,6 +1571,7 @@ struct FieldSpec {
     std::vector<ir::RegExpPattern> patterns; /**< the patterns of a regexp field */
     bool no_sub = true;                      /**< whether a regexp field needs no capture groups */
     type::Unit* child = nullptr;             /**< the unit of a vector's elements or of a sub-unit */
+    std::optional<LookAheadSpec> look_ahead; /**< a vector without a &size ends where look-ahead says */
     ir::DeclId declaration;
     ir::TypeId type;
     std::vector<spicy::declaration::Hook*> source_hooks; /**< hooks written inside the field */
@@ -1949,26 +1962,35 @@ private:
         }
         else if ( auto* vector = parse_type ? parse_type->tryAs<hilti::type::Vector>() : nullptr ) {
             auto* item_vector = item_type ? item_type->tryAs<hilti::type::Vector>() : nullptr;
-            if ( ! item_vector || ! size || ! _onlySize(attrs) || ! field->isContainer() || ! field->repeatCount() ||
+            // A vector with a &size needs the byte bound of a root. Without one, look-ahead ends the loop.
+            bool plain = size ? _onlySize(attrs) && _root_units.contains(unit) : ! (attrs && *attrs);
+            if ( ! item_vector || ! plain || ! field->isContainer() || ! field->repeatCount() ||
                  ! field->repeatCount()->isA<hilti::expression::Ctor>() ||
-                 ! field->repeatCount()->as<hilti::expression::Ctor>()->ctor()->isA<hilti::ctor::Null>() ||
-                 ! _root_units.contains(unit) )
+                 ! field->repeatCount()->as<hilti::expression::Ctor>()->ctor()->isA<hilti::ctor::Null>() )
                 return reject("unsupported vector field form", field_loc);
             f.child = _unitOf(vector->elementType()->type());
             if ( ! f.child )
                 return reject("only vectors of units are supported", field_loc);
             if ( _root_units.contains(f.child) )
                 return reject("vector child must be a private unit", field_loc);
-            auto expr = size->valueAsExpression();
-            if ( ! expr )
-                return reject("vector &size must be an expression", field_loc);
-            f.size = *expr;
-            f.size_location = size->meta().location();
+            if ( size ) {
+                auto expr = size->valueAsExpression();
+                if ( ! expr )
+                    return reject("vector &size must be an expression", field_loc);
+                f.size = *expr;
+                f.size_location = size->meta().location();
+            }
             auto* child_decl = _declaration(f.child);
             if ( ! child_decl )
                 return reject("vector child unit has no source declaration", field_loc);
             if ( auto error = _discover(child_decl) )
                 return error;
+            if ( ! size ) {
+                auto look_ahead = _lookAhead(unit, field, feature);
+                if ( auto* error = std::get_if<UnsupportedFeature>(&look_ahead) )
+                    return *error;
+                f.look_ahead = std::move(std::get<LookAheadSpec>(look_ahead));
+            }
             f.form = FieldForm::Vector;
         }
         else if ( auto* child = parse_type ? _unitOf(parse_type) : nullptr ) {
@@ -2160,6 +2182,68 @@ private:
         return id;
     }
 
+    // The literals that the grammar's look-ahead production of a loop decides on. The grammar is the legacy one, so
+    // that the same loops are accepted. It was built before lowering, and its errors have been reported already.
+    std::variant<LookAheadSpec, UnsupportedFeature> _lookAhead(type::Unit* unit,
+                                                               type::unit::item::Field* field,
+                                                               const std::string& feature) {
+        auto loc = field->meta().location();
+        for ( const auto& [_, production] : unit->grammar().productions() ) {
+            const auto* loop = production->tryAs<codegen::production::While>();
+            if ( ! loop || loop->meta().field() != field )
+                continue;
+
+            const auto& [exit_tokens, body_tokens] = loop->lookAheadProduction()->lookAheads();
+
+            // The literal of a token, if it is a bytes literal.
+            auto literal = [](const codegen::Production* token) -> std::optional<std::string> {
+                const auto* ctor_token = token->tryAs<codegen::production::Ctor>();
+                if ( ! ctor_token )
+                    return std::nullopt;
+                auto* ctor = ctor_token->ctor();
+                if ( auto* coerced = ctor->tryAs<hilti::ctor::Coerced>() )
+                    ctor = coerced->coercedCtor();
+                if ( auto* bytes = ctor->tryAs<hilti::ctor::Bytes>() )
+                    return bytes->value();
+                return std::nullopt;
+            };
+
+            LookAheadSpec spec;
+            auto add = [&](const codegen::production::Set& tokens,
+                           std::vector<uint64_t>& indices) -> std::optional<std::string> {
+                for ( const auto* token : tokens ) {
+                    auto value = literal(token);
+                    if ( ! value )
+                        return "only bytes literal look-ahead tokens are supported yet";
+
+                    auto it = std::ranges::find(spec.literals, *value);
+                    if ( it == spec.literals.end() )
+                        it = spec.literals.insert(it, *value);
+                    auto index = static_cast<uint64_t>(it - spec.literals.begin()) + 1;
+                    // The grammar only rejects a literal that both alternatives share. Legacy fails on one that
+                    // repeats within an alternative at runtime, as ambiguous.
+                    if ( std::ranges::find(indices, index) != indices.end() )
+                        return "a look-ahead literal that repeats within an alternative is not supported";
+                    indices.push_back(index);
+                }
+                return std::nullopt;
+            };
+
+            // Inserting at the end keeps the indices of the literals that are there.
+            auto error = add(exit_tokens, spec.exit);
+            if ( ! error )
+                error = add(body_tokens, spec.body);
+            if ( error )
+                return unsupported(feature, *error, loc);
+
+            // As legacy does: an epsilon alternative without tokens takes the end of input.
+            spec.eod_exits = exit_tokens.empty();
+            return spec;
+        }
+
+        return unsupported(feature, "the look-ahead of the loop is not in the grammar", loc);
+    }
+
     // The unit that `type` is, directly or by name.
     static type::Unit* _unitOf(hilti::UnqualifiedType* type) {
         if ( auto* named = type->tryAs<hilti::type::Name>() )
@@ -2306,6 +2390,11 @@ private:
             }
 
             case FieldForm::Vector: {
+                if ( field.look_ahead ) {
+                    value = _emitLookAheadVector(spec, field, at, span);
+                    break;
+                }
+
                 auto length = size();
                 if ( auto* unsupported_feature = std::get_if<UnsupportedFeature>(&length) )
                     return *unsupported_feature;
@@ -2343,6 +2432,58 @@ private:
             _builder.addCall(at.block, hook, args, span);
         }
         return std::nullopt;
+    }
+
+    // A loop of elements, each chosen by what the input starts with. The loop is a cycle of blocks, which carries the
+    // parser state and the vector in Phis of its header. Emission continues in the exit, where the state and the
+    // finished vector are the header's Phis.
+    ir::InstId _emitLookAheadVector(const UnitSpec& spec,
+                                    const FieldSpec& field,
+                                    EmitPoint& at,
+                                    ir::SourceSpanId span) {
+        const auto& look_ahead = *field.look_ahead;
+        auto region = _package.function(spec.function).root_region;
+        auto head = _builder.createBlock(region);
+        auto body = _builder.createBlock(region);
+        auto exit = _builder.createBlock(region);
+
+        auto empty = _builder.addVectorEmpty(at.block, _builder.unitType(_spec(field.child).declaration), span);
+        auto state = _builder.addPhi(head, _builder.parserStateType(), span);
+        auto vector = _builder.addPhi(head, _package.inst(empty).result_type, span);
+        _builder.addUpsilon(at.block, at.state, state, span);
+        _builder.addUpsilon(at.block, empty, vector, span);
+        _builder.addJump(at.block, head, span);
+
+        // A token that no alternative has ends the loop, and the next field reports the real error.
+        auto peek = _builder.addPeekLiterals(head, state, look_ahead.literals, span);
+        ir::SwitchPayload payload{.default_target = exit};
+        for ( auto index : look_ahead.body )
+            payload.cases.push_back({.value = ir::IntegerLiteral{index}, .target = body});
+        for ( auto index : look_ahead.exit )
+            payload.cases.push_back({.value = ir::IntegerLiteral{index}, .target = exit});
+
+        auto end_of_input = exit;
+        if ( ! look_ahead.eod_exits ) {
+            end_of_input = _builder.createBlock(region);
+            auto message =
+                _builder.addStringConstant(end_of_input, "expected look-ahead token, but reached end-of-data", span);
+            _builder.addFail(end_of_input, state, message, span);
+        }
+        payload.cases.push_back({.value = ir::IntegerLiteral{UINT64_MAX}, .target = end_of_input});
+        _builder.addSwitch(head, peek, std::move(payload), span);
+
+        auto before = _builder.addOffset(body, state, span);
+        auto child = _builder.addParseSubunit(body, state, _spec(field.child).function, span);
+        auto next_vector = _builder.addVectorAppend(body, vector, _builder.addTupleGet(body, child, 1, span), span);
+        auto next_state = _builder.addRequireProgress(body, _builder.addTupleGet(body, child, 0, span), before, span);
+        next_state = _builder.addReleaseInput(body, next_state, span);
+        _builder.addUpsilon(body, next_state, state, span);
+        _builder.addUpsilon(body, next_vector, vector, span);
+        _builder.addJump(body, head, span);
+
+        at.block = exit;
+        at.state = state;
+        return vector;
     }
 
     // A switch ends the current block with `core.switch` on its control value. Each case lowers its items in its own

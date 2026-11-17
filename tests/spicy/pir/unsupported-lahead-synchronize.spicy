@@ -1,0 +1,15 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: A look-ahead vector with &synchronize forces whole-compilation fallback.
+
+module Test;
+
+type Item = unit {
+    a: b"A";
+};
+
+public type Root = unit {
+    items: Item[] &synchronize;
+    end_: b"END";
+};

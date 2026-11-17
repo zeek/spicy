@@ -20,6 +20,7 @@ set(BENCH_MODULE
 )
 set(PIR_BENCH_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/unit-vector-size.spicy"
+    "${CMAKE_CURRENT_SOURCE_DIR}/unit-vector-lookahead.spicy"
     "${CMAKE_CURRENT_SOURCE_DIR}/unit-nested.spicy"
     "${CMAKE_CURRENT_SOURCE_DIR}/unit-bytes.spicy"
     "${CMAKE_CURRENT_SOURCE_DIR}/unit-switch.spicy"

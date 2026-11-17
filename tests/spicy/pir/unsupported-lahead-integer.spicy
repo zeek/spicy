@@ -1,0 +1,15 @@
+# @TEST-EXEC: spicyc %INPUT -p --experimental-pir -D spicy-pir >/dev/null 2>on.log
+# @TEST-EXEC: btest-diff on.log
+
+# @TEST-DOC: An integer constant as a look-ahead token forces whole-compilation fallback.
+
+module Test;
+
+type Item = unit {
+    a: uint8(1);
+};
+
+public type Root = unit {
+    items: Item[];
+    end_: uint8(2);
+};

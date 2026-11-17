@@ -1,0 +1,47 @@
+# @TEST-EXEC: cp ${SCRIPTS}/pir-parse.h parse.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -p -D spicy-pir >/dev/null 2>pir.log
+# @TEST-EXEC: rg "attached PIR-produced|falling back" pir.log | sort -u >route
+# @TEST-EXEC: btest-diff route
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT -j driver.cc >legacy
+# @TEST-EXEC: cmp output legacy
+
+# @TEST-DOC: A vector without a size ends where look-ahead says, for any count and chunking, and fails as legacy does.
+
+module Test;
+
+type Inner = unit {
+    b: b"A";
+};
+
+public type Message = unit {
+    length: uint64;
+    inner: Inner[];
+    end_: b"END";
+};
+
+@TEST-START-FILE driver.cc
+static constexpr unsigned error_style = 2;
+#include "parse.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    for ( size_t chunk : {0, 1, 2, 7} ) {
+        auto label = [&](const char* name) { return std::string(name) + "-" + std::to_string(chunk); };
+        for ( size_t count : {0, 1, 1000} ) {
+            auto input = be64(count) + std::string(count, 'A') + "END";
+            run("Test::Message", label(("count-" + std::to_string(count)).c_str()).c_str(), {{input}}, chunk);
+        }
+        // The input ends after the elements, where the look-ahead needs a token.
+        run("Test::Message", label("eod-after-elements").c_str(), {{be64(3) + "AAA"}}, chunk);
+        run("Test::Message", label("eod-before-elements").c_str(), {{be64(3)}}, chunk);
+        // A byte that is no token ends the loop, and the literal after it reports the mismatch.
+        run("Test::Message", label("wrong-byte").c_str(), {{be64(3) + "AAAXEND"}}, chunk);
+        run("Test::Message", label("partial-end").c_str(), {{be64(3) + "AAAEN"}}, chunk);
+    }
+    return 0;
+}
+
+@TEST-END-FILE
