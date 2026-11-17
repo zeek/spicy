@@ -89,6 +89,9 @@ std::string renderEntity(const Package& package, const DiagnosticEntity& entity)
         return fmt("foreign function %%%u (invalid)", id->index);
     }
 
+    if ( const auto* id = std::get_if<RegExpId>(&entity) )
+        return fmt("regexp %%%u%s", id->index, package.isValid(*id) ? "" : " (invalid)");
+
     if ( const auto* id = std::get_if<DeclId>(&entity) ) {
         if ( package.isValid(*id) ) {
             const auto& field = package.declaration(*id);

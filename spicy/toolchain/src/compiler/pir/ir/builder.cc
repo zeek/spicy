@@ -190,6 +190,17 @@ void Builder::setGlobalInitializer(GlobalId global, FunctionId initializer) {
     _package._globals.get(global).initializer = initializer;
 }
 
+RegExpId Builder::internRegExp(std::vector<RegExpPattern> patterns, bool no_sub, SourceSpanId span) {
+    for ( size_t i = 0; i < _package._regexps.size(); ++i ) {
+        auto id = RegExpId{static_cast<uint32_t>(i)};
+        const auto& existing = _package._regexps.get(id);
+        if ( existing.no_sub == no_sub && existing.patterns == patterns )
+            return id;
+    }
+
+    return _package._regexps.add(RegExpDecl{.patterns = std::move(patterns), .no_sub = no_sub, .span = span});
+}
+
 void Builder::addInitializer(InitPhase phase, FunctionId function) {
     _package._initializers.push_back(Initializer{.phase = phase, .function = function});
 }

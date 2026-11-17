@@ -430,6 +430,36 @@ TEST_CASE("verifier rejects a field with an invalid owner or type without assert
     CHECK(hasInternalError(diags, "invalid-field-type"));
 }
 
+TEST_CASE("regular expressions intern by patterns and flags") {
+    Package package;
+    auto builder = package.builder();
+    auto a = builder.internRegExp({RegExpPattern{.value = "A*"}}, true);
+    CHECK_EQ(builder.internRegExp({RegExpPattern{.value = "A*"}}, true), a);
+    CHECK_NE(builder.internRegExp({RegExpPattern{.value = "A*"}}, false), a);
+    CHECK_NE(builder.internRegExp({RegExpPattern{.value = "A*", .case_insensitive = true}}, true), a);
+    CHECK_NE(builder.internRegExp({RegExpPattern{.value = "A*", .id = 3}}, true), a);
+    CHECK_NE(builder.internRegExp({RegExpPattern{.value = "A*"}, RegExpPattern{.value = "B"}}, true), a);
+    CHECK_EQ(package.regexps().size(), 5);
+    CHECK(verify(package).empty());
+}
+
+TEST_CASE("regular expressions print with their patterns and flags") {
+    Package package;
+    auto builder = package.builder();
+    builder.internRegExp({RegExpPattern{.value = "A*"}}, true);
+    builder.internRegExp({RegExpPattern{.value = "a", .case_insensitive = true}, RegExpPattern{.value = "b", .id = 7}},
+                         false);
+    auto dump = print(package);
+    CHECK_NE(dump.find("regexp %0: /A*/ nosub\n"), std::string::npos);
+    CHECK_NE(dump.find("regexp %1: /a/i | /b/#7\n"), std::string::npos);
+}
+
+TEST_CASE("verifier rejects a regular expression without patterns") {
+    Package package;
+    package.builder().internRegExp({}, true);
+    CHECK(hasInternalError(verify(package), "regexp-empty"));
+}
+
 TEST_SUITE_END();
 
 namespace {

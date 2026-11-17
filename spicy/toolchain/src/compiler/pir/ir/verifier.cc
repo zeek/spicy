@@ -114,6 +114,15 @@ public:
         }
     }
 
+    void verifyRegExp(RegExpId id, const RegExpDecl& decl) {
+        _verifySpan(decl.span, id);
+
+        // The frontend has compiled the patterns already, and the runtime rejects an invalid one, so only the shape is
+        // checked.
+        if ( decl.patterns.empty() )
+            _emitter.emit("regexp-empty", "regular expression declaration has no patterns", id);
+    }
+
     void verifyForeignFunction(ForeignFunctionId id, const ForeignFunction& fn) {
         _verifySpan(fn.span, id);
 
@@ -2013,6 +2022,11 @@ std::vector<InternalError> verify(const Package& package) {
     }
 
     verifier.verifyDeclarationMembership();
+
+    for ( size_t i = 0; i < package.regexps().size(); ++i ) {
+        auto id = RegExpId{static_cast<uint32_t>(i)};
+        verifier.verifyRegExp(id, package.regexp(id));
+    }
 
     for ( size_t i = 0; i < package.foreignFunctions().size(); ++i ) {
         auto id = ForeignFunctionId{static_cast<uint32_t>(i)};

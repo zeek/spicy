@@ -72,6 +72,11 @@ public:
      */
     GlobalId createGlobal(std::string name, TypeId type, SourceSpanId span = {});
     void setGlobalInitializer(GlobalId global, FunctionId initializer);
+    /**
+     * Declares a regular expression of `patterns`, which must not be empty, or returns the existing declaration of
+     * identical patterns and flags. The first declaration's `span` is kept.
+     */
+    RegExpId internRegExp(std::vector<RegExpPattern> patterns, bool no_sub, SourceSpanId span = {});
     /** Appends a module-level function to run at the given initialization phase. */
     void addInitializer(InitPhase phase, FunctionId function);
     /** Appends a selected parser implementation; call only once the function is complete. */

@@ -164,6 +164,19 @@ std::string foreignParameterName(const Package& package, const ForeignParameter&
     return "<unknown-argument>";
 }
 
+// `/p1/ | /p2/`, where a pattern's `i` suffix marks it case-insensitive and `#N` gives its match ID.
+std::string regexpName(const RegExpDecl& decl) {
+    std::string out;
+    for ( const auto& pattern : decl.patterns ) {
+        out += out.empty() ? "" : " | ";
+        out += fmt("/%s/%s", pattern.value, pattern.case_insensitive ? "i" : "");
+        if ( pattern.id != 0 )
+            out += fmt("#%llu", static_cast<unsigned long long>(pattern.id));
+    }
+
+    return out + (decl.no_sub ? " nosub" : "");
+}
+
 std::string printInst(const Package& package, InstId id) {
     const auto& inst = package.inst(id);
 
@@ -300,6 +313,9 @@ std::string print(const Package& package) {
             out += fmt("  field %%%u \"%s\" : %s\n", field_id.index, field.name, typeName(package, field.type));
         }
     }
+
+    for ( size_t i = 0; i < package.regexps().size(); ++i )
+        out += fmt("regexp %%%zu: %s\n", i, regexpName(package.regexp(RegExpId{static_cast<uint32_t>(i)})));
 
     for ( size_t i = 0; i < package.foreignFunctions().size(); ++i ) {
         const auto& fn = package.foreignFunction(ForeignFunctionId{static_cast<uint32_t>(i)});

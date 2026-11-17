@@ -165,6 +165,7 @@ public:
     const Declaration& declaration(DeclId id) const { return _declarations.get(id); }
     const ForeignFunction& foreignFunction(ForeignFunctionId id) const { return _foreign_functions.get(id); }
     const Global& global(GlobalId id) const { return _globals.get(id); }
+    const RegExpDecl& regexp(RegExpId id) const { return _regexps.get(id); }
 
     /** Replaces an instruction while preserving its ID and result type. */
     void replaceInst(InstId id, Opcode opcode, std::vector<InstId> args, InstPayload payload = {});
@@ -193,6 +194,7 @@ public:
     const Arena<Declaration, DeclId>& declarations() const { return _declarations; }
     const Arena<ForeignFunction, ForeignFunctionId>& foreignFunctions() const { return _foreign_functions; }
     const Arena<Global, GlobalId>& globals() const { return _globals; }
+    const Arena<RegExpDecl, RegExpId>& regexps() const { return _regexps; }
     /** Selected parser implementations, in source order. */
     const std::vector<ParserRoot>& parserRoots() const { return _parser_roots; }
     /** Module-level functions run at initialization, in order. */
@@ -211,6 +213,7 @@ public:
     bool isValid(DeclId id) const { return _declarations.isValid(id); }
     bool isValid(ForeignFunctionId id) const { return _foreign_functions.isValid(id); }
     bool isValid(GlobalId id) const { return _globals.isValid(id); }
+    bool isValid(RegExpId id) const { return _regexps.isValid(id); }
 
 private:
     friend class Builder;
@@ -224,6 +227,7 @@ private:
     Arena<Declaration, DeclId> _declarations;
     Arena<ForeignFunction, ForeignFunctionId> _foreign_functions;
     Arena<Global, GlobalId> _globals;
+    Arena<RegExpDecl, RegExpId> _regexps;
     std::vector<ParserRoot> _parser_roots;
     std::vector<Initializer> _initializers;
     std::vector<FunctionId> _function_roots;

@@ -3,6 +3,7 @@
 #pragma once
 
 #include <optional>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -18,11 +19,13 @@ struct TypeDeclTag {};
 struct DeclTag {};
 struct ForeignFunctionTag {};
 struct GlobalTag {};
+struct RegExpTag {};
 
 using TypeDeclId = ID<TypeDeclTag>;
 using DeclId = ID<DeclTag>;
 using ForeignFunctionId = ID<ForeignFunctionTag>;
 using GlobalId = ID<GlobalTag>;
+using RegExpId = ID<RegExpTag>;
 
 enum class TypeDeclKind { Unit, Opaque };
 enum class DeclKind { Field };
@@ -111,6 +114,26 @@ struct Global {
     std::string name; /**< printer/diagnostic sugar only */
     TypeId type;
     FunctionId initializer; /**< invalid until the initializer is lowered */
+    /** Invalid means absent. */
+    SourceSpanId span;
+};
+
+/** One pattern of a regular expression declaration. */
+struct RegExpPattern {
+    std::string value;              /**< pattern source, as the frontend has it */
+    bool case_insensitive = false;
+    uint64_t id = 0;                /**< match ID reported on accept; 0 means "use position + 1" */
+
+    friend bool operator==(const RegExpPattern&, const RegExpPattern&) = default;
+};
+
+/**
+ * A package-level regular expression: one or more patterns that are compiled once and matched together. Identity is
+ * the `RegExpId`, and the builder interns equal declarations.
+ */
+struct RegExpDecl {
+    std::vector<RegExpPattern> patterns; /**< at least one */
+    bool no_sub = true;                  /**< no capture groups are needed */
     /** Invalid means absent. */
     SourceSpanId span;
 };
