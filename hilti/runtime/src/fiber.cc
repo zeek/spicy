@@ -658,7 +658,7 @@ void detail::Fiber::yield() {
     _yield("yield");
 
     if ( _state == State::Aborting )
-        throw AbortException();
+        throw AbortException(); // NOLINT(bugprone-std-exception-baseclass)
 }
 
 void detail::Fiber::resume() {
