@@ -320,8 +320,8 @@ struct Visitor : hilti::visitor::PreOrder {
                 if ( const auto& block = last_stmt->tryAs<statement::Block>(); block && ! block->statements().empty() )
                     last_stmt = block->statements().back();
 
-                if ( ! (last_stmt
-                            ->isAnyOf<statement::Break, statement::Continue, statement::Return, statement::Throw>()) )
+                if ( ! last_stmt
+                           ->isAnyOf<statement::Break, statement::Continue, statement::Return, statement::Throw>() )
                     cases.back().second.addStatement("break");
             }
 

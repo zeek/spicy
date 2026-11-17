@@ -738,7 +738,7 @@ Result<Ctor*> hilti::coerceCtor(Builder* builder, Ctor* c, QualifiedType* dst, b
         return c;
 
     for ( const auto& p : plugin::registry().plugins() ) {
-        if ( ! (p.coerce_ctor) )
+        if ( ! p.coerce_ctor )
             continue;
 
         if ( auto* nc = (*p.coerce_ctor)(builder, c, dst, style) )
@@ -810,7 +810,7 @@ static Result<QualifiedType*> coerceTypeBackend(Builder* builder,
     }
 
     for ( const auto& p : plugin::registry().plugins() ) {
-        if ( ! (p.coerce_type) )
+        if ( ! p.coerce_type )
             continue;
 
         if ( auto* nt = (*p.coerce_type)(builder, src, dst, style) )

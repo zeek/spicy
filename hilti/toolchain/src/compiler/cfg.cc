@@ -321,7 +321,7 @@ GraphNode CFG::_addBlock(GraphNode predecessor, const Nodes& stmts, const Node* 
     // After this block `last` is the last reachable statement, either end of
     // children or a control flow statement.
     auto last = std::ranges::find_if(stmts, [](auto* c) {
-        return c && (c->template isAnyOf<statement::Return, statement::Throw, statement::Continue, statement::Break>());
+        return c && c->template isAnyOf<statement::Return, statement::Throw, statement::Continue, statement::Break>();
     });
     const bool has_dead_flow = last != stmts.end();
     if ( has_dead_flow )

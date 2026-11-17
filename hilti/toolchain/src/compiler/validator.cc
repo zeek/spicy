@@ -838,7 +838,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         std::map<ID, type::Function*> seen;
 
         for ( const auto& f : n->fields() ) {
-            type::Function* func = (f->type()->type()->tryAs<type::Function>());
+            auto* func = f->type()->type()->tryAs<type::Function>();
 
             if ( const auto& other = seen.find(f->id()); other != seen.end() ) {
                 if ( func && other->second ) {

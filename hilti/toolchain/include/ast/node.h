@@ -300,11 +300,10 @@ public:
     template<typename... Args>
     bool pathMatches() const {
         const Node* current = this;
-        return (([&] {
-                    current = current->parent();
-                    return current && current->isA<Args>();
-                }()) &&
-                ...);
+        return ([&] {
+            current = current->parent();
+            return current && current->isA<Args>();
+        }() && ...);
     }
 
     /**
