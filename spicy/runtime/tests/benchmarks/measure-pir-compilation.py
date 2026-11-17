@@ -64,7 +64,14 @@ def run(command, log):
 
 
 results = []
-for root in ("unit-vector-size", "unit-nested", "unit-bytes", "unit-switch"):
+for root in (
+    "unit-vector-size",
+    "unit-vector-lookahead",
+    "unit-nested",
+    "unit-bytes",
+    "unit-switch",
+    "regex",
+):
     for route in ("legacy", "pir"):
         directory = output / root / route
         directory.mkdir(parents=True, exist_ok=True)
