@@ -119,6 +119,21 @@ std::optional<std::string> renderPayload(const Package& package,
             return std::string("@<invalid-global>");
         return fmt("@global %%%u \"%s\"", global->global.index, package.global(global->global).name);
     }
+    if ( const auto* scan = std::get_if<ScanBytesPayload>(&payload) ) {
+        // The members as ranges of byte values.
+        std::string members;
+        for ( unsigned byte = 0; byte < 256; ++byte ) {
+            auto in_set = [&](unsigned b) { return (scan->set[b / 64] >> (b % 64)) & 1U; };
+            if ( ! in_set(byte) || (byte > 0 && in_set(byte - 1)) )
+                continue;
+            auto last = byte;
+            while ( last < 255 && in_set(last + 1) )
+                ++last;
+            members += members.empty() ? "" : ",";
+            members += last == byte ? fmt("0x%02x", byte) : fmt("0x%02x-0x%02x", byte, last);
+        }
+        return fmt("set=[%s], min=%u", members, scan->at_least_one ? 1U : 0U);
+    }
     if ( const auto* regexp = std::get_if<RegExpPayload>(&payload) )
         return fmt("@re%%%u", regexp->regexp.index);
     if ( const auto* port = std::get_if<PortLiteral>(&payload) ) {

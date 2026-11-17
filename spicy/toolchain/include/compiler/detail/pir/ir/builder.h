@@ -206,6 +206,8 @@ public:
     InstId addExpectBytes(BlockId block, InstId state, std::string literal, SourceSpanId span = {});
     /** Adds `parser.match_regexp` of `regexp` over `state`. */
     InstId addMatchRegExp(BlockId block, InstId state, RegExpId regexp, SourceSpanId span = {});
+    /** Adds `parser.scan_bytes` of the run of bytes in `payload`'s set over `state`. */
+    InstId addScanBytes(BlockId block, InstId state, ScanBytesPayload payload, SourceSpanId span = {});
     /** Adds the terminating `parser.fail` that consumes `state` and fails with the string `description`. */
     InstId addFail(BlockId block, InstId state, InstId description, SourceSpanId span = {});
     /** Adds the terminating `core.jump` to `target`. */

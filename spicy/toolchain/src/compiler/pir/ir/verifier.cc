@@ -484,7 +484,7 @@ private:
             }
             else if ( inst.opcode == Opcode::ReadInteger || inst.opcode == Opcode::ReadBytes ||
                       inst.opcode == Opcode::ExpectBytes || inst.opcode == Opcode::MatchRegExp ||
-                      inst.opcode == Opcode::ParseSubunit ) {
+                      inst.opcode == Opcode::ScanBytes || inst.opcode == Opcode::ParseSubunit ) {
                 if ( ! inst.args.empty() && bounded_states.contains(inst.args[0].index) )
                     bounded_tuples.insert(inst_id.index);
             }
@@ -1008,6 +1008,7 @@ private:
                                   inst_id);
             }
                 [[fallthrough]];
+            case Opcode::ScanBytes:
             case Opcode::ExpectBytes:
                 if ( ! _package.isValid(inst.result_type) || _package.type(inst.result_type).kind != TypeKind::Tuple ||
                      _package.type(inst.result_type).type_arguments.size() != 2 ||

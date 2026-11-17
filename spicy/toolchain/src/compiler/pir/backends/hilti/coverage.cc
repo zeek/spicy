@@ -104,6 +104,7 @@ void checkRegion(const ir::Package& package,
                 case ir::Opcode::ReadBytes:
                 case ir::Opcode::ExpectBytes:
                 case ir::Opcode::MatchRegExp:
+                case ir::Opcode::ScanBytes:
                 case ir::Opcode::Fail: break;
                 case ir::Opcode::ReadInteger: {
                     const auto* p = std::get_if<ir::ReadIntegerPayload>(&inst.payload);

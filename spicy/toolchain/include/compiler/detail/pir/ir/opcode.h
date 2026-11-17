@@ -245,6 +245,14 @@ enum class Opcode {
      * input continues the match instead of retrying it. Fails with `failed to match regular expression`.
      */
     MatchRegExp,
+    /**
+     * Consumes the longest run of bytes that are in the set of its payload, and returns a tuple with the updated parser
+     * state and the run. The run ends at the first byte outside the set, at the end of input, or at the bound. An empty
+     * run fails with `failed to match regular expression` if the payload says that a run needs a byte.
+     *
+     * It is `parser.match_regexp` of a single byte class repeated, without the matcher.
+     */
+    ScanBytes,
 };
 
 enum class TypeKind { Void, Integer, Bytes, ParserState, Unit, Tuple, Vector, Set, Opaque, Place, Bool, String };
@@ -381,6 +389,15 @@ struct RegExpPayload {
     friend constexpr bool operator==(RegExpPayload, RegExpPayload) = default;
 };
 
+/** The byte set and minimum length of `parser.scan_bytes`. */
+struct ScanBytesPayload {
+    /** Byte `b` is a member if bit `b % 64` of word `b / 64` is set. */
+    std::array<uint64_t, 4> set{};
+    bool at_least_one = false; /**< an empty run fails */
+
+    friend constexpr bool operator==(const ScanBytesPayload&, const ScanBytesPayload&) = default;
+};
+
 struct GlobalPayload {
     GlobalId global;
 
@@ -498,7 +515,8 @@ using InstPayload = std::variant<std::monostate,
                                  ConversionPayload,
                                  UpsilonPayload,
                                  SwitchPayload,
-                                 RegExpPayload>;
+                                 RegExpPayload,
+                                 ScanBytesPayload>;
 
 enum class PayloadKind {
     None,
@@ -521,6 +539,7 @@ enum class PayloadKind {
     Upsilon,
     Switch,
     RegExp,
+    ScanBytes,
 };
 
 /** Whether a suspending parser read consumes bytes and how it resumes. */
@@ -596,6 +615,7 @@ constexpr bool payloadMatchesKind(const InstPayload& payload, PayloadKind kind) 
         case PayloadKind::Upsilon: return std::holds_alternative<UpsilonPayload>(payload);
         case PayloadKind::Switch: return std::holds_alternative<SwitchPayload>(payload);
         case PayloadKind::RegExp: return std::holds_alternative<RegExpPayload>(payload);
+        case PayloadKind::ScanBytes: return std::holds_alternative<ScanBytesPayload>(payload);
     }
 
     return false;
@@ -714,7 +734,7 @@ inline constexpr ParserOperationContract KSubunitContract{
 
 // One entry per `Opcode` value, in declaration order, so `schemaFor()` can index directly without
 // per-call allocation.
-inline constexpr std::array<OpcodeSchema, 45> KSchemas{{
+inline constexpr std::array<OpcodeSchema, 46> KSchemas{{
     OpcodeSchema{
         .opcode = Opcode::Add,
         .spelling = "core.add",
@@ -1115,6 +1135,15 @@ inline constexpr std::array<OpcodeSchema, 45> KSchemas{{
                  .is_terminator = false,
                  .is_pure = false,
                  .parser_contract = KMatchRegExpContract},
+    OpcodeSchema{.opcode = Opcode::ScanBytes,
+                 .spelling = "parser.scan_bytes",
+                 .operand_types = KParseStateOperandTypes,
+                 .operand_roles = KParseStateOperandRoles,
+                 .result_type = fixedType(TypeKind::Tuple),
+                 .payload_kind = PayloadKind::ScanBytes,
+                 .is_terminator = false,
+                 .is_pure = false,
+                 .parser_contract = KMatchRegExpContract},
 }};
 
 } // namespace detail
@@ -1153,6 +1182,8 @@ constexpr OperationEffects effectsFor(Opcode opcode) {
         case Opcode::ReadBytes:
         case Opcode::ExpectBytes:
         case Opcode::ParseSubunit:
+        // A scan reads input as a match does, but has no matcher to allocate.
+        case Opcode::ScanBytes:
             return {.reads_input = true, .changes_parser_state = true, .may_suspend = true, .may_fail = true};
         // The runtime's matcher is allocated for each match.
         case Opcode::MatchRegExp:

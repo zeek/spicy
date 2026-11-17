@@ -6,12 +6,14 @@
 #include <hilti/ast/ast-context.h>
 #include <hilti/base/logger.h>
 #include <hilti/base/timing.h>
+#include <hilti/compiler/context.h>
 
 #include <spicy/compiler/detail/pir/analyses/field-use.h>
 #include <spicy/compiler/detail/pir/ir/printer.h>
 #include <spicy/compiler/detail/pir/ir/verifier.h>
 #include <spicy/compiler/detail/pir/lowerer.h>
 #include <spicy/compiler/detail/pir/passes/constant-fold.h>
+#include <spicy/compiler/detail/pir/passes/specialize-regexp.h>
 #include <spicy/compiler/detail/pir/pir.h>
 
 using namespace spicy;
@@ -64,6 +66,14 @@ pir::BuildResult pir::build(const hilti::ASTContext& ctx) {
     }
 
     HILTI_DEBUG(logging::debug::PIR, fmt("constant folding changed the package: %s", changed ? "yes" : "no"));
+
+    // Without optimizations, every operation stays as the lowerer made it, which also gives tests the unspecialized
+    // program.
+    if ( ctx.compilerContext()->options().global_optimizations ) {
+        hilti::util::timing::Collector _("spicy/compiler/pir/build/specialize");
+        for ( size_t i = 0; i < package.functions().size(); ++i )
+            passes::specializeRegExps(package, ir::FunctionId{static_cast<uint32_t>(i)});
+    }
 
     // TODO: Should this verification be only debug or something?
     {

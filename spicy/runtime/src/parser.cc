@@ -1,5 +1,6 @@
 // Copyright (c) 2020-now by the Zeek Project. See LICENSE for details.
 
+#include <cassert>
 #include <limits>
 #include <sstream>
 #include <utility>
@@ -312,5 +313,32 @@ void detail::expectBytesLiteral(hilti::rt::ValueReference<hilti::rt::Stream>& da
         auto content = cur.sub(cur.begin() + literal.size()).data();
         throw ParseError(hilti::rt::fmt(R"(expected bytes literal "%s" but input starts with "%s")", literal, content),
                          location);
+    }
+}
+
+uint64_t detail::scanBytes(hilti::rt::ValueReference<hilti::rt::Stream>& data,
+                           const hilti::rt::stream::View& cur,
+                           const hilti::rt::Bytes& set,
+                           const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters) {
+    assert(set.size() == 32);
+    const auto* members = reinterpret_cast<const uint8_t*>(set.data());
+    uint64_t run = 0;
+
+    while ( true ) {
+        // Only the input after the run so far is new. Blocks are visited in order, so a gap is reached only if the
+        // run gets there, just as when a matcher consumes the same input.
+        auto rest = cur.advance(run);
+        for ( auto block = rest.firstBlock(); block; block = rest.nextBlock(block) ) {
+            const auto* start = reinterpret_cast<const uint8_t*>(block->start);
+            for ( uint64_t i = 0; i < block->size; ++i )
+                if ( ! ((members[start[i] >> 3U] >> (start[i] & 7U)) & 1U) )
+                    return run + i;
+
+            run += block->size;
+        }
+
+        // At the end of the input, the run is over.
+        if ( ! waitForInputOrEod(data, cur.advance(run), filters) )
+            return run;
     }
 }

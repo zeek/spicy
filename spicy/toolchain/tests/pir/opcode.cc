@@ -10,6 +10,7 @@
 #include <spicy/compiler/detail/pir/ir/printer.h>
 #include <spicy/compiler/detail/pir/ir/verifier.h>
 #include <spicy/compiler/detail/pir/passes/constant-fold.h>
+#include <spicy/compiler/detail/pir/passes/specialize-regexp.h>
 
 using namespace spicy::detail::pir::ir;
 using namespace spicy::detail::pir::passes;
@@ -816,4 +817,78 @@ TEST_CASE("parser.match_regexp needs a valid regular expression") {
     auto match = builder.addMatchRegExp(p.block, p.state0, RegExpId{7});
     builder.addParserFinish(p.block, builder.addTupleGet(p.block, match, 0), p.unit0);
     CHECK(std::ranges::any_of(verify(p.package), [](auto& d) { return d.tag == "regexp-invalid-id"; }));
+}
+
+namespace {
+
+std::optional<ScanBytesPayload> recognize(std::string pattern, bool case_insensitive = false) {
+    return recognizeByteScan(
+        RegExpDecl{.patterns = {RegExpPattern{.value = std::move(pattern), .case_insensitive = case_insensitive}}});
+}
+
+bool inSet(const ScanBytesPayload& scan, unsigned byte) { return (scan.set[byte / 64] >> (byte % 64)) & 1U; }
+
+} // namespace
+
+TEST_CASE("a repeated byte class is recognized as a scan, and nothing else is") {
+    auto star = recognize("A*");
+    REQUIRE(star);
+    CHECK_FALSE(star->at_least_one);
+    CHECK(inSet(*star, 'A'));
+    CHECK_FALSE(inSet(*star, 'a'));
+
+    auto digits = recognize("[0-9]+");
+    REQUIRE(digits);
+    CHECK(digits->at_least_one);
+    CHECK(inSet(*digits, '5'));
+    CHECK_FALSE(inSet(*digits, 'a'));
+
+    auto line = recognize(R"([^\r\n]*)");
+    REQUIRE(line);
+    CHECK(inSet(*line, 'a'));
+    CHECK(inSet(*line, 0xff));
+    CHECK_FALSE(inSet(*line, '\r'));
+    CHECK_FALSE(inSet(*line, '\n'));
+
+    auto escaped = recognize(R"([\x80-\xff\.\-]+)");
+    REQUIRE(escaped);
+    CHECK(inSet(*escaped, 0x90));
+    CHECK(inSet(*escaped, '.'));
+    CHECK(inSet(*escaped, '-'));
+    CHECK_FALSE(inSet(*escaped, 'a'));
+
+    CHECK(recognize(R"(\.+)"));
+    CHECK(recognize(R"(\x41*)"));
+
+    for ( const auto* shape :
+          {"",    "A",   "A?",      "A**",    "AB*",          "A*B",    "(A)*",   "A|B*", "[a-z]*|[0-9]*",
+           ".*",  "[]*", "[a-]*",   "[z-a]*", "[[:digit:]]+", R"(\d+)", R"(\b*)", "a{2}", "[a-z]{1,3}",
+           "^a*", "a*$", R"(\xg0*)"} )
+        CHECK_FALSE_MESSAGE(recognize(shape), shape);
+
+    CHECK_FALSE(recognize("[a-z]*", true));
+    CHECK_FALSE(
+        recognizeByteScan(RegExpDecl{.patterns = {RegExpPattern{.value = "A*"}, RegExpPattern{.value = "B*"}}}));
+    CHECK_FALSE(recognizeByteScan(RegExpDecl{}));
+}
+
+TEST_CASE("the specialization pass rewrites a recognized match in place and leaves others") {
+    auto p = makeOneBytePipeline();
+    auto builder = p.package.builder();
+    auto scan_regexp = builder.internRegExp({RegExpPattern{.value = "[0-9]+"}}, false);
+    auto other_regexp = builder.internRegExp({RegExpPattern{.value = "a|b"}}, true);
+    auto scan = builder.addMatchRegExp(p.block, p.state0, scan_regexp);
+    auto scan_state = builder.addTupleGet(p.block, scan, 0);
+    auto other = builder.addMatchRegExp(p.block, scan_state, other_regexp);
+    builder.addParserFinish(p.block, builder.addTupleGet(p.block, other, 0), p.unit0);
+
+    CHECK(specializeRegExps(p.package, p.fn));
+    CHECK_EQ(p.package.inst(scan).opcode, Opcode::ScanBytes);
+    CHECK_EQ(p.package.inst(other).opcode, Opcode::MatchRegExp);
+    CHECK(std::get<ScanBytesPayload>(p.package.inst(scan).payload).at_least_one);
+    CHECK(verify(p.package).empty());
+    CHECK_NE(print(p.package).find("parser.scan_bytes %0, set=[0x30-0x39], min=1 : tuple<parser.state, bytes>"),
+             std::string::npos);
+    CHECK_FALSE(specializeRegExps(p.package, p.fn));
+    CHECK_FALSE(effectsFor(Opcode::ScanBytes).allocates);
 }

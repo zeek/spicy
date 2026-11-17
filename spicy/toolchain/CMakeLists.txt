@@ -70,6 +70,7 @@ set(SOURCES_COMPILER
     src/compiler/pir/backends/hilti/coverage.cc
     src/compiler/pir/lowerer.cc
     src/compiler/pir/passes/constant-fold.cc
+    src/compiler/pir/passes/specialize-regexp.cc
     src/compiler/pir/pir.cc
     src/compiler/plugin.cc
     src/compiler/printer.cc

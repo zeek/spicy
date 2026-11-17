@@ -3,6 +3,7 @@
 #include <cassert>
 #include <functional>
 #include <limits>
+#include <map>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -63,8 +64,11 @@ struct ParserEntryNames {
 
 // Names of the package's functions, plus the module-level names the backend generates for globals and parser entries.
 struct NameMap : std::unordered_map<uint32_t, FunctionNames> {
-    std::vector<std::string> globals;             /**< by global index */
-    std::vector<std::string> regexps;             /**< by regexp index */
+    std::vector<std::string> globals; /**< by global index */
+    std::vector<std::string> regexps; /**< by regexp index */
+    /** The distinct byte sets that scans use, and the module-level constant that holds each. */
+    std::map<std::array<uint64_t, 4>, std::string> scan_sets;
+    std::unordered_set<uint32_t> used_regexps;    /**< the regexps that an instruction matches */
     std::vector<ParserEntryNames> parser_entries; /**< by parser root index */
     /** Foreign functions that the target realizes itself, by function index. They get no declaration. */
     std::unordered_map<uint32_t, TargetBindingKind> bound;
@@ -141,6 +145,17 @@ NameMap makeNames(const ir::Package& package, const std::vector<TargetBinding>& 
         names.globals.push_back(unique(fmt("g_%zu", i)));
     for ( size_t i = 0; i < package.regexps().size(); ++i )
         names.regexps.push_back(unique(fmt("re_%zu", i)));
+    for ( size_t i = 0; i < package.instructions().size(); ++i ) {
+        auto id = ir::InstId{static_cast<uint32_t>(i)};
+        if ( package.isErased(id) )
+            continue;
+        const auto& inst = package.inst(id);
+        if ( const auto* match = std::get_if<ir::RegExpPayload>(&inst.payload) )
+            names.used_regexps.insert(match->regexp.index);
+        if ( const auto* scan = std::get_if<ir::ScanBytesPayload>(&inst.payload);
+             scan && ! names.scan_sets.contains(scan->set) )
+            names.scan_sets.emplace(scan->set, unique(fmt("scan_set_%zu", names.scan_sets.size())));
+    }
     for ( size_t i = 0; i < package.parserRoots().size(); ++i )
         names.parser_entries.push_back(ParserEntryNames{.parse1 = unique(fmt("parse1_%zu", i)),
                                                         .parse3 = unique(fmt("parse3_%zu", i)),
@@ -496,6 +511,7 @@ protected:
                     case ir::Opcode::ReadBytes:
                     case ir::Opcode::ExpectBytes:
                     case ir::Opcode::MatchRegExp:
+                    case ir::Opcode::ScanBytes:
                         return index == 0 ?
                                    cursor :
                                    Storage{.name = fmt("v_%u", tuple.index), .owner = tuple, .type = inst.result_type};
@@ -1387,6 +1403,44 @@ private:
         _tuples[id.index] = {"cursor", value_name};
     }
 
+    // The run is found by the runtime, which waits for input while the run reaches the end of what is available, and
+    // reports a gap as the matcher does. Nothing is consumed unless the scan succeeds.
+    void _lowerScanBytes(LocalBuilder& b, ir::InstId id) {
+        const auto& inst = package_.inst(id);
+        auto meta = metaFor(package_, inst.span);
+        const auto& scan = std::get<ir::ScanBytesPayload>(inst.payload);
+        auto value_name = fmt("v_%u", id.index);
+
+        _local(b, value_name, b.qualifiedType(b.typeBytes(), ::hilti::Constness::Mutable), b.bytes("", meta), meta);
+
+        auto* try_body = _b.statementBlock(meta);
+        LocalBuilder tb(_b.context(), try_body);
+        auto length = fmt("run_%u", id.index);
+        auto next = fmt("next_%u", id.index);
+        tb.addLocal(::hilti::ID(length),
+                    tb.call(::hilti::ID("spicy_rt::scanBytes"),
+                            {tb.id(::hilti::ID("data")),
+                             tb.id(::hilti::ID("cursor")),
+                             tb.id(::hilti::ID(names_.scan_sets.at(scan.set))),
+                             tb.id(::hilti::ID("filters_"))},
+                            meta),
+                    meta);
+        if ( scan.at_least_one ) {
+            auto empty = tb.addIf(tb.equal(tb.id(::hilti::ID(length)), tb.integer(0U)), meta);
+            _return(*empty, "ParseError", nullptr, meta, empty->stringLiteral("failed to match regular expression"));
+        }
+        tb.addLocal(::hilti::ID(next),
+                    tb.memberCall(tb.id(::hilti::ID("cursor")), "advance", {tb.id(::hilti::ID(length))}, meta),
+                    meta);
+        tb.addAssign(tb.id(::hilti::ID(value_name)),
+                     tb.memberCall(tb.id(::hilti::ID("cursor")), "sub", {tb.begin(tb.id(::hilti::ID(next)))}, meta),
+                     meta);
+        tb.addAssign(tb.id(::hilti::ID("cursor")), tb.id(::hilti::ID(next)), meta);
+
+        _gapCatch(b, try_body, meta);
+        _tuples[id.index] = {"cursor", value_name};
+    }
+
     void _lowerInst(LocalBuilder& b, ir::InstId id) {
         const auto& inst = package_.inst(id);
         if ( _location_block != inst.parent ) {
@@ -1481,6 +1535,7 @@ private:
             case ir::Opcode::ReadBytes: _lowerRead(b, id, false); return;
             case ir::Opcode::ExpectBytes: _lowerExpectBytes(b, id); return;
             case ir::Opcode::MatchRegExp: _lowerMatchRegExp(b, id); return;
+            case ir::Opcode::ScanBytes: _lowerScanBytes(b, id); return;
             case ir::Opcode::Fail: _return(b, "ParseError", nullptr, meta, _value(b, inst.args[1])); return;
             case ir::Opcode::EnterBound: {
                 auto* length = _value(b, inst.args[1]);
@@ -1937,6 +1992,9 @@ LoweringResult lower(::hilti::Builder& builder,
     }
     // A pattern set is compiled once, when the module initializes.
     for ( size_t i = 0; i < package.regexps().size(); ++i ) {
+        // A scan can replace every match of a regexp.
+        if ( ! names.used_regexps.contains(static_cast<uint32_t>(i)) )
+            continue;
         const auto& decl = package.regexp(ir::RegExpId{static_cast<uint32_t>(i)});
         auto meta = metaFor(package, decl.span);
         ::hilti::ctor::regexp::Patterns patterns;
@@ -1948,6 +2006,14 @@ LoweringResult lower(::hilti::Builder& builder,
                                          builder.regexp(std::move(patterns), attrs, meta),
                                          ::hilti::declaration::Linkage::Private,
                                          meta));
+    }
+    for ( const auto& [set, name] : names.scan_sets ) {
+        std::string members;
+        for ( auto word : set )
+            for ( unsigned shift = 0; shift < 64; shift += 8 )
+                members += static_cast<char>((word >> shift) & 0xffU);
+        decls.push_back(
+            builder.constant(::hilti::ID(name), builder.bytes(members), ::hilti::declaration::Linkage::Private));
     }
     for ( size_t i = 0; i < package.typeDecls().size(); ++i )
         decls.push_back(lowerUnitType(builder, package, presence, ir::TypeDeclId{static_cast<uint32_t>(i)}));

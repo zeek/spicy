@@ -327,6 +327,15 @@ InstId Builder::addMatchRegExp(BlockId block, InstId state, RegExpId regexp, Sou
                    span);
 }
 
+InstId Builder::addScanBytes(BlockId block, InstId state, ScanBytesPayload payload, SourceSpanId span) {
+    return addInst(block,
+                   Opcode::ScanBytes,
+                   {state},
+                   tupleType({parserStateType(), bytesType()}),
+                   InstPayload(payload),
+                   span);
+}
+
 InstId Builder::addFail(BlockId block, InstId state, InstId description, SourceSpanId span) {
     return addInst(block, Opcode::Fail, {state, description}, _package._void_type, {}, span);
 }

@@ -1,0 +1,207 @@
+# @TEST-EXEC: cp ${SCRIPTS}/pir-parse.h parse.h
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -p -D spicy-pir >/dev/null 2>pir.log
+# @TEST-EXEC: rg "attached PIR-produced|parser.scan_bytes" pir.log | sort -u >route
+# @TEST-EXEC: btest-diff route
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -j driver.cc >output
+# @TEST-EXEC: btest-diff output
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -j driver.cc >unoptimized
+# @TEST-EXEC: cmp output unoptimized
+# @TEST-EXEC: spicyc %INPUT --experimental-pir --strict-public-api -g -p -D spicy-pir 2>&1 >/dev/null | rg -c "parser.scan_bytes" >unoptimized-scans || echo 0 >unoptimized-scans
+# @TEST-EXEC: btest-diff unoptimized-scans
+# @TEST-EXEC: spicyc %INPUT -j driver.cc >legacy
+# @TEST-EXEC: cmp output legacy
+
+# @TEST-DOC: A pattern of one byte class repeated runs as a byte scan, and the scan and the matcher parse every input the same way, as legacy does: whole and in small chunks, with runs that stop at another byte, at the end of input or at a bound, with the empty run that `*` accepts and `+` rejects, with bytes above 0x7f, and with a gap. Shapes that are not one byte class repeated keep the matcher. The same program with `-g` has no scans.
+
+module Test;
+
+public type Star = unit {
+    x: /A*/;
+    end_: b"!";
+    on %done { print "done", self.x; }
+};
+
+public type Plus = unit {
+    x: /[0-9]+/;
+    end_: b"!";
+    on %done { print "done", self.x; }
+};
+
+public type Line = unit {
+    x: /[^\r\n]*/;
+    end_: b"\r\n";
+    on %done { print "done", self.x; }
+};
+
+public type Negated = unit {
+    x: /[^a-c]+/;
+    end_: b"a";
+    on %done { print "done", self.x; }
+};
+
+public type Hex = unit {
+    x: /[0-9a-fA-F]+/;
+    end_: b"!";
+    on %done { print "done", self.x; }
+};
+
+public type Escaped = unit {
+    x: /[\x80-\xff\.\-]*/;
+    end_: b"!";
+    on %done { print "done", self.x; }
+};
+
+public type Dot = unit {
+    x: /\.+/;
+    end_: b"!";
+    on %done { print "done", self.x; }
+};
+
+public type Open = unit {
+    x: /[a-z]*/;
+    on %done { print "done", self.x; }
+};
+
+type Item = unit {
+    tag: /[a-z]+/;
+    value: uint8;
+};
+
+public type Bounded = unit {
+    length: uint64;
+    items: Item[] &size=self.length;
+    end_: b"END";
+    on %done { print "done", self.length; }
+};
+
+public type Gap = unit {
+    head: uint8;
+    x: /[a-z]*/;
+    end_: b"!";
+    on %done { print "done", self.x; }
+};
+
+# These keep the matcher.
+public type Alternatives = unit {
+    x: /[a-z]*|[0-9]*/;
+    end_: b"!";
+    on %done { print "done", self.x; }
+};
+
+public type Optional = unit {
+    x: /[a-z]?/;
+    end_: b"!";
+    on %done { print "done", self.x; }
+};
+
+public type Sequence = unit {
+    x: /ab*/;
+    end_: b"!";
+    on %done { print "done", self.x; }
+};
+
+public type Group = unit {
+    x: /(ab)*/;
+    end_: b"!";
+    on %done { print "done", self.x; }
+};
+
+public type AnyByte = unit {
+    x: /.*/;
+    end_: b"!";
+    on %done { print "done", self.x; }
+};
+
+public type Folded = unit {
+    x: /[a-z]*/i;
+    end_: b"!";
+    on %done { print "done", self.x; }
+};
+
+public type Posix = unit {
+    x: /[[:digit:]]+/;
+    end_: b"!";
+    on %done { print "done", self.x; }
+};
+
+public type Shorthand = unit {
+    x: /\d+/;
+    end_: b"!";
+    on %done { print "done", self.x; }
+};
+
+public type Counted = unit {
+    x: /a{2,3}/;
+    end_: b"!";
+    on %done { print "done", self.x; }
+};
+
+public type Several = unit {
+    x: /A*/ | /B*/;
+    end_: b"!";
+    on %done { print "done", self.x; }
+};
+
+@TEST-START-FILE driver.cc
+static constexpr unsigned error_style = 2;
+#include "parse.h"
+
+extern "C" int HILTI_EXPORT hilti_main() {
+    auto both = [](const char* unit, const char* label, const std::string& input) {
+        run(unit, label, {{input}});
+        for ( size_t chunk : {1, 2, 7} )
+            run(unit, (std::string(label) + "-chunk" + std::to_string(chunk)).c_str(), {{input}}, chunk);
+    };
+
+    both("Test::Star", "star", "AAAA!");
+    both("Test::Star", "star-empty", "!");
+    both("Test::Star", "star-other", "AABA!");
+    both("Test::Star", "star-eod", "AAA");
+    both("Test::Plus", "plus", "2024!");
+    both("Test::Plus", "plus-empty", "!");
+    both("Test::Plus", "plus-eod-empty", "");
+    both("Test::Plus", "plus-eod", "123");
+    both("Test::Line", "line", "GET / HTTP/1.1\r\n");
+    both("Test::Line", "line-empty", "\r\n");
+    both("Test::Line", "line-bare-cr", "a\rb\r\n");
+    both("Test::Line", "line-high-bytes", "\xc3\xa9\xff\r\n");
+    both("Test::Negated", "negated", "xyz\x80\xff" "a");
+    both("Test::Negated", "negated-first", "a");
+    both("Test::Hex", "hex", "09afAF!");
+    both("Test::Hex", "hex-other", "09g!");
+    both("Test::Escaped", "escaped", "\x80\xff.-\x90!");
+    both("Test::Escaped", "escaped-other", "\x80x!");
+    both("Test::Dot", "dot", "...!");
+    both("Test::Dot", "dot-any", "..x!");
+    both("Test::Open", "open", "abc");
+    both("Test::Open", "open-empty", "");
+
+    const std::string items = std::string("ab\x01") + "cd\x02";
+    both("Test::Bounded", "bounded", be64(6) + items + "END");
+    both("Test::Bounded", "bounded-cut", be64(2) + items + "END");
+    both("Test::Bounded", "bounded-empty", be64(0) + "END");
+
+    run("Test::Gap", "gap-in-run", {{std::string("\x01" "abc", 4)}, {"", 2}, {"de!"}});
+    run("Test::Gap", "gap-at-start", {{std::string("\x01", 1)}, {"", 2}, {"de!"}});
+    run("Test::Gap", "gap-after-run", {{std::string("\x01" "abc!", 5)}, {"", 2}});
+    run("Test::Gap", "gap-in-run-chunk1", {{std::string("\x01" "abc", 4)}, {"", 2}, {"de!"}}, 1);
+
+    both("Test::Alternatives", "alternatives", "abc!");
+    both("Test::Alternatives", "alternatives-digits", "123!");
+    both("Test::Optional", "optional", "a!");
+    both("Test::Optional", "optional-empty", "!");
+    both("Test::Sequence", "sequence", "abbb!");
+    both("Test::Sequence", "sequence-a", "a!");
+    both("Test::Group", "group", "ababab!");
+    both("Test::AnyByte", "any-byte", "xyz!");
+    both("Test::Folded", "folded", "aBcD!");
+    both("Test::Posix", "posix", "123!");
+    both("Test::Shorthand", "shorthand", "123!");
+    both("Test::Counted", "counted", "aaa!");
+    both("Test::Counted", "counted-short", "a!");
+    both("Test::Several", "several", "AAA!");
+    both("Test::Several", "several-second", "BBB!");
+    return 0;
+}
+
+@TEST-END-FILE

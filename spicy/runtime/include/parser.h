@@ -767,5 +767,22 @@ void expectBytesLiteral(hilti::rt::ValueReference<hilti::rt::Stream>& data,
                         std::string_view location,
                         const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters);
 
+/**
+ * Returns the length of the longest run of bytes at the start of a stream view whose members are in a set. The run
+ * ends at the first byte outside the set, or where the input ends, after waiting for more input while the run reaches
+ * the end of what is available.
+ *
+ * @param data current input data
+ * @param cur view of *data* that's being parsed
+ * @param set the set as 32 bytes, in which byte *b* is a member if bit `b % 8` of byte `b / 8` is set
+ * @param filters filter state associated with current unit instance (which may be null)
+ * @returns the number of bytes in the run
+ * @throws hilti::rt::MissingData if the run reaches a gap
+ */
+uint64_t scanBytes(hilti::rt::ValueReference<hilti::rt::Stream>& data,
+                   const hilti::rt::stream::View& cur,
+                   const hilti::rt::Bytes& set,
+                   const hilti::rt::StrongReference<spicy::rt::filter::detail::Filters>& filters);
+
 } // namespace detail
 } // namespace spicy::rt
