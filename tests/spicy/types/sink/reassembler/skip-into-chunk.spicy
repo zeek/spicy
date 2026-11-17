@@ -1,0 +1,50 @@
+# @TEST-EXEC: spicy-driver -p Mini::Main %INPUT >output </dev/null
+# @TEST-EXEC: btest-diff output
+#
+# Skipping into the middle of a buffered chunk keeps the data beyond the new position.
+
+module Mini;
+
+public type Main = unit {
+
+    sink data;
+
+    on %init {
+        self.data.connect(new Sub);
+        self.data.write(b"01", 0);
+        self.data.write(b"456789", 4);
+        self.data.skip(6);
+        self.data.write(b"AB", 10);
+        self.data.close();
+
+        print " ";
+
+        self.data.connect(new Sub);
+        self.data.set_auto_trim(False);
+        self.data.write(b"01", 0);
+        self.data.write(b"456789", 4);
+        self.data.skip(6);
+        self.data.write(b"AB", 10);
+        self.data.close();
+    }
+};
+
+public type Sub = unit {
+    s: bytes &eod;
+
+    on %done {
+        print self.s;
+    }
+
+    on %gap(seq: uint64, len: uint64)  {
+        print "Gap at input position %u, length %u" % (seq, len);
+        }
+
+    on %skipped(seq: uint64){
+        print "Skipped to position %u" % seq;
+        }
+
+    on %undelivered(seq: uint64, data: bytes) {
+        print "Undelivered data at position %u: %s" % (seq, data);
+        }
+};

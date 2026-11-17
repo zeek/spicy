@@ -238,6 +238,28 @@ exit:
 void Sink::_skip(uint64_t rseq) {
     SPICY_RT_DEBUG_VERBOSE(fmt("skipping sink %p to rseq %" PRIu64, this, rseq));
 
+    // Split a buffered chunk straddling the new position so that its part
+    // starting at `rseq` remains available for delivery.
+    for ( auto c = _chunks.begin(); c != _chunks.end(); c++ ) {
+        if ( c->rupper <= rseq )
+            continue;
+
+        if ( c->rseq < rseq ) {
+            auto amount_old = rseq - c->rseq;
+            hilti::rt::Optional<hilti::rt::Bytes> tail;
+
+            if ( c->data ) {
+                tail = c->data->sub(c->data->begin() + amount_old, c->data->end());
+                c->data = c->data->sub(c->data->begin() + amount_old);
+            }
+
+            _chunks.insert(std::next(c), Chunk(std::move(tail), rseq, c->rupper));
+            c->rupper = rseq;
+        }
+
+        break;
+    }
+
     if ( _auto_trim )
         _trim(rseq); // will report undelivered
     else
@@ -334,7 +356,8 @@ void Sink::_reportUndeliveredUpTo(uint64_t rupper) const {
         if ( c.rseq >= rupper )
             break;
 
-        if ( ! c.data )
+        if ( ! c.data || c.rupper <= _cur_rseq )
+            // Gap, or already delivered.
             continue;
 
         hilti::rt::Bytes b;
