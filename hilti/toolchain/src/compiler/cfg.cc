@@ -606,8 +606,7 @@ GraphNode CFG::_addSwitch(GraphNode predecessor, const statement::Switch& switch
 }
 
 GraphNode CFG::_addReturn(GraphNode predecessor, const statement::Return& return_) {
-    auto r = _getOrAddNode(const_cast<statement::Return*>(&return_));
-    _addEdge(predecessor, r);
+    auto r = _addNodeForExpression(predecessor, const_cast<statement::Return*>(&return_), return_.expression());
     _addEdge(r, _end);
 
     return _end;
