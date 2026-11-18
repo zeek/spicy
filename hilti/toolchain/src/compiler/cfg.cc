@@ -594,8 +594,7 @@ GraphNode CFG::_addSwitch(GraphNode predecessor, const statement::Switch& switch
             auto mix_expr = _getOrAddNode(_createMetaNode<Flow>());
 
             for ( auto* x : expressions ) {
-                auto g = _getOrAddNode(x);
-                _addEdge(prev, g);
+                auto g = _addNodeForExpression(prev, x, x);
                 _addEdge(g, mix_expr);
                 prev = g;
             }

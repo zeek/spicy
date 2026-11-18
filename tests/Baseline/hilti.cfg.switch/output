@@ -2,8 +2,8 @@
 [debug/cfg-initial] Module 'foo'
 digraph {
     0 [label=start shape=Mdiamond xlabel="in: [] out: []"];
-    1 [label="end <...>/switch.hlt:4:1-32:1" shape=triangle xlabel="in: [] out: []"];
-    2 [label="end <...>/switch.hlt:4:1-32:1" shape=triangle xlabel="in: [] out: []"];
+    1 [label="end <...>/switch.hlt:4:1-39:1" shape=triangle xlabel="in: [] out: []"];
+    2 [label="end <...>/switch.hlt:4:1-39:1" shape=triangle xlabel="in: [] out: []"];
     0 -> 2 [label="0"];
     2 -> 1 [label="1"];
 }
@@ -113,6 +113,42 @@ digraph {
     3 -> 7 [label="7"];
     7 -> 6 [label="8"];
     6 -> 5 [label="9"];
+}
+[debug/cfg-initial] Function 'case_with_or'
+digraph {
+    0 [label="bool a" xlabel="in: [] out: []"];
+    1 [label="bool b" xlabel="in: [] out: []"];
+    2 [label="1;" xlabel="in: [_t_x: local bool _t_x = True] out: [_t_x: local bool _t_x = True]"];
+    3 [label="2;" xlabel="in: [_t_x: local bool _t_x = True] out: [_t_x: local bool _t_x = True]"];
+    4 [label="local bool _t_x = True" xlabel="gen: [_t_x: local bool _t_x = True] in: [] out: [_t_x: local bool _t_x = True] keep"];
+    5 [label="_t_x == a || b" xlabel="read: [_t_x, a, b] write: [a, b] in: [_t_x: local bool _t_x = True] out: [_t_x: local bool _t_x = True] keep"];
+    6 [label="a" xlabel="read: [a] in: [_t_x: local bool _t_x = True] out: [_t_x: local bool _t_x = True] keep"];
+    7 [label="b" xlabel="read: [b] in: [_t_x: local bool _t_x = True] out: [_t_x: local bool _t_x = True] keep"];
+    8 [label=start shape=Mdiamond xlabel="in: [] out: []"];
+    9 [label="end <...>/switch.hlt:32:44-37:1" shape=triangle xlabel="in: [] out: []"];
+    10 [label="end <...>/switch.hlt:32:44-37:1" shape=triangle xlabel="kill: [_t_x: local bool _t_x = True] in: [_t_x: local bool _t_x = True] out: []"];
+    11 [shape=point xlabel="in: [_t_x: local bool _t_x = True] out: [_t_x: local bool _t_x = True]"];
+    12 [shape=point xlabel="in: [_t_x: local bool _t_x = True] out: [_t_x: local bool _t_x = True]"];
+    13 [shape=point xlabel="in: [_t_x: local bool _t_x = True] out: [_t_x: local bool _t_x = True]"];
+    14 [label="end <...>/switch.hlt:34:22-34:23" shape=triangle xlabel="in: [_t_x: local bool _t_x = True] out: [_t_x: local bool _t_x = True]"];
+    15 [label="end <...>/switch.hlt:35:18-35:19" shape=triangle xlabel="in: [_t_x: local bool _t_x = True] out: [_t_x: local bool _t_x = True]"];
+    8 -> 0 [label="0"];
+    0 -> 1 [label="1"];
+    1 -> 4 [label="2"];
+    4 -> 6 [label="3"];
+    6 -> 13 [label="4"];
+    6 -> 7 [label="5"];
+    7 -> 13 [label="6"];
+    13 -> 5 [label="7"];
+    5 -> 12 [label="8"];
+    12 -> 2 [label="9"];
+    2 -> 14 [label="10"];
+    14 -> 11 [label="11"];
+    5 -> 3 [label="12"];
+    3 -> 15 [label="13"];
+    15 -> 11 [label="14"];
+    11 -> 10 [label="15"];
+    10 -> 9 [label="16"];
 }
 [debug/cfg-initial] Module 'hilti'
 digraph {
