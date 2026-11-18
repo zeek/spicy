@@ -73,6 +73,7 @@ public:
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
                 "value.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::iterator::Equal)
@@ -91,6 +92,7 @@ public:
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
                 "value.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::iterator::Unequal)
@@ -109,6 +111,7 @@ public:
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
                 "value.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::iterator::Lower)
@@ -127,6 +130,7 @@ public:
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
                 "value.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::iterator::LowerEqual)
@@ -145,6 +149,7 @@ public:
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
                 "value.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::iterator::Greater)
@@ -163,6 +168,7 @@ public:
             .doc =
                 "Compares the two positions. The result is undefined if they are not referring to the same bytes "
                 "value.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::iterator::GreaterEqual)
@@ -184,6 +190,7 @@ public:
                 "to a location before the first. The result is undefined if the iterators do not refer to the same "
                 "bytes "
                 "instance.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::iterator::Difference)
@@ -200,6 +207,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBytesIterator()},
             .ns = "bytes::iterator",
             .doc = "Returns an iterator which is pointing the given number of bytes beyond the one passed in.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::iterator::Sum)
@@ -233,6 +241,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "bytes",
             .doc = "Returns the number of bytes the value contains.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::Size)
@@ -249,6 +258,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::Equal)
@@ -265,6 +275,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::Unequal)
@@ -281,6 +292,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::Greater)
@@ -297,6 +309,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::GreaterEqual)
@@ -313,6 +326,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = "Returns true if the right-hand-side value contains the left-hand-side value as a subsequence.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::In)
@@ -329,6 +343,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::Lower)
@@ -345,6 +360,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bytes",
             .doc = "Compares two bytes values lexicographically.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::LowerEqual)
@@ -361,6 +377,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBytes()},
             .ns = "bytes",
             .doc = "Returns the concatenation of two bytes values.",
+            .pure = true,
         };
     }
     HILTI_OPERATOR(hilti, bytes::Sum)

@@ -33,20 +33,19 @@ void checkName(expression::ResolvedOperator* op) {
 class Member : public Operator {
 public:
     Signature signature(Builder* builder) const final {
-        return Signature{.kind = Kind::Member,
-                         .op0 = {.kind = parameter::Kind::In,
-                                 .type = builder->typeBitfield(type::Wildcard()),
-                                 .doc = "<bitfield>"},
-                         .op1 = {.kind = parameter::Kind::In,
-                                 .type = builder->typeMember(type::Wildcard()),
-                                 .doc = "<name>"},
-                         .result_doc = "<field type>",
-                         .ns = "bitfield",
-                         .doc = R"(
+        return Signature{
+            .kind = Kind::Member,
+            .op0 = {.kind = parameter::Kind::In, .type = builder->typeBitfield(type::Wildcard()), .doc = "<bitfield>"},
+            .op1 = {.kind = parameter::Kind::In, .type = builder->typeMember(type::Wildcard()), .doc = "<name>"},
+            .result_doc = "<field type>",
+            .ns = "bitfield",
+            .doc = R"(
 Retrieves the value of a bitfield's attribute. This is the value of the
 corresponding bits inside the underlying integer value, shifted to the very
 right.
-)"};
+)",
+            .pure = true,
+        };
     }
 
     QualifiedType* result(Builder* builder, const Expressions& operands, const Meta& /*meta*/) const final {
@@ -69,6 +68,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "bitfield",
             .doc = "Returns true if the bitfield's element has a value.",
+            .pure = true,
         };
     }
 
