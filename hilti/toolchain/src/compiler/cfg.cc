@@ -39,6 +39,7 @@
 #include <hilti/ast/expressions/member.h>
 #include <hilti/ast/expressions/name.h>
 #include <hilti/ast/expressions/resolved-operator.h>
+#include <hilti/ast/expressions/ternary.h>
 #include <hilti/ast/function.h>
 #include <hilti/ast/location.h>
 #include <hilti/ast/node.h>
@@ -484,6 +485,16 @@ GraphNode CFG::_walkExpression(GraphNode predecessor, Expression* expr, bool add
         _addEdge(lhs, merge);
         auto rhs = _walkExpression(lhs, land->op1());
         _addEdge(rhs, merge);
+        return merge;
+    }
+
+    if ( auto* ternary = expr->tryAs<expression::Ternary>() ) {
+        auto cond = _walkExpression(predecessor, ternary->condition());
+        auto true_ = _walkExpression(cond, ternary->true_());
+        auto false_ = _walkExpression(cond, ternary->false_());
+        auto merge = _getOrAddNode(_createMetaNode<Flow>());
+        _addEdge(true_, merge);
+        _addEdge(false_, merge);
         return merge;
     }
 
