@@ -625,9 +625,7 @@ GraphNode CFG::_addReturn(GraphNode predecessor, const statement::Return& return
 
 GraphNode CFG::_addThrow(GraphNode predecessor, statement::Throw& throw_, GraphNode scope_end) {
     if ( auto* expression = throw_.expression() ) {
-        auto expr = _getOrAddNode(expression);
-
-        _addEdge(predecessor, expr);
+        auto expr = _addNodeForExpression(predecessor, expression, expression);
         _addEdge(expr, scope_end);
     }
     else
