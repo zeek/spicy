@@ -26,4 +26,8 @@ function uint<64> fn4() {
     return x;
 }
 
+function bool fn5(bool a, bool b) {
+    return a || b;
+}
+
 }

@@ -29,4 +29,11 @@ function void no_default() {
     }
 }
 
+function void case_with_or(bool a, bool b) {
+    switch(True) {
+        case a || b: 1;
+        default: 2;
+    }
+}
+
 }

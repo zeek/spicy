@@ -68,13 +68,20 @@ struct Invalidator : optimizer::visitor::Collector {
 };
 
 struct TransferVisitor : optimizer::visitor::Collector {
-    TransferVisitor(Optimizer* optimizer, PropagationMap* reaching_copies)
+    TransferVisitor(Optimizer* optimizer,
+                    PropagationMap* reaching_copies,
+                    const cfg::GraphNode* root_,
+                    const CFG::Graph* graph_)
         : optimizer::visitor::Collector(optimizer),
           reaching_copies(reaching_copies),
-          invalidator(optimizer, reaching_copies) {}
+          invalidator(optimizer, reaching_copies),
+          root(root_),
+          graph(graph_) {}
 
-    PropagationMap* reaching_copies;
+    PropagationMap* reaching_copies = nullptr;
     Invalidator invalidator;
+    const cfg::GraphNode* root = nullptr;
+    const CFG::Graph* graph = nullptr;
 
     // Tries to resolve an expression to a known reaching value via the propagation map.
     Expression* resolveValue(Expression* expr) {
@@ -101,6 +108,9 @@ struct TransferVisitor : optimizer::visitor::Collector {
     }
 
     void operator()(expression::Assign* assign) override {
+        if ( cfg::isInsideSubCFGNode(assign, root->get(), *graph) )
+            return;
+
         if ( const auto* name = assign->target()->tryAs<expression::Name>() ) {
             if ( auto* decl = name->resolvedDeclaration() ) {
                 invalidateDependencies(decl, reaching_copies);
@@ -252,7 +262,7 @@ struct Mutator : public optimizer::visitor::Mutator {
             }
         }
 
-        TransferVisitor(optimizer(), &new_out).run(n.get());
+        TransferVisitor(optimizer(), &new_out, &n, &cfg.graph()).run(n.get());
     }
 
     void populateDataflow(AnalysisResult& result, const PropagationMap& init, const declaration::Function* function) {
