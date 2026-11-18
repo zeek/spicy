@@ -482,9 +482,6 @@ inline uint8_t atoi_n(std::string_view input, uint8_t base, Result* result)
         ++it;
     }
 
-    // Compute range of possible values. For signed types the absolute minimum
-    // value typically does not fit into the type, so instead store the maximum
-    // value in the corresponding unsigned type which has enough range.
     constexpr auto max = std::numeric_limits<Result>::max();
     constexpr auto min = std::numeric_limits<Result>::min();
 
@@ -495,14 +492,12 @@ inline uint8_t atoi_n(std::string_view input, uint8_t base, Result* result)
     // never reach this.
     static_assert(min < max);
 
-    using Unsigned = std::conditional_t<std::is_signed_v<Result>, std::make_unsigned_t<Result>, Result>;
-    constexpr auto max_value =
-        std::is_unsigned_v<Result> ? Unsigned(max) : static_cast<Unsigned>(0) - static_cast<Unsigned>(min);
-
     // Since we handle any sign above we can accumulate into an unsigned
     // integer when iterating digits. We pick `uint64_t` since it is large
-    // enough to handle any type we need to handle.
-    static_assert(max_value <= std::numeric_limits<uint64_t>::max());
+    // enough to handle any type we need to handle. The largest magnitude we
+    // accept depends on the sign: for signed types the absolute minimum value
+    // is one larger than the maximum value.
+    const uint64_t max_value = static_cast<uint64_t>(max) + (neg && std::is_signed_v<Result> ? 1 : 0);
 
     // `uint8_t` is sufficient to store any digit up to max base 36.
     static auto to_digit = [](char c, uint8_t base) -> std::optional<uint8_t> {
