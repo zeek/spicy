@@ -2,6 +2,7 @@
 
 #include <doctest/doctest.h>
 
+#include <clocale>
 #include <ostream>
 #include <tuple>
 #include <type_traits>
@@ -51,6 +52,14 @@ TEST_CASE("decode") {
     CHECK_THROWS_WITH_AS("\xc3\x28"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::STRICT),
                          "illegal UTF8 sequence in string", const RuntimeError&);
 
+    // Truncated sequences and encoded surrogates follow the strategy, too.
+    CHECK_EQ("abc\xe2\x82"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::REPLACE), "abc\ufffd\ufffd");
+    CHECK_EQ("abc\xe2\x82"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::IGNORE), "abc");
+    CHECK_THROWS_WITH_AS("abc\xe2\x82"_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::STRICT),
+                         "illegal UTF8 sequence in string", const RuntimeError&);
+    CHECK_EQ("\xed\xa0\x80("_b.decode(unicode::Charset::UTF8, unicode::DecodeErrorStrategy::REPLACE),
+             "\ufffd\ufffd\ufffd(");
+
     CHECK_EQ(Bytes("\0a\0b\0c"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::STRICT), "abc");
     CHECK_EQ(Bytes("a\0b\0c\0"s).decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), "abc");
 
@@ -65,6 +74,10 @@ TEST_CASE("decode") {
     // Decoding of UTF16 with BOM. The byte order in the charset is just a hint, but we still decode as UTF16.
     CHECK_EQ("\xff\xfeqg\xacN"_b.decode(unicode::Charset ::UTF16BE, unicode::DecodeErrorStrategy::STRICT),
              "\ufeff東京");
+    CHECK_EQ("\xfe\xffgqN\xac"_b.decode(unicode::Charset ::UTF16BE, unicode::DecodeErrorStrategy::STRICT),
+             "\ufeff東京");
+    CHECK_EQ("\xfe\xffgqN\xac"_b.decode(unicode::Charset ::UTF16LE, unicode::DecodeErrorStrategy::STRICT),
+             "\ufeff東京");
 
     // Decoding of too few bytes for UTF16 (expected even number, provided uneven).
     CHECK_THROWS_WITH_AS(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::STRICT),
@@ -72,11 +85,9 @@ TEST_CASE("decode") {
     CHECK_EQ(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::IGNORE), "ab");
     CHECK_EQ(Bytes("\0a\0b\0"s).decode(unicode::Charset::UTF16BE, unicode::DecodeErrorStrategy::REPLACE), "ab\ufffd");
 
-    // Our UTF16 implementation seems to differ in what it considers invalid encodings, e.g., `\x00\xd8` is rejected by
-    // python-3.1[1-3], but accepted by us.
-    //
-    // TODO(bbannier): Test rejection of invalid UTF16 (but with even length).
-    CHECK_EQ(Bytes("\x00\xd8").decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::STRICT), "");
+    // Lone high surrogate at the end of the input.
+    CHECK_EQ(Bytes("a\0\x3d\xd8"s).decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::REPLACE), "a\ufffd");
+    CHECK_EQ(Bytes("a\0\x3d\xd8"s).decode(unicode::Charset::UTF16LE, unicode::DecodeErrorStrategy::IGNORE), "a");
 
     CHECK_THROWS_WITH_AS("123"_b.decode(unicode::Charset::Undef), "unknown character set for decoding",
                          const RuntimeError&);
@@ -405,6 +416,8 @@ TEST_CASE("toInt") {
 
         CHECK_THROWS_WITH_AS(""_b.toInt(16), "cannot decode from empty range", const RuntimeError&);
         CHECK_THROWS_WITH_AS("12a"_b.toInt(), "cannot parse bytes as signed integer", const RuntimeError&);
+        CHECK_THROWS_WITH_AS("-"_b.toInt(), "cannot parse bytes as signed integer", const RuntimeError&);
+        CHECK_THROWS_WITH_AS("+"_b.toInt(), "cannot parse bytes as signed integer", const RuntimeError&);
     }
 
     SUBCASE("with byte order") {
@@ -428,6 +441,9 @@ TEST_CASE("toInt") {
         else
             CHECK_EQ("100"_b.toInt(ByteOrder::Big), 3223600);
 
+        CHECK_EQ("\xff"_b.toInt(Enum(ByteOrder::Host)), -1);
+        CHECK_EQ("\xff\xff\xff\xff\xff\xff\xff\xff"_b.toInt(Enum(ByteOrder::Host)), -1);
+
         CHECK_THROWS_WITH_AS(""_b.toInt(Enum(ByteOrder::Big)), "not enough bytes for conversion to integer",
                              const InvalidValue&);
 
@@ -446,6 +462,8 @@ TEST_CASE("toUInt") {
         CHECK_THROWS_WITH_AS("-100"_b.toUInt(2), "integer overflow", const RuntimeError&);
 
         CHECK_THROWS_WITH_AS("12a"_b.toUInt(), "cannot parse bytes as unsigned integer", const RuntimeError&);
+        CHECK_THROWS_WITH_AS("-"_b.toUInt(), "cannot parse bytes as unsigned integer", const RuntimeError&);
+        CHECK_THROWS_WITH_AS("+"_b.toUInt(), "cannot parse bytes as unsigned integer", const RuntimeError&);
     }
 
     SUBCASE("with byte order") {
@@ -453,6 +471,8 @@ TEST_CASE("toUInt") {
         CHECK_EQ("100"_b.toUInt(Enum(ByteOrder::Network)), 3223600U);
         CHECK_EQ("100"_b.toUInt(Enum(ByteOrder::Little)), 3158065U);
         CHECK_EQ("100"_b.toUInt(Enum(ByteOrder::Host)), 3158065U);
+        CHECK_EQ("\xff"_b.toUInt(Enum(ByteOrder::Host)), 255U);
+        CHECK_EQ("\xff\xff\xff\xff\xff\xff\xff\xff"_b.toUInt(Enum(ByteOrder::Host)), UINT64_MAX);
 
         CHECK_THROWS_WITH_AS(""_b.toUInt(Enum(ByteOrder::Big)), "not enough bytes for conversion to integer",
                              const InvalidValue&);

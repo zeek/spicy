@@ -23,7 +23,7 @@ integer::safe<uint64_t> string::size(const std::string& s, unicode::DecodeErrorS
             // `utf8::next` is for iterating UTF-8 strings.
             utf8::next(p, s.end());
             ++len;
-        } catch ( const utf8::invalid_utf8& ) {
+        } catch ( const utf8::exception& ) {
             switch ( errors.value() ) {
                 case unicode::DecodeErrorStrategy::STRICT: throw RuntimeError("illegal UTF8 sequence in string");
                 case unicode::DecodeErrorStrategy::REPLACE: {
@@ -151,7 +151,7 @@ Bytes string::encode(std::string s, unicode::Charset cs, unicode::DecodeErrorStr
                 try {
                     auto cp = utf8::next(p, e);
                     utf8::append(cp, t);
-                } catch ( const utf8::invalid_utf8& ) {
+                } catch ( const utf8::exception& ) {
                     switch ( errors.value() ) {
                         case unicode::DecodeErrorStrategy::IGNORE: break;
                         case unicode::DecodeErrorStrategy::REPLACE: {

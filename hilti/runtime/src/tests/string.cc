@@ -24,6 +24,8 @@ TEST_CASE("encode") {
     CHECK_EQ(string::encode("\xc3\x28", unicode::Charset::UTF8, unicode::DecodeErrorStrategy::IGNORE), "("_b);
     CHECK_THROWS_WITH_AS(string::encode("\xc3\x28", unicode::Charset::UTF8, unicode::DecodeErrorStrategy::STRICT),
                          "illegal UTF8 sequence in string", const RuntimeError&);
+    CHECK_EQ(string::encode("abc\xe2\x82", unicode::Charset::UTF8), "abc\ufffd\ufffd"_b);
+    CHECK_EQ(string::encode("abc\xe2\x82", unicode::Charset::UTF8, unicode::DecodeErrorStrategy::IGNORE), "abc"_b);
 
 
     CHECK_EQ(string::encode("\xF0\x9F\x98\x85", unicode::Charset::ASCII, unicode::DecodeErrorStrategy::REPLACE),
@@ -77,6 +79,8 @@ TEST_CASE("size") {
                                       "aBcD",
                                       unicode::DecodeErrorStrategy::STRICT),
                          "illegal UTF8 sequence in string", const RuntimeError&);
+    CHECK_EQ(string::size("abc\xe2\x82", unicode::DecodeErrorStrategy::REPLACE), 5U);
+    CHECK_EQ(string::size("abc\xe2\x82", unicode::DecodeErrorStrategy::IGNORE), 3U);
 }
 
 TEST_CASE("upper") {
