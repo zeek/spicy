@@ -21,8 +21,8 @@ public type B = struct {
 };
 type C = struct {
     optional<hilti::RecoverableFailure> _t_error &always-emit &internal;
-    method optional<hilti::RecoverableFailure> _t_parse_stage1(optional<hilti::RecoverableFailure> _t_error);
-    method optional<hilti::RecoverableFailure> _t_parse_foo__C_stage2(optional<hilti::RecoverableFailure> _t_error);
+    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_parse_stage1(view<stream> _t_cur, int<64> _t_lah, iterator<stream> _t_lahe, optional<hilti::RecoverableFailure> _t_error);
+    method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> _t_parse_foo__C_stage2(view<stream> _t_cur, int<64> _t_lah, iterator<stream> _t_lahe, optional<hilti::RecoverableFailure> _t_error);
 };
 public type D = struct {
     C _anon &optional &anonymous &no-emit="private";
@@ -163,16 +163,17 @@ init function void _t_register_foo_B() {
     spicy_rt::registerParser(foo::B::_t_parser, $scope, Null);
 }
 
-method optional<hilti::RecoverableFailure> foo::C::_t_parse_stage1(optional<hilti::RecoverableFailure> _t_error) {
+method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::C::_t_parse_stage1(view<stream> _t_cur, int<64> _t_lah, iterator<stream> _t_lahe, optional<hilti::RecoverableFailure> _t_error) {
     # "<...>/unused-functions.spicy:24:10-24:16"
     hilti::debugIndent("spicy");
-    return (*self)._t_parse_foo__C_stage2(_t_error);
+    local iterator<stream> _t_begin_ = begin(_t_cur);
+    return (*self)._t_parse_foo__C_stage2(_t_cur, _t_lah, _t_lahe, _t_error);
 }
 
-method optional<hilti::RecoverableFailure> foo::C::_t_parse_foo__C_stage2(optional<hilti::RecoverableFailure> _t_error) {
+method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::C::_t_parse_foo__C_stage2(view<stream> _t_cur, int<64> _t_lah, iterator<stream> _t_lahe, optional<hilti::RecoverableFailure> _t_error) {
     # "<...>/unused-functions.spicy:24:10-24:16"
     hilti::debugDedent("spicy");
-    return _t_error;
+    return (_t_cur, _t_lah, _t_lahe, _t_error);
 }
 
 init function void _t_register_foo_C() {
@@ -192,7 +193,7 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
     # Begin parsing production: Unit: foo__C_2 ->
     _t_transient__anon = default<C>();
-    _t_error = move(_t_transient__anon)._t_parse_stage1(_t_error);
+    (_t_cur, _t_lah, _t_lahe, _t_error) = move(_t_transient__anon)._t_parse_stage1(_t_cur, _t_lah, _t_lahe, _t_error);
     # End parsing production: Unit: foo__C_2 ->
 
     hilti::debugDedent("spicy");

@@ -498,6 +498,13 @@ GraphNode CFG::_walkExpression(GraphNode predecessor, Expression* expr, bool add
         return merge;
     }
 
+    if ( auto* assign = expr->tryAs<expression::Assign>() ) {
+        predecessor = _walkExpression(predecessor, assign->source(), false);
+        auto n = _getOrAddNode(expr);
+        _addEdge(predecessor, n);
+        return n;
+    }
+
     auto walk_children = [&](auto&& self, Node* node) -> void {
         for ( auto* child : node->children() ) {
             if ( ! child )
@@ -898,8 +905,10 @@ struct DataflowVisitor : visitor::PreOrder {
     }
 
     void operator()(Expression* expression) override {
-        // If the top-level CFG node is an expression we are looking at an expression for control flow -- keep it.
-        if ( expression == root.get() )
+        // Expressions used as CFG nodes for control flow (e.g., `||`/`&&` branch
+        // conditions) must be kept. Assign expressions also get their own CFG
+        // nodes but only for ordering; they are removable like statements.
+        if ( expression == root.get() && ! expression->isA<expression::Assign>() )
             transfer.keep = true;
     }
 
@@ -921,7 +930,7 @@ struct DataflowVisitor : visitor::PreOrder {
         {
             // Figure out which side of the assignment this name is on.
             Node* node = name;
-            do {
+            while ( node ) {
                 if ( auto* assign_ = node->tryAs<expression::Assign>() ) {
                     if ( contains(*assign_->target(), *name) ) {
                         transfer.write.insert(decl);
@@ -944,8 +953,12 @@ struct DataflowVisitor : visitor::PreOrder {
                     if ( contains(*assign_->source(), *name) )
                         transfer.read.insert(decl);
                 }
+
+                if ( node == root.get() )
+                    break;
+
                 node = node->parent();
-            } while ( node && node != root.get() );
+            }
         }
 
         if ( node->isA<expression::Assign>() ) {

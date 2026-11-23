@@ -16,22 +16,26 @@ digraph {
     0 [label="self" xlabel="in: [] out: [] aliases: [ref]"];
     1 [label="(*self).print();" xlabel="read: [ref, self] write: [ref, self] in: [] out: [] keep"];
     2 [label="local strong_ref<S> ref = self" xlabel="read: [ref, self] gen: [ref: local strong_ref<S> ref = self] in: [] out: [ref: local strong_ref<S> ref = self] aliases: [self]"];
-    3 [label="(*ref).i = 1;" xlabel="read: [ref, self] write: [ref, self] gen: [ref: (*ref).i = 1;] kill: [ref: local strong_ref<S> ref = self] in: [ref: local strong_ref<S> ref = self] out: [ref: (*ref).i = 1;]"];
-    4 [label="(*self).print();" xlabel="read: [ref, self] write: [ref, self] in: [ref: (*ref).i = 1;] out: [ref: (*ref).i = 1;] keep"];
-    5 [label="(*ref).i = 2;" xlabel="read: [ref, self] write: [ref, self] gen: [ref: (*ref).i = 2;] kill: [ref: (*ref).i = 1;] in: [ref: (*ref).i = 1;] out: [ref: (*ref).i = 2;]"];
-    6 [label="(*self).print();" xlabel="read: [ref, self] write: [ref, self] in: [ref: (*ref).i = 2;] out: [ref: (*ref).i = 2;] keep"];
-    7 [label=start shape=Mdiamond xlabel="in: [] out: []"];
-    8 [label="end <...>/local-struct-value.hlt:20:20-27:1" shape=triangle xlabel="in: [] out: []"];
-    9 [label="end <...>/local-struct-value.hlt:20:20-27:1" shape=triangle xlabel="kill: [ref: (*ref).i = 2;] in: [ref: (*ref).i = 2;] out: []"];
-    7 -> 0 [label="0"];
+    3 [label="(*ref).i = 1" xlabel="read: [ref, self] write: [ref, self] gen: [ref: (*ref).i = 1] kill: [ref: local strong_ref<S> ref = self] in: [ref: local strong_ref<S> ref = self] out: [ref: (*ref).i = 1]"];
+    4 [label="(*ref).i = 1;" xlabel="read: [ref, self] write: [ref, self] in: [ref: (*ref).i = 1] out: [ref: (*ref).i = 1]"];
+    5 [label="(*self).print();" xlabel="read: [ref, self] write: [ref, self] in: [ref: (*ref).i = 1] out: [ref: (*ref).i = 1] keep"];
+    6 [label="(*ref).i = 2" xlabel="read: [ref, self] write: [ref, self] gen: [ref: (*ref).i = 2] kill: [ref: (*ref).i = 1] in: [ref: (*ref).i = 1] out: [ref: (*ref).i = 2]"];
+    7 [label="(*ref).i = 2;" xlabel="read: [ref, self] write: [ref, self] in: [ref: (*ref).i = 2] out: [ref: (*ref).i = 2]"];
+    8 [label="(*self).print();" xlabel="read: [ref, self] write: [ref, self] in: [ref: (*ref).i = 2] out: [ref: (*ref).i = 2] keep"];
+    9 [label=start shape=Mdiamond xlabel="in: [] out: []"];
+    10 [label="end <...>/local-struct-value.hlt:20:20-27:1" shape=triangle xlabel="in: [] out: []"];
+    11 [label="end <...>/local-struct-value.hlt:20:20-27:1" shape=triangle xlabel="kill: [ref: (*ref).i = 2] in: [ref: (*ref).i = 2] out: []"];
+    9 -> 0 [label="0"];
     0 -> 1 [label="1"];
     1 -> 2 [label="2"];
     2 -> 3 [label="3"];
     3 -> 4 [label="4"];
     4 -> 5 [label="5"];
     5 -> 6 [label="6"];
-    6 -> 9 [label="7"];
-    9 -> 8 [label="8"];
+    6 -> 7 [label="7"];
+    7 -> 8 [label="8"];
+    8 -> 11 [label="9"];
+    11 -> 10 [label="10"];
 }
 [debug/cfg-initial] Module 'hilti'
 digraph {

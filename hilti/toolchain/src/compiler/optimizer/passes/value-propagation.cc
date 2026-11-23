@@ -367,14 +367,27 @@ struct Mutator : public optimizer::visitor::Mutator {
             return;
         auto* name_decl = name->resolvedDeclaration();
 
-        if ( ! cfg->dataflow().contains(*prev_node) )
-            return;
+        // Check the data flow facts for the gen/kill of the returned name.
+        // The assign may have its own sub-CFG node, so check both the
+        // statement and any assign sub-node.
+        auto check_facts = [&](const cfg::GraphNode& node) -> bool {
+            if ( ! cfg->dataflow().contains(node) )
+                return false;
 
-        // The previous node must overwrite the decl and it's not an alias.
-        auto dataflow_facts = cfg->dataflow().at(*prev_node);
-        if ( ! dataflow_facts.gen.contains(name_decl) || ! dataflow_facts.kill.contains(name_decl) ||
-             dataflow_facts.maybe_alias.contains(name_decl) )
-            return;
+            auto facts = cfg->dataflow().at(node);
+            return facts.gen.contains(name_decl) && facts.kill.contains(name_decl) &&
+                   ! facts.maybe_alias.contains(name_decl);
+        };
+
+        if ( ! check_facts(*prev_node) ) {
+            auto assign_upstream = cfg->graph().neighborsUpstream(prev_node->get()->identity());
+            if ( assign_upstream.size() != 1 )
+                return;
+
+            const auto* assign_node = cfg->graph().getNode(assign_upstream[0]);
+            if ( ! assign_node || ! assign_node->get()->isA<expression::Assign>() || ! check_facts(*assign_node) )
+                return;
+        }
 
         auto* assign = stmt->expression()->as<expression::Assign>();
         replaceNode(ret->expression(), assign->source());

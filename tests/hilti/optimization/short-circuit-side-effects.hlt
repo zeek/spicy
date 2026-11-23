@@ -87,6 +87,14 @@ function void test_call_or() {
     assert(y == "good");
 }
 
+# Assign as sibling of || in a tuple ctor: the assign must execute
+# before the || reads the variable it wrote.
+function void test_assign_before_or() {
+    local x = "bad";
+    local auto r = ((x = "good") == "good", (1 == 10) || (x == "good"));
+    assert(r[1] == True);
+}
+
 test_or();
 test_and();
 test_if_or();
@@ -94,5 +102,6 @@ test_if_and();
 test_while_or();
 test_nested();
 test_call_or();
+test_assign_before_or();
 
 }

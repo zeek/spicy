@@ -14,37 +14,39 @@ digraph {
     0 [label="local bool x = False" xlabel="gen: [x: local bool x = False] in: [] out: [x: local bool x = False]"];
     1 [label="x" xlabel="read: [x] in: [x: local bool x = False] out: [x: local bool x = False] keep"];
     2 [label="True" xlabel="in: [x: local bool x = False] out: [x: local bool x = False] keep"];
-    3 [label="x = x || True;" xlabel="read: [x] write: [x] gen: [x: x = x || True;] kill: [x: local bool x = False] in: [x: local bool x = False] out: [x: x = x || True;]"];
-    4 [label="! x" xlabel="read: [x] in: [x: x = x || True;] out: [x: x = x || True;] keep"];
-    5 [label="hilti::print(1, True);" xlabel="in: [x: x = x || True;] out: [x: x = x || True;] keep"];
-    6 [label="x" xlabel="read: [x] in: [x: x = x || True;] out: [x: x = x || True;] keep"];
-    7 [label="hilti::print(2, True);" xlabel="in: [x: x = x || True;] out: [x: x = x || True;] keep"];
-    8 [label="return x;" xlabel="read: [x] in: [x: x = x || True;] out: [x: x = x || True;] keep"];
-    9 [label=start shape=Mdiamond xlabel="in: [] out: []"];
-    10 [label="end <...>/unused-init.hlt:9:20-21:1" shape=triangle xlabel="kill: [x: x = x || True;] in: [x: x = x || True;] out: []"];
-    11 [shape=point xlabel="in: [x: local bool x = False] out: [x: local bool x = False]"];
-    12 [shape=point xlabel="in: [x: x = x || True;] out: [x: x = x || True;]"];
-    13 [label="end <...>/unused-init.hlt:14:9-14:30" shape=triangle xlabel="in: [x: x = x || True;] out: [x: x = x || True;]"];
-    14 [shape=point xlabel="in: [x: x = x || True;] out: [x: x = x || True;]"];
-    15 [label="end <...>/unused-init.hlt:18:9-18:30" shape=triangle xlabel="in: [x: x = x || True;] out: [x: x = x || True;]"];
-    9 -> 0 [label="0"];
+    3 [label="x = x || True" xlabel="read: [x] write: [x] gen: [x: x = x || True] kill: [x: local bool x = False] in: [x: local bool x = False] out: [x: x = x || True]"];
+    4 [label="x = x || True;" xlabel="read: [x] write: [x] in: [x: x = x || True] out: [x: x = x || True]"];
+    5 [label="! x" xlabel="read: [x] in: [x: x = x || True] out: [x: x = x || True] keep"];
+    6 [label="hilti::print(1, True);" xlabel="in: [x: x = x || True] out: [x: x = x || True] keep"];
+    7 [label="x" xlabel="read: [x] in: [x: x = x || True] out: [x: x = x || True] keep"];
+    8 [label="hilti::print(2, True);" xlabel="in: [x: x = x || True] out: [x: x = x || True] keep"];
+    9 [label="return x;" xlabel="read: [x] in: [x: x = x || True] out: [x: x = x || True] keep"];
+    10 [label=start shape=Mdiamond xlabel="in: [] out: []"];
+    11 [label="end <...>/unused-init.hlt:9:20-21:1" shape=triangle xlabel="kill: [x: x = x || True] in: [x: x = x || True] out: []"];
+    12 [shape=point xlabel="in: [x: local bool x = False] out: [x: local bool x = False]"];
+    13 [shape=point xlabel="in: [x: x = x || True] out: [x: x = x || True]"];
+    14 [label="end <...>/unused-init.hlt:14:9-14:30" shape=triangle xlabel="in: [x: x = x || True] out: [x: x = x || True]"];
+    15 [shape=point xlabel="in: [x: x = x || True] out: [x: x = x || True]"];
+    16 [label="end <...>/unused-init.hlt:18:9-18:30" shape=triangle xlabel="in: [x: x = x || True] out: [x: x = x || True]"];
+    10 -> 0 [label="0"];
     0 -> 1 [label="1"];
-    1 -> 11 [label="2"];
+    1 -> 12 [label="2"];
     1 -> 2 [label="3"];
-    2 -> 11 [label="4"];
-    11 -> 3 [label="5"];
+    2 -> 12 [label="4"];
+    12 -> 3 [label="5"];
     3 -> 4 [label="6"];
     4 -> 5 [label="7"];
-    5 -> 13 [label="8"];
-    13 -> 12 [label="9"];
-    4 -> 12 [label="10"];
-    12 -> 6 [label="11"];
-    6 -> 7 [label="12"];
-    7 -> 15 [label="13"];
-    15 -> 14 [label="14"];
-    6 -> 14 [label="15"];
-    14 -> 8 [label="16"];
-    8 -> 10 [label="17"];
+    5 -> 6 [label="8"];
+    6 -> 14 [label="9"];
+    14 -> 13 [label="10"];
+    5 -> 13 [label="11"];
+    13 -> 7 [label="12"];
+    7 -> 8 [label="13"];
+    8 -> 16 [label="14"];
+    16 -> 15 [label="15"];
+    7 -> 15 [label="16"];
+    15 -> 9 [label="17"];
+    9 -> 11 [label="18"];
 }
 [debug/cfg-initial] Module 'hilti'
 digraph {
@@ -117,7 +119,7 @@ digraph {
 [debug/optimizer]       - deleting function state: fn
 [debug/optimizer] pass: dead-code-cfg (round 2, pass iteration 1)
 [debug/optimizer]     * function changed: fn
-[debug/optimizer]   [unused-init.hlt:11:5-11:17] statement::Expression "x = True;" -> statement::Expression "True;" (statement result unused)
+[debug/optimizer]   [unused-init.hlt:11:5-11:17] statement::Expression "x = True;" -> expression::Ctor "True" (statement result unused)
 [debug/optimizer]     -> modified
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-processing AST, round 1
@@ -131,15 +133,6 @@ digraph {
 [debug/optimizer] pass: propagate-function-returns (round 2, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 3, pass iteration 1)
-[debug/optimizer]     * function changed: fn
-[debug/optimizer]   [unused-init.hlt:9:20-21:1] statement::Expression "True;" -> null (removing unused expression result)
-[debug/optimizer]     -> modified
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
-[debug/optimizer]   re-processing AST, round 1
-[debug/optimizer]     * resolver
-[debug/optimizer]       - updating function: fn
-[debug/optimizer]     * computed CFGs
-[debug/optimizer]       - deleting function state: fn
 [debug/optimizer] pass: peephole (round 3, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 3, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 3, pass iteration 1)
