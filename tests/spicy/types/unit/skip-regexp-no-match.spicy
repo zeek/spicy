@@ -1,0 +1,37 @@
+# @TEST-DOC: A skip regexp that does not match during switch look-ahead should fall through to the next arm or default.
+#
+# @TEST-EXEC: spicyc -dj %INPUT -o test.hlto
+#
+# @TEST-EXEC: ${SCRIPTS}/printf "foobar" | spicy-dump -d -p test::X test.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf "123bar" | spicy-dump -d -p test::X test.hlto >>output 2>&1
+#
+# @TEST-EXEC: ${SCRIPTS}/printf "foobar" | spicy-dump -d -p test::Y test.hlto >>output 2>&1
+# @TEST-EXEC: ${SCRIPTS}/printf "123bar" | spicy-dump -d -p test::Y test.hlto >>output 2>&1
+#
+# @TEST-EXEC: btest-diff output
+
+module test;
+
+type Alpha = unit {
+    name:  skip /[a-z]+/;
+    value: bytes &eod;
+};
+
+public type X = unit {
+    switch {
+        -> a: Alpha;
+        * -> other: bytes &eod;
+    };
+};
+
+type Beta = unit {
+    name:  skip /[1-9]+/;
+    value: bytes &eod;
+};
+
+public type Y = unit {
+    switch {
+        -> a: Alpha;
+        -> b: Beta;
+    };
+};

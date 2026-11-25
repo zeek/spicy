@@ -1,0 +1,11 @@
+# @TEST-DOC: A skip field with `&size` and `&until` should fail if `&until` is not found within `&size` bytes.
+#
+# @TEST-EXEC-FAIL: ${SCRIPTS}/printf "12345Xabc" | spicy-driver -d %INPUT >>output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module foo;
+
+public type X = unit {
+    : skip bytes &size=5 &until=b"X"; # `&until` not satisfied within `&size` bytes.
+    rest: bytes &eod;
+};

@@ -1,0 +1,19 @@
+# @TEST-DOC: A named regexp field with `skip` should compile and parse correctly.
+#
+# @TEST-EXEC: spicyc -c %INPUT
+# @TEST-EXEC: printf "foo:bar\n" | spicy-dump -d %INPUT >>output 2>&1
+# @TEST-EXEC: btest-diff output
+
+module test;
+
+# Using the unit as a container element exercises the look-ahead code path that
+# had a type mismatch (`view<stream>` vs `iterator<stream>`) for regexp skip.
+type Inner = unit {
+    name:  skip /[^:]*/;
+    :      /:/;
+    value: bytes &until=b"\n";
+};
+
+public type X = unit {
+    rows: Inner[];
+};

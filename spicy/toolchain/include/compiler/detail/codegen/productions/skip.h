@@ -52,7 +52,7 @@ public:
 
     Expression* expression() const final { return _ctor ? _ctor->expression() : nullptr; }
 
-    QualifiedType* type() const final { return _void; };
+    QualifiedType* type() const final { return _ctor ? _ctor->type() : _void; };
 
     std::string dump() const override {
         return hilti::util::fmt("skip: %s", _ctor ? to_string(*_ctor) : _field->print());
