@@ -1,3 +1,58 @@
+1.18.0-dev.108 | 2026-11-25 14:22:29 +0100
+
+  * Bump iShark5060/actions-msvc-dev-cmd from 1.2.2 to 1.2.3 (dependabot[bot])
+
+  * Bump j178/prek-action from 3.1.0 to 3.1.1 (dependabot[bot])
+
+  * Bump hendrikmuhs/ccache-action from 1.2.24 to 1.2.26 (dependabot[bot])
+
+  * Bump 3rdparty/utfcpp from `3d1ff6d` to `3218d78` (dependabot[bot])
+
+  * Fix skip regexp look-ahead failing to combine into joint matcher (Benjamin Bannier, Corelight)
+
+    When multiple skip regexp productions compete in the same look-ahead
+    set (e.g., a switch over two units each starting with a skip regexp),
+    `getLookAhead` must combine them into a single joint regexp matcher.
+    Instead they were probed sequentially; the first probe set the
+    look-ahead token, and the second threw "unexpected token to consume"
+    on the mismatch.
+
+    The root cause is that `Skip::type()` always returned `Void`, so the
+    partition predicate in `getLookAhead` did not recognize skip regexps
+    as regexp productions. We fix this by delegating `Skip::type()` to the
+    inner ctor production, consistent with how `Skip` already delegates
+    `isLiteral()`, `tokenID()`, and `expression()`.
+
+    With skip regexps now correctly landing in the regexp vector, the
+    pattern extraction must also handle them. The existing code downcasts
+    to `production::Ctor` directly, which fails for `Skip`. We replace
+    this with `Production::expression()` which both `Ctor` and `Skip`
+    already implement through delegation.
+
+  * Fix regexp skip field in container causing view/iterator type error (Benjamin Bannier, Corelight)
+
+    When a named regexp field marked `skip` appears in a unit used as a
+    container element (e.g. `Inner[]`), `production::Skip::type()` returns
+    `void` so the production ends up in the non-regexp look-ahead bucket and
+    `parseLiteral` is called with `LiteralMode::Try`. The regexp handler in
+    that mode returned `state().cur` (a `view<stream>`) where the caller
+    expects an `iterator<stream>`, causing a HILTI type error.
+
+    Additionally, a no-match in Try mode incorrectly called `parseError`
+    rather than resetting the position and returning, causing a spurious
+    parse failure when a skip regexp is used as a look-ahead token that does
+    not match (e.g. as the leading field of a switch arm).
+
+  * Fix skip production ignoring `&until` when `&size` is also set (Benjamin Bannier, Corelight)
+
+    When a `bytes` field had both `&size` and `&until`/`&until-including`,
+    the grammar builder created a Skip production based on the size alone.
+    The Skip production handler in the parser builder checks `size()` first
+    and calls `pb->skip(size)`, never reaching the `&until` loop -- so the
+    terminator constraint was silently dropped.
+
+    A Variable production enforces both constraints correctly.
+
 1.18.0-dev.99 | 2026-11-18 08:47:20 -0500
 
   * GH-2568: Bump Fiber for `PAGE_SIZE` name collision (Evan Typanski, Corelight)
