@@ -1,3 +1,19 @@
+1.18.0-dev.116 | 2026-11-25 19:16:40 +0100
+
+  * Fix bugprone-std-exception-baseclass diagnostics (Benjamin Bannier, Corelight)
+
+  * Fix readability-redundant-parentheses diagnostics (Benjamin Bannier, Corelight)
+
+  * Fix modernize-use-string-view diagnostics (Benjamin Bannier, Corelight)
+
+  * Fix performance-string-view-conversions diagnostics (Benjamin Bannier, Corelight)
+
+  * Fix performance-prefer-single-char-overloads diagnostics (Benjamin Bannier, Corelight)
+
+  * Fix readability-redundant-qualified-alias diagnostics (Benjamin Bannier, Corelight)
+
+  * Fix readability-redundant-nested-if diagnostics (Benjamin Bannier, Corelight)
+
 1.18.0-dev.108 | 2026-11-25 14:22:29 +0100
 
   * Bump iShark5060/actions-msvc-dev-cmd from 1.2.2 to 1.2.3 (dependabot[bot])

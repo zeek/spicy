@@ -321,7 +321,7 @@ GraphNode CFG::_addBlock(GraphNode predecessor, const Nodes& stmts, const Node* 
     // After this block `last` is the last reachable statement, either end of
     // children or a control flow statement.
     auto last = std::ranges::find_if(stmts, [](auto* c) {
-        return c && (c->template isAnyOf<statement::Return, statement::Throw, statement::Continue, statement::Break>());
+        return c && c->template isAnyOf<statement::Return, statement::Throw, statement::Continue, statement::Break>();
     });
     const bool has_dead_flow = last != stmts.end();
     if ( has_dead_flow )
@@ -634,7 +634,7 @@ std::string CFG::dot(bool omit_dataflow) const {
         if ( auto it = _dataflow.find(n); ! omit_dataflow && it != _dataflow.end() ) {
             const auto& transfer = it->second;
 
-            auto read = [&]() {
+            auto read = [&] {
                 auto xs = util::toVector(transfer.read |
                                          std::views::transform([&](auto* decl) { return escape(decl->id()); }));
                 std::ranges::sort(xs);
@@ -644,7 +644,7 @@ std::string CFG::dot(bool omit_dataflow) const {
                     return std::string();
             }();
 
-            auto write = [&]() {
+            auto write = [&] {
                 auto xs = util::toVector(transfer.write |
                                          std::views::transform([&](auto* decl) { return escape(decl->id()); }));
                 std::ranges::sort(xs);
@@ -654,7 +654,7 @@ std::string CFG::dot(bool omit_dataflow) const {
                     return std::string();
             }();
 
-            auto gen = [&]() {
+            auto gen = [&] {
                 auto xs = util::toVector(transfer.gen | std::views::transform([&](const auto& kv) {
                                              const auto& [decl, node] = kv;
                                              return util::fmt("%s: %s", escape(decl->id()), escape(node->print()));
@@ -690,7 +690,7 @@ std::string CFG::dot(bool omit_dataflow) const {
                 return util::fmt("in: [%s] out: [%s]", to_str(transfer.in), to_str(transfer.out));
             }();
 
-            auto aliases = [&]() {
+            auto aliases = [&] {
                 auto xs = util::toVector(transfer.maybe_alias |
                                          std::views::transform([&](auto* decl) { return escape(decl->id()); }));
                 std::ranges::sort(xs);

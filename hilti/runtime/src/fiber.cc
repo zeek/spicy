@@ -3,6 +3,7 @@
 #include <fiber/fiber.h>
 
 #include <memory>
+#include <string_view>
 
 #if defined(_MSC_VER)
 #include <intrin.h>
@@ -619,7 +620,7 @@ void detail::Fiber::_yield(const char* tag) {
         _executeSwitch(tag, this, _caller);
 }
 
-std::string detail::Fiber::tag() const {
+std::string_view detail::Fiber::tag() const {
     switch ( _type ) {
         case Type::Main: return "main";
         case Type::SwitchTrampoline: return "switcher";
@@ -657,7 +658,7 @@ void detail::Fiber::yield() {
     _yield("yield");
 
     if ( _state == State::Aborting )
-        throw AbortException();
+        throw AbortException(); // NOLINT(bugprone-std-exception-baseclass)
 }
 
 void detail::Fiber::resume() {

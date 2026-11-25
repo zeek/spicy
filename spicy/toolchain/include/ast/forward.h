@@ -26,8 +26,8 @@ namespace node = hilti::node; // NOLINT
 template<typename T>
 using NodeVector = hilti::NodeVector<T>;
 
-using Node = hilti::Node;
-using Nodes = hilti::Nodes;
+using hilti::Node;
+using hilti::Nodes;
 
 class BuilderBase;
 using Builder = hilti::ExtendedBuilderTemplate<BuilderBase>;
@@ -131,26 +131,26 @@ using Properties = NodeVector<Property>;
 } // namespace type
 
 // Import some HILTI types for convenience.
-using Ctor = hilti::Ctor;
-using Declaration = hilti::Declaration;
-using Expression = hilti::Expression;
-using Function = hilti::Function;
-using ID = hilti::ID;
-using Location = hilti::Location;
-using Meta = hilti::Meta;
-using Node = hilti::Node;
-using QualifiedType = hilti::QualifiedType;
-using Statement = hilti::Statement;
-using UnqualifiedType = hilti::UnqualifiedType;
-using AttributeSet = hilti::AttributeSet;
+using hilti::AttributeSet;
+using hilti::Ctor;
+using hilti::Declaration;
+using hilti::Expression;
+using hilti::Function;
+using hilti::ID;
+using hilti::Location;
+using hilti::Meta;
+using hilti::Node;
+using hilti::QualifiedType;
+using hilti::Statement;
+using hilti::UnqualifiedType;
 
-using Declarations = hilti::Declarations;
-using Expressions = hilti::Expressions;
-using QualifiedTypes = hilti::QualifiedTypes;
-using Statements = hilti::Statements;
+using hilti::Declarations;
+using hilti::Expressions;
+using hilti::QualifiedTypes;
+using hilti::Statements;
 
-using ASTContext = hilti::ASTContext;
-using Meta = hilti::Meta;
-using Location = hilti::Location;
+using hilti::ASTContext;
+using hilti::Location;
+using hilti::Meta;
 
 } // namespace spicy

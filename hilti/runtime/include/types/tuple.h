@@ -147,7 +147,7 @@ public:
             // an element type has a deleted assignment operator (e.g.,
             // std::map::value_type).
             ((us.hasValue() ?
-                  [&]() {
+                  [&] {
                       auto* elem = &std::get<Is>(*this);
                       std::destroy_at(elem);
                       std::construct_at(elem, std::move(*us));
@@ -241,7 +241,7 @@ private:
     // ValueReference types, which we initialize with a nullptr. The latter
     // lets us deal with self-recursive tuple types.
     static auto _defaultStorage() {
-        return Base{[]() {
+        return Base{[] {
             if constexpr ( tuple::detail::IsValueReference<Ts>::value ) {
                 using element_type = tuple::detail::IsValueReference<Ts>::element_type;
                 return Ts(std::shared_ptr<element_type>(nullptr));

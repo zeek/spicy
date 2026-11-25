@@ -720,7 +720,7 @@ class Iterator;
 }
 
 namespace function {
-using Parameter = declaration::Parameter;
+using declaration::Parameter;
 } // namespace function
 
 namespace tuple {

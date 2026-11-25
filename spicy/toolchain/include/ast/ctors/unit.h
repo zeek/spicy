@@ -18,8 +18,8 @@ namespace unit {
  * AST node for a unit field constructor (which is just the same as a struct
  * field constructor).
  */
-using Field = hilti::ctor::struct_::Field;
-using Fields = hilti::ctor::struct_::Fields;
+using hilti::ctor::struct_::Field;
+using hilti::ctor::struct_::Fields;
 } // namespace unit
 
 /** AST node for a unit constructor. */

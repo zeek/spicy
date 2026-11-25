@@ -202,7 +202,7 @@ String Bytes::decode(unicode::Charset cs, unicode::DecodeErrorStrategy errors) c
                 else {
                     switch ( errors.value() ) {
                         case unicode::DecodeErrorStrategy::IGNORE: break;
-                        case unicode::DecodeErrorStrategy::REPLACE: s += "?"; break;
+                        case unicode::DecodeErrorStrategy::REPLACE: s += '?'; break;
                         case unicode::DecodeErrorStrategy::STRICT:
                             throw RuntimeError("illegal ASCII character in string");
                     }

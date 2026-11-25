@@ -55,7 +55,7 @@ std::string DocString::dump() const {
     auto text_ = util::join(text(), " ");
     if ( ! text_.empty() ) {
         if ( ! rendering.empty() )
-            rendering += " ";
+            rendering += ' ';
 
         const auto* text_dots = (text_.size() > max_doc || text().size() > 1 ? "..." : "");
         rendering += util::fmt(R"(doc: "%s%s")", text_.substr(0, max_doc), text_dots);

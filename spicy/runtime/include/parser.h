@@ -473,7 +473,7 @@ inline void registerParser(::spicy::rt::Parser& p, // NOLINT(google-runtime-refe
 
     if constexpr ( sink::detail::supports_sinks<unit_type>::value &&
                    ! std::is_base_of_v<hilti::rt::trait::hasParameters, unit_type> )
-        p.__parse_sink = []() {
+        p.__parse_sink = [] {
             auto unit = spicy::rt::UnitRef<unit_type>(unit_type());
             return std::make_pair(hilti::rt::StrongReferenceGeneric(unit), spicy::rt::sink::detail::connectUnit(unit));
         };

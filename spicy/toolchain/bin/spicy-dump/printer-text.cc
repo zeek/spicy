@@ -20,7 +20,7 @@ void TextPrinter::print(const hilti::rt::type_info::Value& v) {
 
             out() << "{\n";
 
-            indent([&]() {
+            indent([&] {
                 outputIndent();
 
                 for ( const auto& [key, value] : type.bitfield->iterate(v) ) {
@@ -138,7 +138,7 @@ void TextPrinter::print(const hilti::rt::type_info::Value& v) {
 
             bool empty = true;
             uint64_t index = 0;
-            indent([&]() {
+            indent([&] {
                 for ( const auto& [f, y] : x->iterate(v, false, true) ) {
                     if ( f.type->tag == TypeInfo::Bitfield && f.isAnonymous() ) {
                         // Special case anonymous bitfield: print at top level.
@@ -240,7 +240,7 @@ void TextPrinter::print(const hilti::rt::type_info::Value& v) {
             out() << "[";
 
             bool empty = true;
-            indent([&]() {
+            indent([&] {
                 for ( auto i : type.vector->iterate(v) ) {
                     out() << "\n";
                     outputIndent();

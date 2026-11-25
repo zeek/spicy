@@ -688,7 +688,7 @@ TEST_CASE("trim") {
 }
 
 TEST_CASE("tuple_for_each") {
-    tuple_for_each(std::make_tuple(), []() {});
+    tuple_for_each(std::make_tuple(), [] {});
     tuple_for_each(std::make_tuple(), [](auto&) {});
     tuple_for_each(std::make_tuple(), [](const auto&) {});
     tuple_for_each(std::make_tuple(), [](auto&&) {});

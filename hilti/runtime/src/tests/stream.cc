@@ -399,7 +399,7 @@ TEST_CASE("iteration") {
     }
 
     SUBCASE("difference") {
-        const auto x = []() {
+        const auto x = [] {
             auto s = Stream(" 123"_b);
             const auto before_begin = s.begin();
 

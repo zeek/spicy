@@ -7,6 +7,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -224,7 +225,7 @@ public:
      */
     void setLocation(const char* location = nullptr) { _location = location; }
 
-    std::string tag() const;
+    std::string_view tag() const;
 
     static std::unique_ptr<Fiber> create();
     static void destroy(std::unique_ptr<Fiber> f);

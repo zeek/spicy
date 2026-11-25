@@ -629,7 +629,7 @@ static Result<Nothing> runHook(bool* modified,
 }
 
 Result<Nothing> ASTContext::processAST(Builder* builder, Driver* driver) {
-    auto _guard = scope_exit([&]() {
+    auto _guard = scope_exit([&] {
         const auto& hilti_plugin = plugin::registry().hiltiPlugin();
         _dumpAST(logging::debug::AstFinal, hilti_plugin, "Final AST", {});
         _dumpState(logging::debug::AstFinal);

@@ -304,7 +304,7 @@ struct Argument : public DeclarationBase {
 
     bool operator!=(const Argument& other) const { return ! operator==(other); }
 
-    bool isPassedByRef() const { return std::string_view(type).ends_with("&"); }
+    bool isPassedByRef() const { return std::string_view(type).ends_with('&'); }
 };
 
 } // namespace declaration
@@ -463,7 +463,7 @@ struct Struct {
 };
 
 namespace union_ {
-using Member = struct_::Member;
+using struct_::Member;
 } // namespace union_
 
 /** A C++ union type. */

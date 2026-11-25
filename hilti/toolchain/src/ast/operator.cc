@@ -14,7 +14,7 @@ using namespace hilti::operator_;
 
 namespace {
 std::string printOperator(operator_::Kind kind, const std::vector<std::string>& ops, const Meta& meta) {
-    auto render = [&]() {
+    auto render = [&] {
         switch ( kind ) {
             case operator_::Kind::Add: return fmt("add %s[%s]", ops[0], ops[1]);
             case operator_::Kind::Begin: return fmt("begin(%s)", ops[0]);

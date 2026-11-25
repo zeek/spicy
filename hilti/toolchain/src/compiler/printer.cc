@@ -1142,7 +1142,7 @@ void printer::print(std::ostream& out, Node* root, bool compact, bool user_visib
 
     ++detail::State::depth;
 
-    auto _ = util::scope_exit([&]() {
+    auto _ = util::scope_exit([&] {
         if ( --detail::State::depth == 0 )
             detail::State::current.reset();
     });
@@ -1179,7 +1179,7 @@ void printer::Stream::_print(Node* root) {
             continue;
 
         const auto* prev = std::exchange(detail::State::current->current_plugin, &p);
-        auto _ = util::scope_exit([&]() { detail::State::current->current_plugin = prev; });
+        auto _ = util::scope_exit([&] { detail::State::current->current_plugin = prev; });
 
         if ( (*p.ast_print)(root, *this) )
             return;

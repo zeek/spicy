@@ -111,22 +111,22 @@ TEST_CASE("resume-void") {
         r->yield();
         x += "fiber";
         r->yield();
-        x += "!";
+        x += '!';
         return hilti::rt::Nothing();
     };
 
     auto r = hilti::rt::fiber::execute(f);
     REQUIRE(! r);
 
-    x += " ";
+    x += ' ';
     r.resume();
     REQUIRE(! r);
 
-    x += " ";
+    x += ' ';
     r.resume();
     REQUIRE(! r);
 
-    x += " ";
+    x += ' ';
     r.resume();
     REQUIRE(r);
     REQUIRE(r.get<hilti::rt::Nothing>() == hilti::rt::Nothing());
@@ -148,7 +148,7 @@ TEST_CASE("resume-result") {
         r->yield();
         x += " fiber";
         r->yield();
-        x += "!";
+        x += '!';
         return x;
     };
 

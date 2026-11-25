@@ -571,7 +571,7 @@ struct Visitor : hilti::visitor::PreOrder {
             auto tuple_args = ctor->as<ctor::Tuple>()->value();
             auto* target_type = tv->typeValue()->type();
 
-            const auto is_copy_construction = [&]() {
+            const auto is_copy_construction = [&] {
                 if ( ! (tuple_args.size() == 1 && target_type->parameters().empty()) )
                     return false;
 

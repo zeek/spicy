@@ -149,7 +149,7 @@ Result<std::vector<std::string>> util::splitShellUnsafe(std::string_view s) {
         return {std::vector<std::string>{}};
 
     wordexp_t we{};
-    auto _ = util::scope_exit([&]() { wordfree(&we); });
+    auto _ = util::scope_exit([&] { wordfree(&we); });
 
     if ( wordexp(std::string(s).c_str(), &we, WRDE_UNDEF) != 0 )
         return result::Error("could not split string");

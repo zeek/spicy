@@ -43,10 +43,9 @@ void invalidateDependencies(const Declaration* modified_decl, PropagationMap* re
         if ( ! value.propagate )
             continue;
 
-        if ( const auto* name = value.expr->tryAs<expression::Name>() ) {
-            if ( name->resolvedDeclaration() == modified_decl )
-                value.propagate = false;
-        }
+        if ( const auto* name = value.expr->tryAs<expression::Name>();
+             name && name->resolvedDeclaration() == modified_decl )
+            value.propagate = false;
     }
 }
 
@@ -178,15 +177,11 @@ struct Replacer : optimizer::visitor::Mutator {
     bool isLHSOfAssign(Expression* expr) {
         for ( auto* parent = expr->parent(); parent; parent = parent->parent() ) {
             // Don't propagate to the LHS of an assignment
-            if ( const auto* assign = parent->tryAs<operator_::tuple::CustomAssign>() ) {
-                if ( assign->op0() == expr )
-                    return true;
-            }
+            if ( const auto* assign = parent->tryAs<operator_::tuple::CustomAssign>(); assign && assign->op0() == expr )
+                return true;
 
-            if ( const auto* assign = parent->tryAs<expression::Assign>() ) {
-                if ( assign->target() == expr )
-                    return true;
-            }
+            if ( const auto* assign = parent->tryAs<expression::Assign>(); assign && assign->target() == expr )
+                return true;
         }
 
         return false;

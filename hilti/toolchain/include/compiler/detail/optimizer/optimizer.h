@@ -103,7 +103,7 @@ protected:
      */
     auto trackPass(const PassInfo* pinfo) {
         _pinfo = pinfo;
-        return util::scope_exit([&]() { _pinfo = nullptr; });
+        return util::scope_exit([&] { _pinfo = nullptr; });
     }
 
     /**

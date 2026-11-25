@@ -401,27 +401,24 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         checkNodeAttributes(n, n->attributes(), n->displayName());
         checkDeclarationType(n, n->type());
 
-        if ( ! n->type()->type()->isA<type::Auto>() ) {
-            if ( ! n->type()->type()->isAllocable() && ! n->type()->type()->isA<type::Any>() )
-                error(fmt("type '%s' cannot be used for function parameter", *n->type()), n);
-        }
+        if ( ! n->type()->type()->isA<type::Auto>() && ! n->type()->type()->isAllocable() &&
+             ! n->type()->type()->isA<type::Any>() )
+            error(fmt("type '%s' cannot be used for function parameter", *n->type()), n);
 
         if ( n->type()->isWildcard() ) {
-            if ( auto* d = n->parent(4)->tryAs<declaration::Function>() ) {
-                if ( ! d->function()->attributes()->find(hilti::attribute::kind::Cxxname) )
-                    error(fmt("parameter '%s' cannot have wildcard type; only allowed with runtime library "
-                              "functions declared with &cxxname",
-                              n->id()),
-                          n);
-            }
+            if ( auto* d = n->parent(4)->tryAs<declaration::Function>();
+                 d && ! d->function()->attributes()->find(hilti::attribute::kind::Cxxname) )
+                error(fmt("parameter '%s' cannot have wildcard type; only allowed with runtime library "
+                          "functions declared with &cxxname",
+                          n->id()),
+                      n);
 
-            if ( auto* d = n->parent(4)->tryAs<declaration::Type>() ) {
-                if ( ! d->attributes()->find(hilti::attribute::kind::Cxxname) )
-                    error(fmt("parameter '%s' cannot have wildcard type; only allowed with methods in runtime "
-                              "library structs declared with &cxxname",
-                              n->id()),
-                          n);
-            }
+            if ( auto* d = n->parent(4)->tryAs<declaration::Type>();
+                 d && ! d->attributes()->find(hilti::attribute::kind::Cxxname) )
+                error(fmt("parameter '%s' cannot have wildcard type; only allowed with methods in runtime "
+                          "library structs declared with &cxxname",
+                          n->id()),
+                      n);
         }
 
         if ( auto* attrs = n->attributes() )
@@ -443,10 +440,8 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         if ( n->type()->isWildcard() )
             error("cannot use wildcard type for variables", n);
 
-        if ( auto args = n->typeArguments(); args.size() ) {
-            if ( n->type()->type()->parameters().empty() )
-                error("type does not take arguments", n);
-        }
+        if ( auto args = n->typeArguments(); args.size() && n->type()->type()->parameters().empty() )
+            error("type does not take arguments", n);
 
         if ( ! n->type()->type()->parameters().empty() )
             checkTypeArguments(n->typeArguments(), n->type()->type()->parameters(), n);
@@ -460,19 +455,16 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         if ( auto* vr = t->tryAs<type::ValueReference>() )
             t = vr->dereferencedType()->type();
 
-        if ( auto args = n->typeArguments(); args.size() ) {
-            if ( t->parameters().empty() )
-                error("type does not take arguments", n);
-        }
+        if ( auto args = n->typeArguments(); args.size() && t->parameters().empty() )
+            error("type does not take arguments", n);
 
         if ( ! t->parameters().empty() )
             checkTypeArguments(n->typeArguments(), t->parameters(), n, true);
     }
 
     void operator()(hilti::ctor::Exception* n) final {
-        if ( auto* x = n->value()->tryAs<hilti::expression::Ctor>() )
-            if ( ! x->type()->type()->isA<type::String>() )
-                error("exceptions need to be a string", n);
+        if ( auto* x = n->value()->tryAs<hilti::expression::Ctor>(); x && ! x->type()->type()->isA<type::String>() )
+            error("exceptions need to be a string", n);
     }
 
     void operator()(ctor::List* n) final {
@@ -545,13 +537,12 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         else if ( n->target()->type()->side() != Side::LHS )
             error(fmt("cannot assign to RHS expression: %s", *n), n);
 
-        if ( ! n->hasErrors() ) { // no need for more checks if coercer has already flagged it
-            if ( ! type::sameExceptForConstness(n->source()->type(), n->target()->type()) )
-                error(fmt("type mismatch for assignment, expected type %s but got %s",
-                          *n->target()->type(),
-                          *n->source()->type()),
-                      n);
-        }
+        // no need for more checks if coercer has already flagged it
+        if ( ! n->hasErrors() && ! type::sameExceptForConstness(n->source()->type(), n->target()->type()) )
+            error(fmt("type mismatch for assignment, expected type %s but got %s",
+                      *n->target()->type(),
+                      *n->source()->type()),
+                  n);
     }
 
     void operator()(expression::Grouping* n) final {
@@ -575,11 +566,11 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
 
     void operator()(expression::Name* n) final {
         if ( n->type()->type()->isA<type::Function>() ) {
-            if ( auto* parent = n->parent(); parent && ! parent->tryAs<expression::UnresolvedOperator>() ) {
-                // We only allow function references in the following two contexts.
-                if ( ! parent->isA<operator_::function::Call>() && ! parent->isA<ctor::struct_::Field>() )
-                    error("function must be called", n, node::ErrorPriority::Low);
-            }
+            // We only allow function references in the following two contexts.
+            if ( auto* parent = n->parent(); parent && ! parent->tryAs<expression::UnresolvedOperator>() &&
+                                             ! parent->isA<operator_::function::Call>() &&
+                                             ! parent->isA<ctor::struct_::Field>() )
+                error("function must be called", n, node::ErrorPriority::Low);
         }
 
         if ( auto* decl = n->resolvedDeclaration() ) {
@@ -759,10 +750,8 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
                 if ( auto* x = ctor->tryAs<ctor::Coerced>() )
                     ctor = x->coercedCtor();
 
-                if ( auto* i = ctor->tryAs<ctor::UnsignedInteger>() ) {
-                    if ( i->value() > (1U << (upper - lower + 1)) - 1 )
-                        error("value is outside of bitfield element's range", n);
-                }
+                if ( auto* i = ctor->tryAs<ctor::UnsignedInteger>(); i && i->value() > (1U << (upper - lower + 1)) - 1 )
+                    error("value is outside of bitfield element's range", n);
             }
         }
     }
@@ -849,7 +838,7 @@ struct VisitorPost : visitor::PreOrder, public validator::VisitorMixIn {
         std::map<ID, type::Function*> seen;
 
         for ( const auto& f : n->fields() ) {
-            type::Function* func = (f->type()->type()->tryAs<type::Function>());
+            auto* func = f->type()->type()->tryAs<type::Function>();
 
             if ( const auto& other = seen.find(f->id()); other != seen.end() ) {
                 if ( func && other->second ) {

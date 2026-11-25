@@ -189,7 +189,7 @@ JIT::~JIT() {
 }
 
 hilti::Result<std::shared_ptr<const Library>> JIT::build() {
-    auto _guard = util::scope_exit([&]() {
+    auto _guard = util::scope_exit([&] {
         // Point out user diagnostics file if it exists.
         if ( ! hilti::rt::filesystem::exists(UserDiagnosticsFile) )
             return;
@@ -612,7 +612,7 @@ Result<Nothing> JIT::JobRunner::_waitForJobs() {
     if ( hilti::rt::getenv("HILTI_JIT_SEQUENTIAL").hasValue() )
         parallelism = 1;
     else if ( auto e = hilti::rt::getenv("HILTI_JIT_PARALLELISM") )
-        parallelism = util::charsToUInt64(std::string(*e).c_str(), 10, [&]() {
+        parallelism = util::charsToUInt64(std::string(*e).c_str(), 10, [&] {
             rt::fatalError(util::fmt("expected unsigned integer but received '%s' for HILTI_JIT_PARALLELISM", *e));
         });
     else {

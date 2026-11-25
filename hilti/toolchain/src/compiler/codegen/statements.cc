@@ -295,7 +295,7 @@ struct Visitor : hilti::visitor::PreOrder {
         };
 
         // Emit a C++ switch for integral condition values.
-        auto add_cxx_case_switch = [&]() {
+        auto add_cxx_case_switch = [&] {
             std::vector<std::pair<std::vector<cxx::Expression>, cxx::Block>> cases;
 
             for ( const auto& c : n->cases() ) {
@@ -320,8 +320,8 @@ struct Visitor : hilti::visitor::PreOrder {
                 if ( const auto& block = last_stmt->tryAs<statement::Block>(); block && ! block->statements().empty() )
                     last_stmt = block->statements().back();
 
-                if ( ! (last_stmt
-                            ->isAnyOf<statement::Break, statement::Continue, statement::Return, statement::Throw>()) )
+                if ( ! last_stmt
+                           ->isAnyOf<statement::Break, statement::Continue, statement::Return, statement::Throw>() )
                     cases.back().second.addStatement("break");
             }
 
@@ -338,7 +338,7 @@ struct Visitor : hilti::visitor::PreOrder {
         };
 
         // Emit a C++ if/else chain for complex condition values.
-        auto add_cxx_if_else_chain = [&]() {
+        auto add_cxx_if_else_chain = [&] {
             bool first = true;
             for ( const auto& c : n->cases() ) {
                 if ( c->isDefault() )

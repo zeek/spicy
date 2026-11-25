@@ -65,7 +65,7 @@ struct Collector : public optimizer::visitor::Collector {
 
     void run(Node* node = nullptr) override {
         // Helper to compute the total number of collected features over all types.
-        auto num_features = [&]() {
+        auto num_features = [&] {
             return std::accumulate(features.begin(), features.end(), static_cast<size_t>(0), [](auto acc, auto&& f) {
                 return acc + f.second.size();
             });

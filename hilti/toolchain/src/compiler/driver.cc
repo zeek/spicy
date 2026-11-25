@@ -465,15 +465,12 @@ Result<Nothing> Driver::parseOptions(int argc, char** argv) {
     if ( num_output_types == 0 )
         return error("no output type given");
 
-    if ( ! _compiler_options.debug ) {
-        if ( _compiler_options.debug_trace || _compiler_options.debug_flow )
-            return error("must use --debug with --cgdebug");
-    }
+    if ( ! _compiler_options.debug && (_compiler_options.debug_trace || _compiler_options.debug_flow) )
+        return error("must use --debug with --cgdebug");
 
-    if ( _driver_options.execute_code && ! _driver_options.output_path.empty() ) {
-        if ( _driver_options.output_path.extension() != ".hlto" )
-            return error("output will be a precompiled object file and must have '.hlto' extension");
-    }
+    if ( _driver_options.execute_code && ! _driver_options.output_path.empty() &&
+         _driver_options.output_path.extension() != ".hlto" )
+        return error("output will be a precompiled object file and must have '.hlto' extension");
 
     return Nothing();
 }
