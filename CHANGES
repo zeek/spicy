@@ -1,3 +1,7 @@
+1.14.3 | 2026-11-19 13:06:52 +0100
+
+  * Bump 3rdparty/utfcpp from `da71cf9` to `3d1ff6d` (dependabot[bot])
+
 1.14.2 | 2026-07-06 09:20:43 +0200
 
   * Update release workflow [skip ci] (Benjamin Bannier, Corelight)
