@@ -81,6 +81,20 @@ TEST_CASE("atoi_n") {
             CHECK_EQ(it, s.begin());
         }
 
+        SUBCASE("sign only") {
+            std::string_view s = "-";
+            auto* it = atoi_n(s.begin(), s.end(), 10, &x);
+            CHECK_EQ(it, s.begin());
+
+            s = "+";
+            it = atoi_n(s.begin(), s.end(), 10, &x);
+            CHECK_EQ(it, s.begin());
+
+            s = "-abc";
+            it = atoi_n(s.begin(), s.end(), 10, &x);
+            CHECK_EQ(it, s.begin());
+        }
+
         CHECK_EQ(x, -42);
     }
 
@@ -145,11 +159,9 @@ TEST_CASE("atoi_n") {
     }
 
     SUBCASE("overflow") {
-        CHECK_THROWS_WITH_AS(atoi_n_<int32_t>("9901090097", 10, 0),
-                             "cannot decode value in chosen base",
+        CHECK_THROWS_WITH_AS(atoi_n_<int32_t>("9901090097", 10, 0), "cannot decode value in chosen base",
                              const OutOfRange&);
-        CHECK_THROWS_WITH_AS(atoi_n_<int32_t>("-9901090097", 10, 0),
-                             "cannot decode value in chosen base",
+        CHECK_THROWS_WITH_AS(atoi_n_<int32_t>("-9901090097", 10, 0), "cannot decode value in chosen base",
                              const OutOfRange&);
     }
 }
