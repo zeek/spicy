@@ -48,7 +48,7 @@ struct U16Iterator {
     friend bool operator!=(const U16Iterator& a, const U16Iterator& b) { return ! (a == b); };
 
     // Implementation of custom behavior below.
-    enum Order { LE, BE, Detected };
+    enum Order { LE, BE };
 
     U16Iterator(pointer ptr, Order order) : cur(ptr), order(order) {}
 
@@ -56,7 +56,6 @@ struct U16Iterator {
 
     auto operator*() const {
         switch ( order ) {
-            case Detected: [[fallthrough]];
             case LE: return *cur;
             case BE: {
                 auto r = *cur;
@@ -121,7 +120,7 @@ String Bytes::decode(unicode::Charset cs, unicode::DecodeErrorStrategy errors) c
                 try {
                     auto cp = utf8::next(p, e);
                     utf8::append(cp, t);
-                } catch ( const utf8::invalid_utf8& ) {
+                } catch ( const utf8::exception& ) {
                     switch ( errors.value() ) {
                         case unicode::DecodeErrorStrategy::IGNORE: break;
                         case unicode::DecodeErrorStrategy::REPLACE: {
@@ -165,9 +164,11 @@ String Bytes::decode(unicode::Charset cs, unicode::DecodeErrorStrategy errors) c
             auto v16 = std::u16string_view{reinterpret_cast<const char16_t*>(Base::data()), Base::size() / 2};
 
             // We prefer to use the byte order from a BOM if present. If none is found use the passed byte order.
-            U16Iterator::Order order = U16Iterator::Detected;
-            if ( ! startsWith("\xFF\xFE") && ! startsWith("\xFE\xFF") )
-                order = (cs.value() == unicode::Charset::UTF16LE ? U16Iterator::LE : U16Iterator::BE);
+            U16Iterator::Order order = (cs.value() == unicode::Charset::UTF16LE ? U16Iterator::LE : U16Iterator::BE);
+            if ( startsWith("\xFF\xFE") )
+                order = U16Iterator::LE;
+            else if ( startsWith("\xFE\xFF") )
+                order = U16Iterator::BE;
 
             auto p = U16Iterator(v16.data(), order); // NOLINT(bugprone-suspicious-stringview-data-usage)
             auto e = U16Iterator(v16.data() + v16.size(), order);
@@ -176,7 +177,7 @@ String Bytes::decode(unicode::Charset cs, unicode::DecodeErrorStrategy errors) c
                 try {
                     auto cp = utf8::next16(p, e);
                     utf8::append16(cp, std::back_inserter(t));
-                } catch ( const utf8::invalid_utf16& ) {
+                } catch ( const utf8::exception& ) {
                     switch ( errors.value() ) {
                         case unicode::DecodeErrorStrategy::IGNORE: break;
                         case unicode::DecodeErrorStrategy::REPLACE:
@@ -284,7 +285,7 @@ integer::safe<int64_t> Bytes::toInt(ByteOrder byte_order) const {
 integer::safe<uint64_t> Bytes::toUInt(ByteOrder byte_order) const {
     switch ( byte_order.value() ) {
         case ByteOrder::Undef: throw InvalidArgument("cannot convert value to undefined byte order");
-        case ByteOrder::Host: return toInt(systemByteOrder());
+        case ByteOrder::Host: return toUInt(systemByteOrder());
         case ByteOrder::Little: [[fallthrough]];
         case ByteOrder::Network: [[fallthrough]];
         case ByteOrder::Big: break;

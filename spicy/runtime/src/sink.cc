@@ -62,6 +62,8 @@ Sink::ChunkList::iterator Sink::_addAndCheck(hilti::rt::Optional<hilti::rt::Byte
             new_c = _chunks.insert(c, Chunk(std::move(prefix), rseq, rseq + prefix_len));
             data = data->sub(data->begin() + prefix_len, data->end());
         }
+        else
+            new_c = _chunks.insert(c, Chunk({}, rseq, rseq + prefix_len));
 
         rseq += prefix_len;
     }
@@ -85,9 +87,11 @@ Sink::ChunkList::iterator Sink::_addAndCheck(hilti::rt::Optional<hilti::rt::Byte
 
     _reportOverlap(overlap_start, old_data, new_data);
 
-    if ( data && overlap_len < new_c_len ) {
+    if ( overlap_len < new_c_len ) {
         // Recurse to resolve remainder of the new data.
-        data = data->sub(data->begin() + overlap_len, data->end());
+        if ( data )
+            data = data->sub(data->begin() + overlap_len, data->end());
+
         rseq += overlap_len;
 
         if ( new_c == c )
@@ -187,6 +191,7 @@ void Sink::_newData(hilti::rt::Optional<hilti::rt::Bytes> data, uint64_t rseq, u
     if ( _auto_trim && _chunks.empty() && rseq == _cur_rseq ) [[likely]] {
         _debugReassembler("fastpath new data", data, rseq, len);
         _deliver(std::move(data), rseq, rseq + len);
+        _trim_rseq = rseq + len; // same as what `_tryDeliver()` would do
         return;
     }
 
@@ -209,7 +214,7 @@ void Sink::_newData(hilti::rt::Optional<hilti::rt::Bytes> data, uint64_t rseq, u
     }
 
     if ( _chunks.empty() ) {
-        _chunks.emplace_back(std::move(data), rseq, rseq + len);
+        _chunks.emplace_back(std::move(data), rseq, rupper_rseq);
         c = std::next(_chunks.end(), -1);
     }
     else
