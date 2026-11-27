@@ -36,4 +36,14 @@ function void fn4() {
     *y = 1;
 }
 
+# Short-circuit operators and ternary inside initializers model
+# branch structure for side effects in sub-expressions.
+function void fn5(bool a, bool b) {
+    local x = a || b;
+}
+
+function uint<64> fn6(bool b) {
+    local x = b ? 1 : 2;
+}
+
 }

@@ -47,4 +47,13 @@ global S s;
 s.m_inline(a, b, c);
 s.m_outofline(a, b, c);
 
+# Unused parameter with nested call via `||`. Do not drop the argument.
+global called = False;
+function bool side_effect() { return called = True; }
+function void ignore(bool b) {}
+
+assert(!called);
+ignore(False || side_effect());
+assert(called);
+
 }

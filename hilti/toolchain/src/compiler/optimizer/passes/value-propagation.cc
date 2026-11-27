@@ -67,13 +67,20 @@ struct Invalidator : optimizer::visitor::Collector {
 };
 
 struct TransferVisitor : optimizer::visitor::Collector {
-    TransferVisitor(Optimizer* optimizer, PropagationMap* reaching_copies)
+    TransferVisitor(Optimizer* optimizer,
+                    PropagationMap* reaching_copies,
+                    const cfg::GraphNode* root_,
+                    const CFG::Graph* graph_)
         : optimizer::visitor::Collector(optimizer),
           reaching_copies(reaching_copies),
-          invalidator(optimizer, reaching_copies) {}
+          invalidator(optimizer, reaching_copies),
+          root(root_),
+          graph(graph_) {}
 
-    PropagationMap* reaching_copies;
+    PropagationMap* reaching_copies = nullptr;
     Invalidator invalidator;
+    const cfg::GraphNode* root = nullptr;
+    const CFG::Graph* graph = nullptr;
 
     // Tries to resolve an expression to a known reaching value via the propagation map.
     Expression* resolveValue(Expression* expr) {
@@ -100,6 +107,9 @@ struct TransferVisitor : optimizer::visitor::Collector {
     }
 
     void operator()(expression::Assign* assign) override {
+        if ( cfg::isInsideSubCFGNode(assign, root->get(), *graph) )
+            return;
+
         if ( const auto* name = assign->target()->tryAs<expression::Name>() ) {
             if ( auto* decl = name->resolvedDeclaration() ) {
                 invalidateDependencies(decl, reaching_copies);
@@ -247,7 +257,7 @@ struct Mutator : public optimizer::visitor::Mutator {
             }
         }
 
-        TransferVisitor(optimizer(), &new_out).run(n.get());
+        TransferVisitor(optimizer(), &new_out, &n, &cfg.graph()).run(n.get());
     }
 
     void populateDataflow(AnalysisResult& result, const PropagationMap& init, const declaration::Function* function) {
@@ -352,14 +362,27 @@ struct Mutator : public optimizer::visitor::Mutator {
             return;
         auto* name_decl = name->resolvedDeclaration();
 
-        if ( ! cfg->dataflow().contains(*prev_node) )
-            return;
+        // Check the data flow facts for the gen/kill of the returned name.
+        // The assign may have its own sub-CFG node, so check both the
+        // statement and any assign sub-node.
+        auto check_facts = [&](const cfg::GraphNode& node) -> bool {
+            if ( ! cfg->dataflow().contains(node) )
+                return false;
 
-        // The previous node must overwrite the decl and it's not an alias.
-        auto dataflow_facts = cfg->dataflow().at(*prev_node);
-        if ( ! dataflow_facts.gen.contains(name_decl) || ! dataflow_facts.kill.contains(name_decl) ||
-             dataflow_facts.maybe_alias.contains(name_decl) )
-            return;
+            auto facts = cfg->dataflow().at(node);
+            return facts.gen.contains(name_decl) && facts.kill.contains(name_decl) &&
+                   ! facts.maybe_alias.contains(name_decl);
+        };
+
+        if ( ! check_facts(*prev_node) ) {
+            auto assign_upstream = cfg->graph().neighborsUpstream(prev_node->get()->identity());
+            if ( assign_upstream.size() != 1 )
+                return;
+
+            const auto* assign_node = cfg->graph().getNode(assign_upstream[0]);
+            if ( ! assign_node || ! assign_node->get()->isA<expression::Assign>() || ! check_facts(*assign_node) )
+                return;
+        }
 
         auto* assign = stmt->expression()->as<expression::Assign>();
         replaceNode(ret->expression(), assign->source());

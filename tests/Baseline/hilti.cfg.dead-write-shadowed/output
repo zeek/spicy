@@ -17,7 +17,7 @@
 [debug/optimizer]       - deleting function state: f
 [debug/optimizer] pass: dead-code-cfg (round 1, pass iteration 1)
 [debug/optimizer]     * function changed: f
-[debug/optimizer]   [dead-write-shadowed.hlt:15:9-15:13] statement::Expression "x_ = 2;" -> statement::Expression "2;" (statement result unused)
+[debug/optimizer]   [dead-write-shadowed.hlt:15:9-15:13] statement::Expression "x_ = 2;" -> expression::Ctor "2" (statement result unused)
 [debug/optimizer]     -> modified
 [debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
 [debug/optimizer]   re-processing AST, round 1
@@ -31,15 +31,6 @@
 [debug/optimizer] pass: propagate-function-returns (round 1, pass iteration 1)
 [debug/optimizer] pass: remove-unused-fields (round 1, pass iteration 1)
 [debug/optimizer] pass: dead-code-static (round 2, pass iteration 1)
-[debug/optimizer]     * function changed: f
-[debug/optimizer]   [dead-write-shadowed.hlt:10:19-18:1] statement::Expression "2;" -> null (removing unused expression result)
-[debug/optimizer]     -> modified
-[debug/optimizer]   re-resolving AST assuming guarantees <constants-folded>
-[debug/optimizer]   re-processing AST, round 1
-[debug/optimizer]     * resolver
-[debug/optimizer]       - updating function: f
-[debug/optimizer]     * computed CFGs
-[debug/optimizer]       - deleting function state: f
 [debug/optimizer] pass: peephole (round 2, pass iteration 1)
 [debug/optimizer] pass: flatten-blocks (round 2, pass iteration 1)
 [debug/optimizer] pass: dead-code-cfg (round 2, pass iteration 1)
@@ -97,16 +88,18 @@ digraph {
 [debug/cfg-final] Function 'f'
 digraph {
     0 [label="local uint<64> x = 1" xlabel="gen: [x: local uint<64> x = 1] in: [] out: [x: local uint<64> x = 1]"];
-    1 [label="x = 5;" xlabel="write: [x] gen: [x: x = 5;] kill: [x: local uint<64> x = 1] in: [x: local uint<64> x = 1] out: [x: x = 5;]"];
-    2 [label="hilti::print(x, True);" xlabel="read: [x] in: [x: x = 5;] out: [x: x = 5;] keep"];
-    3 [label=start shape=Mdiamond xlabel="in: [] out: []"];
-    4 [label="end <...>/dead-write-shadowed.hlt:10:19-18:1" shape=triangle xlabel="in: [] out: []"];
-    5 [label="end <...>/dead-write-shadowed.hlt:10:19-18:1" shape=triangle xlabel="kill: [x: x = 5;] in: [x: x = 5;] out: []"];
-    3 -> 0 [label="0"];
+    1 [label="x = 5" xlabel="write: [x] gen: [x: x = 5] kill: [x: local uint<64> x = 1] in: [x: local uint<64> x = 1] out: [x: x = 5]"];
+    2 [label="x = 5;" xlabel="write: [x] in: [x: x = 5] out: [x: x = 5]"];
+    3 [label="hilti::print(x, True);" xlabel="read: [x] in: [x: x = 5] out: [x: x = 5] keep"];
+    4 [label=start shape=Mdiamond xlabel="in: [] out: []"];
+    5 [label="end <...>/dead-write-shadowed.hlt:10:19-18:1" shape=triangle xlabel="in: [] out: []"];
+    6 [label="end <...>/dead-write-shadowed.hlt:10:19-18:1" shape=triangle xlabel="kill: [x: x = 5] in: [x: x = 5] out: []"];
+    4 -> 0 [label="0"];
     0 -> 1 [label="1"];
     1 -> 2 [label="2"];
-    2 -> 5 [label="3"];
-    5 -> 4 [label="4"];
+    2 -> 3 [label="3"];
+    3 -> 6 [label="4"];
+    6 -> 5 [label="5"];
 }
 [debug/cfg-final] Module 'hilti'
 digraph {
