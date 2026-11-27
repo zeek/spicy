@@ -84,6 +84,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "vector::iterator",
             .doc = "Returns true if two vector iterators refer to the same location.",
+            .pure = true,
         };
     }
 
@@ -106,6 +107,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "vector::iterator",
             .doc = "Returns true if two vector iterators refer to different locations.",
+            .pure = true,
         };
     }
 
@@ -129,6 +131,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "vector",
             .doc = "Returns the number of elements a vector contains.",
+            .pure = true,
         };
     }
 
@@ -146,6 +149,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "vector",
             .doc = "Compares two vectors element-wise.",
+            .pure = true,
         };
     }
 
@@ -168,6 +172,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "vector",
             .doc = "Compares two vectors element-wise.",
+            .pure = true,
         };
     }
 
@@ -191,6 +196,7 @@ public:
             .result_doc = "<type of element>",
             .ns = "vector",
             .doc = "Returns the vector element at the given index.",
+            .pure = true,
         };
     }
 
@@ -212,6 +218,7 @@ public:
             .result_doc = "<type of element>",
             .ns = "vector",
             .doc = "Returns the vector element at the given index.",
+            .pure = true,
         };
     }
 
@@ -233,6 +240,7 @@ public:
             .result_doc = "vector<*>",
             .ns = "vector",
             .doc = "Returns the concatenation of two vectors.",
+            .pure = true,
         };
     }
 

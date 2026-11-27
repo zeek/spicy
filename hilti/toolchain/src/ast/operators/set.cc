@@ -86,6 +86,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "set::iterator",
             .doc = "Returns true if two sets iterators refer to the same location.",
+            .pure = true,
         };
     }
 
@@ -108,6 +109,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "set::iterator",
             .doc = "Returns true if two sets iterators refer to different locations.",
+            .pure = true,
         };
     }
 
@@ -131,6 +133,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "set",
             .doc = "Returns the number of elements a set contains.",
+            .pure = true,
         };
     }
 
@@ -148,6 +151,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "set",
             .doc = "Compares two sets element-wise.",
+            .pure = true,
         };
     }
 
@@ -170,6 +174,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "set",
             .doc = "Compares two sets element-wise.",
+            .pure = true,
         };
     }
 
@@ -192,6 +197,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "set",
             .doc = "Returns true if an element is part of the set.",
+            .pure = true,
         };
     }
 

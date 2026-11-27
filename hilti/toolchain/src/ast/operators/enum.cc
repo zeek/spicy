@@ -23,6 +23,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "enum_",
             .doc = "Compares two enum values.",
+            .pure = true,
         };
     }
 
@@ -45,6 +46,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "enum_",
             .doc = "Compares two enum values.",
+            .pure = true,
         };
     }
 
@@ -70,6 +72,7 @@ public:
             .ns = "enum_",
             .doc =
                 "Casts an enum value into a signed integer. If the enum value is ``Undef``, this will return ``-1``.",
+            .pure = true,
         };
     }
 
@@ -95,6 +98,7 @@ public:
             .doc =
                 "Casts an enum value into a unsigned integer. This will throw an exception if the enum value is "
                 "``Undef``.",
+            .pure = true,
         };
     }
 

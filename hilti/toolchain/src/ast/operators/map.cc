@@ -88,6 +88,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "map::iterator",
             .doc = "Returns true if two map iterators refer to the same location.",
+            .pure = true,
         };
     }
 
@@ -110,6 +111,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "map::iterator",
             .doc = "Returns true if two map iterators refer to different locations.",
+            .pure = true,
         };
     }
 
@@ -133,6 +135,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeUnsignedInteger(64)},
             .ns = "map",
             .doc = "Returns the number of elements a map contains.",
+            .pure = true,
         };
     }
 
@@ -150,6 +153,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "map",
             .doc = "Compares two maps element-wise.",
+            .pure = true,
         };
     }
 
@@ -172,6 +176,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "map",
             .doc = "Compares two maps element-wise.",
+            .pure = true,
         };
     }
 
@@ -194,6 +199,7 @@ public:
             .result = {.constness = Constness::Const, .type = builder->typeBool()},
             .ns = "map",
             .doc = "Returns true if an element is part of the map.",
+            .pure = true,
         };
     }
 
@@ -247,6 +253,7 @@ public:
             .doc =
                 "Returns the map's element for the given key. The key must exist, otherwise the operation "
                 "will throw a runtime error.",
+            .pure = true,
         };
     }
 
@@ -278,6 +285,7 @@ public:
             .doc =
                 "Returns the map's element for the given key. The key must exist, otherwise the operation "
                 "will throw a runtime error.",
+            .pure = true,
         };
     }
 
