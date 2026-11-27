@@ -20,6 +20,7 @@ public:
             .result_doc = "<dereferenced type>",
             .ns = "strong_reference",
             .doc = "Returns the referenced instance, or throws an exception if none or expired.",
+            .pure = true,
         };
     }
 
@@ -88,6 +89,7 @@ public:
             .result_doc = "<dereferenced type>",
             .ns = "weak_reference",
             .doc = "Returns the referenced instance, or throws an exception if none or expired.",
+            .pure = true,
         };
     }
 
@@ -156,6 +158,7 @@ public:
             .result_doc = "<dereferenced type>",
             .ns = "value_reference",
             .doc = "Returns the referenced instance, or throws an exception if none or expired.",
+            .pure = true,
         };
     }
 

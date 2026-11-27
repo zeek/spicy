@@ -227,6 +227,7 @@ bool Operator::init(Builder* builder, Node* scope_root) {
     _signature->result_doc = sig.result_doc;
     _signature->namespace_ = sig.ns;
     _signature->skip_doc = sig.skip_doc;
+    _signature->pure = sig.pure;
 
     type::operand_list::Operands ops;
 
