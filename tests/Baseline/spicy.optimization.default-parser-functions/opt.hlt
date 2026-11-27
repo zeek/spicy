@@ -14,7 +14,7 @@ public type P1 = struct {
     method int<64> _t_parse_foo__P1_stage2(int<64> _t_lah);
 };
 public type P2 = struct {
-    uint<8> x &optional &no-emit="optimized";
+    uint<8> x &optional &no-emit="private";
     uint<8> y &optional &no-emit="optimized";
     spicy_rt::Parser _t_parser &static &internal &needed-by-feature="supports_filters" &always-emit;
     optional<hilti::RecoverableFailure> _t_error &always-emit &internal;
@@ -150,17 +150,23 @@ method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti
 
 method tuple<const view<stream>, int<64>, const iterator<stream>, optional<hilti::RecoverableFailure>> foo::P2::_t_parse_foo__P2_stage2(inout value_ref<stream> _t_data, copy view<stream> _t_cur, bool _t_trim, int<64> _t_lah, iterator<stream> _t_lahe, copy optional<hilti::RecoverableFailure> _t_error) {
     # "<...>/default-parser-functions.spicy:16:18-21:1"
-    local uint<8> _t_v_x;
-    # "<...>/default-parser-functions.spicy:17:8-17:12"
+    # "<...>/default-parser-functions.spicy:17:5-17:13"
 
-    # Begin parsing production: Variable: x   -> uint<8>
-    spicy_rt::waitForInput(_t_data, _t_cur, 1, "expecting 1 bytes for unpacking value", "<...>/default-parser-functions.spicy:17:8-17:12", Null);
-    (_t_v_x, _t_cur) = (*unpack<uint<8>>((_t_cur, hilti::ByteOrder::Network)));
+    # Begin parsing production: Skip: x   -> skip: x
+    local uint<64> _t_skip = 1;
 
-    if ( _t_trim ) 
-        (*_t_data).trim(begin(_t_cur));
+    while ( _t_skip > 0 ) {
+        spicy_rt::waitForInput(_t_data, _t_cur, 1, "not enough bytes for skipping", "<...>/default-parser-functions.spicy:17:5-17:13", Null);
+        local uint<64> _t_consume = |_t_cur| <= _t_skip ? |_t_cur| : _t_skip;
+        _t_cur = _t_cur.advance(_t_consume);
 
-    # End parsing production: Variable: x   -> uint<8>
+        if ( _t_trim ) 
+            (*_t_data).trim(begin(_t_cur));
+
+        _t_skip = _t_skip - _t_consume;
+    }
+
+    # End parsing production: Skip: x   -> skip: x
 
     local uint<8> _t_v_y;
     # "<...>/default-parser-functions.spicy:18:8-18:12"
